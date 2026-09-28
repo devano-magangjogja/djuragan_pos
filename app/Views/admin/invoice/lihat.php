@@ -271,6 +271,21 @@ $session  = \Config\Services::session();
                                             'class'           => 'btn btn-link btn-sm text-secondary p-0',
                                         ]
                                     );
+
+                                    $rincian_item = daftar_rincian($b->rincian ?? null, 'produk');
+
+                                    if ($rincian_item !== []) {
+                                        echo '<div class="order-specs">';
+
+                                        foreach ($rincian_item as $item) {
+                                            echo '<span class="order-spec"><i class="fal ' . $item['ikon'] . '"></i> '
+                                                . '<span class="order-spec-label">' . esc($item['label']) . '</span>'
+                                                . '<span class="order-spec-value">' . esc($item['nilai']) . '</span></span>';
+                                        }
+
+                                        echo '</div>';
+                                    }
+
                                     echo '</li>';
                                 }
                                 ?>
@@ -367,39 +382,27 @@ $session  = \Config\Services::session();
 
                 </div>
 
-                <?php if ($pesanan->keterangan !== null && trim($pesanan->keterangan) !== '') { ?>
-                    <?php $grup_keterangan = urai_keterangan($pesanan->keterangan); ?>
-                    <div class="order-note mt-3">
-                        <div class="order-note-head">
-                            <h6 class="order-block-title mb-0"><i class="fal fa-clipboard-list"></i> Keterangan</h6>
-
-                            <?php if ($grup_keterangan !== []) { ?>
-                                <button class="btn btn-sm btn-outline-secondary rounded-3" type="button" data-bs-toggle="collapse" data-bs-target="#ket-asli-<?= esc($pesanan->id_invoice) ?>" aria-expanded="false" aria-controls="ket-asli-<?= esc($pesanan->id_invoice) ?>">
-                                    <i class="fal fa-align-left"></i> Teks asli
-                                </button>
+                <?php $rincian_pesanan = daftar_rincian($pesanan->rincian ?? null, 'pesanan'); ?>
+                <?php if ($rincian_pesanan !== []) { ?>
+                    <div class="order-detail mt-3">
+                        <h6 class="order-block-title"><i class="fal fa-list-check"></i> Detail Pesanan</h6>
+                        <div class="order-detail-grid">
+                            <?php foreach ($rincian_pesanan as $item) { ?>
+                                <div class="order-detail-item">
+                                    <span class="order-detail-label"><i class="fal <?= $item['ikon'] ?>"></i> <?= esc($item['label']) ?></span>
+                                    <span class="order-detail-value"><?= esc($item['nilai']) ?></span>
+                                </div>
                             <?php } ?>
                         </div>
+                    </div>
+                <?php } ?>
 
-                        <?php if ($grup_keterangan !== []) { ?>
-                            <div class="order-note-groups">
-                                <?php foreach ($grup_keterangan as $grup) { ?>
-                                    <div class="order-note-group">
-                                        <span class="order-note-label"><i class="fal <?= esc($grup['ikon']) ?>"></i> <?= esc($grup['label']) ?></span>
-                                        <ul class="order-note-items">
-                                            <?php foreach ($grup['isi'] as $baris_keterangan) { ?>
-                                                <li><?= esc($baris_keterangan) ?></li>
-                                            <?php } ?>
-                                        </ul>
-                                    </div>
-                                <?php } ?>
-                            </div>
-                        <?php } ?>
-
-                        <div class="collapse<?= $grup_keterangan === [] ? ' show' : '' ?>" id="ket-asli-<?= esc($pesanan->id_invoice) ?>">
-                            <p class="keterangan mb-0" id="keterangan-<?= esc($pesanan->id_invoice) ?>">
-                                <?= nl2br(esc($pesanan->keterangan)) ?>
-                            </p>
-                        </div>
+                <?php if ($pesanan->keterangan !== null && trim($pesanan->keterangan) !== '') { ?>
+                    <div class="order-note mt-3">
+                        <h6 class="order-block-title"><i class="fal fa-clipboard-list"></i> Keterangan</h6>
+                        <p class="keterangan mb-0" id="keterangan-<?= esc($pesanan->id_invoice) ?>">
+                            <?= nl2br(esc($pesanan->keterangan)) ?>
+                        </p>
                     </div>
                 <?php } ?>
 

@@ -213,6 +213,34 @@ $biaya    = $orderan->biaya;
                     </div>
                 </div>
             </div>
+
+            <?php $rincian_pesanan = baca_rincian($orderan->rincian); ?>
+            <div class="card form-card mb-3">
+                <div class="card-header form-card-head py-2">
+                    <h6 class="mb-0"><i class="fal fa-clipboard-list"></i> Detail Pesanan</h6>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small mb-3">Opsional, boleh dikosongi kalau tidak relevant.</p>
+                    <div class="row gx-2 gy-2">
+                        <div class="col-6">
+                            <?= form_label('Deadline', 'rincian_deadline', ['class' => 'form-label']); ?>
+                            <?= form_input('rincian[deadline]', ($rincian_pesanan['deadline'] ?? ''), ['class' => 'form-control', 'id' => 'rincian_deadline', 'type' => 'date', 'placeholder' => 'opsional']); ?>
+                        </div>
+                        <div class="col-6">
+                            <?= form_label('Jaminan', 'rincian_jaminan', ['class' => 'form-label']); ?>
+                            <?= form_input('rincian[jaminan]', ($rincian_pesanan['jaminan'] ?? ''), ['class' => 'form-control', 'id' => 'rincian_jaminan', 'placeholder' => 'cth: SIM C']); ?>
+                        </div>
+                        <div class="col-6">
+                            <?= form_label('Diambil', 'rincian_ambil', ['class' => 'form-label']); ?>
+                            <?= form_input('rincian[ambil]', ($rincian_pesanan['ambil'] ?? ''), ['class' => 'form-control', 'id' => 'rincian_ambil', 'type' => 'date', 'placeholder' => 'sewa']); ?>
+                        </div>
+                        <div class="col-6">
+                            <?= form_label('Kembali', 'rincian_kembali', ['class' => 'form-label']); ?>
+                            <?= form_input('rincian[kembali]', ($rincian_pesanan['kembali'] ?? ''), ['class' => 'form-control', 'id' => 'rincian_kembali', 'type' => 'date', 'placeholder' => 'sewa']); ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     <div class="col-sm-8 mb-3">
@@ -273,6 +301,9 @@ $biaya    = $orderan->biaya;
                                                 <?= form_hidden('produk[' . $produk->id . '][harga]', $produk->harga); ?>
                                                 <?= form_hidden('produk[' . $produk->id . '][ukuran]', $produk->ukuran); ?>
                                                 <?= form_hidden('produk[' . $produk->id . '][qty]', $produk->qty); ?>
+                                                <?php foreach (baca_rincian($produk->rincian) as $key_rincian => $nilai_rincian) { ?>
+                                                    <?= form_hidden('produk[' . $produk->id . '][rincian][' . $key_rincian . ']', $nilai_rincian); ?>
+                                                <?php } ?>
                                             </div>
                                         </td>
                                     </tr>
@@ -507,6 +538,35 @@ $biaya    = $orderan->biaya;
                     <div class="col col-sm-6 col-md-3">
                         <?= form_label('QTY', 'QTY', ['class' => 'form-label']); ?>
                         <?= form_input(['name' => 'QTY', 'id' => 'QTY', 'class' => 'form-control', 'required' => '', 'placeholder' => 'cth: ' . mt_rand(1, 20), 'type' => 'number', 'min' => '1']); ?>
+                    </div>
+                </div>
+
+                <div class="row gx-2 mt-1 d-none" id="customDetail">
+                    <div class="col-12">
+                        <h6 class="mb-2 mt-3 fw-bold">
+                            <i class="fal fa-ruler-combined text-danger"></i> Spesifikasi Custom
+                            <span class="fw-normal text-muted small">- opsional, hanya untuk pesanan custom</span>
+                        </h6>
+                    </div>
+                    <div class="col-sm-6 mb-2">
+                        <?= form_label('Ukuran Jadi', 'ri_ukuran_jadi', ['class' => 'form-label']); ?>
+                        <input type="text" class="form-control ri-field" id="ri_ukuran_jadi" data-key="ukuran_jadi" placeholder="cth: L / PM" autocomplete="off">
+                    </div>
+                    <div class="col-sm-6 mb-2">
+                        <?= form_label('Nama Pemilik Ukuran', 'ri_pemilik', ['class' => 'form-label']); ?>
+                        <input type="text" class="form-control ri-field" id="ri_pemilik" data-key="pemilik" placeholder="cth: AFRIZAL" autocomplete="off">
+                    </div>
+                    <div class="col-sm-6 mb-2">
+                        <?= form_label('Bahan', 'ri_bahan', ['class' => 'form-label']); ?>
+                        <input type="text" class="form-control ri-field" id="ri_bahan" data-key="bahan" placeholder="cth: JETBLACK" autocomplete="off">
+                    </div>
+                    <div class="col-sm-6 mb-2">
+                        <?= form_label('Model & Jahitan', 'ri_spesifikasi', ['class' => 'form-label']); ?>
+                        <input type="text" class="form-control ri-field" id="ri_spesifikasi" data-key="spesifikasi" placeholder="cth: KANCING JAS 2, SAKU BAWAH VARIASI" autocomplete="off">
+                    </div>
+                    <div class="col-12">
+                        <?= form_label('Tabel Ukuran Detail', 'ri_ukuran_detail', ['class' => 'form-label']); ?>
+                        <textarea class="form-control ri-field" id="ri_ukuran_detail" data-key="ukuran_detail" rows="2" placeholder="cth: P.JAS 75, L.DADA 103, L.PINGGANG 80"></textarea>
                     </div>
                 </div>
             </div>
@@ -927,6 +987,15 @@ $js = <<< JS
     	var pl='';
     	listOrder();
 
+    	// spesifikasi custom hanya muncul saat ukuran = Custom
+    	$('#ukuran').on('change', function() {
+    		var custom = $(this).val() === 'custom';
+    		$('#customDetail').toggleClass('d-none', !custom);
+    		if (!custom) {
+    			$('#customDetail .ri-field').val('');
+    		}
+    	});
+
     	var fpro=$('#nambahProduk');
     	fpro.on('submit',function(c){
     		c.preventDefault(),
@@ -946,6 +1015,17 @@ $js = <<< JS
     			t = $('<div/>').append(bt).append(d+' ( '+e+' )'),
     			tb = $('.list-orderan'),
     			p = $('<div/>', {'class' : 'text-end', 'data-uang1': a*b}).append(g).append(ik).append(ip).append(iz).append(iq);
+
+    		// simpan spesifikasi custom (kalau ukuran = custom) sebagai hidden input
+    		if (e === 'custom') {
+    			fpro.find('#customDetail .ri-field').each(function(){
+    				var k = $(this).data('key'),
+    					v = $.trim($(this).val() || '');
+    				if (k && v !== '') {
+    					p.append($('<input/>', {'type':'hidden','name':'produk['+j+'][rincian]['+k+']','value':v}));
+    				}
+    			});
+    		}
 
     		newRow(tb,[t,f,b,p]);
     		subtotal();
@@ -971,6 +1051,7 @@ $js = <<< JS
     	mPro.addEventListener('hidden.bs.modal',function(){
     		var a=$('#nambahProduk');
     		a.removeClass('was-validated')[0].reset();
+    		$('#customDetail').addClass('d-none');
     	});
 
     	function subtotal(){

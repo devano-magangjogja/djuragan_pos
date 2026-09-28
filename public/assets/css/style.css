@@ -419,47 +419,70 @@
 }
 .read-more { font-weight: 600; white-space: nowrap; }
 
-/* Keterangan berlabel */
-.order-note-head {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem;
+/* Detail pesanan (rincian terstruktur) */
+.order-detail {
+    padding: 1rem 1.15rem;
+    border: 1px solid #e9edf3;
+    border-left: 3px solid #0ea5e9;
+    border-radius: 1rem;
+    background: #fcfdfe;
 }
-.order-note-groups {
+.order-detail-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
-    gap: 0.75rem 1.5rem;
-    margin-top: 0.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+    gap: 0.65rem 1rem;
 }
-.order-note-group { min-width: 0; }
-.order-note-label {
-    display: flex;
-    align-items: center;
-    gap: 0.35rem;
-    margin-bottom: 0.2rem;
+.order-detail-item { min-width: 0; }
+.order-detail-label {
+    display: block;
     font-size: 0.7rem;
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: #64748b;
 }
-.order-note-label .fal { font-size: 0.85rem; color: #da251d; }
-.order-note-items {
-    margin: 0;
-    padding-left: 0.25rem;
-    list-style: none;
-    font-size: 0.88rem;
+.order-detail-label .fal { margin-right: 0.3rem; color: #94a3b8; }
+.order-detail-value {
+    display: block;
+    margin-top: 0.1rem;
+    font-size: 0.92rem;
+    font-weight: 600;
     line-height: 1.5;
-    color: #1e293b;
+    color: #0f172a;
     overflow-wrap: anywhere;
 }
-.order-note-items li {
-    padding: 0.12rem 0;
-    border-bottom: 1px dotted #e8edf4;
+
+/* Spesifikasi custom per produk */
+.order-list li { flex-wrap: wrap; }
+.order-specs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    flex: 1 0 100%;
+    margin: 0.3rem 0 0.15rem;
+    padding-left: 1.1rem;
 }
-.order-note-items li:last-child { border-bottom: 0; }
+.order-spec {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.3rem;
+    max-width: 100%;
+    padding: 0.2rem 0.55rem;
+    border: 1px solid #e9edf3;
+    border-radius: 999px;
+    background: #f6f8fb;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    color: #475569;
+}
+.order-spec > .fal { color: #94a3b8; font-size: 0.7rem; }
+.order-spec-label {
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: #64748b;
+    white-space: nowrap;
+}
+.order-spec-value { overflow-wrap: anywhere; }
 
 /* Resi */
 .order-resi {
@@ -498,3 +521,44 @@
     .order-head-actions { margin-left: 0; }
     .order-total-nominal { font-size: 1.15rem; }
 }
+
+/* ------------------------------------------------------------------
+   Form Tulis / Sunting Orderan: kartu dengan judul kecil supaya kolom
+   kiri tidak terlihat seperti kotak tanpa identitas.
+   ------------------------------------------------------------------ */
+.form-card {
+    border: 1px solid #e9edf3;
+    border-radius: 1rem;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+.form-card-head {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #eef2f7;
+    border-radius: 1rem 1rem 0 0;
+    background: #f8fafc;
+}
+.form-card-head h6 {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #475569;
+}
+.form-card-head h6 .fal { margin-right: 0.3rem; color: #da251d; }
+
+/* Spesifikasi custom: hanya tampil saat ukuran = Custom */
+#customDetail {
+    padding: 0.4rem 0.85rem 0.6rem;
+    border: 1px dashed #dbe3ee;
+    border-radius: 0.85rem;
+    background: #f8fafc;
+}
+#customDetail h6 {
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #475569;
+}
+#customDetail h6 .fal { color: #da251d; }
+#customDetail .form-label { font-size: 0.75rem; color: #64748b; }

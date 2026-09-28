@@ -49,6 +49,8 @@ class Pelanggan extends BaseController
 
             $result = $pelanggan->ambil($id)->getFirstRow();
 
+            sinkron_kontak($id, $result->hp);
+
             $r['id_pelanggan']   = (int) $result->id_pelanggan;
             $r['hp']             = json_decode($result->hp);
             $r['nama_pelanggan'] = $result->nama_pelanggan;

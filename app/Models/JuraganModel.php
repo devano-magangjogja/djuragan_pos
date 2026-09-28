@@ -60,25 +60,6 @@ class JuraganModel extends Model
         return $builder->get();
     }
 
-    public function getUsers($ids_juragan)
-    {
-        if (is_array($ids_juragan)) {
-            $builder = $this->db->table($this->table . ' j');
-            $builder->select('j.*, u.*, r.table');
-
-            $builder->join('relasi r', 'r.juragan_id = j.id_juragan', 'left');
-
-            $builder->join('user u', 'u.id = r.val_id', 'both');
-            $builder->havingIn('j.id_juragan', $ids_juragan);
-            $builder->where('r.table', 1); // juragan-user
-            $builder->groupBy('u.id');
-
-            return $builder->get();
-        }
-
-        return false;
-    }
-
     public function getUsersByJuragan($id)
     {
         $builder = $this->db->table($this->table . ' j');

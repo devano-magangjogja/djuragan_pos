@@ -11,7 +11,7 @@ class InvoiceModel extends Model
     protected $primaryKey         = 'id_invoice';
     protected $returnType         = 'object';
     protected $useSoftDeletes     = true;
-    protected $allowedFields      = ['seri', 'tanggal_pesan', 'pemesan_id', 'kirimKepada_id', 'juragan_id', 'user_id', 'status_pesanan', 'status_pembayaran', 'status_pengiriman', 'keterangan'];
+    protected $allowedFields      = ['seri', 'tanggal_pesan', 'pemesan_id', 'kirimKepada_id', 'juragan_id', 'user_id', 'status_pesanan', 'status_pembayaran', 'status_pengiriman', 'keterangan', 'rincian'];
     protected $useTimestamps      = true;
     protected $createdField       = 'created_at';
     protected $updatedField       = 'update_at';

@@ -553,120 +553,216 @@ if (! function_exists('vite')) {
     }
 }
 
-if (! function_exists('urai_keterangan')) {
+if (! function_exists('rincian_json')) {
     /**
-     * Pecah teks keterangan bebas menjadi kelompok berlabel (item, bahan,
-     * ukuran, pembayaran, dll) supaya tidak ditampilkan sebagai satu paragraf
-     * panjang. Baris yang tidak cocok dengan aturan apa pun tetap ditampilkan
-     * di kelompok "Catatan lain" sehingga tidak ada informasi yang hilang.
+     * Rangkum inputan rincian dari form Tulis Orderan menjadi JSON untuk kolom
+     * `rincian`. Hanya key yang dikenal dan terisi yang disimpan, NULL bila
+     * semuanya kosong supaya orderan lama dan orderan tanpa detail tetap polos.
      *
-     * @return array<int, array{key: string, label: string, ikon: string, isi: array<int, string>}>
+     * @param mixed $rincian
      */
-    function urai_keterangan($teks)
+    function rincian_json($rincian, array $keys): ?string
     {
-        if (trim((string) $teks) === '') {
-            return [];
+        if (! is_array($rincian)) {
+            return null;
         }
 
-        $label = [
-            'item'    => ['Item & ukuran jadi', 'fa-box-open'],
-            'bayar'   => ['Pembayaran', 'fa-wallet'],
-            'sewa'    => ['Jadwal sewa', 'fa-briefcase'],
-            'waktu'   => ['Deadline & instruksi waktu', 'fa-calendar-check'],
-            'jaminan' => ['Jaminan', 'fa-shield-halved'],
-            'bahan'   => ['Bahan', 'fa-tshirt'],
-            'ukuran'  => ['Tabel ukuran detail', 'fa-ruler-combined'],
-            'model'   => ['Spesifikasi model & jahitan', 'fa-scissors'],
-            'pemilik' => ['Nama pemilik ukuran', 'fa-user'],
-            'lain'    => ['Catatan lain', 'fa-note-sticky'],
-        ];
+        $isi = [];
 
-        // dicocokkan dari awal baris, urut = prioritas
-        $awalan = [
-            'item'    => '^(SEWA\s+)?(TOTAL\s(?!HARGA|BAYAR|BIAYA|ONGKIR)\w+|JUMLAH\s(?!HARGA|BAYAR|BIAYA|ONGKIR)\w+|JAS|CELANA|CELANAN|VEST|KEMEJA|SEPATU|PANTOFEL|BLENZER|BLAZER|HODIE|HOODIE|JASKET|JAKET|ROK|TAS|PINGGIR|SLIMFIT|BK\s?-?\d+|TZ\s?-?\d+|SK\s?-?\d+|KS\s?-?\d+|SL\s?-?\d+|PESAN|PESANAN|BELI|STOK|STOCK|ORDER|PRODUK|BARANG)\b',
-            'bayar'   => '^(SUDAH\s+)?(DP|DOW?N\s?PAYMENT|PELUNASAN|POLONG|LUNAS|BAYAR|BAY|PEMBAYARAN|SISA|CICILAN|CICIL|KREDIT|TRANSFER|REFUND|TAGIHAN|INVOICE|TOKO|ONLINE|DISKON|CASH|TUNAI|ONGKIR|HARGA|BIAYA|TF|(TOTAL|JUMLAH)\s?(HARGA|BAYAR|BIAYA|ONGKIR))\b',
-            'sewa'    => '^(DIAMBIL|DI\s?AMBIL|TERAMBIL|TERAMBILE|AMBIL|DIKEMBALIKAN|KEMBALI|PENGEMBALIAN|MAK\s?KEMBALI|DIPAKAI|DIPAKE|SEWANYA|TANGGAL\s?SEWA|SEWA)\b',
-            'waktu'   => '^(DEADLINE|DATELINE|DETLINE|DIKERJAKAN|URGENT|PALING|SEBELUM|JADWAL|LEWAT|HURRY|SPEED|TARGET|MAKSIMAL|MUNDUR)\b',
-            'jaminan' => '^(JAMINAN|SIM|SIMC|KTP|NOTE|NB|CATATAN|REVISI|ERROR|SALAH|TITIP|BATAL|PULANG)\b',
-            'bahan'   => '^(BAHAN|KAIN|FABRIC|WARNA|MOTIF|BORDIR|BORDIRAN|SABLON|EMBROIDERY|FURING|TISSU|CUSIN|CUSHION)\b',
-            'ukuran'  => '^(UKURAN|SIZE|LING|LINGKAR|KETIAK|PANGGUL|PJ|P\.?\s?JAS|P\.?\s?PANJANG|P\.?\s?BK|L\.?\s?DADA|L\.?\s?PINGGUL|L\.?\s?PINGGANG|L\.?\s?BAHU|L\.?\s?TANGAN|PANJANG|PANJAN|LEBAR|BAHU|PAHA|LUTUT|SIKU|VASAK|DADA|PINGGUL|PINGGANG|LENGAN|TANGAN|PINGGIR|DEPAN|BELAKANG|PERUT|PANTAT|LEHER|KERONGKONG)\b',
-            'model'   => '^(MODEL|KANCING|SAKU|SACKU|KANTONG|BELAHAN|RESLETING|RITSLING|TANPA|ADA|TIDAK|LIST|KERAH|JAHIT|LIPIT|KELIM|LAPEL|VARIASI|KOMBINASI|TAMBAH|KURANG|PENDEK|PANJANGKAN|TAHUN|GAYA|DESAIN|TANGAN|PAKAI|DASI|BELT|RETUR|TUKAR)\b',
-            'pemilik' => '^(A\.?\s?N\.?|AN|PUNYA|MILIK|SAMPEL|SAMPLE|NAMA|PEMILIK|COWOK|CEWEK|CUSTOMER|CUSTOM|SISWA)\b',
-        ];
+        foreach ($keys as $key) {
+            $nilai = trim((string) ($rincian[$key] ?? ''));
 
-        // jaring pengaman: kata kunci di tengah baris, urut = prioritas
-        $isi = [
-            'bayar'   => '\b(VIA|BY|TF|TUNAI|QRIS|BCA|MANDIRI|BNI|BRI|CIMB|OVO|GOPAY)\b|\bDP\b|\d+\s?(RB|JT)\b',
-            'ukuran'  => ':\s*-?\s*\d+([.,]\d+)?\s?(CM|KG|PCS)?$|\b\d{2,3}([.,]\d)?\s?(CM|KG)\b',
-            'sewa'    => '\b(DIAMBIL|DI\s?AMBIL|KEMBALI|TERAMBILE|TERAMBIL)\b',
-            'waktu'   => '\b(DEADLINE|DATELINE|URGENT|PALING\s?(LAMBAT|AWAL))\b',
-            'jaminan' => '\b(JAMINAN|SIM\s?[CM]\b|KTP|NOTE)\b',
-            'bahan'   => '\b(BAHAN|KAIN|FABRIC|BORDIR|SABLON)\b',
-            'pemilik' => '\bA\.?\s?N\.?\b',
-        ];
-
-        $hasil = array_fill_keys(array_keys($label), []);
-
-        foreach (preg_split('/\r\n|\r|\n/', (string) $teks) as $baris) {
-            $bersih = bersihkan_baris_keterangan($baris);
-
-            if ($bersih === '') {
-                continue;
+            if ($nilai !== '') {
+                $isi[$key] = mb_substr($nilai, 0, 1000);
             }
-
-            $cek = strtoupper(preg_replace('/\s+/u', ' ', $bersih));
-
-            foreach ($awalan as $key => $regex) {
-                if (preg_match('/' . $regex . '/u', $cek)) {
-                    $hasil[$key][] = $bersih;
-                    continue 2;
-                }
-            }
-
-            foreach ($isi as $key => $regex) {
-                if (preg_match('/' . $regex . '/iu', $bersih)) {
-                    $hasil[$key][] = $bersih;
-                    continue 2;
-                }
-            }
-
-            $hasil['lain'][] = $bersih;
         }
 
-        $keluaran = [];
-
-        foreach ($label as $key => $meta) {
-            if ($hasil[$key] === []) {
-                continue;
-            }
-
-            $keluaran[] = [
-                'key'   => $key,
-                'label' => $meta[0],
-                'ikon'  => $meta[1],
-                'isi'   => $hasil[$key],
-            ];
-        }
-
-        return $keluaran;
+        return $isi === [] ? null : json_encode($isi, JSON_UNESCAPED_UNICODE);
     }
 }
 
-if (! function_exists('bersihkan_baris_keterangan')) {
+if (! function_exists('baca_rincian')) {
     /**
-     * Buang penanda daftar (#, *, -, 1.) di awal baris keterangan.
-     * Data lama ada yang berisi byte UTF-8 tidak valid, jadi siapkan fallback.
+     * Balik isi kolom `rincian` jadi array [key => teks]; data lama (NULL)
+     * atau JSON rusak menghasilkan array kosong.
+     *
+     * @param string|null $json
      */
-    function bersihkan_baris_keterangan($baris)
+    function baca_rincian($json): array
     {
-        $bersih = preg_replace('/^[\s#*\->\[\]()·•]+|[\s:]+$/u', '', $baris);
-
-        if ($bersih === null) {
-            $bersih = preg_replace('/^[\s#*\->\[\]()]+|[\s:]+$/', '', (string) iconv('UTF-8', 'UTF-8//IGNORE', (string) $baris));
+        if (trim((string) $json) === '') {
+            return [];
         }
 
-        $bersih = (string) preg_replace('/^\d{1,2}[.)]{1,2}\s+/u', '', (string) $bersih);
+        $data = json_decode((string) $json, true);
 
-        return trim((string) $bersih);
+        if (! is_array($data)) {
+            return [];
+        }
+
+        return array_filter($data, static fn ($nilai) => trim((string) $nilai) !== '');
+    }
+}
+
+if (! function_exists('meta_rincian')) {
+    /**
+     * Label dan ikon untuk tiap key rincian, urut sesuai tampilan.
+     * Tipe 'pesanan' untuk detail level invoice, 'produk' untuk per item custom.
+     */
+    function meta_rincian(string $tipe = 'pesanan'): array
+    {
+        $meta = [
+            'pesanan' => [
+                'deadline' => ['Deadline', 'fa-calendar-check'],
+                'ambil'    => ['Diambil', 'fa-arrow-down'],
+                'kembali'  => ['Kembali', 'fa-arrow-up'],
+                'jaminan'  => ['Jaminan', 'fa-shield-halved'],
+            ],
+            'produk' => [
+                'ukuran_jadi'   => ['Ukuran jadi', 'fa-ruler'],
+                'pemilik'       => ['Atas nama', 'fa-user'],
+                'bahan'         => ['Bahan', 'fa-tshirt'],
+                'spesifikasi'   => ['Model & jahitan', 'fa-scissors'],
+                'ukuran_detail' => ['Tabel ukuran', 'fa-ruler-combined'],
+            ],
+        ];
+
+        return $meta[$tipe] ?? [];
+    }
+}
+
+if (! function_exists('tanggal_rincian')) {
+    /**
+     * Tampilin tanggal rincian; kalau formatnya bukan tanggal, teks apa adanya.
+     */
+    function tanggal_rincian(string $tanggal): string
+    {
+        try {
+            return \CodeIgniter\I18n\Time::parse($tanggal)->toLocalizedString('d MMMM yyyy');
+        } catch (Throwable $e) {
+            return $tanggal;
+        }
+    }
+}
+
+if (! function_exists('daftar_rincian')) {
+    /**
+     * Rincian (JSON/string/array) jadi daftar [label, ikon, nilai] yang siap tampil.
+     * Baris lama tanpa rincian mengembalikan array kosong.
+     *
+     * @param string|array|null $rincian
+     */
+    function daftar_rincian($rincian, string $tipe = 'pesanan'): array
+    {
+        $data  = is_array($rincian) ? $rincian : baca_rincian($rincian);
+        $tanggal = ['deadline', 'ambil', 'kembali'];
+        $hasil   = [];
+
+        foreach (meta_rincian($tipe) as $key => $meta) {
+            if (! isset($data[$key]) || trim((string) $data[$key]) === '') {
+                continue;
+            }
+
+            $nilai = trim((string) $data[$key]);
+
+            if (in_array($key, $tanggal, true)) {
+                $nilai = tanggal_rincian($nilai);
+            }
+
+            $hasil[] = ['label' => $meta[0], 'ikon' => $meta[1], 'nilai' => $nilai];
+        }
+
+        return $hasil;
+    }
+}
+
+if (! function_exists('kunci_produk')) {
+    /** Kunci master produk: huruf kecil, spasi dirapatkan. */
+    function kunci_produk(string $kode): string
+    {
+        return trim((string) preg_replace('/\s+/', ' ', mb_strtolower(trim($kode))));
+    }
+}
+
+if (! function_exists('jamin_produk')) {
+    /**
+     * Kembalikan id master produk untuk ejaan kode ini, membuat barunya bila
+     * belum ada. Kolom `kode` lama di order_dibeli tidak diubah sedikitpun.
+     */
+    function jamin_produk(string $kode): ?int
+    {
+        $kunci = kunci_produk($kode);
+
+        if ($kunci === '') {
+            return null;
+        }
+
+        $db    = \Config\Database::connect();
+        $tabel = $db->prefixTable('produk');
+        $row   = $db->query('SELECT id_produk FROM `' . $tabel . '` WHERE kunci = ? LIMIT 1', [$kunci])->getFirstRow();
+
+        if ($row !== null) {
+            return (int) $row->id_produk;
+        }
+
+        $waktu = time();
+        $db->query('INSERT INTO `' . $tabel . '` (kode, kunci, created_at, updated_at) VALUES (?, ?, ?, ?)', [
+            trim($kode), $kunci, $waktu, $waktu,
+        ]);
+
+        return (int) $db->insertID();
+    }
+}
+
+if (! function_exists('lengkapi_produk')) {
+    /** Tambah produk_id pada baris order_dibeli sebelum insertBatch. */
+    function lengkapi_produk(array $baris): array
+    {
+        foreach ($baris as $i => $item) {
+            $baris[$i]['produk_id'] = jamin_produk((string) ($item['kode'] ?? ''));
+        }
+
+        return $baris;
+    }
+}
+
+if (! function_exists('sinkron_kontak')) {
+    /**
+     * Pecah kolom JSON order_pelanggan.hp menjadi satu baris per nomor di
+     * order_pelanggan_kontak. Sumber aslinya (hp) tetap dipakai aplikasi.
+     */
+    function sinkron_kontak(int $pelanggan_id, ?string $hp): void
+    {
+        if ($pelanggan_id <= 0) {
+            return;
+        }
+
+        $db = \Config\Database::connect();
+        $db->query('DELETE FROM `' . $db->prefixTable('pelanggan_kontak') . '` WHERE pelanggan_id = ?', [$pelanggan_id]);
+
+        $nomor = json_decode((string) $hp, true);
+
+        if (! is_array($nomor)) {
+            return;
+        }
+
+        $waktu = time();
+        $baru  = [];
+        $urut  = 0;
+
+        foreach ($nomor as $n) {
+            $n = trim((string) $n);
+
+            if ($n === '' || isset($baru[$n])) {
+                continue;
+            }
+
+            $urut++;
+            $baru[$n] = ['pelanggan_id' => $pelanggan_id, 'nomor' => $n, 'urutan' => $urut, 'created_at' => $waktu];
+        }
+
+        if ($baru !== []) {
+            $db->table('pelanggan_kontak')->insertBatch(array_values($baru));
+        }
     }
 }
