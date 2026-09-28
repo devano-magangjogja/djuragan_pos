@@ -1,0 +1,42 @@
+ERROR - 2022-04-03 16:24:37 --> Incorrect DATE value: 'COD'
+CRITICAL - 2022-04-03 16:24:37 --> Call to a member function getResult() on bool
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\User\Invoices->lihat('5cc83b910b2a957...', 'semua')
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#3 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#4 {main}
+ERROR - 2022-04-03 16:24:38 --> Incorrect DATE value: 'COD'
+CRITICAL - 2022-04-03 16:24:38 --> Call to a member function getResult() on bool
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\User\Invoices->lihat('5cc83b910b2a957...', 'semua')
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#3 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#4 {main}
+ERROR - 2022-04-03 16:24:40 --> Incorrect DATE value: 'COD'
+CRITICAL - 2022-04-03 16:24:40 --> Call to a member function getResult() on bool
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\User\Invoices->lihat('5cc83b910b2a957...', 'semua')
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#3 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#4 {main}
+ERROR - 2022-04-03 16:25:47 --> Incorrect DATE value: 'COD'
+CRITICAL - 2022-04-03 16:25:47 --> Call to a member function getResult() on bool
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\User\Invoices->lihat('5cc83b910b2a957...', 'semua')
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#3 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#4 {main}
+ERROR - 2022-04-03 16:25:48 --> Incorrect DATE value: 'COD'
+CRITICAL - 2022-04-03 16:25:48 --> Call to a member function getResult() on bool
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\User\Invoices->lihat('5cc83b910b2a957...', 'semua')
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#3 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#4 {main}
+ERROR - 2022-04-03 16:37:22 --> Incorrect DATE value: 'COD'
+CRITICAL - 2022-04-03 16:37:22 --> Call to a member function getResult() on bool
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\User\Invoices->lihat('5cc83b910b2a957...', 'semua')
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#3 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#4 {main}

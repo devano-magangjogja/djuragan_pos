@@ -1,0 +1,11 @@
+CRITICAL - 2023-02-22 16:01:48 --> Undefined array key "subdistrict_name"
+in APPPATH/Views/admin/invoice/lihat.php on line 166.
+ 1 APPPATH/Views/admin/invoice/lihat.php(166): CodeIgniter\Debug\Exceptions->errorHandler()
+ 2 SYSTEMPATH/View/View.php(213): include('APPPATH/Views/admin/invoice/lihat.php')
+ 3 SYSTEMPATH/View/View.php(216): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH/Common.php(1137): CodeIgniter\View\View->render()
+ 5 APPPATH/Controllers/Admin/Invoices.php(74): view()
+ 6 SYSTEMPATH/CodeIgniter.php(898): App\Controllers\Admin\Invoices->lihat()
+ 7 SYSTEMPATH/CodeIgniter.php(457): CodeIgniter\CodeIgniter->runController()
+ 8 SYSTEMPATH/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest()
+ 9 FCPATH/index.php(67): CodeIgniter\CodeIgniter->run()

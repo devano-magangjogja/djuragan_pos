@@ -1,0 +1,936 @@
+CRITICAL - 2022-02-12 08:01:46 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 08:01:55 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 08:22:21 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 08:22:33 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 08:22:36 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 08:22:40 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 08:23:05 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 08:23:09 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 08:24:20 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 08:24:51 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 08:37:26 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 08:49:57 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 08:49:59 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 08:50:07 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 08:52:04 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 08:52:23 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 08:52:41 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 08:53:23 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 08:54:13 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 08:54:19 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 08:55:22 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 08:55:33 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 08:57:03 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 09:05:17 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 09:05:46 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'belum-proses')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 09:06:15 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('a09fb41208731a2...', 'belum-proses')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 09:06:25 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('a09fb41208731a2...', 'belum-proses')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 09:06:30 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'belum-proses')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 09:07:44 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'belum-proses')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 09:15:17 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 09:15:30 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'belum-proses')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 09:16:56 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 09:17:08 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 09:17:12 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 09:17:45 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 09:17:58 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 09:18:32 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'belum-proses')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 09:19:21 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 09:19:28 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 09:21:28 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 09:21:30 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 09:23:20 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 09:25:05 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 09:26:58 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 09:27:04 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 09:33:36 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 09:33:44 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 09:36:53 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 09:52:45 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 09:53:04 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 09:53:10 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 09:56:04 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 09:56:44 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 09:57:00 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 09:57:26 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 09:58:18 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 09:58:33 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 09:58:51 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 10:03:37 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 10:04:24 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 10:06:07 --> Trying to get property 'nama' of non-object
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(109): CodeIgniter\Debug\Exceptions->errorHandler(8, 'Trying to get p...', '/home/dnzwygdo/...', 109, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 10:19:08 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 10:20:18 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 10:28:49 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 10:34:36 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 10:55:45 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(154): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 154, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 10:55:54 --> Trying to get property 'nama' of non-object
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(151): CodeIgniter\Debug\Exceptions->errorHandler(8, 'Trying to get p...', '/home/dnzwygdo/...', 151, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 10:59:21 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(153): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 153, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2022-02-12 12:03:18 --> trim() expects parameter 1 to be string, array given
+#0 [internal function]: CodeIgniter\Debug\Exceptions->errorHandler(2, 'trim() expects ...', '/home/dnzwygdo/...', 22, Array)
+#1 /home/dnzwygdo/app/Controllers/Pelanggan.php(22): trim(Array)
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Pelanggan->baru()
+#3 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Pelanggan))
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2022-02-12 12:03:47 --> trim() expects parameter 1 to be string, array given
+#0 [internal function]: CodeIgniter\Debug\Exceptions->errorHandler(2, 'trim() expects ...', '/home/dnzwygdo/...', 22, Array)
+#1 /home/dnzwygdo/app/Controllers/Pelanggan.php(22): trim(Array)
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Pelanggan->baru()
+#3 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Pelanggan))
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2022-02-12 12:04:05 --> trim() expects parameter 1 to be string, array given
+#0 [internal function]: CodeIgniter\Debug\Exceptions->errorHandler(2, 'trim() expects ...', '/home/dnzwygdo/...', 22, Array)
+#1 /home/dnzwygdo/app/Controllers/Pelanggan.php(22): trim(Array)
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Pelanggan->baru()
+#3 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Pelanggan))
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2022-02-12 12:04:27 --> trim() expects parameter 1 to be string, array given
+#0 [internal function]: CodeIgniter\Debug\Exceptions->errorHandler(2, 'trim() expects ...', '/home/dnzwygdo/...', 22, Array)
+#1 /home/dnzwygdo/app/Controllers/Pelanggan.php(22): trim(Array)
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Pelanggan->baru()
+#3 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Pelanggan))
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2022-02-12 12:04:39 --> trim() expects parameter 1 to be string, array given
+#0 [internal function]: CodeIgniter\Debug\Exceptions->errorHandler(2, 'trim() expects ...', '/home/dnzwygdo/...', 22, Array)
+#1 /home/dnzwygdo/app/Controllers/Pelanggan.php(22): trim(Array)
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Pelanggan->baru()
+#3 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Pelanggan))
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2022-02-12 12:05:05 --> trim() expects parameter 1 to be string, array given
+#0 [internal function]: CodeIgniter\Debug\Exceptions->errorHandler(2, 'trim() expects ...', '/home/dnzwygdo/...', 22, Array)
+#1 /home/dnzwygdo/app/Controllers/Pelanggan.php(22): trim(Array)
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Pelanggan->baru()
+#3 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Pelanggan))
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2022-02-12 12:05:23 --> trim() expects parameter 1 to be string, array given
+#0 [internal function]: CodeIgniter\Debug\Exceptions->errorHandler(2, 'trim() expects ...', '/home/dnzwygdo/...', 22, Array)
+#1 /home/dnzwygdo/app/Controllers/Pelanggan.php(22): trim(Array)
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Pelanggan->baru()
+#3 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Pelanggan))
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2022-02-12 12:06:26 --> trim() expects parameter 1 to be string, array given
+#0 [internal function]: CodeIgniter\Debug\Exceptions->errorHandler(2, 'trim() expects ...', '/home/dnzwygdo/...', 22, Array)
+#1 /home/dnzwygdo/app/Controllers/Pelanggan.php(22): trim(Array)
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Pelanggan->baru()
+#3 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Pelanggan))
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2022-02-12 12:07:29 --> trim() expects parameter 1 to be string, array given
+#0 [internal function]: CodeIgniter\Debug\Exceptions->errorHandler(2, 'trim() expects ...', '/home/dnzwygdo/...', 22, Array)
+#1 /home/dnzwygdo/app/Controllers/Pelanggan.php(22): trim(Array)
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Pelanggan->baru()
+#3 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Pelanggan))
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2022-02-12 13:54:09 --> trim() expects parameter 1 to be string, array given
+#0 [internal function]: CodeIgniter\Debug\Exceptions->errorHandler(2, 'trim() expects ...', '/home/dnzwygdo/...', 22, Array)
+#1 /home/dnzwygdo/app/Controllers/Pelanggan.php(22): trim(Array)
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Pelanggan->baru()
+#3 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Pelanggan))
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2022-02-12 13:56:27 --> trim() expects parameter 1 to be string, array given
+#0 [internal function]: CodeIgniter\Debug\Exceptions->errorHandler(2, 'trim() expects ...', '/home/dnzwygdo/...', 22, Array)
+#1 /home/dnzwygdo/app/Controllers/Pelanggan.php(22): trim(Array)
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Pelanggan->baru()
+#3 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Pelanggan))
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2022-02-12 13:56:33 --> trim() expects parameter 1 to be string, array given
+#0 [internal function]: CodeIgniter\Debug\Exceptions->errorHandler(2, 'trim() expects ...', '/home/dnzwygdo/...', 22, Array)
+#1 /home/dnzwygdo/app/Controllers/Pelanggan.php(22): trim(Array)
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Pelanggan->baru()
+#3 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Pelanggan))
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2022-02-12 13:56:34 --> trim() expects parameter 1 to be string, array given
+#0 [internal function]: CodeIgniter\Debug\Exceptions->errorHandler(2, 'trim() expects ...', '/home/dnzwygdo/...', 22, Array)
+#1 /home/dnzwygdo/app/Controllers/Pelanggan.php(22): trim(Array)
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Pelanggan->baru()
+#3 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Pelanggan))
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2022-02-12 13:56:35 --> trim() expects parameter 1 to be string, array given
+#0 [internal function]: CodeIgniter\Debug\Exceptions->errorHandler(2, 'trim() expects ...', '/home/dnzwygdo/...', 22, Array)
+#1 /home/dnzwygdo/app/Controllers/Pelanggan.php(22): trim(Array)
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Pelanggan->baru()
+#3 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Pelanggan))
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2022-02-12 13:56:36 --> trim() expects parameter 1 to be string, array given
+#0 [internal function]: CodeIgniter\Debug\Exceptions->errorHandler(2, 'trim() expects ...', '/home/dnzwygdo/...', 22, Array)
+#1 /home/dnzwygdo/app/Controllers/Pelanggan.php(22): trim(Array)
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Pelanggan->baru()
+#3 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Pelanggan))
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2022-02-12 13:56:37 --> trim() expects parameter 1 to be string, array given
+#0 [internal function]: CodeIgniter\Debug\Exceptions->errorHandler(2, 'trim() expects ...', '/home/dnzwygdo/...', 22, Array)
+#1 /home/dnzwygdo/app/Controllers/Pelanggan.php(22): trim(Array)
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Pelanggan->baru()
+#3 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Pelanggan))
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2022-02-12 13:56:56 --> trim() expects parameter 1 to be string, array given
+#0 [internal function]: CodeIgniter\Debug\Exceptions->errorHandler(2, 'trim() expects ...', '/home/dnzwygdo/...', 22, Array)
+#1 /home/dnzwygdo/app/Controllers/Pelanggan.php(22): trim(Array)
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Pelanggan->baru()
+#3 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Pelanggan))
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2022-02-12 13:56:56 --> trim() expects parameter 1 to be string, array given
+#0 [internal function]: CodeIgniter\Debug\Exceptions->errorHandler(2, 'trim() expects ...', '/home/dnzwygdo/...', 22, Array)
+#1 /home/dnzwygdo/app/Controllers/Pelanggan.php(22): trim(Array)
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Pelanggan->baru()
+#3 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Pelanggan))
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2022-02-12 15:15:48 --> trim() expects parameter 1 to be string, array given
+#0 [internal function]: CodeIgniter\Debug\Exceptions->errorHandler(2, 'trim() expects ...', '/home/dnzwygdo/...', 22, Array)
+#1 /home/dnzwygdo/app/Controllers/Pelanggan.php(22): trim(Array)
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Pelanggan->baru()
+#3 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Pelanggan))
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2022-02-12 15:22:55 --> trim() expects parameter 1 to be string, array given
+#0 [internal function]: CodeIgniter\Debug\Exceptions->errorHandler(2, 'trim() expects ...', '/home/dnzwygdo/...', 22, Array)
+#1 /home/dnzwygdo/app/Controllers/Pelanggan.php(22): trim(Array)
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Pelanggan->baru()
+#3 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Pelanggan))
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2022-02-12 15:26:38 --> trim() expects parameter 1 to be string, array given
+#0 [internal function]: CodeIgniter\Debug\Exceptions->errorHandler(2, 'trim() expects ...', '/home/dnzwygdo/...', 22, Array)
+#1 /home/dnzwygdo/app/Controllers/Pelanggan.php(22): trim(Array)
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Pelanggan->baru()
+#3 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Pelanggan))
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2022-02-12 15:26:39 --> trim() expects parameter 1 to be string, array given
+#0 [internal function]: CodeIgniter\Debug\Exceptions->errorHandler(2, 'trim() expects ...', '/home/dnzwygdo/...', 22, Array)
+#1 /home/dnzwygdo/app/Controllers/Pelanggan.php(22): trim(Array)
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Pelanggan->baru()
+#3 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Pelanggan))
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2022-02-12 15:26:40 --> trim() expects parameter 1 to be string, array given
+#0 [internal function]: CodeIgniter\Debug\Exceptions->errorHandler(2, 'trim() expects ...', '/home/dnzwygdo/...', 22, Array)
+#1 /home/dnzwygdo/app/Controllers/Pelanggan.php(22): trim(Array)
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Pelanggan->baru()
+#3 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Pelanggan))
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2022-02-12 15:26:41 --> trim() expects parameter 1 to be string, array given
+#0 [internal function]: CodeIgniter\Debug\Exceptions->errorHandler(2, 'trim() expects ...', '/home/dnzwygdo/...', 22, Array)
+#1 /home/dnzwygdo/app/Controllers/Pelanggan.php(22): trim(Array)
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Pelanggan->baru()
+#3 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Pelanggan))
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2022-02-12 15:26:42 --> trim() expects parameter 1 to be string, array given
+#0 [internal function]: CodeIgniter\Debug\Exceptions->errorHandler(2, 'trim() expects ...', '/home/dnzwygdo/...', 22, Array)
+#1 /home/dnzwygdo/app/Controllers/Pelanggan.php(22): trim(Array)
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Pelanggan->baru()
+#3 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Pelanggan))
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2022-02-12 15:26:43 --> trim() expects parameter 1 to be string, array given
+#0 [internal function]: CodeIgniter\Debug\Exceptions->errorHandler(2, 'trim() expects ...', '/home/dnzwygdo/...', 22, Array)
+#1 /home/dnzwygdo/app/Controllers/Pelanggan.php(22): trim(Array)
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Pelanggan->baru()
+#3 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Pelanggan))
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2022-02-12 15:26:44 --> trim() expects parameter 1 to be string, array given
+#0 [internal function]: CodeIgniter\Debug\Exceptions->errorHandler(2, 'trim() expects ...', '/home/dnzwygdo/...', 22, Array)
+#1 /home/dnzwygdo/app/Controllers/Pelanggan.php(22): trim(Array)
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Pelanggan->baru()
+#3 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Pelanggan))
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2022-02-12 15:26:46 --> trim() expects parameter 1 to be string, array given
+#0 [internal function]: CodeIgniter\Debug\Exceptions->errorHandler(2, 'trim() expects ...', '/home/dnzwygdo/...', 22, Array)
+#1 /home/dnzwygdo/app/Controllers/Pelanggan.php(22): trim(Array)
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Pelanggan->baru()
+#3 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Pelanggan))
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2022-02-12 15:26:47 --> trim() expects parameter 1 to be string, array given
+#0 [internal function]: CodeIgniter\Debug\Exceptions->errorHandler(2, 'trim() expects ...', '/home/dnzwygdo/...', 22, Array)
+#1 /home/dnzwygdo/app/Controllers/Pelanggan.php(22): trim(Array)
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Pelanggan->baru()
+#3 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Pelanggan))
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2022-02-12 15:26:48 --> trim() expects parameter 1 to be string, array given
+#0 [internal function]: CodeIgniter\Debug\Exceptions->errorHandler(2, 'trim() expects ...', '/home/dnzwygdo/...', 22, Array)
+#1 /home/dnzwygdo/app/Controllers/Pelanggan.php(22): trim(Array)
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Pelanggan->baru()
+#3 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Pelanggan))
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2022-02-12 15:40:35 --> trim() expects parameter 1 to be string, array given
+#0 [internal function]: CodeIgniter\Debug\Exceptions->errorHandler(2, 'trim() expects ...', '/home/dnzwygdo/...', 22, Array)
+#1 /home/dnzwygdo/app/Controllers/Pelanggan.php(22): trim(Array)
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Pelanggan->baru()
+#3 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Pelanggan))
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2022-02-12 15:42:07 --> trim() expects parameter 1 to be string, array given
+#0 [internal function]: CodeIgniter\Debug\Exceptions->errorHandler(2, 'trim() expects ...', '/home/dnzwygdo/...', 22, Array)
+#1 /home/dnzwygdo/app/Controllers/Pelanggan.php(22): trim(Array)
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Pelanggan->baru()
+#3 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Pelanggan))
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}

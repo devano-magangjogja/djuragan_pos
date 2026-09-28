@@ -1,0 +1,12 @@
+CRITICAL - 2023-03-04 12:53:49 --> form_input(): Argument #2 ($value) must be of type string, null given, called in /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Helpers/form_helper.php on line 123
+in SYSTEMPATH/Helpers/form_helper.php on line 143.
+ 1 SYSTEMPATH/Helpers/form_helper.php(123): form_input()
+ 2 APPPATH/Views/admin/invoice/sunting.php(311): form_hidden()
+ 3 SYSTEMPATH/View/View.php(213): include('APPPATH/Views/admin/invoice/sunting.php')
+ 4 SYSTEMPATH/View/View.php(216): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 5 SYSTEMPATH/Common.php(1137): CodeIgniter\View\View->render()
+ 6 APPPATH/Controllers/Admin/Invoices.php(98): view()
+ 7 SYSTEMPATH/CodeIgniter.php(898): App\Controllers\Admin\Invoices->sunting()
+ 8 SYSTEMPATH/CodeIgniter.php(457): CodeIgniter\CodeIgniter->runController()
+ 9 SYSTEMPATH/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest()
+10 FCPATH/index.php(67): CodeIgniter\CodeIgniter->run()

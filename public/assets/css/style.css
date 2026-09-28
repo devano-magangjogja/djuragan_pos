@@ -1,0 +1,500 @@
+/* Pengganti build Vite (sumber SCSS tidak ada di repo ini).
+   Bootstrap 5.2 dipakai oleh template (JS dimuat dari CDN). */
+@import url("https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css");
+/* Font Awesome 6 Free — kit production (22a9d93fa2) terkunci domain djuragan.com */
+@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css");
+/* Outfit (Fontsource) — variabel weight 100-900, subset latin + latin-ext */
+@import url("https://cdn.jsdelivr.net/npm/@fontsource-variable/outfit/index.css");
+
+/* ------------------------------------------------------------------
+   Tipografi global: timpa font stack bawaan Bootstrap (system-ui).
+   Bootstrap 5.2 membaca variabel ini di `body`, dan form control
+   memakai `font-family: inherit`, jadi seluruh halaman ikut berubah.
+   ------------------------------------------------------------------ */
+:root {
+    --bs-body-font-family: "Outfit Variable", "Outfit", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+/* ------------------------------------------------------------------
+   Ikon `fal fa-*` (Font Awesome Pro light) dipetakan ke FA6 Free solid.
+   Nama Pro-only diganti dengan padanan free yang mirip.
+   ------------------------------------------------------------------ */
+.fal {
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    font-style: normal;
+    font-variant: normal;
+    line-height: 1;
+    display: inline-block;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+}
+.fal.fa-user-circle::before     { content: "\f2bd"; } /* circle-user   */
+.fal.fa-plus::before            { content: "\f067"; }
+.fal.fa-save::before            { content: "\f0c7"; } /* floppy-disk   */
+.fal.fa-circle::before          { content: "\f111"; }
+.fal.fa-bell-slash::before      { content: "\f1f6"; }
+.fal.fa-trash-alt::before       { content: "\f2ed"; } /* trash-can     */
+.fal.fa-trash::before           { content: "\f1f8"; }
+.fal.fa-info-circle::before     { content: "\f05a"; } /* circle-info   */
+.fal.fa-wallet::before          { content: "\f555"; }
+.fal.fa-pencil::before          { content: "\f304"; } /* pen           */
+.fal.fa-user::before            { content: "\f007"; }
+.fal.fa-search::before          { content: "\f002"; }
+.fal.fa-plus-circle::before     { content: "\f055"; } /* circle-plus   */
+.fal.fa-align-left::before      { content: "\f036"; }
+.fal.fa-shipping-fast::before   { content: "\f48b"; }
+.fal.fa-paper-plane::before     { content: "\f1d8"; }
+.fal.fa-money-check-edit::before  { content: "\f53d"; } /* money-check-dollar (Pro→free) */
+.fal.fa-ellipsis-h-alt::before    { content: "\f141"; } /* ellipsis (Pro→free) */
+.fal.fa-ellipsis-h::before        { content: "\f141"; }
+.fal.fa-comment-alt-plus::before  { content: "\f4b5"; } /* comment-plus (Pro→free) */
+.fal.fa-cogs::before              { content: "\f085"; } /* gears */
+.fal.fa-ballot-check::before      { content: "\f14a"; } /* square-check (Pro→free) */
+.fal.fa-arrow-alt-to-right::before { content: "\f101"; } /* angles-right (pager) */
+.fal.fa-arrow-alt-to-left::before  { content: "\f100"; } /* angles-left  (pager) */
+.fal.fa-arrow-alt-right::before    { content: "\f178"; } /* arrow-right-long */
+.fal.fa-arrow-alt-left::before     { content: "\f30a"; } /* arrow-left-long  */
+/* ikon timeline dari fungsi_helper.php */
+.fal.fa-file-alt::before        { content: "\f15b"; } /* file        */
+.fal.fa-layer-group::before     { content: "\f5be"; }
+.fal.fa-print::before           { content: "\f02f"; }
+.fal.fa-waveform-path::before   { content: "\f83e"; } /* wave-square (Pro→free) */
+.fal.fa-cut::before             { content: "\f0c4"; } /* scissors    */
+.fal.fa-tasks::before           { content: "\f0ae"; } /* list-check  */
+.fal.fa-box-alt::before         { content: "\f466"; } /* box (Pro→free) */
+
+/* ------------------------------------------------------------------
+   Timeline status invoice (.timeliner)
+   full = langkah selesai (hijau), half = sebagian (kuning separuh),
+   tanpa class = belum (abu-abu). Li terakhir diberi class "end".
+   ------------------------------------------------------------------ */
+.timeliner {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+}
+.timeliner > li {
+    flex: 0 0 auto;
+    min-width: 2.5rem;
+    padding-top: 0.25rem;
+}
+/* garis penghubung antar langkah */
+.timeliner > li::after {
+    content: "";
+    position: absolute;
+    top: calc(0.25rem + 0.65em);
+    left: 50%;
+    width: 100%;
+    height: 4px;
+    background: #dee2e6;
+    border-radius: 2px;
+    z-index: 0;
+}
+.timeliner > li.full::after { background: #198754; }
+.timeliner > li.half::after { background: linear-gradient(90deg, #198754 50%, #dee2e6 50%); }
+.timeliner > li.end::after  { display: none; }
+.timeliner .icon {
+    position: relative;
+    z-index: 1;
+    background: #fff;
+    padding: 0 0.35rem;
+    font-size: 1.15rem;
+    color: #adb5bd;
+}
+.timeliner > li.full .icon { color: #198754; }
+.timeliner > li.half .icon { color: #ffc107; }
+.timeliner span { font-size: 0.72rem; color: #6c757d; }
+.timeliner abbr { text-decoration: none; cursor: default; }
+
+/* ------------------------------------------------------------------
+   Offcanvas "Pilih Juragan": list-group default Bootstrap berlatar
+   putih, padahal itemnya memakai text-light → tidak terbaca.
+   ------------------------------------------------------------------ */
+#juragan .list-group-item {
+    background-color: transparent;
+    border-color: rgba(255, 255, 255, 0.125);
+}
+#juragan .list-group-item:hover,
+#juragan .list-group-item:focus {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: #fff;
+}
+#juragan .list-group-item .fal { margin-right: 0.4rem; }
+
+/* ------------------------------------------------------------------
+   Halaman autentikasi (masuk, daftar, lupa, reset): kartu dua panel.
+   Kiri = foto bumi malam + judul + logo Seven Inc, kanan = formulir.
+   ------------------------------------------------------------------ */
+.auth-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem 1rem;
+    background: #eef1f5;
+}
+.auth-card {
+    width: 100%;
+    max-width: 62rem;
+    display: grid;
+    grid-template-columns: 1.05fr 1fr;
+    background: #fff;
+    border-radius: 1.5rem;
+    overflow: hidden;
+    box-shadow: 0 1.75rem 3.5rem rgba(11, 17, 32, 0.22);
+}
+
+/* Panel kiri */
+.auth-hero {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 2rem;
+    padding: 2.5rem;
+    color: #fff;
+    background: #0b1120 url('../img/login-bg.png') center / cover no-repeat;
+}
+.auth-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(160deg, rgba(6, 10, 24, 0.82) 0%, rgba(6, 10, 24, 0.45) 45%, rgba(6, 10, 24, 0.88) 100%);
+}
+.auth-hero > * { position: relative; z-index: 1; }
+.auth-hero-title {
+    margin: 0;
+    font-weight: 800;
+    font-size: clamp(1.6rem, 2.4vw, 2.4rem);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: #fff;
+}
+.auth-hero-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+.auth-hero-brand .seven-logo { width: 2.75rem; height: auto; flex: none; }
+.auth-hero-brand-text {
+    font-weight: 700;
+    font-size: 1.05rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+.auth-hero-brand-inc { color: #da251d; }
+
+/* Panel kanan */
+.auth-panel {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 3rem clamp(1.5rem, 3.5vw, 3.25rem);
+}
+.auth-panel-title {
+    margin: 0 0 0.25rem;
+    font-weight: 800;
+    font-size: 1.6rem;
+    letter-spacing: -0.01em;
+    color: #0f172a;
+}
+.auth-panel-sub {
+    margin: 0 0 1.75rem;
+    font-size: 0.925rem;
+    color: #64748b;
+}
+.auth-status .alert { border: 0; border-radius: 0.75rem; font-size: 0.875rem; }
+.auth-field { margin-bottom: 1rem; }
+.auth-panel .form-label {
+    margin-bottom: 0.3rem;
+    font-weight: 600;
+    font-size: 0.825rem;
+    color: #334155;
+}
+.auth-panel .form-control {
+    padding: 0.7rem 0.9rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.75rem;
+    background-color: #f8fafc;
+    color: #0f172a;
+}
+.auth-panel .form-control:focus {
+    background-color: #fff;
+    border-color: #0f172a;
+    box-shadow: 0 0 0 0.2rem rgba(15, 23, 42, 0.08);
+}
+.auth-submit {
+    width: 100%;
+    margin-top: 0.5rem;
+    padding: 0.75rem 1rem;
+    border: 0;
+    border-radius: 0.75rem;
+    background-color: #0f172a;
+    color: #fff;
+    font-weight: 600;
+}
+.auth-submit:hover,
+.auth-submit:focus { background-color: #1e293b; color: #fff; }
+.auth-hint {
+    margin: 1.5rem 0 0;
+    font-size: 0.85rem;
+    text-align: center;
+    color: #64748b;
+}
+.auth-hint a { color: #0f172a; font-weight: 600; }
+.auth-hint a:hover { text-decoration: underline; }
+.auth-hint-sep { margin: 0 0.4rem; color: #cbd5e1; }
+
+/* Responsif: panel foto menyusut di atas formulir */
+@media (max-width: 767.98px) {
+    .auth-page { padding: 1rem 0.75rem; }
+    .auth-card { grid-template-columns: 1fr; max-width: 30rem; }
+    .auth-hero { min-height: 15rem; padding: 1.75rem; gap: 1.25rem; }
+    .auth-panel { padding: 2rem 1.5rem 2.25rem; }
+}
+
+/* ------------------------------------------------------------------
+   Kartu orderan (admin & user: invoices/lihat). Tiga panel sejajar
+   (Pemesan, Produk, Info Biaya), lalu Keterangan + Resi melebar penuh.
+   ------------------------------------------------------------------ */
+.order-card { border: 1px solid #e9edf3; }
+.order-head-main { min-width: 0; }
+.order-head-top {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem 0.75rem;
+}
+.order-head-badge {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.6rem;
+    height: 2.6rem;
+    border: 1px solid #fdd8d5;
+    border-radius: 0.9rem;
+    background: #fff1f0;
+    color: #da251d;
+    font-size: 1.1rem;
+}
+.order-head-id { min-width: 0; }
+.order-head-id .card-title { font-size: 1.15rem; font-weight: 800; letter-spacing: -0.01em; }
+.order-head-pill { padding: 0.42em 0.85em; font-weight: 600; letter-spacing: 0.01em; }
+.order-head-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-left: auto;
+}
+.order-head-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border: 1px solid #e9edf3;
+    border-radius: 0.7rem;
+    background: #f8fafc;
+    color: #334155;
+}
+.order-head-btn:hover { background: #eef2f7; color: #0f172a; }
+.order-head-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.15rem 1.25rem;
+    margin-top: 0.6rem;
+    font-size: 0.9rem;
+    color: #475569;
+}
+.order-head-meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-width: 0;
+}
+.order-head-meta-item > .fal { color: #94a3b8; font-size: 0.85rem; }
+.order-block {
+    height: 100%;
+    padding: 1rem 1.15rem;
+    border: 1px solid #e9edf3;
+    border-radius: 1rem;
+    background: #fcfdfe;
+}
+.order-block-title {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0 0 0.5rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: #64748b;
+}
+.order-block-title .fal { font-size: 0.95rem; color: #94a3b8; }
+.order-block-title.mt-3 {
+    padding-top: 0.75rem;
+    border-top: 1px dashed #e2e8f0;
+}
+.order-block-body { font-size: 0.9rem; line-height: 1.55; color: #1e293b; }
+
+/* Produk */
+.order-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 0.9rem;
+}
+.order-list li {
+    display: flex;
+    align-items: baseline;
+    gap: 0.35rem;
+    padding: 0.2rem 0;
+}
+.order-list-name { flex: 1 1 auto; }
+.order-list-qty { font-weight: 600; white-space: nowrap; }
+.order-list-total {
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px dashed #e2e8f0;
+    font-size: 0.85rem;
+    color: #64748b;
+}
+
+/* Info biaya */
+.order-total {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    padding: 0.8rem 1rem;
+    border-radius: 0.75rem;
+}
+.order-total-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+}
+.order-total-nominal { font-size: 1.35rem; font-weight: 800; }
+.order-cost {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 0.85rem;
+}
+.order-cost li {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.25rem 0;
+}
+.order-cost-label {
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    color: #64748b;
+}
+.order-cost-nominal { font-weight: 700; white-space: nowrap; }
+.order-cost-sep {
+    margin-top: 0.35rem;
+    padding-top: 0.5rem !important;
+    border-top: 1px dashed #e2e8f0;
+}
+
+/* Keterangan: melebar penuh di bawah panel */
+.order-note {
+    padding: 1rem 1.15rem;
+    border: 1px solid #e9edf3;
+    border-left: 3px solid #da251d;
+    border-radius: 1rem;
+    background: #fcfdfe;
+}
+.order-note .keterangan {
+    font-size: 0.9rem;
+    line-height: 1.65;
+    color: #334155;
+    overflow-wrap: anywhere;
+}
+.read-more { font-weight: 600; white-space: nowrap; }
+
+/* Keterangan berlabel */
+.order-note-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+.order-note-groups {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: 0.75rem 1.5rem;
+    margin-top: 0.5rem;
+}
+.order-note-group { min-width: 0; }
+.order-note-label {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-bottom: 0.2rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #64748b;
+}
+.order-note-label .fal { font-size: 0.85rem; color: #da251d; }
+.order-note-items {
+    margin: 0;
+    padding-left: 0.25rem;
+    list-style: none;
+    font-size: 0.88rem;
+    line-height: 1.5;
+    color: #1e293b;
+    overflow-wrap: anywhere;
+}
+.order-note-items li {
+    padding: 0.12rem 0;
+    border-bottom: 1px dotted #e8edf4;
+}
+.order-note-items li:last-child { border-bottom: 0; }
+
+/* Resi */
+.order-resi {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+    gap: 0.75rem;
+}
+.order-resi-card {
+    padding: 0.75rem 0.9rem;
+    border: 1px solid #e9edf3;
+    border-radius: 0.75rem;
+    background: #fff;
+}
+.order-resi-kurir {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #64748b;
+}
+.order-resi-nomor {
+    margin: 0.15rem 0 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: #0f172a;
+    overflow-wrap: anywhere;
+}
+.order-resi-meta { font-size: 0.8rem; color: #64748b; }
+
+@media (max-width: 575.98px) {
+    .order-head-actions { margin-left: 0; }
+    .order-total-nominal { font-size: 1.15rem; }
+}

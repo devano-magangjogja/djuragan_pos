@@ -1,0 +1,585 @@
+CRITICAL - 2021-06-15 09:14:10 --> Invalid argument supplied for foreach()
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/BaseController.php(122): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Invalid argumen...', '/home/dnzwygdo/...', 122, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/User/Invoices.php(148): App\Controllers\BaseController->juraganBy('21')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat()
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2021-06-15 09:15:18 --> Invalid argument supplied for foreach()
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/BaseController.php(122): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Invalid argumen...', '/home/dnzwygdo/...', 122, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/User/Invoices.php(148): App\Controllers\BaseController->juraganBy('21')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat()
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2021-06-15 09:24:50 --> Invalid argument supplied for foreach()
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/BaseController.php(122): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Invalid argumen...', '/home/dnzwygdo/...', 122, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/User/Invoices.php(148): App\Controllers\BaseController->juraganBy('21')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat()
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2021-06-15 09:26:47 --> Invalid argument supplied for foreach()
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/BaseController.php(122): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Invalid argumen...', '/home/dnzwygdo/...', 122, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/User/Invoices.php(148): App\Controllers\BaseController->juraganBy('21')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat()
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2021-06-15 09:33:34 --> Invalid argument supplied for foreach()
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/BaseController.php(122): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Invalid argumen...', '/home/dnzwygdo/...', 122, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/User/Invoices.php(148): App\Controllers\BaseController->juraganBy('21')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat()
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2021-06-15 09:36:51 --> Invalid argument supplied for foreach()
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/BaseController.php(122): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Invalid argumen...', '/home/dnzwygdo/...', 122, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/User/Invoices.php(148): App\Controllers\BaseController->juraganBy('21')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat()
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2021-06-15 09:52:08 --> Invalid argument supplied for foreach()
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/BaseController.php(122): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Invalid argumen...', '/home/dnzwygdo/...', 122, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/User/Invoices.php(148): App\Controllers\BaseController->juraganBy('21')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat()
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2021-06-15 09:58:13 --> Invalid argument supplied for foreach()
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/BaseController.php(122): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Invalid argumen...', '/home/dnzwygdo/...', 122, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/User/Invoices.php(148): App\Controllers\BaseController->juraganBy('21')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat()
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2021-06-15 09:58:27 --> Invalid argument supplied for foreach()
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/BaseController.php(122): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Invalid argumen...', '/home/dnzwygdo/...', 122, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/User/Invoices.php(148): App\Controllers\BaseController->juraganBy('21')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat()
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2021-06-15 10:02:33 --> Invalid argument supplied for foreach()
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/BaseController.php(122): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Invalid argumen...', '/home/dnzwygdo/...', 122, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/User/Invoices.php(148): App\Controllers\BaseController->juraganBy('21')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat()
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2021-06-15 10:02:53 --> Invalid argument supplied for foreach()
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/BaseController.php(122): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Invalid argumen...', '/home/dnzwygdo/...', 122, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/User/Invoices.php(148): App\Controllers\BaseController->juraganBy('21')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat()
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2021-06-15 10:08:46 --> Invalid argument supplied for foreach()
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/BaseController.php(122): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Invalid argumen...', '/home/dnzwygdo/...', 122, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/User/Invoices.php(148): App\Controllers\BaseController->juraganBy('21')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat()
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2021-06-15 10:16:47 --> Invalid argument supplied for foreach()
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/BaseController.php(122): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Invalid argumen...', '/home/dnzwygdo/...', 122, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/User/Invoices.php(148): App\Controllers\BaseController->juraganBy('21')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat()
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2021-06-15 10:22:27 --> Invalid argument supplied for foreach()
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/BaseController.php(122): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Invalid argumen...', '/home/dnzwygdo/...', 122, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/User/Invoices.php(148): App\Controllers\BaseController->juraganBy('21')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat()
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2021-06-15 10:24:57 --> Invalid argument supplied for foreach()
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/BaseController.php(122): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Invalid argumen...', '/home/dnzwygdo/...', 122, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/User/Invoices.php(148): App\Controllers\BaseController->juraganBy('21')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat()
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2021-06-15 10:25:05 --> Invalid argument supplied for foreach()
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/BaseController.php(122): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Invalid argumen...', '/home/dnzwygdo/...', 122, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/User/Invoices.php(148): App\Controllers\BaseController->juraganBy('21')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat()
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2021-06-15 10:29:07 --> Invalid argument supplied for foreach()
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/BaseController.php(122): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Invalid argumen...', '/home/dnzwygdo/...', 122, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/User/Invoices.php(148): App\Controllers\BaseController->juraganBy('21')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat()
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2021-06-15 10:29:24 --> Invalid argument supplied for foreach()
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/BaseController.php(122): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Invalid argumen...', '/home/dnzwygdo/...', 122, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/User/Invoices.php(148): App\Controllers\BaseController->juraganBy('21')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat()
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2021-06-15 10:29:43 --> Invalid argument supplied for foreach()
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/BaseController.php(122): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Invalid argumen...', '/home/dnzwygdo/...', 122, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/User/Invoices.php(148): App\Controllers\BaseController->juraganBy('21')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat()
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2021-06-15 10:35:58 --> Invalid argument supplied for foreach()
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/BaseController.php(122): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Invalid argumen...', '/home/dnzwygdo/...', 122, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/User/Invoices.php(148): App\Controllers\BaseController->juraganBy('21')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat()
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2021-06-15 11:06:16 --> Invalid argument supplied for foreach()
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/BaseController.php(122): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Invalid argumen...', '/home/dnzwygdo/...', 122, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/User/Invoices.php(148): App\Controllers\BaseController->juraganBy('21')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat()
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2021-06-15 11:06:17 --> Invalid argument supplied for foreach()
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/BaseController.php(122): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Invalid argumen...', '/home/dnzwygdo/...', 122, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/User/Invoices.php(148): App\Controllers\BaseController->juraganBy('21')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat()
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2021-06-15 11:37:57 --> Invalid argument supplied for foreach()
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/BaseController.php(122): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Invalid argumen...', '/home/dnzwygdo/...', 122, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/User/Invoices.php(148): App\Controllers\BaseController->juraganBy('21')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat()
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2021-06-15 11:49:26 --> Invalid argument supplied for foreach()
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/BaseController.php(122): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Invalid argumen...', '/home/dnzwygdo/...', 122, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/User/Invoices.php(148): App\Controllers\BaseController->juraganBy('21')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat()
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2021-06-15 11:58:05 --> Invalid argument supplied for foreach()
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/BaseController.php(122): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Invalid argumen...', '/home/dnzwygdo/...', 122, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/User/Invoices.php(148): App\Controllers\BaseController->juraganBy('21')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat()
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2021-06-15 12:55:05 --> Invalid argument supplied for foreach()
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/BaseController.php(122): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Invalid argumen...', '/home/dnzwygdo/...', 122, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/User/Invoices.php(148): App\Controllers\BaseController->juraganBy('21')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat()
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2021-06-15 12:55:07 --> Invalid argument supplied for foreach()
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/BaseController.php(122): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Invalid argumen...', '/home/dnzwygdo/...', 122, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/User/Invoices.php(148): App\Controllers\BaseController->juraganBy('21')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat()
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2021-06-15 12:55:17 --> Invalid argument supplied for foreach()
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/BaseController.php(122): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Invalid argumen...', '/home/dnzwygdo/...', 122, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/User/Invoices.php(148): App\Controllers\BaseController->juraganBy('21')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat()
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2021-06-15 12:55:19 --> Invalid argument supplied for foreach()
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/BaseController.php(122): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Invalid argumen...', '/home/dnzwygdo/...', 122, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/User/Invoices.php(148): App\Controllers\BaseController->juraganBy('21')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat()
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2021-06-15 12:57:00 --> Invalid argument supplied for foreach()
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/BaseController.php(122): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Invalid argumen...', '/home/dnzwygdo/...', 122, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/User/Invoices.php(148): App\Controllers\BaseController->juraganBy('21')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat()
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2021-06-15 13:04:44 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 4096 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 13:12:35 --> Invalid argument supplied for foreach()
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/BaseController.php(122): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Invalid argumen...', '/home/dnzwygdo/...', 122, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/User/Invoices.php(148): App\Controllers\BaseController->juraganBy('21')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat()
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2021-06-15 13:32:26 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 4096 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 13:32:33 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 4096 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 13:32:37 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 4096 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 13:32:40 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 4096 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 13:32:42 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 4096 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 13:32:51 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 4096 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 13:32:53 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 4096 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 13:32:56 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 4096 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 13:32:58 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 4096 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 13:33:01 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 4096 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 13:33:04 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 4096 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 13:33:06 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 4096 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 13:33:09 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 4096 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 13:33:11 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 4096 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 13:33:29 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 4096 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 13:33:31 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 4096 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 13:33:35 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 4096 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 13:35:55 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 4096 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 13:35:57 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 4096 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 13:35:58 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 4096 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 13:36:00 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 4096 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 13:46:55 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 20480 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 13:47:13 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 4096 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 13:49:02 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 4096 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 13:50:05 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 4096 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 13:50:08 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 4096 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 13:50:12 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 4096 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 13:50:15 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 4096 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 14:00:50 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 20480 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 14:04:56 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 4096 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 14:05:22 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 4096 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 14:05:26 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 4096 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 14:14:35 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 20480 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 14:40:59 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 20480 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 14:41:06 --> Invalid argument supplied for foreach()
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/BaseController.php(122): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Invalid argumen...', '/home/dnzwygdo/...', 122, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/User/Invoices.php(148): App\Controllers\BaseController->juraganBy('21')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat()
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2021-06-15 14:41:28 --> Invalid argument supplied for foreach()
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/BaseController.php(122): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Invalid argumen...', '/home/dnzwygdo/...', 122, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/User/Invoices.php(148): App\Controllers\BaseController->juraganBy('21')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat()
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2021-06-15 14:41:54 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 4096 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 14:44:02 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 4096 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 14:44:06 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 4096 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 14:44:10 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 4096 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 14:44:15 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 4096 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 14:46:31 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 20480 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 14:46:44 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 4096 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 14:46:44 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 20480 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 14:47:20 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 20480 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 14:47:50 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 20480 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 14:48:44 --> Invalid argument supplied for foreach()
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/BaseController.php(122): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Invalid argumen...', '/home/dnzwygdo/...', 122, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/User/Invoices.php(148): App\Controllers\BaseController->juraganBy('21')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat()
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2021-06-15 14:48:47 --> Invalid argument supplied for foreach()
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/BaseController.php(122): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Invalid argumen...', '/home/dnzwygdo/...', 122, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/User/Invoices.php(148): App\Controllers\BaseController->juraganBy('21')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat()
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2021-06-15 15:09:35 --> Invalid argument supplied for foreach()
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/BaseController.php(122): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Invalid argumen...', '/home/dnzwygdo/...', 122, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/User/Invoices.php(148): App\Controllers\BaseController->juraganBy('21')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat()
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2021-06-15 15:09:42 --> Invalid argument supplied for foreach()
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/BaseController.php(122): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Invalid argumen...', '/home/dnzwygdo/...', 122, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/User/Invoices.php(148): App\Controllers\BaseController->juraganBy('21')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat()
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2021-06-15 15:09:43 --> Invalid argument supplied for foreach()
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/BaseController.php(122): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Invalid argumen...', '/home/dnzwygdo/...', 122, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/User/Invoices.php(148): App\Controllers\BaseController->juraganBy('21')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat()
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2021-06-15 15:13:10 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 20480 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 15:13:14 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 20480 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 15:13:14 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 20480 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 15:13:49 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 20480 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 15:13:52 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 20480 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 15:13:52 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 20480 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 15:14:00 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 20480 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 15:14:02 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 20480 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 15:14:03 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 20480 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 15:14:04 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 20480 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 15:14:07 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 20480 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 15:14:07 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 20480 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 15:14:07 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 20480 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 15:14:08 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 20480 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 15:14:09 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 20480 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 15:14:10 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 20480 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 15:47:06 --> Invalid argument supplied for foreach()
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/BaseController.php(122): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Invalid argumen...', '/home/dnzwygdo/...', 122, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/User/Invoices.php(148): App\Controllers\BaseController->juraganBy('21')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat()
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2021-06-15 15:47:14 --> Invalid argument supplied for foreach()
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/BaseController.php(122): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Invalid argumen...', '/home/dnzwygdo/...', 122, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/User/Invoices.php(148): App\Controllers\BaseController->juraganBy('21')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat()
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2021-06-15 15:47:14 --> Invalid argument supplied for foreach()
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/BaseController.php(122): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Invalid argumen...', '/home/dnzwygdo/...', 122, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/User/Invoices.php(148): App\Controllers\BaseController->juraganBy('21')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat()
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2021-06-15 15:59:49 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 20480 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 17:35:18 --> Invalid argument supplied for foreach()
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/BaseController.php(122): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Invalid argumen...', '/home/dnzwygdo/...', 122, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/User/Invoices.php(148): App\Controllers\BaseController->juraganBy('21')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat()
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2021-06-15 17:35:23 --> Invalid argument supplied for foreach()
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/BaseController.php(122): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Invalid argumen...', '/home/dnzwygdo/...', 122, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/User/Invoices.php(148): App\Controllers\BaseController->juraganBy('21')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat()
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2021-06-15 17:35:33 --> Invalid argument supplied for foreach()
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/BaseController.php(122): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Invalid argumen...', '/home/dnzwygdo/...', 122, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/User/Invoices.php(148): App\Controllers\BaseController->juraganBy('21')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat()
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2021-06-15 17:35:34 --> Invalid argument supplied for foreach()
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/BaseController.php(122): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Invalid argumen...', '/home/dnzwygdo/...', 122, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/User/Invoices.php(148): App\Controllers\BaseController->juraganBy('21')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat()
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2021-06-15 18:21:27 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 20480 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 18:21:31 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 20480 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 18:21:34 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 20480 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 18:21:48 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 20480 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 18:21:50 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 20480 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 18:21:55 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 20480 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 18:22:23 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 20480 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 18:22:36 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 20480 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 18:49:32 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 20480 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 19:09:13 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 4096 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 19:27:07 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 20480 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 20:33:35 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 20480 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-15 20:35:22 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 20480 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}

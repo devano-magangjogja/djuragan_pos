@@ -1,0 +1,179 @@
+CRITICAL - 2021-11-13 09:31:55 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2021-11-13 10:25:05 --> Unable to connect to the database.
+#0 /home/dnzwygdo/vendor/codeigniter4/framework/system/Database/BaseConnection.php(646): CodeIgniter\Database\BaseConnection->initialize()
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1952): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#2 /home/dnzwygdo/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#3 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Api\Notifikasi->get()
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#6 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#7 {main}
+CRITICAL - 2021-11-13 10:25:06 --> Unable to connect to the database.
+#0 /home/dnzwygdo/vendor/codeigniter4/framework/system/Database/BaseConnection.php(646): CodeIgniter\Database\BaseConnection->initialize()
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1952): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#2 /home/dnzwygdo/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#3 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Api\Notifikasi->get()
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#6 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#7 {main}
+CRITICAL - 2021-11-13 10:38:35 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2021-11-13 10:38:43 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2021-11-13 10:39:34 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2021-11-13 10:39:53 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2021-11-13 10:39:56 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2021-11-13 10:40:06 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2021-11-13 10:53:19 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2021-11-13 12:25:02 --> Unable to connect to the database.
+#0 /home/dnzwygdo/vendor/codeigniter4/framework/system/Database/BaseConnection.php(646): CodeIgniter\Database\BaseConnection->initialize()
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1952): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#2 /home/dnzwygdo/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#3 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Api\Notifikasi->get()
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#6 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#7 {main}
+CRITICAL - 2021-11-13 12:25:05 --> Unable to connect to the database.
+#0 /home/dnzwygdo/vendor/codeigniter4/framework/system/Database/BaseConnection.php(646): CodeIgniter\Database\BaseConnection->initialize()
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1952): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#2 /home/dnzwygdo/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#3 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Api\Notifikasi->get()
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#6 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#7 {main}
+CRITICAL - 2021-11-13 12:25:05 --> Unable to connect to the database.
+#0 /home/dnzwygdo/vendor/codeigniter4/framework/system/Database/BaseConnection.php(646): CodeIgniter\Database\BaseConnection->initialize()
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1952): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#2 /home/dnzwygdo/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#3 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Api\Notifikasi->get()
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#6 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#7 {main}
+CRITICAL - 2021-11-13 12:25:05 --> Unable to connect to the database.
+#0 /home/dnzwygdo/vendor/codeigniter4/framework/system/Database/BaseConnection.php(646): CodeIgniter\Database\BaseConnection->initialize()
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1952): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#2 /home/dnzwygdo/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#3 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Api\Notifikasi->get()
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#6 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#7 {main}
+CRITICAL - 2021-11-13 12:25:05 --> Unable to connect to the database.
+#0 /home/dnzwygdo/vendor/codeigniter4/framework/system/Database/BaseConnection.php(646): CodeIgniter\Database\BaseConnection->initialize()
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1952): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#2 /home/dnzwygdo/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#3 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Api\Notifikasi->get()
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#6 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#7 {main}
+CRITICAL - 2021-11-13 12:25:08 --> Unable to connect to the database.
+#0 /home/dnzwygdo/vendor/codeigniter4/framework/system/Database/BaseConnection.php(646): CodeIgniter\Database\BaseConnection->initialize()
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1952): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#2 /home/dnzwygdo/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#3 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Api\Notifikasi->get()
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#6 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#7 {main}
+CRITICAL - 2021-11-13 14:25:02 --> Unable to connect to the database.
+#0 /home/dnzwygdo/vendor/codeigniter4/framework/system/Database/BaseConnection.php(646): CodeIgniter\Database\BaseConnection->initialize()
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1952): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#2 /home/dnzwygdo/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#3 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Api\Notifikasi->get()
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#6 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#7 {main}
+CRITICAL - 2021-11-13 14:25:02 --> Unable to connect to the database.
+#0 /home/dnzwygdo/vendor/codeigniter4/framework/system/Database/BaseConnection.php(646): CodeIgniter\Database\BaseConnection->initialize()
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1952): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#2 /home/dnzwygdo/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#3 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Api\Notifikasi->get()
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#6 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#7 {main}
+CRITICAL - 2021-11-13 14:25:05 --> Unable to connect to the database.
+#0 /home/dnzwygdo/vendor/codeigniter4/framework/system/Database/BaseConnection.php(646): CodeIgniter\Database\BaseConnection->initialize()
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1952): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#2 /home/dnzwygdo/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#3 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Api\Notifikasi->get()
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#6 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#7 {main}

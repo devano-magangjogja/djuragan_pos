@@ -1,0 +1,52 @@
+ERROR - 2026-05-21 00:59:30 --> mysqli_sql_exception: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ')
+AND `order_invoice`.`deleted_at` IS NULL
+ORDER BY `status_pesanan` ASC, `tangg' at line 3 in /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php:292
+Stack trace:
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(292): mysqli->query('SELECT *\nFROM `...', 0)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(693): CodeIgniter\Database\MySQLi\Connection->execute('SELECT *\nFROM `...')
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(620): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT *\nFROM `...')
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1585): CodeIgniter\Database\BaseConnection->query('SELECT *\nFROM `...', Array, false)
+#4 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Model.php(222): CodeIgniter\Database\BaseBuilder->get()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/BaseModel.php(584): CodeIgniter\Model->doFindAll(20, 0)
+#6 /home/dnzwygdo/djuragancom/app/Models/InvoiceModel.php(74): CodeIgniter\BaseModel->findAll(20, 0)
+#7 /home/dnzwygdo/djuragancom/app/Controllers/Admin/Invoices.php(66): App\Models\InvoiceModel->getAll('semua', 0, Array, 20, 0)
+#8 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(898): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#9 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(457): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#10 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#11 /home/dnzwygdo/public_html/index.php(67): CodeIgniter\CodeIgniter->run()
+#12 {main}
+CRITICAL - 2026-05-21 00:59:30 --> Call to a member function getResult() on bool
+in SYSTEMPATH/Model.php on line 223.
+ 1 SYSTEMPATH/BaseModel.php(584): CodeIgniter\Model->doFindAll(20, 0)
+ 2 APPPATH/Models/InvoiceModel.php(74): CodeIgniter\BaseModel->findAll(20, 0)
+ 3 APPPATH/Controllers/Admin/Invoices.php(66): App\Models\InvoiceModel->getAll('semua', 0, [...], 20, 0)
+ 4 SYSTEMPATH/CodeIgniter.php(898): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+ 5 SYSTEMPATH/CodeIgniter.php(457): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+ 6 SYSTEMPATH/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 FCPATH/index.php(67): CodeIgniter\CodeIgniter->run()
+ERROR - 2026-05-21 00:59:52 --> mysqli_sql_exception: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ')
+AND `order_invoice`.`deleted_at` IS NULL
+ORDER BY `status_pesanan` ASC, `tangg' at line 3 in /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php:292
+Stack trace:
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(292): mysqli->query('SELECT *\nFROM `...', 0)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(693): CodeIgniter\Database\MySQLi\Connection->execute('SELECT *\nFROM `...')
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(620): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT *\nFROM `...')
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1585): CodeIgniter\Database\BaseConnection->query('SELECT *\nFROM `...', Array, false)
+#4 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Model.php(222): CodeIgniter\Database\BaseBuilder->get()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/BaseModel.php(584): CodeIgniter\Model->doFindAll(20, 0)
+#6 /home/dnzwygdo/djuragancom/app/Models/InvoiceModel.php(74): CodeIgniter\BaseModel->findAll(20, 0)
+#7 /home/dnzwygdo/djuragancom/app/Controllers/Admin/Invoices.php(66): App\Models\InvoiceModel->getAll('semua', 0, Array, 20, 0)
+#8 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(898): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#9 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(457): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#10 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#11 /home/dnzwygdo/public_html/index.php(67): CodeIgniter\CodeIgniter->run()
+#12 {main}
+CRITICAL - 2026-05-21 00:59:52 --> Call to a member function getResult() on bool
+in SYSTEMPATH/Model.php on line 223.
+ 1 SYSTEMPATH/BaseModel.php(584): CodeIgniter\Model->doFindAll(20, 0)
+ 2 APPPATH/Models/InvoiceModel.php(74): CodeIgniter\BaseModel->findAll(20, 0)
+ 3 APPPATH/Controllers/Admin/Invoices.php(66): App\Models\InvoiceModel->getAll('semua', 0, [...], 20, 0)
+ 4 SYSTEMPATH/CodeIgniter.php(898): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+ 5 SYSTEMPATH/CodeIgniter.php(457): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+ 6 SYSTEMPATH/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 FCPATH/index.php(67): CodeIgniter\CodeIgniter->run()

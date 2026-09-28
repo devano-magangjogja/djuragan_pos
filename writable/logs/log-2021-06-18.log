@@ -1,0 +1,14 @@
+CRITICAL - 2021-06-18 09:40:34 --> Invalid argument supplied for foreach()
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/BaseController.php(122): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Invalid argumen...', '/home/dnzwygdo/...', 122, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/User/Invoices.php(148): App\Controllers\BaseController->juraganBy('21')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat()
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2021-06-18 12:58:20 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 2097160 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-06-18 20:44:02 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 20480 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}

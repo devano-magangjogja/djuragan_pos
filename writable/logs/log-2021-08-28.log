@@ -1,0 +1,129 @@
+CRITICAL - 2021-08-28 10:28:32 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2021-08-28 10:28:44 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2021-08-28 10:29:01 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2021-08-28 10:29:10 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2021-08-28 10:38:52 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2021-08-28 10:40:40 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2021-08-28 10:40:50 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2021-08-28 10:43:28 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2021-08-28 11:16:17 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 20480 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-08-28 16:38:12 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/Admin/Invoices.php(80): view('admin/invoice/l...', Array)
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#6 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2021-08-28 19:32:32 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 20480 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-08-28 19:44:13 --> Allowed memory size of 33554432 bytes exhausted (tried to allocate 20480 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2021-08-28 19:58:29 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Views/user/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('user/invoice/li...', Array, true)
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/User/Invoices.php(179): view('user/invoice/li...', Array)
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat('a09fb41208731a2...', 'belum-proses')
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#6 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2021-08-28 19:59:07 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Views/user/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('user/invoice/li...', Array, true)
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/User/Invoices.php(179): view('user/invoice/li...', Array)
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat('a09fb41208731a2...', 'belum-proses')
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#6 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2021-08-28 20:01:19 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Views/user/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('user/invoice/li...', Array, true)
+#3 /home/dnzwygdo/public_html/djuragan.com/orderan/app/Controllers/User/Invoices.php(179): view('user/invoice/li...', Array)
+#4 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat('a09fb41208731a2...', 'semua')
+#5 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#6 /home/dnzwygdo/public_html/djuragan.com/orderan/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/djuragan.com/orderan/public/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}

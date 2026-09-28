@@ -1,0 +1,642 @@
+ERROR - 2022-03-16 09:58:03 --> Table 'dnzwygdo_juragan1.invoice' doesn't exist
+ERROR - 2022-03-16 09:58:03 --> Table 'dnzwygdo_juragan1.invoice' doesn't exist
+CRITICAL - 2022-03-16 09:58:03 --> Call to a member function getResult() on bool
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Api\Notifikasi->get()
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#3 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#4 {main}
+ERROR - 2022-03-16 09:58:06 --> Table 'dnzwygdo_juragan1.invoice' doesn't exist
+ERROR - 2022-03-16 09:58:06 --> Table 'dnzwygdo_juragan1.invoice' doesn't exist
+CRITICAL - 2022-03-16 09:58:06 --> Call to a member function getResult() on bool
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Api\Notifikasi->get()
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#3 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#4 {main}
+ERROR - 2022-03-16 09:58:10 --> Table 'dnzwygdo_juragan1.user' doesn't exist
+CRITICAL - 2022-03-16 09:58:10 --> Call to a member function getFirstRow() on bool
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/BaseModel.php(622): CodeIgniter\Model->doFirst()
+#1 /home/dnzwygdo/djuragancom/app/Controllers/Auth.php(37): CodeIgniter\BaseModel->first()
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Auth->index()
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Auth))
+#4 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#6 {main}
+ERROR - 2022-03-16 09:58:11 --> Table 'dnzwygdo_juragan1.invoice' doesn't exist
+ERROR - 2022-03-16 09:58:11 --> Table 'dnzwygdo_juragan1.invoice' doesn't exist
+CRITICAL - 2022-03-16 09:58:11 --> Call to a member function getResult() on bool
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Api\Notifikasi->get()
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#3 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#4 {main}
+ERROR - 2022-03-16 09:58:13 --> Table 'dnzwygdo_juragan1.invoice' doesn't exist
+ERROR - 2022-03-16 09:58:13 --> Table 'dnzwygdo_juragan1.invoice' doesn't exist
+CRITICAL - 2022-03-16 09:58:13 --> Call to a member function getResult() on bool
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Api\Notifikasi->get()
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#3 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#4 {main}
+ERROR - 2022-03-16 09:58:16 --> Table 'dnzwygdo_juragan1.invoice' doesn't exist
+ERROR - 2022-03-16 09:58:16 --> Table 'dnzwygdo_juragan1.invoice' doesn't exist
+CRITICAL - 2022-03-16 09:58:16 --> Call to a member function getResult() on bool
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Api\Notifikasi->get()
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#3 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#4 {main}
+ERROR - 2022-03-16 09:58:16 --> Table 'dnzwygdo_juragan1.user' doesn't exist
+CRITICAL - 2022-03-16 09:58:16 --> Call to a member function getFirstRow() on bool
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/BaseModel.php(622): CodeIgniter\Model->doFirst()
+#1 /home/dnzwygdo/djuragancom/app/Controllers/Auth.php(37): CodeIgniter\BaseModel->first()
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Auth->index()
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Auth))
+#4 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#6 {main}
+ERROR - 2022-03-16 09:58:24 --> Table 'dnzwygdo_juragan1.invoice' doesn't exist
+ERROR - 2022-03-16 09:58:24 --> Table 'dnzwygdo_juragan1.invoice' doesn't exist
+CRITICAL - 2022-03-16 09:58:24 --> Call to a member function getResult() on bool
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Api\Notifikasi->get()
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#3 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#4 {main}
+ERROR - 2022-03-16 09:58:26 --> Table 'dnzwygdo_juragan1.invoice' doesn't exist
+ERROR - 2022-03-16 09:58:26 --> Table 'dnzwygdo_juragan1.invoice' doesn't exist
+CRITICAL - 2022-03-16 09:58:26 --> Call to a member function getResult() on bool
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Api\Notifikasi->get()
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#3 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#4 {main}
+ERROR - 2022-03-16 09:58:28 --> Table 'dnzwygdo_juragan1.invoice' doesn't exist
+ERROR - 2022-03-16 09:58:28 --> Table 'dnzwygdo_juragan1.invoice' doesn't exist
+CRITICAL - 2022-03-16 09:58:28 --> Call to a member function getResult() on bool
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Api\Notifikasi->get()
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#3 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#4 {main}
+ERROR - 2022-03-16 09:58:31 --> Table 'dnzwygdo_juragan1.invoice' doesn't exist
+ERROR - 2022-03-16 09:58:31 --> Table 'dnzwygdo_juragan1.invoice' doesn't exist
+CRITICAL - 2022-03-16 09:58:31 --> Call to a member function getResult() on bool
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Api\Notifikasi->get()
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#3 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#4 {main}
+ERROR - 2022-03-16 09:58:34 --> Table 'dnzwygdo_juragan1.invoice' doesn't exist
+ERROR - 2022-03-16 09:58:34 --> Table 'dnzwygdo_juragan1.invoice' doesn't exist
+CRITICAL - 2022-03-16 09:58:34 --> Call to a member function getResult() on bool
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Api\Notifikasi->get()
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#3 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#4 {main}
+ERROR - 2022-03-16 09:58:36 --> Table 'dnzwygdo_juragan1.invoice' doesn't exist
+ERROR - 2022-03-16 09:58:36 --> Table 'dnzwygdo_juragan1.invoice' doesn't exist
+CRITICAL - 2022-03-16 09:58:36 --> Call to a member function getResult() on bool
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Api\Notifikasi->get()
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#3 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#4 {main}
+ERROR - 2022-03-16 09:58:43 --> Table 'dnzwygdo_juragan1.invoice' doesn't exist
+CRITICAL - 2022-03-16 09:58:43 --> Table 'dnzwygdo_juragan1.invoice' doesn't exist
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(292): mysqli->query('SELECT COUNT(*)...', 0)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(670): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COUNT(*)...')
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(598): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COUNT(*)...')
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1539): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#4 /home/dnzwygdo/djuragancom/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Api\Notifikasi->get()
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#9 {main}
+ERROR - 2022-03-16 09:58:45 --> Table 'dnzwygdo_juragan1.user' doesn't exist
+CRITICAL - 2022-03-16 09:58:45 --> Table 'dnzwygdo_juragan1.user' doesn't exist
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(292): mysqli->query('SELECT *\nFROM `...', 0)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(670): CodeIgniter\Database\MySQLi\Connection->execute('SELECT *\nFROM `...')
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(598): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT *\nFROM `...')
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1455): CodeIgniter\Database\BaseConnection->query('SELECT *\nFROM `...', Array, false)
+#4 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Model.php(210): CodeIgniter\Database\BaseBuilder->get()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/BaseModel.php(622): CodeIgniter\Model->doFirst()
+#6 /home/dnzwygdo/djuragancom/app/Controllers/Auth.php(37): CodeIgniter\BaseModel->first()
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Auth->index()
+#8 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Auth))
+#9 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#10 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#11 {main}
+ERROR - 2022-03-16 09:58:46 --> Table 'dnzwygdo_juragan1.invoice' doesn't exist
+CRITICAL - 2022-03-16 09:58:46 --> Table 'dnzwygdo_juragan1.invoice' doesn't exist
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(292): mysqli->query('SELECT COUNT(*)...', 0)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(670): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COUNT(*)...')
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(598): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COUNT(*)...')
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1539): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#4 /home/dnzwygdo/djuragancom/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Api\Notifikasi->get()
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#9 {main}
+ERROR - 2022-03-16 09:58:53 --> Table 'dnzwygdo_juragan1.invoice' doesn't exist
+CRITICAL - 2022-03-16 09:58:53 --> Table 'dnzwygdo_juragan1.invoice' doesn't exist
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(292): mysqli->query('SELECT COUNT(*)...', 0)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(670): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COUNT(*)...')
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(598): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COUNT(*)...')
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1539): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#4 /home/dnzwygdo/djuragancom/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Api\Notifikasi->get()
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#9 {main}
+ERROR - 2022-03-16 09:58:56 --> Table 'dnzwygdo_juragan1.invoice' doesn't exist
+CRITICAL - 2022-03-16 09:58:56 --> Table 'dnzwygdo_juragan1.invoice' doesn't exist
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(292): mysqli->query('SELECT COUNT(*)...', 0)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(670): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COUNT(*)...')
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(598): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COUNT(*)...')
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1539): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#4 /home/dnzwygdo/djuragancom/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Api\Notifikasi->get()
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#9 {main}
+ERROR - 2022-03-16 09:59:03 --> Table 'dnzwygdo_juragan1.invoice' doesn't exist
+CRITICAL - 2022-03-16 09:59:03 --> Table 'dnzwygdo_juragan1.invoice' doesn't exist
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(292): mysqli->query('SELECT COUNT(*)...', 0)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(670): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COUNT(*)...')
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(598): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COUNT(*)...')
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1539): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#4 /home/dnzwygdo/djuragancom/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Api\Notifikasi->get()
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#9 {main}
+ERROR - 2022-03-16 09:59:06 --> Table 'dnzwygdo_juragan1.invoice' doesn't exist
+CRITICAL - 2022-03-16 09:59:06 --> Table 'dnzwygdo_juragan1.invoice' doesn't exist
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(292): mysqli->query('SELECT COUNT(*)...', 0)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(670): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COUNT(*)...')
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(598): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COUNT(*)...')
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1539): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#4 /home/dnzwygdo/djuragancom/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Api\Notifikasi->get()
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#9 {main}
+ERROR - 2022-03-16 09:59:11 --> Table 'dnzwygdo_juragan1.invoice' doesn't exist
+CRITICAL - 2022-03-16 09:59:11 --> Table 'dnzwygdo_juragan1.invoice' doesn't exist
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(292): mysqli->query('SELECT COUNT(*)...', 0)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(670): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COUNT(*)...')
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(598): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COUNT(*)...')
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1539): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#4 /home/dnzwygdo/djuragancom/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Api\Notifikasi->get()
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#9 {main}
+ERROR - 2022-03-16 09:59:13 --> Table 'dnzwygdo_juragan1.invoice' doesn't exist
+CRITICAL - 2022-03-16 09:59:13 --> Table 'dnzwygdo_juragan1.invoice' doesn't exist
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(292): mysqli->query('SELECT COUNT(*)...', 0)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(670): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COUNT(*)...')
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(598): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COUNT(*)...')
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1539): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#4 /home/dnzwygdo/djuragancom/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Api\Notifikasi->get()
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#9 {main}
+ERROR - 2022-03-16 09:59:15 --> Table 'dnzwygdo_juragan1.invoice' doesn't exist
+CRITICAL - 2022-03-16 09:59:15 --> Table 'dnzwygdo_juragan1.invoice' doesn't exist
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(292): mysqli->query('SELECT COUNT(*)...', 0)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(670): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COUNT(*)...')
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(598): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COUNT(*)...')
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1539): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#4 /home/dnzwygdo/djuragancom/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Api\Notifikasi->get()
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#9 {main}
+ERROR - 2022-03-16 09:59:16 --> Table 'dnzwygdo_juragan1.invoice' doesn't exist
+CRITICAL - 2022-03-16 09:59:16 --> Table 'dnzwygdo_juragan1.invoice' doesn't exist
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(292): mysqli->query('SELECT COUNT(*)...', 0)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(670): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COUNT(*)...')
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(598): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COUNT(*)...')
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1539): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#4 /home/dnzwygdo/djuragancom/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Api\Notifikasi->get()
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#9 {main}
+ERROR - 2022-03-16 09:59:19 --> Table 'dnzwygdo_juragan1.invoice' doesn't exist
+CRITICAL - 2022-03-16 09:59:19 --> Table 'dnzwygdo_juragan1.invoice' doesn't exist
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(292): mysqli->query('SELECT COUNT(*)...', 0)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(670): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COUNT(*)...')
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(598): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COUNT(*)...')
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1539): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#4 /home/dnzwygdo/djuragancom/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Api\Notifikasi->get()
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#9 {main}
+ERROR - 2022-03-16 09:59:23 --> Unknown column 'n.for' in 'where clause'
+CRITICAL - 2022-03-16 09:59:23 --> Unknown column 'n.for' in 'where clause'
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(292): mysqli->query('SELECT COUNT(*)...', 0)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(670): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COUNT(*)...')
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(598): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COUNT(*)...')
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1539): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#4 /home/dnzwygdo/djuragancom/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Api\Notifikasi->get()
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#9 {main}
+ERROR - 2022-03-16 09:59:26 --> Unknown column 'n.for' in 'where clause'
+CRITICAL - 2022-03-16 09:59:26 --> Unknown column 'n.for' in 'where clause'
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(292): mysqli->query('SELECT COUNT(*)...', 0)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(670): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COUNT(*)...')
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(598): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COUNT(*)...')
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1539): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#4 /home/dnzwygdo/djuragancom/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Api\Notifikasi->get()
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#9 {main}
+ERROR - 2022-03-16 09:59:28 --> Unknown column 'n.for' in 'where clause'
+CRITICAL - 2022-03-16 09:59:28 --> Unknown column 'n.for' in 'where clause'
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(292): mysqli->query('SELECT COUNT(*)...', 0)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(670): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COUNT(*)...')
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(598): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COUNT(*)...')
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1539): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#4 /home/dnzwygdo/djuragancom/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Api\Notifikasi->get()
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#9 {main}
+ERROR - 2022-03-16 09:59:33 --> Unknown column 'n.for' in 'where clause'
+CRITICAL - 2022-03-16 09:59:33 --> Unknown column 'n.for' in 'where clause'
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(292): mysqli->query('SELECT COUNT(*)...', 0)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(670): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COUNT(*)...')
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(598): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COUNT(*)...')
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1539): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#4 /home/dnzwygdo/djuragancom/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Api\Notifikasi->get()
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#9 {main}
+ERROR - 2022-03-16 09:59:36 --> Unknown column 'n.for' in 'where clause'
+CRITICAL - 2022-03-16 09:59:36 --> Unknown column 'n.for' in 'where clause'
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(292): mysqli->query('SELECT COUNT(*)...', 0)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(670): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COUNT(*)...')
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(598): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COUNT(*)...')
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1539): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#4 /home/dnzwygdo/djuragancom/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Api\Notifikasi->get()
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#9 {main}
+ERROR - 2022-03-16 09:59:43 --> Unknown column 'n.for' in 'where clause'
+CRITICAL - 2022-03-16 09:59:43 --> Unknown column 'n.for' in 'where clause'
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(292): mysqli->query('SELECT COUNT(*)...', 0)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(670): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COUNT(*)...')
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(598): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COUNT(*)...')
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1539): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#4 /home/dnzwygdo/djuragancom/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Api\Notifikasi->get()
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#9 {main}
+ERROR - 2022-03-16 09:59:46 --> Unknown column 'n.for' in 'where clause'
+CRITICAL - 2022-03-16 09:59:46 --> Unknown column 'n.for' in 'where clause'
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(292): mysqli->query('SELECT COUNT(*)...', 0)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(670): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COUNT(*)...')
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(598): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COUNT(*)...')
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1539): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#4 /home/dnzwygdo/djuragancom/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Api\Notifikasi->get()
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#9 {main}
+ERROR - 2022-03-16 09:59:53 --> Unknown column 'n.for' in 'where clause'
+CRITICAL - 2022-03-16 09:59:53 --> Unknown column 'n.for' in 'where clause'
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(292): mysqli->query('SELECT COUNT(*)...', 0)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(670): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COUNT(*)...')
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(598): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COUNT(*)...')
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1539): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#4 /home/dnzwygdo/djuragancom/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Api\Notifikasi->get()
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#9 {main}
+ERROR - 2022-03-16 09:59:56 --> Unknown column 'n.for' in 'where clause'
+CRITICAL - 2022-03-16 09:59:56 --> Unknown column 'n.for' in 'where clause'
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(292): mysqli->query('SELECT COUNT(*)...', 0)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(670): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COUNT(*)...')
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(598): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COUNT(*)...')
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1539): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#4 /home/dnzwygdo/djuragancom/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Api\Notifikasi->get()
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#9 {main}
+ERROR - 2022-03-16 10:00:04 --> Unknown column 'n.for' in 'where clause'
+CRITICAL - 2022-03-16 10:00:04 --> Unknown column 'n.for' in 'where clause'
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(292): mysqli->query('SELECT COUNT(*)...', 0)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(670): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COUNT(*)...')
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(598): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COUNT(*)...')
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1539): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#4 /home/dnzwygdo/djuragancom/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Api\Notifikasi->get()
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#9 {main}
+ERROR - 2022-03-16 10:00:06 --> Unknown column 'n.for' in 'where clause'
+CRITICAL - 2022-03-16 10:00:06 --> Unknown column 'n.for' in 'where clause'
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(292): mysqli->query('SELECT COUNT(*)...', 0)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(670): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COUNT(*)...')
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(598): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COUNT(*)...')
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1539): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#4 /home/dnzwygdo/djuragancom/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Api\Notifikasi->get()
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#9 {main}
+ERROR - 2022-03-16 10:00:12 --> Unknown column 'n.for' in 'where clause'
+CRITICAL - 2022-03-16 10:00:12 --> Unknown column 'n.for' in 'where clause'
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(292): mysqli->query('SELECT COUNT(*)...', 0)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(670): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COUNT(*)...')
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(598): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COUNT(*)...')
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1539): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#4 /home/dnzwygdo/djuragancom/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Api\Notifikasi->get()
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#9 {main}
+ERROR - 2022-03-16 10:00:13 --> Unknown column 'n.for' in 'where clause'
+CRITICAL - 2022-03-16 10:00:13 --> Unknown column 'n.for' in 'where clause'
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(292): mysqli->query('SELECT COUNT(*)...', 0)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(670): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COUNT(*)...')
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(598): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COUNT(*)...')
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1539): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#4 /home/dnzwygdo/djuragancom/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Api\Notifikasi->get()
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#9 {main}
+ERROR - 2022-03-16 10:00:16 --> Unknown column 'n.for' in 'where clause'
+CRITICAL - 2022-03-16 10:00:16 --> Unknown column 'n.for' in 'where clause'
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(292): mysqli->query('SELECT COUNT(*)...', 0)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(670): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COUNT(*)...')
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(598): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COUNT(*)...')
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1539): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#4 /home/dnzwygdo/djuragancom/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Api\Notifikasi->get()
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#9 {main}
+ERROR - 2022-03-16 10:00:24 --> Unknown column 'n.for' in 'where clause'
+CRITICAL - 2022-03-16 10:00:24 --> Unknown column 'n.for' in 'where clause'
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(292): mysqli->query('SELECT COUNT(*)...', 0)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(670): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COUNT(*)...')
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(598): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COUNT(*)...')
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1539): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#4 /home/dnzwygdo/djuragancom/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Api\Notifikasi->get()
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#9 {main}
+ERROR - 2022-03-16 10:00:26 --> Unknown column 'n.for' in 'where clause'
+CRITICAL - 2022-03-16 10:00:26 --> Unknown column 'n.for' in 'where clause'
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(292): mysqli->query('SELECT COUNT(*)...', 0)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(670): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COUNT(*)...')
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(598): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COUNT(*)...')
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1539): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#4 /home/dnzwygdo/djuragancom/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Api\Notifikasi->get()
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#9 {main}
+ERROR - 2022-03-16 10:00:28 --> Unknown column 'n.for' in 'where clause'
+CRITICAL - 2022-03-16 10:00:28 --> Unknown column 'n.for' in 'where clause'
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(292): mysqli->query('SELECT COUNT(*)...', 0)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(670): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COUNT(*)...')
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(598): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COUNT(*)...')
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1539): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#4 /home/dnzwygdo/djuragancom/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Api\Notifikasi->get()
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#9 {main}
+ERROR - 2022-03-16 10:00:34 --> Unknown column 'n.for' in 'where clause'
+CRITICAL - 2022-03-16 10:00:34 --> Unknown column 'n.for' in 'where clause'
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(292): mysqli->query('SELECT COUNT(*)...', 0)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(670): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COUNT(*)...')
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(598): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COUNT(*)...')
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1539): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#4 /home/dnzwygdo/djuragancom/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Api\Notifikasi->get()
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#9 {main}
+ERROR - 2022-03-16 10:00:36 --> Unknown column 'n.for' in 'where clause'
+CRITICAL - 2022-03-16 10:00:36 --> Unknown column 'n.for' in 'where clause'
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(292): mysqli->query('SELECT COUNT(*)...', 0)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(670): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COUNT(*)...')
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(598): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COUNT(*)...')
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1539): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#4 /home/dnzwygdo/djuragancom/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Api\Notifikasi->get()
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#9 {main}
+ERROR - 2022-03-16 10:00:43 --> Unknown column 'n.for' in 'where clause'
+CRITICAL - 2022-03-16 10:00:43 --> Unknown column 'n.for' in 'where clause'
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(292): mysqli->query('SELECT COUNT(*)...', 0)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(670): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COUNT(*)...')
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(598): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COUNT(*)...')
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1539): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#4 /home/dnzwygdo/djuragancom/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Api\Notifikasi->get()
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#9 {main}
+ERROR - 2022-03-16 10:00:46 --> Unknown column 'n.for' in 'where clause'
+CRITICAL - 2022-03-16 10:00:46 --> Unknown column 'n.for' in 'where clause'
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(292): mysqli->query('SELECT COUNT(*)...', 0)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(670): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COUNT(*)...')
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(598): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COUNT(*)...')
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1539): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#4 /home/dnzwygdo/djuragancom/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Api\Notifikasi->get()
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#9 {main}
+ERROR - 2022-03-16 10:00:56 --> Unknown column 'n.for' in 'where clause'
+CRITICAL - 2022-03-16 10:00:56 --> Unknown column 'n.for' in 'where clause'
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(292): mysqli->query('SELECT COUNT(*)...', 0)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(670): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COUNT(*)...')
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(598): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COUNT(*)...')
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1539): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#4 /home/dnzwygdo/djuragancom/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Api\Notifikasi->get()
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#9 {main}
+ERROR - 2022-03-16 10:01:06 --> Unknown column 'n.for' in 'where clause'
+CRITICAL - 2022-03-16 10:01:06 --> Unknown column 'n.for' in 'where clause'
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(292): mysqli->query('SELECT COUNT(*)...', 0)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(670): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COUNT(*)...')
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(598): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COUNT(*)...')
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1539): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#4 /home/dnzwygdo/djuragancom/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Api\Notifikasi->get()
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#9 {main}
+ERROR - 2022-03-16 10:01:08 --> Unknown column 'n.for' in 'where clause'
+CRITICAL - 2022-03-16 10:01:08 --> Unknown column 'n.for' in 'where clause'
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(292): mysqli->query('SELECT COUNT(*)...', 0)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(670): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COUNT(*)...')
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(598): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COUNT(*)...')
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1539): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#4 /home/dnzwygdo/djuragancom/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Api\Notifikasi->get()
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#9 {main}
+ERROR - 2022-03-16 10:01:08 --> Unknown column 'n.for' in 'where clause'
+CRITICAL - 2022-03-16 10:01:08 --> Unknown column 'n.for' in 'where clause'
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(292): mysqli->query('SELECT COUNT(*)...', 0)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(670): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COUNT(*)...')
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(598): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COUNT(*)...')
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1539): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#4 /home/dnzwygdo/djuragancom/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Api\Notifikasi->get()
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#9 {main}
+ERROR - 2022-03-16 10:01:12 --> Unknown column 'n.for' in 'where clause'
+CRITICAL - 2022-03-16 10:01:12 --> Unknown column 'n.for' in 'where clause'
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(292): mysqli->query('SELECT COUNT(*)...', 0)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(670): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COUNT(*)...')
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(598): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COUNT(*)...')
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1539): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#4 /home/dnzwygdo/djuragancom/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Api\Notifikasi->get()
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#9 {main}
+ERROR - 2022-03-16 10:01:17 --> Unknown column 'n.for' in 'where clause'
+CRITICAL - 2022-03-16 10:01:17 --> Unknown column 'n.for' in 'where clause'
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(292): mysqli->query('SELECT COUNT(*)...', 0)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(670): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COUNT(*)...')
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(598): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COUNT(*)...')
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1539): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#4 /home/dnzwygdo/djuragancom/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Api\Notifikasi->get()
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#9 {main}
+ERROR - 2022-03-16 10:01:28 --> Unknown column 'n.for' in 'where clause'
+CRITICAL - 2022-03-16 10:01:28 --> Unknown column 'n.for' in 'where clause'
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(292): mysqli->query('SELECT COUNT(*)...', 0)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(670): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COUNT(*)...')
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(598): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COUNT(*)...')
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1539): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#4 /home/dnzwygdo/djuragancom/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Api\Notifikasi->get()
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#9 {main}
+ERROR - 2022-03-16 10:02:08 --> Unknown column 'n.for' in 'where clause'
+CRITICAL - 2022-03-16 10:02:08 --> Unknown column 'n.for' in 'where clause'
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(292): mysqli->query('SELECT COUNT(*)...', 0)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(670): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COUNT(*)...')
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(598): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COUNT(*)...')
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1539): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#4 /home/dnzwygdo/djuragancom/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Api\Notifikasi->get()
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#9 {main}
+ERROR - 2022-03-16 10:02:12 --> Unknown column 'n.for' in 'where clause'
+CRITICAL - 2022-03-16 10:02:12 --> Unknown column 'n.for' in 'where clause'
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(292): mysqli->query('SELECT COUNT(*)...', 0)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(670): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COUNT(*)...')
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(598): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COUNT(*)...')
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1539): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#4 /home/dnzwygdo/djuragancom/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Api\Notifikasi->get()
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#9 {main}
+ERROR - 2022-03-16 10:02:28 --> Unknown column 'n.for' in 'where clause'
+CRITICAL - 2022-03-16 10:02:28 --> Unknown column 'n.for' in 'where clause'
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(292): mysqli->query('SELECT COUNT(*)...', 0)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(670): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COUNT(*)...')
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(598): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COUNT(*)...')
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1539): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#4 /home/dnzwygdo/djuragancom/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Api\Notifikasi->get()
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#9 {main}
+CRITICAL - 2022-03-16 10:13:10 --> Allowed memory size of 134217728 bytes exhausted (tried to allocate 8388616 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2022-03-16 10:13:34 --> Allowed memory size of 134217728 bytes exhausted (tried to allocate 8388616 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2022-03-16 10:13:53 --> Allowed memory size of 134217728 bytes exhausted (tried to allocate 8388616 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2022-03-16 10:15:30 --> Allowed memory size of 134217728 bytes exhausted (tried to allocate 8388616 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2022-03-16 10:17:10 --> Allowed memory size of 134217728 bytes exhausted (tried to allocate 8388616 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}
+CRITICAL - 2022-03-16 10:17:36 --> Allowed memory size of 134217728 bytes exhausted (tried to allocate 8388616 bytes)
+#0 [internal function]: CodeIgniter\Debug\Exceptions->shutdownHandler()
+#1 {main}

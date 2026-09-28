@@ -1,0 +1,40 @@
+ERROR - 2026-08-20 11:40:32 --> Error connecting to the database: mysqli_sql_exception: No such file or directory in /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php:171
+Stack trace:
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(171): mysqli->real_connect('localhost', 'dnzwygdo_jura94...', 'v[,S+a7zlZd0', 'dnzwygdo_juraga...', 3306, '', 0)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(382): CodeIgniter\Database\MySQLi\Connection->connect(false)
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(588): CodeIgniter\Database\BaseConnection->initialize()
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1669): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#4 /home/dnzwygdo/djuragancom/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(898): App\Controllers\Api\Notifikasi->get()
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(457): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /home/dnzwygdo/public_html/index.php(67): CodeIgniter\CodeIgniter->run()
+#9 {main}
+
+Next CodeIgniter\Database\Exceptions\DatabaseException: No such file or directory in /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php:215
+Stack trace:
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(382): CodeIgniter\Database\MySQLi\Connection->connect(false)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(588): CodeIgniter\Database\BaseConnection->initialize()
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1669): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#3 /home/dnzwygdo/djuragancom/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#4 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(898): App\Controllers\Api\Notifikasi->get()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(457): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(67): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2026-08-20 11:40:32 --> Unable to connect to the database.
+Main connection [MySQLi]: No such file or directory
+in SYSTEMPATH/Database/BaseConnection.php on line 418.
+ 1 SYSTEMPATH/Database/BaseConnection.php(588): CodeIgniter\Database\BaseConnection->initialize()
+ 2 SYSTEMPATH/Database/BaseBuilder.php(1669): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*) AS `numrows`
+FROM `order_notifikasi` `n`
+LEFT JOIN `order_invoice` `i` ON `n`.`invoice_id` = `i`.`id_invoice`
+LEFT JOIN `order_user` `p` ON `n`.`from` = `p`.`id`
+LEFT JOIN `order_juragan` `j` ON `j`.`id_juragan` = `n`.`juragan_id`
+WHERE `n`.`for` = :n.for:
+AND `n`.`read_at` IS NULL', [...], false)
+ 3 APPPATH/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+ 4 SYSTEMPATH/CodeIgniter.php(898): App\Controllers\Api\Notifikasi->get()
+ 5 SYSTEMPATH/CodeIgniter.php(457): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+ 6 SYSTEMPATH/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 FCPATH/index.php(67): CodeIgniter\CodeIgniter->run()

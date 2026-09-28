@@ -1,0 +1,38 @@
+ERROR - 2022-07-20 15:03:43 --> You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ')
+AND `order_invoice`.`deleted_at` IS NULL
+ORDER BY `status_pesanan` ASC, `tangg' at line 3
+CRITICAL - 2022-07-20 15:03:43 --> Call to a member function getResult() on bool
+in SYSTEMPATH/Model.php on line 223.
+ 1 SYSTEMPATH/BaseModel.php(584): CodeIgniter\Model->doFindAll(20, 0)
+ 2 APPPATH/Models/InvoiceModel.php(73): CodeIgniter\BaseModel->findAll(20, 0)
+ 3 APPPATH/Controllers/Admin/Invoices.php(67): App\Models\InvoiceModel->getAll('semua', 0, [...], 20, 0)
+ 4 SYSTEMPATH/CodeIgniter.php(896): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+ 5 SYSTEMPATH/CodeIgniter.php(466): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+ 6 SYSTEMPATH/CodeIgniter.php(349): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 FCPATH/index.php(55): CodeIgniter\CodeIgniter->run()
+ERROR - 2022-07-20 19:23:15 --> You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ')
+AND `juragan_id` = 3
+AND `order_invoice`.`deleted_at` IS NULL
+ORDER BY `status' at line 3
+CRITICAL - 2022-07-20 19:23:15 --> Call to a member function getResult() on bool
+in SYSTEMPATH/Model.php on line 223.
+ 1 SYSTEMPATH/BaseModel.php(584): CodeIgniter\Model->doFindAll(20, 0)
+ 2 APPPATH/Models/InvoiceModel.php(73): CodeIgniter\BaseModel->findAll(20, 0)
+ 3 APPPATH/Controllers/User/Invoices.php(159): App\Models\InvoiceModel->getAll('semua', 3, [...], 20, 0)
+ 4 SYSTEMPATH/CodeIgniter.php(896): App\Controllers\User\Invoices->lihat('51e3988da1e21f4dd41ac864c601c3c55e9b556e', 'semua')
+ 5 SYSTEMPATH/CodeIgniter.php(466): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+ 6 SYSTEMPATH/CodeIgniter.php(349): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 FCPATH/index.php(55): CodeIgniter\CodeIgniter->run()
+ERROR - 2022-07-20 19:23:20 --> You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ')
+AND `juragan_id` = 3
+AND `order_invoice`.`deleted_at` IS NULL
+ORDER BY `status' at line 3
+CRITICAL - 2022-07-20 19:23:20 --> Call to a member function getResult() on bool
+in SYSTEMPATH/Model.php on line 223.
+ 1 SYSTEMPATH/BaseModel.php(584): CodeIgniter\Model->doFindAll(20, 0)
+ 2 APPPATH/Models/InvoiceModel.php(73): CodeIgniter\BaseModel->findAll(20, 0)
+ 3 APPPATH/Controllers/User/Invoices.php(159): App\Models\InvoiceModel->getAll('semua', 3, [...], 20, 0)
+ 4 SYSTEMPATH/CodeIgniter.php(896): App\Controllers\User\Invoices->lihat('51e3988da1e21f4dd41ac864c601c3c55e9b556e', 'semua')
+ 5 SYSTEMPATH/CodeIgniter.php(466): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+ 6 SYSTEMPATH/CodeIgniter.php(349): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 FCPATH/index.php(55): CodeIgniter\CodeIgniter->run()

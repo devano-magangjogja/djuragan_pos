@@ -1,0 +1,120 @@
+CRITICAL - 2021-11-11 13:15:32 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/user/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('user/invoice/li...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/User/Invoices.php(179): view('user/invoice/li...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat('a09fb41208731a2...', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2021-11-11 13:15:39 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/user/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('user/invoice/li...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/User/Invoices.php(179): view('user/invoice/li...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat('a09fb41208731a2...', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2021-11-11 13:16:28 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/user/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('user/invoice/li...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/User/Invoices.php(179): view('user/invoice/li...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat('a09fb41208731a2...', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2021-11-11 13:16:56 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/user/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('user/invoice/li...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/User/Invoices.php(179): view('user/invoice/li...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat('a09fb41208731a2...', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2021-11-11 13:39:16 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/user/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('user/invoice/li...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/User/Invoices.php(179): view('user/invoice/li...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat('a09fb41208731a2...', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2021-11-11 13:39:27 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/user/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('user/invoice/li...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/User/Invoices.php(179): view('user/invoice/li...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat('a09fb41208731a2...', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2021-11-11 13:41:13 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/user/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('user/invoice/li...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/User/Invoices.php(179): view('user/invoice/li...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat('a09fb41208731a2...', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2021-11-11 13:41:30 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/user/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('user/invoice/li...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/User/Invoices.php(179): view('user/invoice/li...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat('a09fb41208731a2...', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2021-11-11 13:44:02 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/user/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('user/invoice/li...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/User/Invoices.php(179): view('user/invoice/li...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat('a09fb41208731a2...', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2021-11-11 14:06:07 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/user/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('user/invoice/li...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/User/Invoices.php(179): view('user/invoice/li...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat('a09fb41208731a2...', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2021-11-11 14:06:39 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/user/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('user/invoice/li...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/User/Invoices.php(179): view('user/invoice/li...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat('a09fb41208731a2...', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2021-11-11 14:08:55 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/app/Views/user/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/View/View.php(246): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Common.php(1119): CodeIgniter\View\View->render('user/invoice/li...', Array, true)
+#3 /home/dnzwygdo/app/Controllers/User/Invoices.php(179): view('user/invoice/li...', Array)
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat('a09fb41208731a2...', 'semua')
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#8 {main}

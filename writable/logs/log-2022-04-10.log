@@ -1,0 +1,6 @@
+CRITICAL - 2022-04-10 21:19:05 --> Call to undefined method App\Controllers\Download::isLogged()
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Download->invoice('DS1649579896')
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Download))
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#3 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#4 {main}

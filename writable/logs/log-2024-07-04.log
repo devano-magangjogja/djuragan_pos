@@ -1,0 +1,132 @@
+ERROR - 2024-07-04 08:16:46 --> Error connecting to the database: mysqli_sql_exception: Can't connect to local MySQL server through socket '/var/lib/mysql/mysql.sock' (2) in /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php:171
+Stack trace:
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(171): mysqli->real_connect('localhost', 'dnzwygdo_jura94...', 'v[,S+a7zlZd0', 'dnzwygdo_juraga...', 3306, '', 0)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(382): CodeIgniter\Database\MySQLi\Connection->connect(false)
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(588): CodeIgniter\Database\BaseConnection->initialize()
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1585): CodeIgniter\Database\BaseConnection->query('SELECT *\nFROM `...', Array, false)
+#4 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Model.php(249): CodeIgniter\Database\BaseBuilder->get()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/BaseModel.php(622): CodeIgniter\Model->doFirst()
+#6 /home/dnzwygdo/djuragancom/app/Controllers/Auth.php(31): CodeIgniter\BaseModel->first()
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(898): App\Controllers\Auth->index()
+#8 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(457): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Auth))
+#9 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#10 /home/dnzwygdo/public_html/index.php(67): CodeIgniter\CodeIgniter->run()
+#11 {main}
+
+Next CodeIgniter\Database\Exceptions\DatabaseException: Can't connect to local MySQL server through socket '/var/lib/mysql/mysql.sock' (2) in /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php:215
+Stack trace:
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(382): CodeIgniter\Database\MySQLi\Connection->connect(false)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(588): CodeIgniter\Database\BaseConnection->initialize()
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1585): CodeIgniter\Database\BaseConnection->query('SELECT *\nFROM `...', Array, false)
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Model.php(249): CodeIgniter\Database\BaseBuilder->get()
+#4 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/BaseModel.php(622): CodeIgniter\Model->doFirst()
+#5 /home/dnzwygdo/djuragancom/app/Controllers/Auth.php(31): CodeIgniter\BaseModel->first()
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(898): App\Controllers\Auth->index()
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(457): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Auth))
+#8 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#9 /home/dnzwygdo/public_html/index.php(67): CodeIgniter\CodeIgniter->run()
+#10 {main}
+CRITICAL - 2024-07-04 08:16:46 --> Unable to connect to the database.
+Main connection [MySQLi]: Can't connect to local MySQL server through socket '/var/lib/mysql/mysql.sock' (2)
+in SYSTEMPATH/Database/BaseConnection.php on line 418.
+ 1 SYSTEMPATH/Database/BaseConnection.php(588): CodeIgniter\Database\BaseConnection->initialize()
+ 2 SYSTEMPATH/Database/BaseBuilder.php(1585): CodeIgniter\Database\BaseConnection->query('SELECT *
+FROM `order_user`
+WHERE `username` = :username:
+AND `order_user`.`deleted_at` IS NULL
+ LIMIT 1', [...], false)
+ 3 SYSTEMPATH/Model.php(249): CodeIgniter\Database\BaseBuilder->get()
+ 4 SYSTEMPATH/BaseModel.php(622): CodeIgniter\Model->doFirst()
+ 5 APPPATH/Controllers/Auth.php(31): CodeIgniter\BaseModel->first()
+ 6 SYSTEMPATH/CodeIgniter.php(898): App\Controllers\Auth->index()
+ 7 SYSTEMPATH/CodeIgniter.php(457): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Auth))
+ 8 SYSTEMPATH/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 FCPATH/index.php(67): CodeIgniter\CodeIgniter->run()
+ERROR - 2024-07-04 08:27:09 --> Error connecting to the database: mysqli_sql_exception: Can't connect to local MySQL server through socket '/var/lib/mysql/mysql.sock' (2) in /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php:171
+Stack trace:
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(171): mysqli->real_connect('localhost', 'dnzwygdo_jura94...', 'v[,S+a7zlZd0', 'dnzwygdo_juraga...', 3306, '', 0)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(382): CodeIgniter\Database\MySQLi\Connection->connect(false)
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(588): CodeIgniter\Database\BaseConnection->initialize()
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1585): CodeIgniter\Database\BaseConnection->query('SELECT *\nFROM `...', Array, false)
+#4 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Model.php(249): CodeIgniter\Database\BaseBuilder->get()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/BaseModel.php(622): CodeIgniter\Model->doFirst()
+#6 /home/dnzwygdo/djuragancom/app/Controllers/Auth.php(31): CodeIgniter\BaseModel->first()
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(898): App\Controllers\Auth->index()
+#8 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(457): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Auth))
+#9 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#10 /home/dnzwygdo/public_html/index.php(67): CodeIgniter\CodeIgniter->run()
+#11 {main}
+
+Next CodeIgniter\Database\Exceptions\DatabaseException: Can't connect to local MySQL server through socket '/var/lib/mysql/mysql.sock' (2) in /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php:215
+Stack trace:
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(382): CodeIgniter\Database\MySQLi\Connection->connect(false)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(588): CodeIgniter\Database\BaseConnection->initialize()
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1585): CodeIgniter\Database\BaseConnection->query('SELECT *\nFROM `...', Array, false)
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Model.php(249): CodeIgniter\Database\BaseBuilder->get()
+#4 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/BaseModel.php(622): CodeIgniter\Model->doFirst()
+#5 /home/dnzwygdo/djuragancom/app/Controllers/Auth.php(31): CodeIgniter\BaseModel->first()
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(898): App\Controllers\Auth->index()
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(457): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Auth))
+#8 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#9 /home/dnzwygdo/public_html/index.php(67): CodeIgniter\CodeIgniter->run()
+#10 {main}
+CRITICAL - 2024-07-04 08:27:09 --> Unable to connect to the database.
+Main connection [MySQLi]: Can't connect to local MySQL server through socket '/var/lib/mysql/mysql.sock' (2)
+in SYSTEMPATH/Database/BaseConnection.php on line 418.
+ 1 SYSTEMPATH/Database/BaseConnection.php(588): CodeIgniter\Database\BaseConnection->initialize()
+ 2 SYSTEMPATH/Database/BaseBuilder.php(1585): CodeIgniter\Database\BaseConnection->query('SELECT *
+FROM `order_user`
+WHERE `username` = :username:
+AND `order_user`.`deleted_at` IS NULL
+ LIMIT 1', [...], false)
+ 3 SYSTEMPATH/Model.php(249): CodeIgniter\Database\BaseBuilder->get()
+ 4 SYSTEMPATH/BaseModel.php(622): CodeIgniter\Model->doFirst()
+ 5 APPPATH/Controllers/Auth.php(31): CodeIgniter\BaseModel->first()
+ 6 SYSTEMPATH/CodeIgniter.php(898): App\Controllers\Auth->index()
+ 7 SYSTEMPATH/CodeIgniter.php(457): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Auth))
+ 8 SYSTEMPATH/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 FCPATH/index.php(67): CodeIgniter\CodeIgniter->run()
+ERROR - 2024-07-04 08:34:43 --> Error connecting to the database: mysqli_sql_exception: Can't connect to local MySQL server through socket '/var/lib/mysql/mysql.sock' (2) in /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php:171
+Stack trace:
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(171): mysqli->real_connect('localhost', 'dnzwygdo_jura94...', 'v[,S+a7zlZd0', 'dnzwygdo_juraga...', 3306, '', 0)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(382): CodeIgniter\Database\MySQLi\Connection->connect(false)
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(588): CodeIgniter\Database\BaseConnection->initialize()
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1585): CodeIgniter\Database\BaseConnection->query('SELECT *\nFROM `...', Array, false)
+#4 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Model.php(249): CodeIgniter\Database\BaseBuilder->get()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/BaseModel.php(622): CodeIgniter\Model->doFirst()
+#6 /home/dnzwygdo/djuragancom/app/Controllers/Auth.php(31): CodeIgniter\BaseModel->first()
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(898): App\Controllers\Auth->index()
+#8 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(457): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Auth))
+#9 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#10 /home/dnzwygdo/public_html/index.php(67): CodeIgniter\CodeIgniter->run()
+#11 {main}
+
+Next CodeIgniter\Database\Exceptions\DatabaseException: Can't connect to local MySQL server through socket '/var/lib/mysql/mysql.sock' (2) in /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php:215
+Stack trace:
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(382): CodeIgniter\Database\MySQLi\Connection->connect(false)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(588): CodeIgniter\Database\BaseConnection->initialize()
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1585): CodeIgniter\Database\BaseConnection->query('SELECT *\nFROM `...', Array, false)
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Model.php(249): CodeIgniter\Database\BaseBuilder->get()
+#4 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/BaseModel.php(622): CodeIgniter\Model->doFirst()
+#5 /home/dnzwygdo/djuragancom/app/Controllers/Auth.php(31): CodeIgniter\BaseModel->first()
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(898): App\Controllers\Auth->index()
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(457): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Auth))
+#8 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#9 /home/dnzwygdo/public_html/index.php(67): CodeIgniter\CodeIgniter->run()
+#10 {main}
+CRITICAL - 2024-07-04 08:34:43 --> Unable to connect to the database.
+Main connection [MySQLi]: Can't connect to local MySQL server through socket '/var/lib/mysql/mysql.sock' (2)
+in SYSTEMPATH/Database/BaseConnection.php on line 418.
+ 1 SYSTEMPATH/Database/BaseConnection.php(588): CodeIgniter\Database\BaseConnection->initialize()
+ 2 SYSTEMPATH/Database/BaseBuilder.php(1585): CodeIgniter\Database\BaseConnection->query('SELECT *
+FROM `order_user`
+WHERE `username` = :username:
+AND `order_user`.`deleted_at` IS NULL
+ LIMIT 1', [...], false)
+ 3 SYSTEMPATH/Model.php(249): CodeIgniter\Database\BaseBuilder->get()
+ 4 SYSTEMPATH/BaseModel.php(622): CodeIgniter\Model->doFirst()
+ 5 APPPATH/Controllers/Auth.php(31): CodeIgniter\BaseModel->first()
+ 6 SYSTEMPATH/CodeIgniter.php(898): App\Controllers\Auth->index()
+ 7 SYSTEMPATH/CodeIgniter.php(457): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Auth))
+ 8 SYSTEMPATH/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 FCPATH/index.php(67): CodeIgniter\CodeIgniter->run()

@@ -1,0 +1,81 @@
+CRITICAL - 2022-01-17 10:12:10 --> Unable to connect to the database.
+#0 /home/dnzwygdo/vendor/codeigniter4/framework/system/Database/BaseConnection.php(646): CodeIgniter\Database\BaseConnection->initialize()
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1952): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#2 /home/dnzwygdo/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#3 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Api\Notifikasi->get()
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#6 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#7 {main}
+CRITICAL - 2022-01-17 10:12:11 --> Unable to connect to the database.
+#0 /home/dnzwygdo/vendor/codeigniter4/framework/system/Database/BaseConnection.php(646): CodeIgniter\Database\BaseConnection->initialize()
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1952): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#2 /home/dnzwygdo/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#3 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Api\Notifikasi->get()
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#6 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#7 {main}
+CRITICAL - 2022-01-17 10:12:12 --> Unable to connect to the database.
+#0 /home/dnzwygdo/vendor/codeigniter4/framework/system/Database/BaseConnection.php(646): CodeIgniter\Database\BaseConnection->initialize()
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1952): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#2 /home/dnzwygdo/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#3 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Api\Notifikasi->get()
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#6 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#7 {main}
+CRITICAL - 2022-01-17 10:12:17 --> Unable to connect to the database.
+#0 /home/dnzwygdo/vendor/codeigniter4/framework/system/Database/BaseConnection.php(646): CodeIgniter\Database\BaseConnection->initialize()
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1952): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#2 /home/dnzwygdo/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#3 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Api\Notifikasi->get()
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#6 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#7 {main}
+CRITICAL - 2022-01-17 10:12:17 --> Unable to connect to the database.
+#0 /home/dnzwygdo/vendor/codeigniter4/framework/system/Database/BaseConnection.php(646): CodeIgniter\Database\BaseConnection->initialize()
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1952): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#2 /home/dnzwygdo/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#3 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Api\Notifikasi->get()
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#6 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#7 {main}
+CRITICAL - 2022-01-17 10:12:20 --> Unable to connect to the database.
+#0 /home/dnzwygdo/vendor/codeigniter4/framework/system/Database/BaseConnection.php(646): CodeIgniter\Database\BaseConnection->initialize()
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1952): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#2 /home/dnzwygdo/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#3 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Api\Notifikasi->get()
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#6 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#7 {main}
+CRITICAL - 2022-01-17 10:12:22 --> Unable to connect to the database.
+#0 /home/dnzwygdo/vendor/codeigniter4/framework/system/Database/BaseConnection.php(646): CodeIgniter\Database\BaseConnection->initialize()
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1952): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#2 /home/dnzwygdo/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#3 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Api\Notifikasi->get()
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#6 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#7 {main}
+CRITICAL - 2022-01-17 10:12:22 --> Unable to connect to the database.
+#0 /home/dnzwygdo/vendor/codeigniter4/framework/system/Database/BaseConnection.php(646): CodeIgniter\Database\BaseConnection->initialize()
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1952): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#2 /home/dnzwygdo/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#3 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Api\Notifikasi->get()
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#6 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#7 {main}
+CRITICAL - 2022-01-17 10:13:41 --> Unable to connect to the database.
+#0 /home/dnzwygdo/vendor/codeigniter4/framework/system/Database/BaseConnection.php(646): CodeIgniter\Database\BaseConnection->initialize()
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1952): CodeIgniter\Database\BaseConnection->query('SELECT COUNT(*)...', Array, false)
+#2 /home/dnzwygdo/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#3 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Api\Notifikasi->get()
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Api\Notifikasi))
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#6 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#7 {main}

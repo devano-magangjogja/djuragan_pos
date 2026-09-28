@@ -1,0 +1,9 @@
+CRITICAL - 2021-12-12 16:44:17 --> forgot bukan sebuah grup aturan validasi.
+#0 /home/dnzwygdo/vendor/codeigniter4/framework/system/Validation/Validation.php(501): CodeIgniter\Validation\Exceptions\ValidationException::forGroupNotFound('forgot')
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/Validation/Validation.php(523): CodeIgniter\Validation\Validation->getRuleGroup('forgot')
+#2 /home/dnzwygdo/app/Controllers/Auth.php(210): CodeIgniter\Validation\Validation->setRuleGroup('forgot')
+#3 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\Auth->lupa()
+#4 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Auth))
+#5 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#6 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#7 {main}

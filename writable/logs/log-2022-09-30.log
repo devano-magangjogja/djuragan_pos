@@ -1,0 +1,12 @@
+CRITICAL - 2022-09-30 15:57:17 --> Argument 2 passed to form_input() must be of the type string, null given, called in /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Helpers/form_helper.php on line 123
+in SYSTEMPATH/Helpers/form_helper.php on line 143.
+ 1 SYSTEMPATH/Helpers/form_helper.php(123): form_input('biaya[5314][label]', null, '/home/dnzwygdo/public_html', 'hidden')
+ 2 APPPATH/Views/admin/invoice/sunting.php(311): form_hidden('biaya[5314][label]', null)
+ 3 SYSTEMPATH/View/View.php(213): include('APPPATH/Views/admin/invoice/sunting.php')
+ 4 SYSTEMPATH/View/View.php(216): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 5 SYSTEMPATH/Common.php(1137): CodeIgniter\View\View->render('admin/invoice/sunting', [], true)
+ 6 APPPATH/Controllers/Admin/Invoices.php(98): view('admin/invoice/sunting', [...])
+ 7 SYSTEMPATH/CodeIgniter.php(898): App\Controllers\Admin\Invoices->sunting('HW1651150939')
+ 8 SYSTEMPATH/CodeIgniter.php(457): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+ 9 SYSTEMPATH/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 FCPATH/index.php(67): CodeIgniter\CodeIgniter->run()

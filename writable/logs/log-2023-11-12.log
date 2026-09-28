@@ -1,0 +1,179 @@
+ERROR - 2023-11-12 10:22:44 --> Error connecting to the database: mysqli_sql_exception: Too many connections in /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php:171
+Stack trace:
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(171): mysqli->real_connect()
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(382): CodeIgniter\Database\MySQLi\Connection->connect()
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(588): CodeIgniter\Database\BaseConnection->initialize()
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1669): CodeIgniter\Database\BaseConnection->query()
+#4 /home/dnzwygdo/djuragancom/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(898): App\Controllers\Api\Notifikasi->get()
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(457): CodeIgniter\CodeIgniter->runController()
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest()
+#8 /home/dnzwygdo/public_html/index.php(67): CodeIgniter\CodeIgniter->run()
+#9 {main}
+
+Next CodeIgniter\Database\Exceptions\DatabaseException: Too many connections in /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php:215
+Stack trace:
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(382): CodeIgniter\Database\MySQLi\Connection->connect()
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(588): CodeIgniter\Database\BaseConnection->initialize()
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1669): CodeIgniter\Database\BaseConnection->query()
+#3 /home/dnzwygdo/djuragancom/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#4 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(898): App\Controllers\Api\Notifikasi->get()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(457): CodeIgniter\CodeIgniter->runController()
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest()
+#7 /home/dnzwygdo/public_html/index.php(67): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2023-11-12 10:22:44 --> Unable to connect to the database.
+Main connection [MySQLi]: Too many connections
+in SYSTEMPATH/Database/BaseConnection.php on line 418.
+ 1 SYSTEMPATH/Database/BaseConnection.php(588): CodeIgniter\Database\BaseConnection->initialize()
+ 2 SYSTEMPATH/Database/BaseBuilder.php(1669): CodeIgniter\Database\BaseConnection->query()
+ 3 APPPATH/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+ 4 SYSTEMPATH/CodeIgniter.php(898): App\Controllers\Api\Notifikasi->get()
+ 5 SYSTEMPATH/CodeIgniter.php(457): CodeIgniter\CodeIgniter->runController()
+ 6 SYSTEMPATH/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest()
+ 7 FCPATH/index.php(67): CodeIgniter\CodeIgniter->run()
+ERROR - 2023-11-12 17:09:19 --> Error connecting to the database: mysqli_sql_exception: Too many connections in /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php:171
+Stack trace:
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(171): mysqli->real_connect()
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(382): CodeIgniter\Database\MySQLi\Connection->connect()
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(588): CodeIgniter\Database\BaseConnection->initialize()
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1669): CodeIgniter\Database\BaseConnection->query()
+#4 /home/dnzwygdo/djuragancom/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(898): App\Controllers\Api\Notifikasi->get()
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(457): CodeIgniter\CodeIgniter->runController()
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest()
+#8 /home/dnzwygdo/public_html/index.php(67): CodeIgniter\CodeIgniter->run()
+#9 {main}
+
+Next CodeIgniter\Database\Exceptions\DatabaseException: Too many connections in /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php:215
+Stack trace:
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(382): CodeIgniter\Database\MySQLi\Connection->connect()
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(588): CodeIgniter\Database\BaseConnection->initialize()
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1669): CodeIgniter\Database\BaseConnection->query()
+#3 /home/dnzwygdo/djuragancom/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#4 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(898): App\Controllers\Api\Notifikasi->get()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(457): CodeIgniter\CodeIgniter->runController()
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest()
+#7 /home/dnzwygdo/public_html/index.php(67): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2023-11-12 17:09:19 --> Unable to connect to the database.
+Main connection [MySQLi]: Too many connections
+in SYSTEMPATH/Database/BaseConnection.php on line 418.
+ 1 SYSTEMPATH/Database/BaseConnection.php(588): CodeIgniter\Database\BaseConnection->initialize()
+ 2 SYSTEMPATH/Database/BaseBuilder.php(1669): CodeIgniter\Database\BaseConnection->query()
+ 3 APPPATH/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+ 4 SYSTEMPATH/CodeIgniter.php(898): App\Controllers\Api\Notifikasi->get()
+ 5 SYSTEMPATH/CodeIgniter.php(457): CodeIgniter\CodeIgniter->runController()
+ 6 SYSTEMPATH/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest()
+ 7 FCPATH/index.php(67): CodeIgniter\CodeIgniter->run()
+ERROR - 2023-11-12 17:09:48 --> Error connecting to the database: mysqli_sql_exception: Too many connections in /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php:171
+Stack trace:
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(171): mysqli->real_connect()
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(382): CodeIgniter\Database\MySQLi\Connection->connect()
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(588): CodeIgniter\Database\BaseConnection->initialize()
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1669): CodeIgniter\Database\BaseConnection->query()
+#4 /home/dnzwygdo/djuragancom/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(898): App\Controllers\Api\Notifikasi->get()
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(457): CodeIgniter\CodeIgniter->runController()
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest()
+#8 /home/dnzwygdo/public_html/index.php(67): CodeIgniter\CodeIgniter->run()
+#9 {main}
+
+Next CodeIgniter\Database\Exceptions\DatabaseException: Too many connections in /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php:215
+Stack trace:
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(382): CodeIgniter\Database\MySQLi\Connection->connect()
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(588): CodeIgniter\Database\BaseConnection->initialize()
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1669): CodeIgniter\Database\BaseConnection->query()
+#3 /home/dnzwygdo/djuragancom/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#4 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(898): App\Controllers\Api\Notifikasi->get()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(457): CodeIgniter\CodeIgniter->runController()
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest()
+#7 /home/dnzwygdo/public_html/index.php(67): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2023-11-12 17:09:48 --> Unable to connect to the database.
+Main connection [MySQLi]: Too many connections
+in SYSTEMPATH/Database/BaseConnection.php on line 418.
+ 1 SYSTEMPATH/Database/BaseConnection.php(588): CodeIgniter\Database\BaseConnection->initialize()
+ 2 SYSTEMPATH/Database/BaseBuilder.php(1669): CodeIgniter\Database\BaseConnection->query()
+ 3 APPPATH/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+ 4 SYSTEMPATH/CodeIgniter.php(898): App\Controllers\Api\Notifikasi->get()
+ 5 SYSTEMPATH/CodeIgniter.php(457): CodeIgniter\CodeIgniter->runController()
+ 6 SYSTEMPATH/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest()
+ 7 FCPATH/index.php(67): CodeIgniter\CodeIgniter->run()
+ERROR - 2023-11-12 17:09:49 --> Error connecting to the database: mysqli_sql_exception: Too many connections in /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php:171
+Stack trace:
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(171): mysqli->real_connect()
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(382): CodeIgniter\Database\MySQLi\Connection->connect()
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(588): CodeIgniter\Database\BaseConnection->initialize()
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1669): CodeIgniter\Database\BaseConnection->query()
+#4 /home/dnzwygdo/djuragancom/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(898): App\Controllers\Api\Notifikasi->get()
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(457): CodeIgniter\CodeIgniter->runController()
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest()
+#8 /home/dnzwygdo/public_html/index.php(67): CodeIgniter\CodeIgniter->run()
+#9 {main}
+
+Next CodeIgniter\Database\Exceptions\DatabaseException: Too many connections in /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php:215
+Stack trace:
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(382): CodeIgniter\Database\MySQLi\Connection->connect()
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(588): CodeIgniter\Database\BaseConnection->initialize()
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1669): CodeIgniter\Database\BaseConnection->query()
+#3 /home/dnzwygdo/djuragancom/app/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+#4 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(898): App\Controllers\Api\Notifikasi->get()
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(457): CodeIgniter\CodeIgniter->runController()
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest()
+#7 /home/dnzwygdo/public_html/index.php(67): CodeIgniter\CodeIgniter->run()
+#8 {main}
+CRITICAL - 2023-11-12 17:09:49 --> Unable to connect to the database.
+Main connection [MySQLi]: Too many connections
+in SYSTEMPATH/Database/BaseConnection.php on line 418.
+ 1 SYSTEMPATH/Database/BaseConnection.php(588): CodeIgniter\Database\BaseConnection->initialize()
+ 2 SYSTEMPATH/Database/BaseBuilder.php(1669): CodeIgniter\Database\BaseConnection->query()
+ 3 APPPATH/Controllers/Api/Notifikasi.php(37): CodeIgniter\Database\BaseBuilder->countAllResults()
+ 4 SYSTEMPATH/CodeIgniter.php(898): App\Controllers\Api\Notifikasi->get()
+ 5 SYSTEMPATH/CodeIgniter.php(457): CodeIgniter\CodeIgniter->runController()
+ 6 SYSTEMPATH/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest()
+ 7 FCPATH/index.php(67): CodeIgniter\CodeIgniter->run()
+ERROR - 2023-11-12 17:10:00 --> Error connecting to the database: mysqli_sql_exception: Too many connections in /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php:171
+Stack trace:
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php(171): mysqli->real_connect()
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(382): CodeIgniter\Database\MySQLi\Connection->connect()
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(588): CodeIgniter\Database\BaseConnection->initialize()
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1669): CodeIgniter\Database\BaseConnection->query()
+#4 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Model.php(550): CodeIgniter\Database\BaseBuilder->countAllResults()
+#5 /home/dnzwygdo/djuragancom/app/Controllers/BaseController.php(90): CodeIgniter\Model->countAllResults()
+#6 /home/dnzwygdo/djuragancom/app/Controllers/BaseController.php(106): App\Controllers\BaseController->isJuragan()
+#7 /home/dnzwygdo/djuragancom/app/Controllers/User/Invoices.php(136): App\Controllers\BaseController->allowedJuragan()
+#8 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(898): App\Controllers\User\Invoices->lihat()
+#9 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(457): CodeIgniter\CodeIgniter->runController()
+#10 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest()
+#11 /home/dnzwygdo/public_html/index.php(67): CodeIgniter\CodeIgniter->run()
+#12 {main}
+
+Next CodeIgniter\Database\Exceptions\DatabaseException: Too many connections in /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/MySQLi/Connection.php:215
+Stack trace:
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(382): CodeIgniter\Database\MySQLi\Connection->connect()
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseConnection.php(588): CodeIgniter\Database\BaseConnection->initialize()
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Database/BaseBuilder.php(1669): CodeIgniter\Database\BaseConnection->query()
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Model.php(550): CodeIgniter\Database\BaseBuilder->countAllResults()
+#4 /home/dnzwygdo/djuragancom/app/Controllers/BaseController.php(90): CodeIgniter\Model->countAllResults()
+#5 /home/dnzwygdo/djuragancom/app/Controllers/BaseController.php(106): App\Controllers\BaseController->isJuragan()
+#6 /home/dnzwygdo/djuragancom/app/Controllers/User/Invoices.php(136): App\Controllers\BaseController->allowedJuragan()
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(898): App\Controllers\User\Invoices->lihat()
+#8 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(457): CodeIgniter\CodeIgniter->runController()
+#9 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest()
+#10 /home/dnzwygdo/public_html/index.php(67): CodeIgniter\CodeIgniter->run()
+#11 {main}
+CRITICAL - 2023-11-12 17:10:00 --> Unable to connect to the database.
+Main connection [MySQLi]: Too many connections
+in SYSTEMPATH/Database/BaseConnection.php on line 418.
+ 1 SYSTEMPATH/Database/BaseConnection.php(588): CodeIgniter\Database\BaseConnection->initialize()
+ 2 SYSTEMPATH/Database/BaseBuilder.php(1669): CodeIgniter\Database\BaseConnection->query()
+ 3 SYSTEMPATH/Model.php(550): CodeIgniter\Database\BaseBuilder->countAllResults()
+ 4 APPPATH/Controllers/BaseController.php(90): CodeIgniter\Model->countAllResults()
+ 5 APPPATH/Controllers/BaseController.php(106): App\Controllers\BaseController->isJuragan()
+ 6 APPPATH/Controllers/User/Invoices.php(136): App\Controllers\BaseController->allowedJuragan()
+ 7 SYSTEMPATH/CodeIgniter.php(898): App\Controllers\User\Invoices->lihat()
+ 8 SYSTEMPATH/CodeIgniter.php(457): CodeIgniter\CodeIgniter->runController()
+ 9 SYSTEMPATH/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest()
+10 FCPATH/index.php(67): CodeIgniter\CodeIgniter->run()

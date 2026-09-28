@@ -1,0 +1,7 @@
+ERROR - 2022-06-30 10:40:53 --> Incorrect DATE value: '2022-06-2022'
+CRITICAL - 2022-06-30 10:40:53 --> Call to a member function getResult() on bool
+#0 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#3 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#4 {main}

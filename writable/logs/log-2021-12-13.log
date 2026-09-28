@@ -1,0 +1,12 @@
+CRITICAL - 2021-12-13 13:46:39 --> unlink(/home/dnzwygdo/writable/cache/juragan_by_user_22): No such file or directory
+#0 [internal function]: CodeIgniter\Debug\Exceptions->errorHandler(2, 'unlink(/home/dn...', '/home/dnzwygdo/...', 328, Array)
+#1 /home/dnzwygdo/vendor/codeigniter4/framework/system/Cache/Handlers/FileHandler.php(328): unlink('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/vendor/codeigniter4/framework/system/Cache/Handlers/FileHandler.php(108): CodeIgniter\Cache\Handlers\FileHandler->getItem('juragan_by_user...')
+#3 /home/dnzwygdo/app/Controllers/Juragan.php(13): CodeIgniter\Cache\Handlers\FileHandler->get('juragan_by_user...')
+#4 /home/dnzwygdo/app/Controllers/BaseController.php(162): App\Controllers\Juragan::by_user('22')
+#5 /home/dnzwygdo/app/Controllers/User/Invoices.php(153): App\Controllers\BaseController->allowedJuragan('22', '5cc83b910b2a957...')
+#6 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(918): App\Controllers\User\Invoices->lihat('5cc83b910b2a957...', 'belum-proses')
+#7 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(404): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\User\Invoices))
+#8 /home/dnzwygdo/vendor/codeigniter4/framework/system/CodeIgniter.php(312): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#9 /home/dnzwygdo/public_html/index.php(45): CodeIgniter\CodeIgniter->run()
+#10 {main}

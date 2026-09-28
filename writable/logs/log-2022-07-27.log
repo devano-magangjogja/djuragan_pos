@@ -1,0 +1,96 @@
+CRITICAL - 2022-07-27 10:57:15 --> Argument 2 passed to form_input() must be of the type string, null given, called in /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Helpers/form_helper.php on line 125
+in SYSTEMPATH/Helpers/form_helper.php on line 145.
+ 1 SYSTEMPATH/Helpers/form_helper.php(125): form_input('biaya[5898][label]', null, '/home/dnzwygdo/public_html', 'hidden')
+ 2 APPPATH/Views/admin/invoice/sunting.php(310): form_hidden('biaya[5898][label]', null)
+ 3 SYSTEMPATH/View/View.php(213): include('APPPATH/Views/admin/invoice/sunting.php')
+ 4 SYSTEMPATH/View/View.php(216): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 5 SYSTEMPATH/Common.php(1135): CodeIgniter\View\View->render('admin/invoice/sunting', [], true)
+ 6 APPPATH/Controllers/Admin/Invoices.php(100): view('admin/invoice/sunting', [...])
+ 7 SYSTEMPATH/CodeIgniter.php(896): App\Controllers\Admin\Invoices->sunting('HJ1657350871')
+ 8 SYSTEMPATH/CodeIgniter.php(466): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+ 9 SYSTEMPATH/CodeIgniter.php(349): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 FCPATH/index.php(55): CodeIgniter\CodeIgniter->run()
+CRITICAL - 2022-07-27 10:57:20 --> Argument 2 passed to form_input() must be of the type string, null given, called in /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Helpers/form_helper.php on line 125
+in SYSTEMPATH/Helpers/form_helper.php on line 145.
+ 1 SYSTEMPATH/Helpers/form_helper.php(125): form_input('biaya[5898][label]', null, '/home/dnzwygdo/public_html', 'hidden')
+ 2 APPPATH/Views/admin/invoice/sunting.php(310): form_hidden('biaya[5898][label]', null)
+ 3 SYSTEMPATH/View/View.php(213): include('APPPATH/Views/admin/invoice/sunting.php')
+ 4 SYSTEMPATH/View/View.php(216): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 5 SYSTEMPATH/Common.php(1135): CodeIgniter\View\View->render('admin/invoice/sunting', [], true)
+ 6 APPPATH/Controllers/Admin/Invoices.php(100): view('admin/invoice/sunting', [...])
+ 7 SYSTEMPATH/CodeIgniter.php(896): App\Controllers\Admin\Invoices->sunting('HJ1657350871')
+ 8 SYSTEMPATH/CodeIgniter.php(466): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+ 9 SYSTEMPATH/CodeIgniter.php(349): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 FCPATH/index.php(55): CodeIgniter\CodeIgniter->run()
+CRITICAL - 2022-07-27 11:02:08 --> Argument 2 passed to form_input() must be of the type string, null given, called in /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Helpers/form_helper.php on line 125
+in SYSTEMPATH/Helpers/form_helper.php on line 145.
+ 1 SYSTEMPATH/Helpers/form_helper.php(125): form_input('biaya[5927][label]', null, '/home/dnzwygdo/public_html', 'hidden')
+ 2 APPPATH/Views/admin/invoice/sunting.php(310): form_hidden('biaya[5927][label]', null)
+ 3 SYSTEMPATH/View/View.php(213): include('APPPATH/Views/admin/invoice/sunting.php')
+ 4 SYSTEMPATH/View/View.php(216): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 5 SYSTEMPATH/Common.php(1135): CodeIgniter\View\View->render('admin/invoice/sunting', [], true)
+ 6 APPPATH/Controllers/Admin/Invoices.php(100): view('admin/invoice/sunting', [...])
+ 7 SYSTEMPATH/CodeIgniter.php(896): App\Controllers\Admin\Invoices->sunting('SC1657600653')
+ 8 SYSTEMPATH/CodeIgniter.php(466): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+ 9 SYSTEMPATH/CodeIgniter.php(349): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 FCPATH/index.php(55): CodeIgniter\CodeIgniter->run()
+CRITICAL - 2022-07-27 11:02:12 --> Argument 2 passed to form_input() must be of the type string, null given, called in /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Helpers/form_helper.php on line 125
+in SYSTEMPATH/Helpers/form_helper.php on line 145.
+ 1 SYSTEMPATH/Helpers/form_helper.php(125): form_input('biaya[5927][label]', null, '/home/dnzwygdo/public_html', 'hidden')
+ 2 APPPATH/Views/admin/invoice/sunting.php(310): form_hidden('biaya[5927][label]', null)
+ 3 SYSTEMPATH/View/View.php(213): include('APPPATH/Views/admin/invoice/sunting.php')
+ 4 SYSTEMPATH/View/View.php(216): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 5 SYSTEMPATH/Common.php(1135): CodeIgniter\View\View->render('admin/invoice/sunting', [], true)
+ 6 APPPATH/Controllers/Admin/Invoices.php(100): view('admin/invoice/sunting', [...])
+ 7 SYSTEMPATH/CodeIgniter.php(896): App\Controllers\Admin\Invoices->sunting('SC1657600653')
+ 8 SYSTEMPATH/CodeIgniter.php(466): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+ 9 SYSTEMPATH/CodeIgniter.php(349): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 FCPATH/index.php(55): CodeIgniter\CodeIgniter->run()
+CRITICAL - 2022-07-27 11:03:52 --> Argument 2 passed to form_input() must be of the type string, null given, called in /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Helpers/form_helper.php on line 125
+in SYSTEMPATH/Helpers/form_helper.php on line 145.
+ 1 SYSTEMPATH/Helpers/form_helper.php(125): form_input('biaya[5875][label]', null, '/home/dnzwygdo/public_html', 'hidden')
+ 2 APPPATH/Views/admin/invoice/sunting.php(310): form_hidden('biaya[5875][label]', null)
+ 3 SYSTEMPATH/View/View.php(213): include('APPPATH/Views/admin/invoice/sunting.php')
+ 4 SYSTEMPATH/View/View.php(216): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 5 SYSTEMPATH/Common.php(1135): CodeIgniter\View\View->render('admin/invoice/sunting', [], true)
+ 6 APPPATH/Controllers/Admin/Invoices.php(100): view('admin/invoice/sunting', [...])
+ 7 SYSTEMPATH/CodeIgniter.php(896): App\Controllers\Admin\Invoices->sunting('HT1657016904')
+ 8 SYSTEMPATH/CodeIgniter.php(466): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+ 9 SYSTEMPATH/CodeIgniter.php(349): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 FCPATH/index.php(55): CodeIgniter\CodeIgniter->run()
+CRITICAL - 2022-07-27 12:53:44 --> Argument 2 passed to form_input() must be of the type string, null given, called in /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Helpers/form_helper.php on line 125
+in SYSTEMPATH/Helpers/form_helper.php on line 145.
+ 1 SYSTEMPATH/Helpers/form_helper.php(125): form_input('biaya[5821][label]', null, '/home/dnzwygdo/public_html', 'hidden')
+ 2 APPPATH/Views/admin/invoice/sunting.php(310): form_hidden('biaya[5821][label]', null)
+ 3 SYSTEMPATH/View/View.php(213): include('APPPATH/Views/admin/invoice/sunting.php')
+ 4 SYSTEMPATH/View/View.php(216): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 5 SYSTEMPATH/Common.php(1135): CodeIgniter\View\View->render('admin/invoice/sunting', [], true)
+ 6 APPPATH/Controllers/Admin/Invoices.php(100): view('admin/invoice/sunting', [...])
+ 7 SYSTEMPATH/CodeIgniter.php(896): App\Controllers\Admin\Invoices->sunting('HX1656588481')
+ 8 SYSTEMPATH/CodeIgniter.php(466): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+ 9 SYSTEMPATH/CodeIgniter.php(349): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 FCPATH/index.php(55): CodeIgniter\CodeIgniter->run()
+ERROR - 2022-07-27 15:54:56 --> You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ')
+AND `order_invoice`.`deleted_at` IS NULL
+ORDER BY `status_pesanan` ASC, `tangg' at line 3
+CRITICAL - 2022-07-27 15:54:56 --> Call to a member function getResult() on bool
+in SYSTEMPATH/Model.php on line 223.
+ 1 SYSTEMPATH/BaseModel.php(584): CodeIgniter\Model->doFindAll(20, 0)
+ 2 APPPATH/Models/InvoiceModel.php(73): CodeIgniter\BaseModel->findAll(20, 0)
+ 3 APPPATH/Controllers/Admin/Invoices.php(67): App\Models\InvoiceModel->getAll('semua', 0, [...], 20, 0)
+ 4 SYSTEMPATH/CodeIgniter.php(896): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+ 5 SYSTEMPATH/CodeIgniter.php(466): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+ 6 SYSTEMPATH/CodeIgniter.php(349): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 FCPATH/index.php(55): CodeIgniter\CodeIgniter->run()
+ERROR - 2022-07-27 16:38:41 --> You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ')
+AND `order_invoice`.`deleted_at` IS NULL
+ORDER BY `status_pesanan` ASC, `tangg' at line 3
+CRITICAL - 2022-07-27 16:38:41 --> Call to a member function getResult() on bool
+in SYSTEMPATH/Model.php on line 223.
+ 1 SYSTEMPATH/BaseModel.php(584): CodeIgniter\Model->doFindAll(20, 0)
+ 2 APPPATH/Models/InvoiceModel.php(73): CodeIgniter\BaseModel->findAll(20, 0)
+ 3 APPPATH/Controllers/Admin/Invoices.php(67): App\Models\InvoiceModel->getAll('semua', 0, [...], 20, 0)
+ 4 SYSTEMPATH/CodeIgniter.php(896): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+ 5 SYSTEMPATH/CodeIgniter.php(466): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+ 6 SYSTEMPATH/CodeIgniter.php(349): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 FCPATH/index.php(55): CodeIgniter\CodeIgniter->run()

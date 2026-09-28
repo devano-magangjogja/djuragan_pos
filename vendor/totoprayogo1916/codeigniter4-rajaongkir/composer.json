@@ -1,0 +1,23 @@
+{
+    "name": "totoprayogo1916/codeigniter4-rajaongkir",
+    "license": "MIT",
+    "type": "php-class",
+    "require": {
+        "codeigniter4/framework": "^4"
+    },
+    "require-dev": {
+        "codeigniter/coding-standard": "^1.1",
+        "rector/rector": "^1.0.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "Totoprayogo1916\\CodeIgniter\\Libraries\\": "src/"
+        }
+    },
+    "scripts": {
+        "csfix": [
+            "vendor/bin/rector process",
+            "vendor/bin/php-cs-fixer fix"
+        ]
+    }
+}

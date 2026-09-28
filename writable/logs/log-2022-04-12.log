@@ -1,0 +1,40 @@
+CRITICAL - 2022-04-12 10:36:32 --> print_r() expects at most 2 parameters, 3 given
+#0 [internal function]: CodeIgniter\Debug\Exceptions->errorHandler(2, 'print_r() expec...', '/home/dnzwygdo/...', 17, Array)
+#1 /home/dnzwygdo/djuragancom/app/Controllers/Jam.php(17): print_r(1649734592, Object(CodeIgniter\I18n\Time), 'Sel, 12 Apr 202...')
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Jam->index()
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Jam))
+#4 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#5 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#6 {main}
+CRITICAL - 2022-04-12 10:57:39 --> Argument 1 passed to CodeIgniter\I18n\Time::createFromTimestamp() must be of the type int, object given, called in /home/dnzwygdo/djuragancom/app/Controllers/Jam.php on line 16
+#0 /home/dnzwygdo/djuragancom/app/Controllers/Jam.php(16): CodeIgniter\I18n\Time::createFromTimestamp(Object(CodeIgniter\I18n\Time), 'Asia/Jakarta')
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Jam->index()
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Jam))
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#4 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#5 {main}
+CRITICAL - 2022-04-12 11:23:08 --> Use of undefined constant now - assumed 'now' (this will throw an Error in a future version of PHP)
+#0 /home/dnzwygdo/djuragancom/app/Controllers/Jam.php(19): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Use of undefine...', '/home/dnzwygdo/...', 19, Array)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Jam->index()
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Jam))
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#4 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#5 {main}
+CRITICAL - 2022-04-12 11:23:45 --> Use of undefined constant now - assumed 'now' (this will throw an Error in a future version of PHP)
+#0 /home/dnzwygdo/djuragancom/app/Controllers/Jam.php(19): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Use of undefine...', '/home/dnzwygdo/...', 19, Array)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Jam->index()
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Jam))
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#4 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#5 {main}
+CRITICAL - 2022-04-12 13:04:23 --> count(): Parameter must be an array or an object that implements Countable
+#0 /home/dnzwygdo/djuragancom/app/Views/admin/invoice/lihat.php(112): CodeIgniter\Debug\Exceptions->errorHandler(2, 'count(): Parame...', '/home/dnzwygdo/...', 112, Array)
+#1 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/View/View.php(210): include('/home/dnzwygdo/...')
+#2 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/View/View.php(213): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+#3 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/Common.php(1089): CodeIgniter\View\View->render('admin/invoice/l...', Array, true)
+#4 /home/dnzwygdo/djuragancom/app/Controllers/Admin/Invoices.php(68): view('admin/invoice/l...', Array)
+#5 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(832): App\Controllers\Admin\Invoices->lihat('semua', 'semua')
+#6 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(419): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\Invoices))
+#7 /home/dnzwygdo/djuragancom/vendor/codeigniter4/framework/system/CodeIgniter.php(326): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /home/dnzwygdo/public_html/index.php(37): CodeIgniter\CodeIgniter->run()
+#9 {main}
