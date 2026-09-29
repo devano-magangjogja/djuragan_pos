@@ -4,6 +4,7 @@ namespace Config;
 
 use App\Filters\Auth;
 use CodeIgniter\Config\BaseConfig;
+use CodeIgniter\Config\Filters as BaseFilters;
 use CodeIgniter\Filters\CSRF;
 use CodeIgniter\Filters\DebugToolbar;
 use CodeIgniter\Filters\Honeypot;
@@ -12,6 +13,30 @@ use CodeIgniter\Filters\SecureHeaders;
 
 class Filters extends BaseConfig
 {
+    /**
+     * Daftar filter bawaan framework. Dibiarkan kosong supaya CI tetap mengambil
+     * nilai bawaannya ('forcehttps', 'pagecache', 'performance'), kecuali untuk
+     * posisi yang kita ubah di constructor di bawah.
+     *
+     * @var array{before?: list<string>, after?: list<string>}
+     */
+    public array $required = [];
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        // CI 4.7 menjalankan filter 'toolbar' dari daftar $required bawaan framework,
+        // bukan hanya dari $globals['after']. Tiap kali filter ini jalan, satu file
+        // JSON ditulis ke writable/debugbar dan tidak pernah dibersihkan.
+        if (! config(Toolbar::class)->enabled) {
+            $base                    = config(BaseFilters::class);
+            $this->aliases           = $this->aliases + $base->aliases;
+            $this->globals['after']  = array_values(array_diff($this->globals['after'], ['toolbar']));
+            $this->required['after'] = array_values(array_diff($base->required['after'], ['toolbar']));
+        }
+    }
+
     /**
      * Configures aliases for Filter classes to
      * make reading things nicer and simpler.
@@ -40,7 +65,7 @@ class Filters extends BaseConfig
             // 'invalidchars',
         ],
         'after' => [
-            //'toolbar',
+            'toolbar',
             // 'honeypot',
             'secureheaders',
         ],
