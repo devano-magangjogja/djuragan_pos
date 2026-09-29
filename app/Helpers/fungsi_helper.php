@@ -560,8 +560,10 @@ if (! function_exists('rincian_json')) {
      * semuanya kosong supaya orderan lama dan orderan tanpa detail tetap polos.
      *
      * @param mixed $rincian
+     * @param array $pilihan key => daftar nilai yang boleh, dipakai untuk input
+     *                       berpilihan baku seperti tipe pesanan
      */
-    function rincian_json($rincian, array $keys): ?string
+    function rincian_json($rincian, array $keys, array $pilihan = []): ?string
     {
         if (! is_array($rincian)) {
             return null;
@@ -572,9 +574,15 @@ if (! function_exists('rincian_json')) {
         foreach ($keys as $key) {
             $nilai = trim((string) ($rincian[$key] ?? ''));
 
-            if ($nilai !== '') {
-                $isi[$key] = mb_substr($nilai, 0, 1000);
+            if ($nilai === '') {
+                continue;
             }
+
+            if (isset($pilihan[$key]) && ! in_array($nilai, $pilihan[$key], true)) {
+                continue;
+            }
+
+            $isi[$key] = mb_substr($nilai, 0, 1000);
         }
 
         return $isi === [] ? null : json_encode($isi, JSON_UNESCAPED_UNICODE);
@@ -604,6 +612,17 @@ if (! function_exists('baca_rincian')) {
     }
 }
 
+if (! function_exists('tipe_pesanan')) {
+    /**
+     * Jenis pesanan. Menentukan inputan jadwal yang muncul di form: deadline
+     * untuk pembuatan, tanggal ambil/kembali dan jaminan untuk sewa.
+     */
+    function tipe_pesanan(): array
+    {
+        return ['pembuatan' => 'Pembuatan', 'sewa' => 'Sewa'];
+    }
+}
+
 if (! function_exists('meta_rincian')) {
     /**
      * Label dan ikon untuk tiap key rincian, urut sesuai tampilan.
@@ -613,6 +632,7 @@ if (! function_exists('meta_rincian')) {
     {
         $meta = [
             'pesanan' => [
+                'tipe'     => ['Tipe Pesanan', 'fa-tag'],
                 'deadline' => ['Deadline', 'fa-calendar-check'],
                 'ambil'    => ['Diambil', 'fa-arrow-down'],
                 'kembali'  => ['Kembali', 'fa-arrow-up'],
@@ -665,7 +685,9 @@ if (! function_exists('daftar_rincian')) {
 
             $nilai = trim((string) $data[$key]);
 
-            if (in_array($key, $tanggal, true)) {
+            if ($key === 'tipe') {
+                $nilai = tipe_pesanan()[$nilai] ?? $nilai;
+            } elseif (in_array($key, $tanggal, true)) {
                 $nilai = tanggal_rincian($nilai);
             }
 

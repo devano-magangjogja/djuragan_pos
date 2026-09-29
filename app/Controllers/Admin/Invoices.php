@@ -151,7 +151,7 @@ class Invoices extends BaseController
                 // 'status_pembayaran'=> '',
                 // 'status_pengiriman'=> '',
                 'keterangan' => ($this->request->getPost('keterangan') !== '' ? $this->request->getPost('keterangan') : null),
-                'rincian'    => rincian_json($this->request->getPost('rincian'), array_keys(meta_rincian('pesanan'))),
+                'rincian'    => rincian_json($this->request->getPost('rincian'), array_keys(meta_rincian('pesanan')), ['tipe' => array_keys(tipe_pesanan())]),
             ];
 
             $invModel = new InvoiceModel();
@@ -258,7 +258,7 @@ class Invoices extends BaseController
             $rincian_invoice = $this->request->getPost('rincian');
 
             if (is_array($rincian_invoice)) {
-                $data_invoice['rincian'] = rincian_json($rincian_invoice, array_keys(meta_rincian('pesanan')));
+                $data_invoice['rincian'] = rincian_json($rincian_invoice, array_keys(meta_rincian('pesanan')), ['tipe' => array_keys(tipe_pesanan())]);
             }
 
             $invModel = new InvoiceModel();
