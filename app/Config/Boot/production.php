@@ -7,8 +7,9 @@
  | Don't show ANY in production environments. Instead, let the system catch
  | it and display a generic error message.
  */
-ini_set('display_errors', '1');
-error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT & ~E_USER_NOTICE & ~E_USER_DEPRECATED);
+ini_set('display_errors', '0');
+// E_STRICT tidak dipakai: konstantanya deprecated sejak PHP 8.4 dan levelnya sudah hilang
+error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_USER_NOTICE & ~E_USER_DEPRECATED);
 
 /*
  |--------------------------------------------------------------------------
