@@ -54,6 +54,7 @@ class Invoices extends BaseController
                 'juragan_id'     => $juragan_id,
                 'user_id'        => $user_id,
                 'keterangan'     => ($this->request->getPost('keterangan') !== '' ? trim($this->request->getPost('keterangan')) : null),
+                'rincian'        => rincian_json($this->request->getPost('rincian'), array_keys(meta_rincian('pesanan')), ['tipe' => array_keys(tipe_pesanan())]),
             ];
 
             // simpan ke database
@@ -77,12 +78,22 @@ class Invoices extends BaseController
                 $produk = [];
 
                 foreach ($produks as $k => $v) {
+                    $rincian_produk = [];
+
                     foreach ($v as $p => $d) {
+                        if ($p === 'rincian') {
+                            $rincian_produk = is_array($d) ? $d : [];
+
+                            continue;
+                        }
+
                         $produk[$k]['invoice_id'] = $invoice_id;
                         $produk[$k][$p]           = $d;
                     }
+
+                    $produk[$k]['rincian'] = rincian_json($rincian_produk, array_keys(meta_rincian('produk')));
                 }
-                $db->table('dibeli')->insertBatch($produk);
+                $db->table('dibeli')->insertBatch(lengkapi_produk($produk));
 
                 // simpan biaya
                 if ($this->request->getVar('biaya') !== null) {

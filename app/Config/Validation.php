@@ -103,6 +103,11 @@ class Validation extends BaseConfig
         // 'keterangan' => 'required',
         'produk' => 'required',
         // 'biaya' 		=> 'required'
+        // detail pesanan bersifat opsional
+        'rincian.deadline' => 'permit_empty|valid_date',
+        'rincian.ambil'    => 'permit_empty|valid_date',
+        'rincian.kembali'  => 'permit_empty|valid_date',
+        'rincian.jaminan'  => 'permit_empty|max_length[100]',
     ];
     public $updateInvoice = [
         'id_invoice'    => 'required',
@@ -116,6 +121,11 @@ class Validation extends BaseConfig
         // 'keterangan' => 'required',
         'produk' => 'required',
         // 'biaya' 		=> 'required'
+        // detail pesanan bersifat opsional
+        'rincian.deadline' => 'permit_empty|valid_date',
+        'rincian.ambil'    => 'permit_empty|valid_date',
+        'rincian.kembali'  => 'permit_empty|valid_date',
+        'rincian.jaminan'  => 'permit_empty|max_length[100]',
     ];
     public $simpanProgress = [
         'id_invoice' => 'required|integer',

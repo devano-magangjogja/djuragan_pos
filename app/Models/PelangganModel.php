@@ -40,20 +40,42 @@ class PelangganModel extends Model
         return $builder->get();
     }
 
+    /**
+     * Cari pelanggan yang pernah bertransaksi pada satu juragan.
+     *
+     * Versi lama menggabungkannya lewat JOIN + GROUP BY p.id_pelanggan +
+     * HAVING i.juragan_id, dan MySQL 8 menolaknya (only_full_group_by) karena
+     * SELECT i.* tidak bergantung pada kolom yang di-group. EXISTS memberi
+     * hasil yang sama tanpa perlu GROUP BY.
+     *
+     * @param int|string $juragan_id
+     * @param string     $cari      nama atau nomor HP
+     */
     public function cari($juragan_id, $cari)
     {
         $builder = $this->db->table($this->table . ' p');
-        $builder->select('i.*, p.*');
-        $builder->join('order_invoice i', '(p.id_pelanggan = i.pemesan_id OR i.kirimKepada_id = p.id_pelanggan) AND i.deleted_at IS NULL', '', false);
+        $builder->select('p.*');
+        $builder->where('p.deleted_at', null);
 
-        if ($cari !== null || $cari !== '') {
+        $cari = trim((string) $cari);
+
+        if ($cari !== '') {
+            // 'hp' disimpan sebagai JSON array, jadi angkanya saja yang berguna
+            $hp = preg_replace('/\D+/', '', $cari);
+
+            $builder->groupStart();
             $builder->like('p.nama_pelanggan', $cari, 'both');
-            $builder->orLike('p.hp', $cari, 'both');
+
+            if ($hp !== '') {
+                $builder->orLike('p.hp', $hp, 'both');
+            }
+
+            $builder->groupEnd();
         }
 
-        $builder->having('i.juragan_id', $juragan_id);
+        $builder->where('EXISTS (SELECT 1 FROM order_invoice i WHERE i.deleted_at IS NULL AND i.juragan_id = ' . (int) $juragan_id . ' AND (i.pemesan_id = p.id_pelanggan OR i.kirimKepada_id = p.id_pelanggan))', null, false);
+        $builder->orderBy('p.nama_pelanggan');
         $builder->limit(10);
-        $builder->groupBy('p.id_pelanggan');
 
         return $builder->get();
     }

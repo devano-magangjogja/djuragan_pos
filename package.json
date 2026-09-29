@@ -1,0 +1,27 @@
+{
+  "name": "djuragan_pos",
+  "version": "1.0.0",
+  "description": "Web POS ini dibangun dengan menggunakan framework [Codeigniter](http://codeigniter.com)",
+  "main": "index.js",
+  "scripts": {
+    "build:css": "tailwindcss -i resources/css/tailwind.css -o public/assets/css/tailwind.css --minify",
+    "watch:css": "tailwindcss -i resources/css/tailwind.css -o public/assets/css/tailwind.css --watch"
+  },
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/devano-magangjogja/djuragan_pos.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/devano-magangjogja/djuragan_pos/issues"
+  },
+  "homepage": "https://github.com/devano-magangjogja/djuragan_pos#readme",
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.3.3",
+    "tailwindcss": "^4.3.3"
+  }
+}

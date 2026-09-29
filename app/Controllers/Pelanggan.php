@@ -49,6 +49,8 @@ class Pelanggan extends BaseController
 
             $result = $pelanggan->ambil($id)->getFirstRow();
 
+            sinkron_kontak($id, $result->hp);
+
             $r['id_pelanggan']   = (int) $result->id_pelanggan;
             $r['hp']             = json_decode($result->hp);
             $r['nama_pelanggan'] = $result->nama_pelanggan;
@@ -79,15 +81,14 @@ class Pelanggan extends BaseController
         // }
 
         $cari       = $this->request->getGet('q');
-        $juragan_id = $this->request->getGet('juragan_id');
-        $pelanggan  = new PelangganModel();
-        $ongkir     = new Ongkir();
+        $juragan_id = (int) $this->request->getGet('juragan_id');
 
-        if ($this->request->getVar('juragan_id') && $juragan_id !== null) {
-            $juragan_id = $juragan_id;
-        } else {
-            $juragan_id = '0';
+        if ($juragan_id < 1) {
+            return $this->response->setJSON(['query' => $cari, 'results' => []]);
         }
+
+        $pelanggan = new PelangganModel();
+        $ongkir    = new Ongkir();
 
         $builder = $pelanggan->cari($juragan_id, $cari);
 
@@ -110,9 +111,9 @@ class Pelanggan extends BaseController
 
                 $kota = $ongkir->kota($id_provinsi, $id_kabupaten);
 
-                $nama_kecamatan = strtoupper($ongkir->kecamatan($id_kabupaten, $id_kecamatan)['subdistrict_name']);
-                $nama_kabupaten = strtoupper(($kota['type'] === 'Kabupaten' ? '' : '(Kota) ') . $kota['city_name']);
-                $nama_provinsi  = strtoupper($ongkir->provinsi($id_provinsi)['province']);
+                $nama_kecamatan = strtoupper($ongkir->kecamatan($id_kabupaten, $id_kecamatan)['subdistrict_name'] ?? '');
+                $nama_kabupaten = strtoupper(trim((($kota['type'] ?? '') === 'Kabupaten' ? '' : '(Kota) ') . ($kota['city_name'] ?? '')));
+                $nama_provinsi  = strtoupper($ongkir->provinsi($id_provinsi)['province_name'] ?? '');
 
                 $s[$i]['nama_kecamatan'] = $nama_kecamatan;
                 $s[$i]['kecamatan']      = $id_kecamatan;

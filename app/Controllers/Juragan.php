@@ -59,26 +59,24 @@ class Juragan extends BaseController
         return $json;
     }
 
-    public static function get_users($current_user_id)
+    /**
+     * Daftar Admin/CS yang bisa ditunjuk sebagai penanggung jawab orderan.
+     * Tidak lagi lewat relasi juragan supaya dropdown tetap terisi untuk
+     * akun yang belum punya baris relasi.
+     */
+    public static function get_users(): array
     {
-        $juragan = new \App\Models\JuraganModel();
+        $userModel = new \App\Models\UserModel();
+        $users     = [];
 
-        $user        = $juragan->byUserId($current_user_id)->getResult();
-        $ids_juragan = [];
-
-        foreach ($user as $u) {
-            $ids_juragan[] = $u->id_juragan;
-        }
-
-        $r_users = $juragan->getUsers($ids_juragan)->getResult();
-
-        $users = [];
-
-        foreach ($r_users as $jrgn) {
+        foreach ($userModel->whereIn('level', ['admin', 'cs'])
+            ->where('status', 'active')
+            ->orderBy('name', 'asc')
+            ->findAll() as $u) {
             $users[] = [
-                'id'       => (int) $jrgn->id,
-                'nama'     => $jrgn->name,
-                'username' => $jrgn->username,
+                'id'       => (int) $u->id,
+                'nama'     => $u->name,
+                'username' => $u->username,
             ];
         }
 

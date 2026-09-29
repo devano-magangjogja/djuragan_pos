@@ -14,6 +14,8 @@ $pemesan  = $orderan->pelanggan;
 $kirimKe  = $orderan->kirimKe;
 $dibeli   = $orderan->barang;
 $biaya    = $orderan->biaya;
+
+$rincian_pesanan = baca_rincian($orderan->rincian);
 ?>
 
 <?= $this->extend('template/main') ?>
@@ -21,7 +23,7 @@ $biaya    = $orderan->biaya;
 <?= $this->section('content') ?>
 <?= $this->include('admin/navbar') ?>
 
-<div class="container-xxl mb-3">
+<div class="mx-auto mb-3 w-full max-w-[1120px] px-4">
 
     <h1 class="h3 mt-5"><?= esc($title) ?></h1>
 
@@ -36,305 +38,350 @@ $biaya    = $orderan->biaya;
 
 </div>
 
-<div class="container mb-5">
+<div class="mx-auto mb-5 w-full max-w-[1120px] px-4">
 
     <?= form_open('admin/invoices/update', ['class' => 'row', 'id' => 'iForm'], ['id_invoice' => $orderan->id_invoice]); ?>
-    <div class="col-sm-4 mb-3">
+    <div class="col-12 col-lg-6 mb-3">
 
-        <div class="sticky-top" style="top: 60px">
-            <div class="card mb-3">
-                <div class="card-body">
-                    <div class="mb-3">
-                        <div class="row gx-2 mb-3">
-                            <div class="col">
-                                <?= form_label('Juragan', 'juragan', ['class' => 'form-label']); ?>
-                                <?= form_dropdown('juragan', ['' => 'Pilih Juragan'], '', ['class' => 'form-select', 'id' => 'juragan', 'required' => '']); ?>
-                            </div>
-                            <div class="col">
-                                <?= form_label('Admin/CS', 'pengguna', ['class' => 'form-label']); ?>
-                                <?= form_dropdown('pengguna', ['' => 'Pilih Admin/CS'], '', ['class' => 'form-select', 'id' => 'pengguna', 'required' => '']); ?>
-                            </div>
-                        </div>
-                        <div class="row gx-2">
-                            <div class="col-sm-5">
-                                <?= form_label('Asal Orderan', 'asal_orderan', ['class' => 'form-label']); ?>
-                                <?php
-                                // get all active labels
-                                $labelModel    = new \App\Models\LabelAsal();
-                                $options_label = ['' => 'Pilih asal'];
-
-                                foreach ($labelModel->where('status', '1')->orderBy('label', 'asc')->findAll() as $label) {
-                                    $options_label[$label->id] = $label->label;
-                                }
-                                ?>
-                                <?= form_dropdown('asal_orderan', $options_label, '', ['class' => 'form-select', 'id' => 'asal_orderan', 'required' => '']); ?>
-                            </div>
-                            <div class="col-sm-7">
-                                <?= form_label('Label', 'label', ['class' => 'form-label']); ?>
-                                <?= form_input('label', '', ['class' => 'form-control', 'id' => 'label', 'placeholder' => 'label - opsional, max: 50 karakter']); ?>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        <div class="h-full rounded-kartu border border-ink-200 bg-white shadow-kartu">
+            <div class="flex items-center gap-2.5 rounded-t-kartu border-b border-ink-100 bg-ink-50/60 px-4 py-2.5 sm:px-5">
+                <span class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-[0.65rem] border border-brand-100 bg-white text-brand-500"><i class="fal fa-store text-xs"></i></span>
+                <h6 class="mb-0 text-[0.78rem] font-bold uppercase tracking-[0.06em] text-ink-700">Informasi Orderan</h6>
             </div>
-
-            <div class="card mb-3">
-                <div class="card-body">
-                    <div class="mb-3">
-                        <?= form_label('Tanggal Order', 'tanggal_order', ['class' => 'form-label']) ?>
-                        <?= form_input('tanggal_order', set_value('tanggal_order', $orderan->tanggal_pesan), ['class' => 'form-control', 'id' => 'tanggal_order', 'required' => '', 'max' => $sekarang->toDateString()], 'date') ?>
-                    </div>
-                    <div class="mb-3">
-                        <div class="hidden_id">
-                            <?= form_label('Pelanggan', 'pelanggan', ['class' => 'form-label']); ?>
-                            <?= form_hidden('id_pemesan', $pemesan->id) ?>
-                            <?= form_hidden('id_kirimKe', $kirimKe->id) ?>
+            <div class="form-kartu px-4 py-4 sm:px-5">
+                <div class="mb-3">
+                    <div class="row gx-2 mb-3">
+                        <div class="col">
+                            <?= form_label('Juragan', 'juragan', ['class' => 'form-label']); ?>
+                            <?= form_dropdown('juragan', ['' => 'Pilih Juragan'], '', ['class' => 'form-select', 'id' => 'juragan', 'required' => '']); ?>
                         </div>
-
-                        <div class="input-group mb-3 mycustom form_pemesan" style="display: none;">
-                            <?= form_input([
-                                'class'       => 'form-control cari_pelanggan pemesan',
-                                'id'          => 'cari_pemesan',
-                                'placeholder' => 'cari data pelanggan',
-                                'type'        => 'search',
-                            ]) ?>
-                            <?= form_button([
-                                'class'          => 'btn btn-dark',
-                                'content'        => '<i class="fal fa-plus"></i> Tambah',
-                                'data-bs-target' => '#modalTambahPelanggan',
-                                'data-bs-toggle' => 'modal',
-                                'id'             => 'tambah_pemesan_kirimKe',
-                                'title'          => 'Tambah Data Pemesan',
-                            ]) ?>
-                        </div>
-
-                        <?php
-                        $alamat_pemesan_full = 'C.O.D';
-                        if ($pemesan->cod === 0) {
-                            $PPro = $pemesan->provinsi;
-                            $PKab = $pemesan->kabupaten;
-                            $PKec = $pemesan->kecamatan;
-
-                            $kec  = strtoupper($ongkir->kecamatan($PKab, $PKec)['subdistrict_name']);
-                            $kab  = strtoupper(esc($ongkir->kota($PPro, $PKab)['city_name']));
-                            $prov = strtoupper($ongkir->provinsi($PPro)['province_name']);
-
-                            $alamat_pemesan_full = $pemesan->alamat . '<br/>' . $kec . ', ' . $kab . '<br/>' . $prov . ($pemesan->kodepos === '0' ? '' : ' - ' . $pemesan->kodepos);
-                        }
-                        ?>
-
-                        <div class="mb-3 info-data-pemesan">
-                            <?= form_button([
-                                'class'   => 'btn btn-link text-danger text-decoration-none btn-sm float-end btn-hapus-alamat pemesan',
-                                'content' => '<i class="fal fa-trash"></i> <span class="visually-hidden">Hapus</span>',
-                                'title'   => 'Hapus Pemesan',
-                            ]); ?>
-                            <span id="alamat_pemesan" class="border rounded p-2 d-block">
-                                <h6 class="text-muted fw-normal">Pemesan</h6>
-                                <span class="d-block fw-bold"><?= esc($pemesan->nama) ?></span>
-                                <span class="d-block">
-                                    <?php
-                                    $i = 0;
-
-                                    foreach (json_decode($pemesan->hp) as $hp) {
-                                        if ($i === 1) {
-                                            echo '<span> / </span>';
-                                        }
-                                        echo esc($hp);
-                                        $i++;
-                                    }
-                                    ?>
-                                </span>
-                                <span class="d-block"><?= $alamat_pemesan_full ?></span>
-                            </span>
-                        </div>
-
-                        <div class="input-group mb-3 mycustom form_kirimKe" style="display: none">
-                            <?= form_input([
-                                'class'       => 'form-control cari_pelanggan kirimKe',
-                                'id'          => 'cari_kirimKe',
-                                'placeholder' => 'cari data pelanggan',
-                                'type'        => 'search',
-                            ]); ?>
-                            <?= form_button([
-                                'class'          => 'btn btn-dark',
-                                'content'        => '<i class="fal fa-plus"></i> Tambah',
-                                'data-bs-target' => '#modalTambahPelanggan',
-                                'data-bs-toggle' => 'modal',
-                                'id'             => 'tambah_kirimKe',
-                                'title'          => 'Tambah Data Kirim Kepada',
-                            ]); ?>
-                        </div>
-
-                        <?php
-                        $alamat_kirim_full = 'C.O.D';
-                        if ($kirimKe->cod === 0) {
-                            $KKPro = $kirimKe->provinsi;
-                            $KKKab = $kirimKe->kabupaten;
-                            $KKKec = $kirimKe->kecamatan;
-
-                            $Kkec  = strtoupper(esc($ongkir->kecamatan($KKKab, $KKKec)['subdistrict_name']));
-                            $Kkab  = strtoupper(esc($ongkir->kota($KKPro, $KKKab)['city_name']));
-                            $Kprov = strtoupper(esc($ongkir->provinsi($KKPro)['province_name']));
-
-                            $alamat_kirim_full = $kirimKe->alamat . '<br/>' . $Kkec . ', ' . $Kkab . '<br/>' . $Kprov . ($kirimKe->kodepos === '0' ? '' : ' - ' . $kirimKe->kodepos);
-                        }
-                        ?>
-
-                        <div class="mb-3 info-data-kirimKe">
-                            <?= form_button([
-                                'class'   => 'btn btn-link text-danger text-decoration-none btn-sm float-end btn-hapus-alamat kirimKe',
-                                'content' => '<i class="fal fa-trash"></i> <span class="visually-hidden">Hapus</span>',
-                                'title'   => 'Hapus Kirim',
-                            ]); ?>
-                            <span id="alamat_kirimKe" class="border rounded p-2 d-block">
-                                <h6 class="text-muted fw-normal">Kirim Kepada</h6>
-                                <span class="d-block fw-bold"><?= esc($kirimKe->nama) ?></span>
-                                <span class="d-block">
-                                    <?php
-                                    $i = 0;
-
-                                    foreach (json_decode($kirimKe->hp) as $hp) {
-                                        if ($i === 1) {
-                                            echo '<span> / </span>';
-                                        }
-                                        echo esc($hp);
-                                        $i++;
-                                    }
-                                    ?>
-                                </span>
-                                <span class="d-block"><?= $alamat_kirim_full ?></span>
-                            </span>
+                        <div class="col">
+                            <?= form_label('Admin/CS', 'pengguna', ['class' => 'form-label']); ?>
+                            <?= form_dropdown('pengguna', ['' => 'Pilih Admin/CS'], '', ['class' => 'form-select', 'id' => 'pengguna', 'required' => '']); ?>
                         </div>
                     </div>
-                    <div class="mb-3">
-                        <?= form_label('Note / Keterangan', 'keterangan', ['class' => 'form-label']) ?>
-                        <?= form_textarea(['name' => 'keterangan', 'value' => set_value('keterangan', ($orderan->keterangan !== null ? $orderan->keterangan : '')), 'id' => 'keterangan', 'class' => 'form-control', 'rows' => '3', 'placeholder' => 'opsional']) ?>
+                    <div class="row gx-2">
+                        <div class="col">
+                            <?= form_label('Asal Orderan', 'asal_orderan', ['class' => 'form-label']); ?>
+                            <?php
+                            // get all active labels
+                            $labelModel    = new \App\Models\LabelAsal();
+                            $options_label = ['' => 'Pilih asal'];
+
+                            foreach ($labelModel->where('status', '1')->orderBy('label', 'asc')->findAll() as $label) {
+                                $options_label[$label->id] = $label->label;
+                            }
+                            ?>
+                            <?= form_dropdown('asal_orderan', $options_label, '', ['class' => 'form-select', 'id' => 'asal_orderan', 'required' => '']); ?>
+                        </div>
+                        <div class="col">
+                            <?= form_label('Label', 'label', ['class' => 'form-label']); ?>
+                            <?= form_input('label', '', ['class' => 'form-control', 'id' => 'label', 'placeholder' => 'label - opsional, max: 50 karakter']); ?>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-sm-8 mb-3">
-        <div class="sticky-top" style="top: 60px">
-            <div class="card mb-3">
-                <div class="card-header">
-                    <ul class="nav nav-tabs card-header-tabs">
-                        <li class="nav-item">
-                            <span class="nav-link active" aria-current="true">Orderan</span>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#!" class="nav-link" data-bs-toggle="modal" data-bs-target="#tambahProduk">
-                                <i class="fal fa-plus"></i>
-                            </a>
-                        </li>
-                    </ul>
+
+    <div class="col-12 col-lg-6 mb-3">
+
+        <div class="h-full rounded-kartu border border-ink-200 bg-white shadow-kartu">
+            <div class="flex items-center gap-2.5 rounded-t-kartu border-b border-ink-100 bg-ink-50/60 px-4 py-2.5 sm:px-5">
+                <span class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-[0.65rem] border border-brand-100 bg-white text-brand-500"><i class="fal fa-user text-xs"></i></span>
+                <h6 class="mb-0 text-[0.78rem] font-bold uppercase tracking-[0.06em] text-ink-700">Tanggal &amp; Pelanggan</h6>
+            </div>
+            <div class="form-kartu px-4 py-4 sm:px-5">
+                <div class="mb-3">
+                    <?= form_label('Tanggal Order', 'tanggal_order', ['class' => 'form-label']) ?>
+                    <?= form_input('tanggal_order', set_value('tanggal_order', $orderan->tanggal_pesan), ['class' => 'form-control', 'id' => 'tanggal_order', 'required' => '', 'max' => $sekarang->toDateString()], 'date') ?>
                 </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
+                <div class="mb-3">
+                    <div class="hidden_id">
+                        <?= form_label('Pelanggan', 'pelanggan', ['class' => 'form-label']); ?>
+                        <?= form_hidden('id_pemesan', $pemesan->id) ?>
+                        <?= form_hidden('id_kirimKe', $kirimKe->id) ?>
+                    </div>
+
+                    <div class="input-group mb-3 mycustom form_pemesan" style="display: none;">
+                        <?= form_input([
+                            'class'       => 'form-control cari_pelanggan pemesan',
+                            'id'          => 'cari_pemesan',
+                            'placeholder' => 'cari data pelanggan',
+                            'type'        => 'search',
+                        ]) ?>
+                        <?= form_button([
+                            'class'          => 'btn btn-dark',
+                            'content'        => '<i class="fal fa-plus"></i> Tambah',
+                            'data-bs-target' => '#modalTambahPelanggan',
+                            'data-bs-toggle' => 'modal',
+                            'id'             => 'tambah_pemesan_kirimKe',
+                            'title'          => 'Tambah Data Pemesan',
+                        ]) ?>
+                    </div>
+
+                    <?php
+                    $alamat_pemesan_full = 'C.O.D';
+                    if ($pemesan->cod === 0) {
+                        $PPro = $pemesan->provinsi;
+                        $PKab = $pemesan->kabupaten;
+                        $PKec = $pemesan->kecamatan;
+
+                        $kec  = strtoupper($ongkir->kecamatan($PKab, $PKec)['subdistrict_name']);
+                        $kab  = strtoupper(esc($ongkir->kota($PPro, $PKab)['city_name']));
+                        $prov = strtoupper($ongkir->provinsi($PPro)['province_name']);
+
+                        $alamat_pemesan_full = $pemesan->alamat . '<br/>' . $kec . ', ' . $kab . '<br/>' . $prov . ($pemesan->kodepos === '0' ? '' : ' - ' . $pemesan->kodepos);
+                    }
+                    ?>
+
+                    <div class="mb-3 info-data-pemesan">
+                        <?= form_button([
+                            'class'   => 'btn btn-link text-danger text-decoration-none btn-sm float-end btn-hapus-alamat pemesan',
+                            'content' => '<i class="fal fa-trash"></i> <span class="visually-hidden">Hapus</span>',
+                            'title'   => 'Hapus Pemesan',
+                        ]); ?>
+                        <span id="alamat_pemesan" class="d-block border rounded-[0.7rem] border-ink-200 bg-ink-50 p-3">
+                            <h6 class="text-muted fw-normal">Pemesan</h6>
+                            <span class="d-block fw-bold"><?= esc($pemesan->nama) ?></span>
+                            <span class="d-block">
+                                <?php
+                                $i = 0;
+
+                                foreach (json_decode($pemesan->hp) as $hp) {
+                                    if ($i === 1) {
+                                        echo '<span> / </span>';
+                                    }
+                                    echo esc($hp);
+                                    $i++;
+                                }
+                                ?>
+                            </span>
+                            <span class="d-block"><?= $alamat_pemesan_full ?></span>
+                        </span>
+                    </div>
+
+                    <div class="input-group mb-3 mycustom form_kirimKe" style="display: none">
+                        <?= form_input([
+                            'class'       => 'form-control cari_pelanggan kirimKe',
+                            'id'          => 'cari_kirimKe',
+                            'placeholder' => 'cari data pelanggan',
+                            'type'        => 'search',
+                        ]); ?>
+                        <?= form_button([
+                            'class'          => 'btn btn-dark',
+                            'content'        => '<i class="fal fa-plus"></i> Tambah',
+                            'data-bs-target' => '#modalTambahPelanggan',
+                            'data-bs-toggle' => 'modal',
+                            'id'             => 'tambah_kirimKe',
+                            'title'          => 'Tambah Data Kirim Kepada',
+                        ]); ?>
+                    </div>
+
+                    <?php
+                    $alamat_kirim_full = 'C.O.D';
+                    if ($kirimKe->cod === 0) {
+                        $KKPro = $kirimKe->provinsi;
+                        $KKKab = $kirimKe->kabupaten;
+                        $KKKec = $kirimKe->kecamatan;
+
+                        $Kkec  = strtoupper(esc($ongkir->kecamatan($KKKab, $KKKec)['subdistrict_name']));
+                        $Kkab  = strtoupper(esc($ongkir->kota($KKPro, $KKKab)['city_name']));
+                        $Kprov = strtoupper(esc($ongkir->provinsi($KKPro)['province_name']));
+
+                        $alamat_kirim_full = $kirimKe->alamat . '<br/>' . $Kkec . ', ' . $Kkab . '<br/>' . $Kprov . ($kirimKe->kodepos === '0' ? '' : ' - ' . $kirimKe->kodepos);
+                    }
+                    ?>
+
+                    <div class="mb-3 info-data-kirimKe">
+                        <?= form_button([
+                            'class'   => 'btn btn-link text-danger text-decoration-none btn-sm float-end btn-hapus-alamat kirimKe',
+                            'content' => '<i class="fal fa-trash"></i> <span class="visually-hidden">Hapus</span>',
+                            'title'   => 'Hapus Kirim',
+                        ]); ?>
+                        <span id="alamat_kirimKe" class="d-block border rounded-[0.7rem] border-ink-200 bg-ink-50 p-3">
+                            <h6 class="text-muted fw-normal">Kirim Kepada</h6>
+                            <span class="d-block fw-bold"><?= esc($kirimKe->nama) ?></span>
+                            <span class="d-block">
+                                <?php
+                                $i = 0;
+
+                                foreach (json_decode($kirimKe->hp) as $hp) {
+                                    if ($i === 1) {
+                                        echo '<span> / </span>';
+                                    }
+                                    echo esc($hp);
+                                    $i++;
+                                }
+                                ?>
+                            </span>
+                            <span class="d-block"><?= $alamat_kirim_full ?></span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div class="col-12 mb-3">
+        <div class="rounded-kartu border border-ink-200 bg-white shadow-kartu">
+            <div class="flex items-center gap-2.5 rounded-t-kartu border-b border-ink-100 bg-ink-50/60 px-4 py-2.5 sm:px-5">
+                <span class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-[0.65rem] border border-brand-100 bg-white text-brand-500"><i class="fal fa-tag text-xs"></i></span>
+                <h6 class="mb-0 text-[0.78rem] font-bold uppercase tracking-[0.06em] text-ink-700">Tipe &amp; Jadwal</h6>
+            </div>
+            <div class="form-kartu px-4 py-4 sm:px-5">
+                <div class="row gx-3 gy-3">
+                    <div class="col-12 col-sm-6 col-lg-3">
+                        <?= form_label('Tipe Pesanan', 'tipe_pesanan', ['class' => 'form-label']); ?>
+                        <?= form_dropdown('rincian[tipe]', ['' => 'Pilih tipe'] + tipe_pesanan(), $rincian_pesanan['tipe'] ?? '', ['class' => 'form-select', 'id' => 'tipe_pesanan']); ?>
+                    </div>
+                    <div class="col-12 col-sm-6 col-lg-3 d-none tipe-buat">
+                        <?= form_label('Deadline', 'rincian_deadline', ['class' => 'form-label']); ?>
+                        <?= form_input('rincian[deadline]', $rincian_pesanan['deadline'] ?? '', ['class' => 'form-control', 'id' => 'rincian_deadline'], 'date'); ?>
+                    </div>
+                    <div class="col-12 col-sm-6 col-lg-3 d-none tipe-sewa">
+                        <?= form_label('Tanggal Diambil', 'rincian_ambil', ['class' => 'form-label']); ?>
+                        <?= form_input('rincian[ambil]', $rincian_pesanan['ambil'] ?? '', ['class' => 'form-control', 'id' => 'rincian_ambil'], 'date'); ?>
+                    </div>
+                    <div class="col-12 col-sm-6 col-lg-3 d-none tipe-sewa">
+                        <?= form_label('Tanggal Kembali', 'rincian_kembali', ['class' => 'form-label']); ?>
+                        <?= form_input('rincian[kembali]', $rincian_pesanan['kembali'] ?? '', ['class' => 'form-control', 'id' => 'rincian_kembali'], 'date'); ?>
+                    </div>
+                    <div class="col-12 col-sm-6 col-lg-3 d-none tipe-sewa">
+                        <?= form_label('Jaminan', 'rincian_jaminan', ['class' => 'form-label']); ?>
+                        <?= form_input('rincian[jaminan]', $rincian_pesanan['jaminan'] ?? '', ['class' => 'form-control', 'id' => 'rincian_jaminan', 'placeholder' => 'cth: SIM C / KTP']); ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 mb-3">
+        <div class="card mb-3 overflow-hidden rounded-kartu border-ink-200 shadow-kartu">
+            <div class="card-header border-ink-100 bg-ink-50/60">
+                <ul class="nav nav-tabs card-header-tabs">
+                    <li class="nav-item">
+                        <span class="nav-link active" aria-current="true">Orderan</span>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#!" class="nav-link" data-bs-toggle="modal" data-bs-target="#tambahProduk">
+                            <i class="fal fa-plus"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th scope="col">Produk</th>
+                                <th scope="col">Harga</th>
+                                <th scope="col">QTY</th>
+                                <th scope="col" class="text-end">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody class="list-orderan" data-length="<?= count($dibeli) + 1; ?>">
+                            <tr class="orderan-kosong">
+                                <td class="text-center" colspan="4">
+                                    <div class="py-5"><i class="fad text-warning fa-<?= random_element(['shopping-cart', 'shopping-bag', 'shopping-basket', 'bags-shopping', 'dolly-flatbed-empty', 'dolly-empty']) ?> fa-4x"></i>
+                                        <p class="mb-0"><?= random_element(['orderan kosong?', 'isi dulu orderannya ya?', 'jangan lupa isi orderannya ya?']) ?></p>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <?php
+                            $subtotal = 0;
+
+                            foreach ($dibeli as $produk) {
+                                $produk_total = $produk->harga * $produk->qty;
+                                $subtotal += $produk_total; ?>
                                 <tr>
-                                    <th scope="col">Produk</th>
-                                    <th scope="col">Harga</th>
-                                    <th scope="col">QTY</th>
-                                    <th scope="col" class="text-end">Subtotal</th>
-                                </tr>
-                            </thead>
-                            <tbody class="list-orderan" data-length="<?= count($dibeli) + 1; ?>">
-                                <tr class="orderan-kosong">
-                                    <td class="text-center" colspan="4">
-                                        <div class="py-5"><i class="fad text-warning fa-<?= random_element(['shopping-cart', 'shopping-bag', 'shopping-basket', 'bags-shopping', 'dolly-flatbed-empty', 'dolly-empty']) ?> fa-4x"></i>
-                                            <p class="mb-0"><?= random_element(['orderan kosong?', 'isi dulu orderannya ya?', 'jangan lupa isi orderannya ya?']) ?></p>
+                                    <td>
+                                        <div>
+                                            <button class="bg-transparent border-0 hapus_row orderan me-1">
+                                                <span aria-hidden="true"><i class="fal fa-trash-alt h6"></i></span>
+                                            </button>
+                                            <?= $produk->kode; ?> ( <?= strtoupper($produk->ukuran); ?> )
+                                        </div>
+                                    </td>
+                                    <td><?= number_to_currency($produk->harga, 'IDR'); ?></td>
+                                    <td><?= $produk->qty; ?></td>
+                                    <td>
+                                        <div class="text-end" data-uang1="<?= $produk_total; ?>"><?= number_to_currency($produk_total, 'IDR'); ?>
+                                            <?= form_hidden('produk[' . $produk->id . '][kode]', $produk->kode); ?>
+                                            <?= form_hidden('produk[' . $produk->id . '][harga]', $produk->harga); ?>
+                                            <?= form_hidden('produk[' . $produk->id . '][ukuran]', $produk->ukuran); ?>
+                                            <?= form_hidden('produk[' . $produk->id . '][qty]', $produk->qty); ?>
+                                            <?php foreach (baca_rincian($produk->rincian) as $key_rincian => $nilai_rincian) { ?>
+                                                <?= form_hidden('produk[' . $produk->id . '][rincian][' . $key_rincian . ']', $nilai_rincian); ?>
+                                            <?php } ?>
                                         </div>
                                     </td>
                                 </tr>
 
-                                <?php
-                                $subtotal = 0;
+                            <?php
+                            } ?>
+                        </tbody>
+                        <tfoot class="customBiaya d-none listBiaya">
+                            <?php
+                            $totalbiaya = 0;
+                            if ($biaya !== null) {
+                                foreach ($biaya as $o) {
+                                    $totalbiaya += $o->nominal;
+                                }
+                            }
 
-                                foreach ($dibeli as $produk) {
-                                    $produk_total = $produk->harga * $produk->qty;
-                                    $subtotal += $produk_total; ?>
+                            ?>
+                            <tr>
+                                <td colspan="3" class="text-end">Subtotal</td>
+                                <td class="text-end" data-totalbiaya="<?= $totalbiaya; ?>" data-subtotal="<?= $subtotal; ?>" id="subTotal"><?= number_to_currency($subtotal, 'IDR'); ?></td>
+                            </tr>
+
+                            <?php
+                            if ($biaya !== null) {
+                                foreach ($biaya as $o) { ?>
                                     <tr>
-                                        <td>
-                                            <div>
-                                                <button class="bg-transparent border-0 hapus_row orderan me-1">
-                                                    <span aria-hidden="true"><i class="fal fa-trash-alt h6"></i></span>
-                                                </button>
-                                                <?= $produk->kode; ?> ( <?= strtoupper($produk->ukuran); ?> )
-                                            </div>
+                                        <td colspan="3" class="text-end">
+                                            <button type="button" class="bg-transparent border-0 hapus_row me-1" aria-label="Close"><span aria-hidden="true"><i class="fal fa-trash-alt h6"></i></span></button>
+                                            <?= ($o->biaya_id === 1 ? 'Ongkir' : 'Lain-lain') ?>
+                                            <?= empty($o->label) || $o->label === 'null' ? '' : '<span class="text-muted ms-1">' . $o->label . '</span>'; ?>
                                         </td>
-                                        <td><?= number_to_currency($produk->harga, 'IDR'); ?></td>
-                                        <td><?= $produk->qty; ?></td>
                                         <td>
-                                            <div class="text-end" data-uang1="<?= $produk_total; ?>"><?= number_to_currency($produk_total, 'IDR'); ?>
-                                                <?= form_hidden('produk[' . $produk->id . '][kode]', $produk->kode); ?>
-                                                <?= form_hidden('produk[' . $produk->id . '][harga]', $produk->harga); ?>
-                                                <?= form_hidden('produk[' . $produk->id . '][ukuran]', $produk->ukuran); ?>
-                                                <?= form_hidden('produk[' . $produk->id . '][qty]', $produk->qty); ?>
-                                            </div>
+                                            <div data-biaya="<?= $o->nominal; ?>" class="text-end "><?= number_to_currency($o->nominal, 'IDR'); ?></div>
+                                            <?= form_hidden('biaya[' . $o->id . '][biaya_id]', $o->biaya_id); ?>
+                                            <?= form_hidden('biaya[' . $o->id . '][nominal]', $o->nominal); ?>
+                                            <?= form_hidden('biaya[' . $o->id . '][label]', $o->label); ?>
                                         </td>
                                     </tr>
+                            <?php }
+                            } ?>
+                        </tfoot>
+                    </table>
+                </div>
 
-                                <?php
-                                } ?>
-                            </tbody>
-                            <tfoot class="customBiaya d-none listBiaya">
-                                <?php
-                                $totalbiaya = 0;
-                                if ($biaya !== null) {
-                                    foreach ($biaya as $o) {
-                                        $totalbiaya += $o->nominal;
-                                    }
-                                }
-
-                                ?>
-                                <tr>
-                                    <td colspan="3" class="text-end">Subtotal</td>
-                                    <td class="text-end" data-totalbiaya="<?= $totalbiaya; ?>" data-subtotal="<?= $subtotal; ?>" id="subTotal"><?= number_to_currency($subtotal, 'IDR'); ?></td>
-                                </tr>
-
-                                <?php
-                                if ($biaya !== null) {
-                                    foreach ($biaya as $o) { ?>
-                                        <tr>
-                                            <td colspan="3" class="text-end">
-                                                <button type="button" class="bg-transparent border-0 hapus_row me-1" aria-label="Close"><span aria-hidden="true"><i class="fal fa-trash-alt h6"></i></span></button>
-                                                <?= ($o->biaya_id === 1 ? 'Ongkir' : 'Lain-lain') ?>
-                                                <?= empty($o->label) || $o->label === 'null' ? '' : '<span class="text-muted ms-1">' . $o->label . '</span>'; ?>
-                                            </td>
-                                            <td>
-                                                <div data-biaya="<?= $o->nominal; ?>" class="text-end "><?= number_to_currency($o->nominal, 'IDR'); ?></div>
-                                                <?= form_hidden('biaya[' . $o->id . '][biaya_id]', $o->biaya_id); ?>
-                                                <?= form_hidden('biaya[' . $o->id . '][nominal]', $o->nominal); ?>
-                                                <?= form_hidden('biaya[' . $o->id . '][label]', $o->label); ?>
-                                            </td>
-                                        </tr>
-                                <?php }
-                                } ?>
-                            </tfoot>
-                        </table>
-                    </div>
-
-                    <div class="border-bottom pb-3 customBiaya d-none">
-                        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#biayaOrder" data-biayaID="1" data-judul="Ongkir" data-operasi="1"><i class="fal fa-plus"></i> Ongkir</button>
-                        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-target="#biayaOrder" data-bs-toggle="modal" data-biayaID="2" data-judul="Lain-lain" data-operasi="1"><i class="fal fa-plus"></i> Biaya Lain</button>
-                    </div>
-                    <div class="customBiaya d-none">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h6 class="fw-bold">TOTAL</h6>
-                            <div class="h2 text-primary" id="grandTotal"><?= number_to_currency($subtotal + $totalbiaya, 'IDR'); ?></div>
-                        </div>
+                <div class="border-bottom pb-3 customBiaya d-none">
+                    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#biayaOrder" data-biayaID="1" data-judul="Ongkir" data-operasi="1"><i class="fal fa-plus"></i> Ongkir</button>
+                    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-target="#biayaOrder" data-bs-toggle="modal" data-biayaID="2" data-judul="Lain-lain" data-operasi="1"><i class="fal fa-plus"></i> Biaya Lain</button>
+                </div>
+                <div class="customBiaya d-none">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6 class="fw-bold">TOTAL</h6>
+                        <div class="h2 text-primary" id="grandTotal"><?= number_to_currency($subtotal + $totalbiaya, 'IDR'); ?></div>
                     </div>
                 </div>
             </div>
-
-            <hr>
-            <button type="submit" class="btn btn-primary btn-block text-uppercase">
-                <i class="fal fa-save"></i> Simpan
-            </button>
         </div>
+
+        <div class="form-kartu mb-3">
+            <?= form_label('Note / Keterangan', 'keterangan', ['class' => 'form-label']) ?>
+            <?= form_textarea(['name' => 'keterangan', 'value' => set_value('keterangan', ($orderan->keterangan !== null ? $orderan->keterangan : '')), 'id' => 'keterangan', 'class' => 'form-control', 'rows' => '3', 'placeholder' => 'opsional']) ?>
+        </div>
+
+        <hr class="my-4 border-0 border-t border-ink-200 opacity-100">
+        <button type="submit" class="btn btn-primary w-100 rounded-[0.75rem] py-2.5 text-uppercase">
+            <i class="fal fa-save"></i> Simpan
+        </button>
     </div>
     <?= form_close(); ?>
 
@@ -509,6 +556,35 @@ $biaya    = $orderan->biaya;
                         <?= form_input(['name' => 'QTY', 'id' => 'QTY', 'class' => 'form-control', 'required' => '', 'placeholder' => 'cth: ' . mt_rand(1, 20), 'type' => 'number', 'min' => '1']); ?>
                     </div>
                 </div>
+
+                <div class="row gx-2 mt-1 d-none rounded-[0.85rem] border border-dashed border-[#dbe3ee] bg-ink-50 px-[0.85rem] pb-[0.6rem] pt-[0.4rem] [&_h6]:text-[0.78rem] [&_h6]:font-bold [&_h6]:uppercase [&_h6]:tracking-[0.06em] [&_h6]:text-ink-600 [&_.fal]:text-brand-500 [&_.form-label]:text-xs [&_.form-label]:text-ink-500" id="customDetail">
+                    <div class="col-12">
+                        <h6 class="mb-2 mt-3 fw-bold">
+                            <i class="fal fa-ruler-combined text-danger"></i> Spesifikasi Custom
+                            <span class="fw-normal text-muted small">- opsional, hanya untuk pesanan custom</span>
+                        </h6>
+                    </div>
+                    <div class="col-sm-6 mb-2">
+                        <?= form_label('Ukuran Jadi', 'ri_ukuran_jadi', ['class' => 'form-label']); ?>
+                        <input type="text" class="form-control ri-field" id="ri_ukuran_jadi" data-key="ukuran_jadi" placeholder="cth: L / PM" autocomplete="off">
+                    </div>
+                    <div class="col-sm-6 mb-2">
+                        <?= form_label('Nama Pemilik Ukuran', 'ri_pemilik', ['class' => 'form-label']); ?>
+                        <input type="text" class="form-control ri-field" id="ri_pemilik" data-key="pemilik" placeholder="cth: AFRIZAL" autocomplete="off">
+                    </div>
+                    <div class="col-sm-6 mb-2">
+                        <?= form_label('Bahan', 'ri_bahan', ['class' => 'form-label']); ?>
+                        <input type="text" class="form-control ri-field" id="ri_bahan" data-key="bahan" placeholder="cth: JETBLACK" autocomplete="off">
+                    </div>
+                    <div class="col-sm-6 mb-2">
+                        <?= form_label('Model & Jahitan', 'ri_spesifikasi', ['class' => 'form-label']); ?>
+                        <input type="text" class="form-control ri-field" id="ri_spesifikasi" data-key="spesifikasi" placeholder="cth: KANCING JAS 2, SAKU BAWAH VARIASI" autocomplete="off">
+                    </div>
+                    <div class="col-12">
+                        <?= form_label('Tabel Ukuran Detail', 'ri_ukuran_detail', ['class' => 'form-label']); ?>
+                        <textarea class="form-control ri-field" id="ri_ukuran_detail" data-key="ukuran_detail" rows="2" placeholder="cth: P.JAS 75, L.DADA 103, L.PINGGANG 80"></textarea>
+                    </div>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-link text-decoration-none" data-bs-dismiss="modal">Batal</button>
@@ -536,6 +612,14 @@ $link_cari_pelanggan     = site_url('pelanggan/cari');
 $link_invoice            = site_url('admin/invoices/lihat/');
 $link_post_pelanggan     = site_url('pelanggan/baru');
 $link_api_notif          = site_url('api/notifikasi/');
+
+?>
+<script>
+    window.CARI_PELANGGAN = '<?= $link_cari_pelanggan ?>';
+</script>
+<script defer src="<?= base_url('assets/js/cari-pelanggan.js') ?>?v=<?= (int) @filemtime(FCPATH . 'assets/js/cari-pelanggan.js') ?>"></script>
+
+<?php
 
 $js = <<< JS
     $(function() {
@@ -927,6 +1011,42 @@ $js = <<< JS
     	var pl='';
     	listOrder();
 
+    	// inputan jadwal ikut tipe pesanan: deadline untuk pembuatan, tanggal
+    	// ambil/kembali dan jaminan untuk sewa. Data lama bisa punya jadwal tanpa
+    	// tipe, jadi saat halaman dibuka field yang tak relevan cuma disembunyikan.
+    	function tampilJadwal(hapus) {
+    		var t = $('#tipe_pesanan').val(),
+    			sewa = $('#rincian_ambil').val() !== '' || $('#rincian_kembali').val() !== '' || $('#rincian_jaminan').val() !== '',
+    			buat = t === 'pembuatan' || (!hapus && $('#rincian_deadline').val() !== '');
+
+    		sewa = t === 'sewa' || (!hapus && sewa);
+
+    		$('.tipe-buat').toggleClass('d-none', !buat);
+    		$('.tipe-sewa').toggleClass('d-none', !sewa);
+
+    		if (hapus && !buat) {
+    			$('#rincian_deadline').val('');
+    		}
+    		if (hapus && !sewa) {
+    			$('#rincian_ambil, #rincian_kembali, #rincian_jaminan').val('');
+    		}
+    	}
+
+    	tampilJadwal(false);
+
+    	$('#tipe_pesanan').on('change', function() {
+    		tampilJadwal(true);
+    	});
+
+    	// spesifikasi custom hanya muncul saat ukuran = Custom
+    	$('#ukuran').on('change', function() {
+    		var custom = $(this).val() === 'custom';
+    		$('#customDetail').toggleClass('d-none', !custom);
+    		if (!custom) {
+    			$('#customDetail .ri-field').val('');
+    		}
+    	});
+
     	var fpro=$('#nambahProduk');
     	fpro.on('submit',function(c){
     		c.preventDefault(),
@@ -946,6 +1066,17 @@ $js = <<< JS
     			t = $('<div/>').append(bt).append(d+' ( '+e+' )'),
     			tb = $('.list-orderan'),
     			p = $('<div/>', {'class' : 'text-end', 'data-uang1': a*b}).append(g).append(ik).append(ip).append(iz).append(iq);
+
+    		// simpan spesifikasi custom (kalau ukuran = custom) sebagai hidden input
+    		if (e === 'custom') {
+    			fpro.find('#customDetail .ri-field').each(function(){
+    				var k = $(this).data('key'),
+    					v = $.trim($(this).val() || '');
+    				if (k && v !== '') {
+    					p.append($('<input/>', {'type':'hidden','name':'produk['+j+'][rincian]['+k+']','value':v}));
+    				}
+    			});
+    		}
 
     		newRow(tb,[t,f,b,p]);
     		subtotal();
@@ -971,6 +1102,7 @@ $js = <<< JS
     	mPro.addEventListener('hidden.bs.modal',function(){
     		var a=$('#nambahProduk');
     		a.removeClass('was-validated')[0].reset();
+    		$('#customDetail').addClass('d-none');
     	});
 
     	function subtotal(){
