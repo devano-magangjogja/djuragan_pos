@@ -80,41 +80,51 @@ $session  = \Config\Services::session();
 
     <?php
     foreach ($orderan['data'] as $pesanan) { ?>
-        <div class="card order-card rounded-4 shadow-sm mb-4">
-            <div class="card-body p-3 p-lg-4">
-                <div class="order-head d-flex flex-column flex-sm-row justify-content-between align-items-start gap-3">
-                    <div class="order-head-main">
+        <?php
+        // warna pill status dan panel wajib bayar (pengganti text-bg-* dan list-group-item-*)
+        $pil = [
+            'danger'  => ['pill' => 'bg-red-600 text-white', 'band' => 'bg-red-100 text-red-800'],
+            'warning' => ['pill' => 'bg-tunggu text-ink-900', 'band' => 'bg-amber-100 text-amber-800'],
+            'primary' => ['pill' => 'bg-blue-600 text-white', 'band' => 'bg-blue-100 text-blue-800'],
+            'success' => ['pill' => 'bg-selesai text-white', 'band' => 'bg-emerald-100 text-emerald-800'],
+        ];
+        $kelas_status = status_pembayaran($pesanan->pembayaran, $pesanan->status_pembayaran, 'l_class');
+        ?>
+        <div class="mb-4 rounded-[1.5rem] border border-ink-200 bg-white shadow-sm">
+            <div class="p-3 lg:p-4">
+                <div class="flex flex-col sm:flex-row justify-between items-start gap-4">
+                    <div class="min-w-0">
                         <?php $time = Time::createFromFormat('Y-m-d', $pesanan->tanggal_pesan); ?>
-                        <div class="order-head-top">
-                            <span class="order-head-badge"><i class="fal fa-receipt"></i></span>
+                        <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
+                            <span class="inline-flex h-[2.6rem] w-[2.6rem] shrink-0 items-center justify-center rounded-[0.9rem] border border-brand-100 bg-brand-50 text-lg text-brand-500"><i class="fal fa-receipt"></i></span>
 
-                            <div class="order-head-id">
-                                <h5 class="card-title mb-0">#<?= esc($pesanan->seri) ?></h5>
-                                <p class="text-muted small mb-0">( <?= $time->toLocalizedString('EEEE, d MMMM yyyy') ?> )</p>
+                            <div class="min-w-0">
+                                <h5 class="text-[1.15rem] font-extrabold tracking-[-0.01em] mb-0">#<?= esc($pesanan->seri) ?></h5>
+                                <p class="text-ink-500 text-xs mb-0">( <?= $time->toLocalizedString('EEEE, d MMMM yyyy') ?> )</p>
                             </div>
 
-                            <span class="badge rounded-pill order-head-pill text-bg-<?= esc(status_pembayaran($pesanan->pembayaran, $pesanan->status_pembayaran, 'l_class')) ?>">
+                            <span class="rounded-full px-3 py-1 text-xs font-semibold <?= $pil[$kelas_status]['pill'] ?>">
                                 <?= esc(status_pembayaran($pesanan->pembayaran, $pesanan->status_pembayaran, 'label')) ?>
                             </span>
 
-                            <div class="order-head-actions">
-                                <a class="btn btn-sm order-head-btn" href="<?= site_url('download/invoice/' . $pesanan->seri) ?>" target="_blank" rel="noopener" title="Cetak pesanan ini">
-                                    <i class="fal fa-print"></i> <span class="d-none d-md-inline">Cetak</span>
+                            <div class="ms-auto flex items-center gap-1 max-sm:ms-0">
+                                <a class="inline-flex cursor-pointer items-center gap-1 rounded-[0.7rem] border border-ink-200 bg-ink-50 px-2.5 py-1 text-sm text-ink-700 transition hover:bg-ink-100 hover:text-ink-900" href="<?= site_url('download/invoice/' . $pesanan->seri) ?>" target="_blank" rel="noopener" title="Cetak pesanan ini">
+                                    <i class="fal fa-print"></i> <span class="hidden md:inline">Cetak</span>
                                 </a>
-                                <button type="button" class="btn btn-sm order-head-btn salinTautan" data-link="<?= esc(site_url('download/invoice/' . $pesanan->seri), 'attr') ?>" title="Salin tautan invoice">
-                                    <i class="fal fa-copy"></i><span class="visually-hidden">Salin tautan</span>
+                                <button type="button" class="inline-flex cursor-pointer items-center gap-1 rounded-[0.7rem] border border-ink-200 bg-ink-50 px-2.5 py-1 text-sm text-ink-700 transition hover:bg-ink-100 hover:text-ink-900 salinTautan" data-link="<?= esc(site_url('download/invoice/' . $pesanan->seri), 'attr') ?>" title="Salin tautan invoice">
+                                    <i class="fal fa-copy"></i><span class="sr-only">Salin tautan</span>
                                 </button>
                             </div>
                         </div>
 
-                        <div class="order-head-meta">
-                            <span class="order-head-meta-item">
+                        <div class="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-sm text-ink-600">
+                            <span class="inline-flex min-w-0 items-center gap-1 [&>.fal]:text-[0.85rem] [&>.fal]:text-ink-400">
                                 <i class="fal fa-store"></i>
-                                <span class="text-muted text-lowercase">Juragan:</span> <?= anchor('admin/invoices/lihat/' . $pesanan->juragan->slug, esc($pesanan->juragan->nama)) ?>
+                                <span class="text-lowercase text-ink-500">Juragan:</span> <?= anchor('admin/invoices/lihat/' . $pesanan->juragan->slug, esc($pesanan->juragan->nama)) ?>
                             </span>
-                            <span class="order-head-meta-item">
+                            <span class="inline-flex min-w-0 items-center gap-1 [&>.fal]:text-[0.85rem] [&>.fal]:text-ink-400">
                                 <i class="fal fa-user"></i>
-                                <span class="text-muted text-lowercase">Admin/CS:</span> <?= esc($pesanan->pengguna->nama) ?>
+                                <span class="text-lowercase text-ink-500">Admin/CS:</span> <?= esc($pesanan->pengguna->nama) ?>
                             </span>
                         </div>
                     </div>
@@ -122,9 +132,9 @@ $session  = \Config\Services::session();
                     <div>
                         <ul class="list-inline mb-0 timeliner">
                             <li class="list-inline-item me-0 position-relative start full" data-bs-toggle="tooltip" data-bs-placement="top" title="Pesanan Ditambahkan">
-                                <div class="d-flex justify-content-center">
+                                <div class="flex justify-center">
                                     <div class="text-center">
-                                        <i class="fal fa-plus-circle icon d-block"></i>
+                                        <i class="fal fa-plus-circle icon block"></i>
                                         <?= '<span><abbr title="' . esc($time->humanize()) . '">' . esc($time->day . '/' . $time->month) . '</abbr></span>' ?>
                                     </div>
                                 </div>
@@ -149,12 +159,12 @@ $session  = \Config\Services::session();
                         </ul>
                     </div>
                 </div>
-                <hr class="my-3" />
+                <hr class="my-4 border-0 border-t border-ink-200 opacity-100" />
 
-                <div class="row g-3 g-lg-4">
-                    <section class="col-12 col-lg-4">
-                        <div class="order-block h-100">
-                            <h6 class="order-block-title">
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-12 lg:gap-6">
+                    <section class="col-span-full lg:col-span-4">
+                        <div class="h-full rounded-2xl border border-ink-200 bg-[#fcfdfe] px-[1.15rem] py-4">
+                            <h6 class="mb-2 flex items-center gap-1.5 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500 [&_.fal]:text-[0.95rem] [&_.fal]:text-ink-400">
                                 <i class="fal fa-user-circle"></i>
                                 <?= ($pesanan->kirimKepada_id === $pesanan->pemesan_id ? 'Pemesan / Kirim Kepada' : 'Pemesan') ?>
                             </h6>
@@ -162,22 +172,22 @@ $session  = \Config\Services::session();
                             <?php
                             $pelanggan = $pesanan->pelanggan;
                             ?>
-                            <div class="order-block-body">
-                                <span class="d-block fw-bold"><?= strtoupper($pelanggan->nama); ?></span>
-                                <span class="d-block">
+                            <div class="text-sm leading-[1.55] text-ink-800">
+                                <span class="block font-bold"><?= strtoupper($pelanggan->nama); ?></span>
+                                <span class="block">
                                     <?php
                                     $i = 0;
 
                                     foreach (json_decode($pelanggan->hp) as $hp) {
                                         if ($i === 1) {
-                                            echo '<span class="visually-hidden">/</span>';
+                                            echo '<span class="sr-only">/</span>';
                                         }
-                                        echo '<span class="badge bg-secondary me-1 fw-light">' . esc($hp) . '</span>';
+                                        echo '<span class="me-1 inline-block rounded-md bg-ink-500 px-1.5 py-0.5 text-[0.75em] font-normal text-white">' . esc($hp) . '</span>';
                                         $i++;
                                     }
                                     ?>
                                 </span>
-                                <span class="d-block">
+                                <span class="block">
                                     <?php
                                     if ($pelanggan->cod === '1') {
                                         echo 'C.O.D';
@@ -195,23 +205,23 @@ $session  = \Config\Services::session();
                             <?php
                             if ($pesanan->kirimKepada_id !== $pesanan->pemesan_id) {
                                 $kirimKe = $pesanan->kirimKe; ?>
-                                <h6 class="order-block-title mt-3"><i class="fal fa-map-marker-alt"></i> Kirim Kepada</h6>
-                                <div class="order-block-body">
-                                    <span class="d-block fw-bold"><?= strtoupper($kirimKe->nama); ?></span>
-                                    <span class="d-block">
+                                <h6 class="mb-2 flex items-center gap-1.5 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500 [&_.fal]:text-[0.95rem] [&_.fal]:text-ink-400 mt-4 border-t border-dashed border-ink-200 pt-3"><i class="fal fa-map-marker-alt"></i> Kirim Kepada</h6>
+                                <div class="text-sm leading-[1.55] text-ink-800">
+                                    <span class="block font-bold"><?= strtoupper($kirimKe->nama); ?></span>
+                                    <span class="block">
                                         <?php
                                         $i = 0;
 
                                         foreach (json_decode($kirimKe->hp) as $hp) {
                                             if ($i === 1) {
-                                                echo '<span class="visually-hidden">/</span>';
+                                                echo '<span class="sr-only">/</span>';
                                             }
-                                            echo '<span class="badge bg-secondary me-1 fw-light">' . esc($hp) . '</span>';
+                                            echo '<span class="me-1 inline-block rounded-md bg-ink-500 px-1.5 py-0.5 text-[0.75em] font-normal text-white">' . esc($hp) . '</span>';
                                             $i++;
                                         }
                                         ?>
                                     </span>
-                                    <span class="d-block">
+                                    <span class="block">
                                         <?php
                                         if ($kirimKe->cod === '1') {
                                             echo 'C.O.D';
@@ -227,14 +237,14 @@ $session  = \Config\Services::session();
                                 </div>
                             <?php } ?>
 
-                            <h6 class="order-block-title mt-3"><i class="fal fa-inbox-in"></i> Asal Orderan</h6>
-                            <div class="order-block-body"><?= label_asal($pesanan->source->id, $pesanan->source->label) ?></div>
+                            <h6 class="mb-2 flex items-center gap-1.5 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500 [&_.fal]:text-[0.95rem] [&_.fal]:text-ink-400 mt-4 border-t border-dashed border-ink-200 pt-3"><i class="fal fa-inbox-in"></i> Asal Orderan</h6>
+                            <div class="text-sm leading-[1.55] text-ink-800"><?= label_asal($pesanan->source->id, $pesanan->source->label) ?></div>
                         </div>
                     </section>
 
-                    <section class="col-12 col-md-6 col-lg-3">
-                        <div class="order-block h-100">
-                            <h6 class="order-block-title"><i class="fal fa-tshirt"></i> Produk</h6>
+                    <section class="col-span-full md:col-span-1 lg:col-span-3">
+                        <div class="h-full rounded-2xl border border-ink-200 bg-[#fcfdfe] px-[1.15rem] py-4">
+                            <h6 class="mb-2 flex items-center gap-1.5 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500 [&_.fal]:text-[0.95rem] [&_.fal]:text-ink-400"><i class="fal fa-tshirt"></i> Produk</h6>
 
                             <?php
                             $count_barang = 0;
@@ -249,12 +259,12 @@ $session  = \Config\Services::session();
                             $wajib_bayar = $harga_barang;
                             ?>
 
-                            <ul class="order-list">
+                            <ul class="m-0 list-none p-0 text-sm">
                                 <?php
                                 foreach ($pesanan->barang as $b) {
-                                    echo '<li>';
-                                    echo '<span class="order-list-name">' . strtoupper($b->kode) . ' (' . strtoupper($b->ukuran) . ')</span>';
-                                    echo '<span class="order-list-qty">' . $b->qty . ' pcs</span>';
+                                    echo '<li class="flex flex-wrap items-baseline gap-1 py-[0.2rem]">';
+                                    echo '<span class="grow">' . strtoupper($b->kode) . ' (' . strtoupper($b->ukuran) . ')</span>';
+                                    echo '<span class="shrink-0 font-semibold whitespace-nowrap">' . $b->qty . ' pcs</span>';
 
                                     $content = '<div class=\'text-end\'>';
                                     $content .= 'harga @: <strong>' . number_to_currency($b->harga, 'IDR') . '</strong>';
@@ -267,20 +277,20 @@ $session  = \Config\Services::session();
                                         [
                                             'data-bs-toggle'  => 'popHarga',
                                             'data-bs-content' => $content,
-                                            'content'         => '<i class="fal fa-info-circle"></i> <span class="visually-hidden">info</span>',
-                                            'class'           => 'btn btn-link btn-sm text-secondary p-0',
+                                            'content'         => '<i class="fal fa-info-circle"></i> <span class="sr-only">info</span>',
+                                            'class'           => 'cursor-pointer border-0 bg-transparent p-0 text-xs text-ink-500 hover:underline',
                                         ]
                                     );
 
                                     $rincian_item = daftar_rincian($b->rincian ?? null, 'produk');
 
                                     if ($rincian_item !== []) {
-                                        echo '<div class="order-specs">';
+                                        echo '<div class="basis-full mb-[0.15rem] mt-[0.3rem] flex flex-wrap gap-[0.3rem] pl-[1.1rem]">';
 
                                         foreach ($rincian_item as $item) {
-                                            echo '<span class="order-spec"><i class="fal ' . $item['ikon'] . '"></i> '
-                                                . '<span class="order-spec-label">' . esc($item['label']) . '</span>'
-                                                . '<span class="order-spec-value">' . esc($item['nilai']) . '</span></span>';
+                                            echo '<span class="inline-flex max-w-full items-baseline gap-1 rounded-full border border-ink-200 bg-[#f6f8fb] px-[0.55rem] py-[0.2rem] text-xs leading-snug text-ink-600 [&>.fal]:text-[0.7rem] [&>.fal]:text-ink-400"><i class="fal ' . $item['ikon'] . '"></i> '
+                                                . '<span class="font-bold tracking-wide text-ink-500 whitespace-nowrap">' . esc($item['label']) . '</span>'
+                                                . '<span class="break-words">' . esc($item['nilai']) . '</span></span>';
                                         }
 
                                         echo '</div>';
@@ -290,15 +300,15 @@ $session  = \Config\Services::session();
                                 }
                                 ?>
                             </ul>
-                            <div class="order-list-total">
-                                total: <span class="badge rounded-pill bg-dark"><?= $count_barang; ?></span> pcs
+                            <div class="mt-2 border-t border-dashed border-ink-200 pt-2 text-[0.85rem] text-ink-500">
+                                total: <span class="inline-block rounded-full bg-ink-900 px-2 py-0.5 text-xs font-semibold text-white"><?= $count_barang; ?></span> pcs
                             </div>
                         </div>
                     </section>
 
-                    <section class="col-12 col-md-6 col-lg-5">
-                        <div class="order-block h-100">
-                            <h6 class="order-block-title"><i class="fal fa-receipt"></i> Info Biaya</h6>
+                    <section class="col-span-full md:col-span-1 lg:col-span-5">
+                        <div class="h-full rounded-2xl border border-ink-200 bg-[#fcfdfe] px-[1.15rem] py-4">
+                            <h6 class="mb-2 flex items-center gap-1.5 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500 [&_.fal]:text-[0.95rem] [&_.fal]:text-ink-400"><i class="fal fa-receipt"></i> Info Biaya</h6>
 
                             <?php
                             foreach ($pesanan->biaya as $c) {
@@ -308,21 +318,21 @@ $session  = \Config\Services::session();
                             $sudah_bayar = status_pembayaran($pesanan->pembayaran, $pesanan->status_pembayaran, 'sudah_bayar');
                             ?>
 
-                            <div class="order-total list-group-item-<?= status_pembayaran($pesanan->pembayaran, $pesanan->status_pembayaran, 'l_class'); ?>">
-                                <span class="order-total-label">Wajib Bayar</span>
-                                <span class="order-total-nominal"><?= number_to_currency($wajib_bayar, 'IDR'); ?></span>
+                            <div class="mb-3 flex items-center justify-between gap-3 rounded-xl px-4 py-3 <?= $pil[$kelas_status]['band'] ?>">
+                                <span class="text-[0.72rem] font-bold uppercase tracking-[0.09em]">Wajib Bayar</span>
+                                <span class="text-[1.35rem] font-extrabold max-sm:text-[1.15rem]"><?= number_to_currency($wajib_bayar, 'IDR'); ?></span>
                             </div>
 
-                            <ul class="order-cost">
-                                <li>
-                                    <span class="order-cost-label">Harga Produk</span>
-                                    <span class="order-cost-nominal"><?= number_to_currency($harga_barang, 'IDR'); ?></span>
+                            <ul class="m-0 list-none p-0 text-[0.85rem]">
+                                <li class="flex items-baseline justify-between gap-3 py-1">
+                                    <span class="uppercase tracking-wide text-ink-500">Harga Produk</span>
+                                    <span class="font-bold whitespace-nowrap"><?= number_to_currency($harga_barang, 'IDR'); ?></span>
                                 </li>
 
                                 <?php
                                 foreach ($pesanan->biaya as $c) { ?>
-                                    <li>
-                                        <span class="order-cost-label">
+                                    <li class="flex items-baseline justify-between gap-3 py-1">
+                                        <span class="uppercase tracking-wide text-ink-500">
                                             <?php
                                             $biaya = 'Lainnya';
                                             if ($c->biaya_id === 1) {
@@ -335,22 +345,22 @@ $session  = \Config\Services::session();
                                             } elseif ($c->label === 'null') {
                                                 $label = '';
                                             } ?>
-                                            <span class="fw-bold"><?= $biaya; ?></span>
+                                            <span class="font-bold"><?= $biaya; ?></span>
                                             <?= $label; ?>
                                         </span>
-                                        <span class="order-cost-nominal <?= ($c->nominal < 0 ? 'text-danger' : ''); ?>"><?= number_to_currency($c->nominal, 'IDR') ?></span>
+                                        <span class="font-bold whitespace-nowrap <?= ($c->nominal < 0 ? 'text-red-600' : ''); ?>"><?= number_to_currency($c->nominal, 'IDR') ?></span>
                                     </li>
                                 <?php
                                 } ?>
 
                                 <?php
                                 if ($sudah_bayar > 0) { ?>
-                                    <li class="order-cost-sep">
-                                        <span class="order-cost-label">
-                                            <span class="fw-bold">Sudah</span>&nbsp;Bayar
+                                    <li class="flex items-baseline justify-between gap-3 py-1 mt-1 border-t border-dashed border-ink-200 pt-2">
+                                        <span class="uppercase tracking-wide text-ink-500">
+                                            <span class="font-bold">Sudah</span>&nbsp;Bayar
                                             <?= form_button([
-                                                'class'          => 'text-dark ms-1 pesanBayar',
-                                                'content'        => '<i class="fal fa-info-circle"></i> <span class="visually-hidden">info</span>',
+                                                'class'          => 'ms-1 cursor-pointer border-0 bg-transparent text-ink-900 pesanBayar',
+                                                'content'        => '<i class="fal fa-info-circle"></i> <span class="sr-only">info</span>',
                                                 'data-invoice'   => $pesanan->id_invoice,
                                                 'data-juragan'   => $pesanan->juragan_id,
                                                 'data-bs-target' => '#modalBayar',
@@ -358,21 +368,21 @@ $session  = \Config\Services::session();
                                                 'style'          => 'border:none; background:transparent',
                                             ]); ?>
                                         </span>
-                                        <span class="order-cost-nominal"><?= number_to_currency($sudah_bayar, 'IDR'); ?></span>
+                                        <span class="font-bold whitespace-nowrap"><?= number_to_currency($sudah_bayar, 'IDR'); ?></span>
                                     </li>
                                 <?php
                                 }
                                 if (($wajib_bayar - $sudah_bayar) > 0) { ?>
-                                    <li>
-                                        <span class="order-cost-label"><span class="fw-bold">Kurang</span>&nbsp;Bayar</span>
-                                        <span class="order-cost-nominal text-danger"><?= number_to_currency(-($wajib_bayar - $sudah_bayar), 'IDR'); ?></span>
+                                    <li class="flex items-baseline justify-between gap-3 py-1">
+                                        <span class="uppercase tracking-wide text-ink-500"><span class="font-bold">Kurang</span>&nbsp;Bayar</span>
+                                        <span class="font-bold whitespace-nowrap text-red-600"><?= number_to_currency(-($wajib_bayar - $sudah_bayar), 'IDR'); ?></span>
                                     </li>
                                 <?php
                                 }
                                 if ($sudah_bayar > $wajib_bayar) { ?>
-                                    <li>
-                                        <span class="order-cost-label"><span class="fw-bold">Lebih</span>&nbsp;Bayar</span>
-                                        <span class="order-cost-nominal"><?= number_to_currency(($sudah_bayar - $wajib_bayar), 'IDR'); ?></span>
+                                    <li class="flex items-baseline justify-between gap-3 py-1">
+                                        <span class="uppercase tracking-wide text-ink-500"><span class="font-bold">Lebih</span>&nbsp;Bayar</span>
+                                        <span class="font-bold whitespace-nowrap"><?= number_to_currency(($sudah_bayar - $wajib_bayar), 'IDR'); ?></span>
                                     </li>
                                 <?php
                                 } ?>
@@ -384,13 +394,13 @@ $session  = \Config\Services::session();
 
                 <?php $rincian_pesanan = daftar_rincian($pesanan->rincian ?? null, 'pesanan'); ?>
                 <?php if ($rincian_pesanan !== []) { ?>
-                    <div class="order-detail mt-3">
-                        <h6 class="order-block-title"><i class="fal fa-list-check"></i> Detail Pesanan</h6>
-                        <div class="order-detail-grid">
+                    <div class="rounded-2xl border border-ink-200 border-l-[3px] border-l-proses bg-[#fcfdfe] px-[1.15rem] py-4 mt-4">
+                        <h6 class="mb-2 flex items-center gap-1.5 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500 [&_.fal]:text-[0.95rem] [&_.fal]:text-ink-400"><i class="fal fa-list-check"></i> Detail Pesanan</h6>
+                        <div class="grid grid-cols-[repeat(auto-fit,minmax(12rem,1fr))] gap-x-4 gap-y-2.5">
                             <?php foreach ($rincian_pesanan as $item) { ?>
-                                <div class="order-detail-item">
-                                    <span class="order-detail-label"><i class="fal <?= $item['ikon'] ?>"></i> <?= esc($item['label']) ?></span>
-                                    <span class="order-detail-value"><?= esc($item['nilai']) ?></span>
+                                <div class="min-w-0">
+                                    <span class="block text-[0.7rem] font-bold uppercase tracking-[0.08em] text-ink-500 [&_.fal]:mr-1 [&_.fal]:text-ink-400"><i class="fal <?= $item['ikon'] ?>"></i> <?= esc($item['label']) ?></span>
+                                    <span class="mt-[0.1rem] block break-words text-[0.92rem] font-semibold leading-normal text-ink-900"><?= esc($item['nilai']) ?></span>
                                 </div>
                             <?php } ?>
                         </div>
@@ -398,33 +408,33 @@ $session  = \Config\Services::session();
                 <?php } ?>
 
                 <?php if ($pesanan->keterangan !== null && trim($pesanan->keterangan) !== '') { ?>
-                    <div class="order-note mt-3">
-                        <h6 class="order-block-title"><i class="fal fa-clipboard-list"></i> Keterangan</h6>
-                        <p class="keterangan mb-0" id="keterangan-<?= esc($pesanan->id_invoice) ?>">
+                    <div class="rounded-2xl border border-ink-200 border-l-[3px] border-l-brand-500 bg-[#fcfdfe] px-[1.15rem] py-4 mt-4">
+                        <h6 class="mb-2 flex items-center gap-1.5 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500 [&_.fal]:text-[0.95rem] [&_.fal]:text-ink-400"><i class="fal fa-clipboard-list"></i> Keterangan</h6>
+                        <p class="keterangan mb-0 break-words text-sm leading-[1.65] text-ink-700" id="keterangan-<?= esc($pesanan->id_invoice) ?>">
                             <?= nl2br(esc($pesanan->keterangan)) ?>
                         </p>
                     </div>
                 <?php } ?>
 
                 <?php if ($pesanan->status_pengiriman !== '1' && $pesanan->pengiriman !== []) { ?>
-                    <div class="mt-3">
-                        <h6 class="order-block-title"><i class="fal fa-truck-fast"></i> Resi</h6>
-                        <div class="order-resi">
+                    <div class="mt-4">
+                        <h6 class="mb-2 flex items-center gap-1.5 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500 [&_.fal]:text-[0.95rem] [&_.fal]:text-ink-400"><i class="fal fa-truck-fast"></i> Resi</h6>
+                        <div class="grid grid-cols-[repeat(auto-fill,minmax(15rem,1fr))] gap-3">
                             <?php
                             foreach ($pesanan->pengiriman as $key => $kirim) { ?>
                                 <?php $tanggal_kirim = Time::createFromTimestamp($kirim->tanggal_kirim); ?>
-                                <div class="order-resi-card">
-                                    <div class="order-resi-kurir">
-                                        <span class="text-truncate"><?= esc($kirim->kurir) ?></span>
+                                <div class="rounded-xl border border-ink-200 bg-white px-3.5 py-3">
+                                    <div class="flex items-center justify-between gap-2 text-[0.72rem] font-bold uppercase tracking-[0.08em] text-ink-500">
+                                        <span class="truncate"><?= esc($kirim->kurir) ?></span>
                                         <?= form_button([
-                                            'class'        => 'btn btn-link btn-sm p-0 text-primary suntingResi',
-                                            'content'      => '<i class="fal fa-money-check-edit fa-flip-horizontal"></i> <span class="visually-hidden">sunting</span>',
+                                            'class'        => 'ms-1 cursor-pointer border-0 bg-transparent p-0 text-xs text-sky-600 hover:underline suntingResi',
+                                            'content'      => '<i class="fal fa-money-check-edit fa-flip-horizontal"></i> <span class="sr-only">sunting</span>',
                                             'data-id'      => esc($kirim->id),
                                             'data-invoice' => esc($pesanan->id_invoice),
                                         ]) ?>
                                     </div>
-                                    <div class="order-resi-nomor"><?= $kirim->resi; ?></div>
-                                    <div class="order-resi-meta">
+                                    <div class="mt-[0.15rem] break-words text-[1.05rem] font-bold tracking-wide text-ink-900"><?= $kirim->resi; ?></div>
+                                    <div class="text-[0.8rem] text-ink-500">
                                         <?= $tanggal_kirim->toLocalizedString('EEEE, d MMMM yyyy') ?>
                                         <?php if ($kirim->ongkir > 0) { ?>
                                             <br>ongkir fix (<?= esc($kirim->qty . 'pcs') ?>): <u><?= number_to_currency($kirim->ongkir, 'IDR') ?></u>
@@ -437,14 +447,14 @@ $session  = \Config\Services::session();
                     </div>
                 <?php } ?>
 
-                <hr class="my-3" />
+                <hr class="my-4 border-0 border-t border-ink-200 opacity-100" />
 
-                <div class="d-flex align-items-center justify-content-between">
+                <div class="flex items-center justify-between">
                     <div>
                         <div class="btn-group">
                             <?= anchor('admin/invoices/sunting/' . esc($pesanan->seri), '<i class="fal fa-pencil"></i> Sunting', ['class' => 'btn btn-outline-secondary', 'role' => 'button']) ?>
                             <button type="button" class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
-                                <span class="visually-hidden">Toggle Dropdown</span>
+                                <span class="sr-only">Toggle Dropdown</span>
                             </button>
                             <ul class="dropdown-menu">
                                 <li><a class="dropdown-item" href="#">Print Label</a></li>
@@ -469,7 +479,7 @@ $session  = \Config\Services::session();
                                 </li>
                                 <li>
                                     <?= form_button([
-                                        'class'        => 'dropdown-item hapusOrderan text-danger',
+                                        'class'        => 'dropdown-item hapusOrderan text-red-600',
                                         'content'      => 'Hapus',
                                         'data-invoice' => $pesanan->id_invoice,
                                         'data-seri'    => $pesanan->seri,
@@ -1497,7 +1507,7 @@ $js = <<< JS
     				hideStr = lines.slice(maxLength, lines.length);
 
     			$(this).empty().html(newStr.join('<br/>'));
-    			$(this).append('<a href="javascript:void(0);" class="read-more ms-1">lanjut ...</a>');
+    			$(this).append('<a href="javascript:void(0);" class="read-more ms-1 font-semibold whitespace-nowrap">lanjut ...</a>');
     			$(this).append('<span class="more-text"><br/>' + hideStr.join('<br/>') + '</span>');
     		}
     	});

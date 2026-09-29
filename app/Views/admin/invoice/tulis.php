@@ -31,11 +31,11 @@ $session  = \Config\Services::session();
     <div class="col-sm-4 mb-3">
 
         <div class="sticky-top" style="top: 60px">
-            <div class="card form-card mb-3">
-                <div class="card-header form-card-head py-2">
-                    <h6 class="mb-0"><i class="fal fa-store"></i> Informasi Orderan</h6>
+            <div class="mb-3 rounded-[1rem] border border-ink-200 bg-white shadow-sm">
+                <div class="rounded-t-[1rem] border-b border-[#eef2f7] bg-ink-50 px-4 py-2">
+                    <h6 class="mb-0 text-[0.78rem] font-bold uppercase tracking-[0.06em] text-ink-600 [&_.fal]:me-[0.3rem] [&_.fal]:text-brand-500"><i class="fal fa-store"></i> Informasi Orderan</h6>
                 </div>
-                <div class="card-body">
+                <div class="p-4">
                     <div class="mb-3">
                         <div class="row gx-2 mb-3">
                             <div class="col">
@@ -70,11 +70,11 @@ $session  = \Config\Services::session();
                 </div>
             </div>
 
-            <div class="card form-card mb-3">
-                <div class="card-header form-card-head py-2">
-                    <h6 class="mb-0"><i class="fal fa-user"></i> Tanggal &amp; Pelanggan</h6>
+            <div class="mb-3 rounded-[1rem] border border-ink-200 bg-white shadow-sm">
+                <div class="rounded-t-[1rem] border-b border-[#eef2f7] bg-ink-50 px-4 py-2">
+                    <h6 class="mb-0 text-[0.78rem] font-bold uppercase tracking-[0.06em] text-ink-600 [&_.fal]:me-[0.3rem] [&_.fal]:text-brand-500"><i class="fal fa-user"></i> Tanggal &amp; Pelanggan</h6>
                 </div>
-                <div class="card-body">
+                <div class="p-4">
                     <div class="mb-3">
                         <?= form_label('Tanggal Order', 'tanggal_order', ['class' => 'form-label']); ?>
                         <?= form_input('tanggal_order', set_value('tanggal_order', $sekarang->toDateString()), ['class' => 'form-control', 'id' => 'tanggal_order', 'required' => '', 'max' => $sekarang->toDateString()], 'date'); ?>
@@ -141,33 +141,6 @@ $session  = \Config\Services::session();
                     <div class="mb-3">
                         <?= form_label('Note / Keterangan', 'keterangan', ['class' => 'form-label']); ?>
                         <?= form_textarea(['name' => 'keterangan', 'id' => 'keterangan', 'class' => 'form-control', 'rows' => '3', 'placeholder' => 'opsional']); ?>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card form-card mb-3">
-                <div class="card-header form-card-head py-2">
-                    <h6 class="mb-0"><i class="fal fa-clipboard-list"></i> Detail Pesanan</h6>
-                </div>
-                <div class="card-body">
-                    <p class="text-muted small mb-3">Opsional, boleh dikosongi kalau tidak relevant.</p>
-                    <div class="row gx-2 gy-2">
-                        <div class="col-6">
-                            <?= form_label('Deadline', 'rincian_deadline', ['class' => 'form-label']); ?>
-                            <?= form_input('rincian[deadline]', '', ['class' => 'form-control', 'id' => 'rincian_deadline', 'type' => 'date', 'placeholder' => 'opsional']); ?>
-                        </div>
-                        <div class="col-6">
-                            <?= form_label('Jaminan', 'rincian_jaminan', ['class' => 'form-label']); ?>
-                            <?= form_input('rincian[jaminan]', '', ['class' => 'form-control', 'id' => 'rincian_jaminan', 'placeholder' => 'cth: SIM C']); ?>
-                        </div>
-                        <div class="col-6">
-                            <?= form_label('Diambil', 'rincian_ambil', ['class' => 'form-label']); ?>
-                            <?= form_input('rincian[ambil]', '', ['class' => 'form-control', 'id' => 'rincian_ambil', 'type' => 'date', 'placeholder' => 'sewa']); ?>
-                        </div>
-                        <div class="col-6">
-                            <?= form_label('Kembali', 'rincian_kembali', ['class' => 'form-label']); ?>
-                            <?= form_input('rincian[kembali]', '', ['class' => 'form-control', 'id' => 'rincian_kembali', 'type' => 'date', 'placeholder' => 'sewa']); ?>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -410,7 +383,7 @@ $session  = \Config\Services::session();
                     </div>
                 </div>
 
-                <div class="row gx-2 mt-1 d-none" id="customDetail">
+                <div class="row gx-2 mt-1 d-none rounded-[0.85rem] border border-dashed border-[#dbe3ee] bg-ink-50 px-[0.85rem] pb-[0.6rem] pt-[0.4rem] [&_h6]:text-[0.78rem] [&_h6]:font-bold [&_h6]:uppercase [&_h6]:tracking-[0.06em] [&_h6]:text-ink-600 [&_.fal]:text-brand-500 [&_.form-label]:text-xs [&_.form-label]:text-ink-500" id="customDetail">
                     <div class="col-12">
                         <h6 class="mb-2 mt-3 fw-bold">
                             <i class="fal fa-ruler-combined text-danger"></i> Spesifikasi Custom

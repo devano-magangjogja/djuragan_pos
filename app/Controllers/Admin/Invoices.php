@@ -252,8 +252,14 @@ class Invoices extends BaseController
                 'juragan_id'     => $this->request->getPost('juragan'),
                 'user_id'        => $user_id,
                 'keterangan'     => ($this->request->getPost('keterangan') !== '' ? $this->request->getPost('keterangan') : null),
-                'rincian'        => rincian_json($this->request->getPost('rincian'), array_keys(meta_rincian('pesanan'))),
             ];
+
+            // rincian invoice lama jangan ikut hilang kalau form tidak mengirimkannya
+            $rincian_invoice = $this->request->getPost('rincian');
+
+            if (is_array($rincian_invoice)) {
+                $data_invoice['rincian'] = rincian_json($rincian_invoice, array_keys(meta_rincian('pesanan')));
+            }
 
             $invModel = new InvoiceModel();
 
