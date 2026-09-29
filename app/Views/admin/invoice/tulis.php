@@ -146,6 +146,39 @@ $session  = \Config\Services::session();
         </div>
     </div>
     <div class="col-12 mb-3">
+        <div class="rounded-kartu border border-ink-200 bg-white shadow-kartu">
+            <div class="flex items-center gap-2.5 rounded-t-kartu border-b border-ink-100 bg-ink-50/60 px-4 py-2.5 sm:px-5">
+                <span class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-[0.65rem] border border-brand-100 bg-white text-brand-500"><i class="fal fa-tag text-xs"></i></span>
+                <h6 class="mb-0 text-[0.78rem] font-bold uppercase tracking-[0.06em] text-ink-700">Tipe &amp; Jadwal</h6>
+            </div>
+            <div class="form-kartu px-4 py-4 sm:px-5">
+                <div class="row gx-3 gy-3">
+                    <div class="col-12 col-sm-6 col-lg-3">
+                        <?= form_label('Tipe Pesanan', 'tipe_pesanan', ['class' => 'form-label']); ?>
+                        <?= form_dropdown('rincian[tipe]', ['' => 'Pilih tipe'] + tipe_pesanan(), '', ['class' => 'form-select', 'id' => 'tipe_pesanan']); ?>
+                    </div>
+                    <div class="col-12 col-sm-6 col-lg-3 d-none tipe-buat">
+                        <?= form_label('Deadline', 'rincian_deadline', ['class' => 'form-label']); ?>
+                        <?= form_input('rincian[deadline]', '', ['class' => 'form-control', 'id' => 'rincian_deadline'], 'date'); ?>
+                    </div>
+                    <div class="col-12 col-sm-6 col-lg-3 d-none tipe-sewa">
+                        <?= form_label('Tanggal Diambil', 'rincian_ambil', ['class' => 'form-label']); ?>
+                        <?= form_input('rincian[ambil]', '', ['class' => 'form-control', 'id' => 'rincian_ambil'], 'date'); ?>
+                    </div>
+                    <div class="col-12 col-sm-6 col-lg-3 d-none tipe-sewa">
+                        <?= form_label('Tanggal Kembali', 'rincian_kembali', ['class' => 'form-label']); ?>
+                        <?= form_input('rincian[kembali]', '', ['class' => 'form-control', 'id' => 'rincian_kembali'], 'date'); ?>
+                    </div>
+                    <div class="col-12 col-sm-6 col-lg-3 d-none tipe-sewa">
+                        <?= form_label('Jaminan', 'rincian_jaminan', ['class' => 'form-label']); ?>
+                        <?= form_input('rincian[jaminan]', '', ['class' => 'form-control', 'id' => 'rincian_jaminan', 'placeholder' => 'cth: SIM C / KTP']); ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 mb-3">
         <div class="card mb-3 overflow-hidden rounded-kartu border-ink-200 shadow-kartu">
             <div class="card-header border-ink-100 bg-ink-50/60">
                 <ul class="nav nav-tabs card-header-tabs">
@@ -824,6 +857,33 @@ $js = <<< JS
 
     	var pl='';
     	listOrder();
+
+    	// inputan jadwal ikut tipe pesanan: deadline untuk pembuatan, tanggal
+    	// ambil/kembali dan jaminan untuk sewa. Data lama bisa punya jadwal tanpa
+    	// tipe, jadi saat halaman dibuka field yang tak relevan cuma disembunyikan.
+    	function tampilJadwal(hapus) {
+    		var t = $('#tipe_pesanan').val(),
+    			sewa = $('#rincian_ambil').val() !== '' || $('#rincian_kembali').val() !== '' || $('#rincian_jaminan').val() !== '',
+    			buat = t === 'pembuatan' || (!hapus && $('#rincian_deadline').val() !== '');
+
+    		sewa = t === 'sewa' || (!hapus && sewa);
+
+    		$('.tipe-buat').toggleClass('d-none', !buat);
+    		$('.tipe-sewa').toggleClass('d-none', !sewa);
+
+    		if (hapus && !buat) {
+    			$('#rincian_deadline').val('');
+    		}
+    		if (hapus && !sewa) {
+    			$('#rincian_ambil, #rincian_kembali, #rincian_jaminan').val('');
+    		}
+    	}
+
+    	tampilJadwal(false);
+
+    	$('#tipe_pesanan').on('change', function() {
+    		tampilJadwal(true);
+    	});
 
     	// spesifikasi custom hanya muncul saat ukuran = Custom
     	$('#ukuran').on('change', function() {

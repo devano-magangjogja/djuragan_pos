@@ -54,7 +54,7 @@ class Invoices extends BaseController
                 'juragan_id'     => $juragan_id,
                 'user_id'        => $user_id,
                 'keterangan'     => ($this->request->getPost('keterangan') !== '' ? trim($this->request->getPost('keterangan')) : null),
-                'rincian'        => rincian_json($this->request->getPost('rincian'), array_keys(meta_rincian('pesanan'))),
+                'rincian'        => rincian_json($this->request->getPost('rincian'), array_keys(meta_rincian('pesanan')), ['tipe' => array_keys(tipe_pesanan())]),
             ];
 
             // simpan ke database
