@@ -45,3 +45,30 @@
     --radius-kartu: 1.15rem;
     --shadow-kartu: 0 1px 2px rgb(15 23 42 / 0.04), 0 8px 24px -12px rgb(15 23 42 / 0.12);
 }
+
+/* Kulit untuk isi kartu form orderan: label kecil, isian membulat, fokus warna
+   merek. Dipakai lewat class `form-kartu` supaya view tidak penuh variasi. */
+@utility form-kartu {
+    .form-label {
+        margin-bottom: 0.375rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--color-ink-600);
+    }
+
+    .form-control,
+    .form-select {
+        border-radius: 0.7rem;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: var(--color-brand-500);
+        box-shadow: 0 0 0 3px rgb(218 37 29 / 0.12);
+    }
+
+    .input-group > .btn {
+        border-radius: 0 0.7rem 0.7rem 0;
+    }
+}

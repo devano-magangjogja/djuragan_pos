@@ -11,7 +11,7 @@ $session  = \Config\Services::session();
 <?= $this->section('content') ?>
 <?= $this->include('admin/navbar') ?>
 
-<div class="container-xxl mb-3">
+<div class="mx-auto mb-3 w-full max-w-[1120px] px-4">
 
     <h1 class="h3 mt-5">Tulis Orderan</h1>
 
@@ -25,189 +25,191 @@ $session  = \Config\Services::session();
 
 </div>
 
-<div class="container mb-5">
+<div class="mx-auto mb-5 w-full max-w-[1120px] px-4">
 
     <?= form_open('admin/invoices/save', ['class' => 'row', 'id' => 'iForm']); ?>
-    <div class="col-sm-4 mb-3">
 
-        <div class="sticky-top" style="top: 60px">
-            <div class="mb-3 rounded-[1rem] border border-ink-200 bg-white shadow-sm">
-                <div class="rounded-t-[1rem] border-b border-[#eef2f7] bg-ink-50 px-4 py-2">
-                    <h6 class="mb-0 text-[0.78rem] font-bold uppercase tracking-[0.06em] text-ink-600 [&_.fal]:me-[0.3rem] [&_.fal]:text-brand-500"><i class="fal fa-store"></i> Informasi Orderan</h6>
-                </div>
-                <div class="p-4">
-                    <div class="mb-3">
-                        <div class="row gx-2 mb-3">
-                            <div class="col">
-                                <?= form_label('Juragan', 'juragan', ['class' => 'form-label']); ?>
-                                <?= form_dropdown('juragan', ['' => 'Pilih Juragan'], '', ['class' => 'form-select', 'id' => 'juragan', 'required' => '']); ?>
-                            </div>
-                            <div class="col">
-                                <?= form_label('Admin/CS', 'pengguna', ['class' => 'form-label']); ?>
-                                <?= form_dropdown('pengguna', ['' => 'Pilih Admin/CS'], '', ['class' => 'form-select', 'id' => 'pengguna', 'required' => '']); ?>
-                            </div>
+    <div class="col-12 col-lg-6 mb-3">
+        <div class="h-full rounded-kartu border border-ink-200 bg-white shadow-kartu">
+            <div class="flex items-center gap-2.5 rounded-t-kartu border-b border-ink-100 bg-ink-50/60 px-4 py-2.5 sm:px-5">
+                <span class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-[0.65rem] border border-brand-100 bg-white text-brand-500"><i class="fal fa-store text-xs"></i></span>
+                <h6 class="mb-0 text-[0.78rem] font-bold uppercase tracking-[0.06em] text-ink-700">Informasi Orderan</h6>
+            </div>
+            <div class="form-kartu px-4 py-4 sm:px-5">
+                <div class="mb-3">
+                    <div class="row gx-2 mb-3">
+                        <div class="col">
+                            <?= form_label('Juragan', 'juragan', ['class' => 'form-label']); ?>
+                            <?= form_dropdown('juragan', ['' => 'Pilih Juragan'], '', ['class' => 'form-select', 'id' => 'juragan', 'required' => '']); ?>
                         </div>
-                        <div class="row gx-2">
-                            <div class="col-sm-5">
-                                <?php
-                                // get all active labels
-                                $labelModel    = new \App\Models\LabelAsal();
-                                $options_label = ['' => 'Pilih asal'];
+                        <div class="col">
+                            <?= form_label('Admin/CS', 'pengguna', ['class' => 'form-label']); ?>
+                            <?= form_dropdown('pengguna', ['' => 'Pilih Admin/CS'], '', ['class' => 'form-select', 'id' => 'pengguna', 'required' => '']); ?>
+                        </div>
+                    </div>
+                    <div class="row gx-2">
+                        <div class="col">
+                            <?php
+                            // get all active labels
+                            $labelModel    = new \App\Models\LabelAsal();
+                            $options_label = ['' => 'Pilih asal'];
 
-                                foreach ($labelModel->where('status', '1')->orderBy('label', 'asc')->findAll() as $label) {
-                                    $options_label[$label->id] = $label->label;
-                                }
-                                ?>
-                                <?= form_label('Asal Orderan', 'asal_orderan', ['class' => 'form-label']); ?>
-                                <?= form_dropdown('asal_orderan', $options_label, '', ['class' => 'form-select', 'id' => 'asal_orderan', 'required' => '']); ?>
-                            </div>
-                            <div class="col-sm-7">
-                                <?= form_label('Label', 'label', ['class' => 'form-label']); ?>
-                                <?= form_input('label', '', ['class' => 'form-control', 'id' => 'label', 'placeholder' => 'label - opsional, max: 50 karakter']); ?>
-                            </div>
+                            foreach ($labelModel->where('status', '1')->orderBy('label', 'asc')->findAll() as $label) {
+                                $options_label[$label->id] = $label->label;
+                            }
+                            ?>
+                            <?= form_label('Asal Orderan', 'asal_orderan', ['class' => 'form-label']); ?>
+                            <?= form_dropdown('asal_orderan', $options_label, '', ['class' => 'form-select', 'id' => 'asal_orderan', 'required' => '']); ?>
+                        </div>
+                        <div class="col">
+                            <?= form_label('Label', 'label', ['class' => 'form-label']); ?>
+                            <?= form_input('label', '', ['class' => 'form-control', 'id' => 'label', 'placeholder' => 'label - opsional, max: 50 karakter']); ?>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <div class="mb-3 rounded-[1rem] border border-ink-200 bg-white shadow-sm">
-                <div class="rounded-t-[1rem] border-b border-[#eef2f7] bg-ink-50 px-4 py-2">
-                    <h6 class="mb-0 text-[0.78rem] font-bold uppercase tracking-[0.06em] text-ink-600 [&_.fal]:me-[0.3rem] [&_.fal]:text-brand-500"><i class="fal fa-user"></i> Tanggal &amp; Pelanggan</h6>
+    </div>
+
+    <div class="col-12 col-lg-6 mb-3">
+        <div class="h-full rounded-kartu border border-ink-200 bg-white shadow-kartu">
+            <div class="flex items-center gap-2.5 rounded-t-kartu border-b border-ink-100 bg-ink-50/60 px-4 py-2.5 sm:px-5">
+                <span class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-[0.65rem] border border-brand-100 bg-white text-brand-500"><i class="fal fa-user text-xs"></i></span>
+                <h6 class="mb-0 text-[0.78rem] font-bold uppercase tracking-[0.06em] text-ink-700">Tanggal &amp; Pelanggan</h6>
+            </div>
+            <div class="form-kartu px-4 py-4 sm:px-5">
+                <div class="mb-3">
+                    <?= form_label('Tanggal Order', 'tanggal_order', ['class' => 'form-label']); ?>
+                    <?= form_input('tanggal_order', set_value('tanggal_order', $sekarang->toDateString()), ['class' => 'form-control', 'id' => 'tanggal_order', 'required' => '', 'max' => $sekarang->toDateString()], 'date'); ?>
                 </div>
-                <div class="p-4">
-                    <div class="mb-3">
-                        <?= form_label('Tanggal Order', 'tanggal_order', ['class' => 'form-label']); ?>
-                        <?= form_input('tanggal_order', set_value('tanggal_order', $sekarang->toDateString()), ['class' => 'form-control', 'id' => 'tanggal_order', 'required' => '', 'max' => $sekarang->toDateString()], 'date'); ?>
+                <div class="mb-3">
+                    <div class="hidden_id">
+                        <?= form_label('Pelanggan', 'pelanggan', ['class' => 'form-label']); ?>
+                        <?= form_hidden('id_pemesan', ''); ?>
+                        <?= form_hidden('id_kirimKe', ''); ?>
                     </div>
-                    <div class="mb-3">
-                        <div class="hidden_id">
-                            <?= form_label('Pelanggan', 'pelanggan', ['class' => 'form-label']); ?>
-                            <?= form_hidden('id_pemesan', ''); ?>
-                            <?= form_hidden('id_kirimKe', ''); ?>
-                        </div>
 
-                        <div class="input-group mb-3 mycustom form_pemesan">
-                            <?= form_input([
-                                'class'       => 'form-control cari_pelanggan pemesan',
-                                'id'          => 'cari_pemesan',
-                                'placeholder' => 'cari data pelanggan',
-                                'type'        => 'search',
-                            ]); ?>
-                            <?= form_button([
-                                'class'          => 'btn btn-dark',
-                                'content'        => '<i class="fal fa-plus"></i> Tambah',
-                                'data-bs-target' => '#modalTambahPelanggan',
-                                'data-bs-toggle' => 'modal',
-                                'id'             => 'tambah_pemesan_kirimKe',
-                                'title'          => 'Tambah Data Pemesan',
-                            ]); ?>
-                        </div>
-
-                        <div class="mb-3 info-data-pemesan" style="display: none;">
-                            <?= form_button([
-                                'class'   => 'btn btn-link text-danger text-decoration-none btn-sm float-end btn-hapus-alamat pemesan',
-                                'content' => '<i class="fal fa-trash"></i> <span class="visually-hidden">Hapus</span>',
-                                'title'   => 'Hapus Pemesan',
-                            ]); ?>
-                            <span id="alamat_pemesan" class="border rounded p-2 d-block"></span>
-                        </div>
-
-                        <div class="input-group mb-3 mycustom form_kirimKe" style="display: none">
-                            <?= form_input([
-                                'class'       => 'form-control cari_pelanggan kirimKe',
-                                'id'          => 'cari_kirimKe',
-                                'placeholder' => 'cari data pelanggan',
-                                'type'        => 'search',
-                            ]); ?>
-                            <?= form_button([
-                                'class'          => 'btn btn-dark',
-                                'content'        => '<i class="fal fa-plus"></i> Tambah',
-                                'data-bs-target' => '#modalTambahPelanggan',
-                                'data-bs-toggle' => 'modal',
-                                'id'             => 'tambah_kirimKe',
-                                'title'          => 'Tambah Data Kirim Kepada',
-                            ]); ?>
-                        </div>
-
-                        <div class="mb-3 info-data-kirimKe" style="display: none;">
-                            <?= form_button([
-                                'class'   => 'btn btn-link text-danger text-decoration-none btn-sm float-end btn-hapus-alamat kirimKe',
-                                'content' => '<i class="fal fa-trash"></i> <span class="visually-hidden">Hapus</span>',
-                                'title'   => 'Hapus Kirim',
-                            ]); ?>
-                            <span id="alamat_kirimKe" class="border rounded p-2 d-block"></span>
-                        </div>
+                    <div class="input-group mb-3 mycustom form_pemesan">
+                        <?= form_input([
+                            'class'       => 'form-control cari_pelanggan pemesan',
+                            'id'          => 'cari_pemesan',
+                            'placeholder' => 'cari data pelanggan',
+                            'type'        => 'search',
+                        ]); ?>
+                        <?= form_button([
+                            'class'          => 'btn btn-dark',
+                            'content'        => '<i class="fal fa-plus"></i> Tambah',
+                            'data-bs-target' => '#modalTambahPelanggan',
+                            'data-bs-toggle' => 'modal',
+                            'id'             => 'tambah_pemesan_kirimKe',
+                            'title'          => 'Tambah Data Pemesan',
+                        ]); ?>
                     </div>
-                    <div class="mb-3">
-                        <?= form_label('Note / Keterangan', 'keterangan', ['class' => 'form-label']); ?>
-                        <?= form_textarea(['name' => 'keterangan', 'id' => 'keterangan', 'class' => 'form-control', 'rows' => '3', 'placeholder' => 'opsional']); ?>
+
+                    <div class="mb-3 info-data-pemesan" style="display: none;">
+                        <?= form_button([
+                            'class'   => 'btn btn-link text-danger text-decoration-none btn-sm float-end btn-hapus-alamat pemesan',
+                            'content' => '<i class="fal fa-trash"></i> <span class="visually-hidden">Hapus</span>',
+                            'title'   => 'Hapus Pemesan',
+                        ]); ?>
+                        <span id="alamat_pemesan" class="d-block border rounded-[0.7rem] border-ink-200 bg-ink-50 p-3"></span>
+                    </div>
+
+                    <div class="input-group mb-3 mycustom form_kirimKe" style="display: none">
+                        <?= form_input([
+                            'class'       => 'form-control cari_pelanggan kirimKe',
+                            'id'          => 'cari_kirimKe',
+                            'placeholder' => 'cari data pelanggan',
+                            'type'        => 'search',
+                        ]); ?>
+                        <?= form_button([
+                            'class'          => 'btn btn-dark',
+                            'content'        => '<i class="fal fa-plus"></i> Tambah',
+                            'data-bs-target' => '#modalTambahPelanggan',
+                            'data-bs-toggle' => 'modal',
+                            'id'             => 'tambah_kirimKe',
+                            'title'          => 'Tambah Data Kirim Kepada',
+                        ]); ?>
+                    </div>
+
+                    <div class="mb-3 info-data-kirimKe" style="display: none;">
+                        <?= form_button([
+                            'class'   => 'btn btn-link text-danger text-decoration-none btn-sm float-end btn-hapus-alamat kirimKe',
+                            'content' => '<i class="fal fa-trash"></i> <span class="visually-hidden">Hapus</span>',
+                            'title'   => 'Hapus Kirim',
+                        ]); ?>
+                        <span id="alamat_kirimKe" class="d-block border rounded-[0.7rem] border-ink-200 bg-ink-50 p-3"></span>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-sm-8 mb-3">
-        <div class="sticky-top" style="top: 60px">
-            <div class="card mb-3">
-                <div class="card-header">
-                    <ul class="nav nav-tabs card-header-tabs">
-                        <li class="nav-item">
-                            <span class="nav-link active" aria-current="true">Orderan</span>
-                        </li>
-                        <li class="nav-item">
-                            <a href="#!" class="nav-link" data-bs-toggle="modal" data-bs-target="#tambahProduk">
-                                <i class="fal fa-plus"></i>
-                            </a>
-                        </li>
-                    </ul>
+    <div class="col-12 mb-3">
+        <div class="card mb-3 overflow-hidden rounded-kartu border-ink-200 shadow-kartu">
+            <div class="card-header border-ink-100 bg-ink-50/60">
+                <ul class="nav nav-tabs card-header-tabs">
+                    <li class="nav-item">
+                        <span class="nav-link active" aria-current="true">Orderan</span>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#!" class="nav-link" data-bs-toggle="modal" data-bs-target="#tambahProduk">
+                            <i class="fal fa-plus"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th scope="col">Produk</th>
+                                <th scope="col">Harga</th>
+                                <th scope="col">QTY</th>
+                                <th scope="col" class="text-end">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody class="list-orderan" data-length="1">
+                            <tr class="orderan-kosong">
+                                <td class="text-center" colspan="4">
+                                    <div class="py-5"><i class="fad text-warning fa-<?= random_element(['shopping-cart', 'shopping-bag', 'shopping-basket', 'bags-shopping', 'dolly-flatbed-empty', 'dolly-empty']) ?> fa-4x"></i>
+                                        <p class="mb-0"><?= random_element(['orderan kosong?', 'isi dulu orderannya ya?', 'jangan lupa isi orderannya ya?']) ?></p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                        <tfoot class="customBiaya d-none listBiaya">
+                            <tr>
+                                <td colspan="3" class="text-end">Subtotal</td>
+                                <td class="text-end" data-totalbiaya="0" data-subtotal="0" id="subTotal"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
                 </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th scope="col">Produk</th>
-                                    <th scope="col">Harga</th>
-                                    <th scope="col">QTY</th>
-                                    <th scope="col" class="text-end">Subtotal</th>
-                                </tr>
-                            </thead>
-                            <tbody class="list-orderan" data-length="1">
-                                <tr class="orderan-kosong">
-                                    <td class="text-center" colspan="4">
-                                        <div class="py-5"><i class="fad text-warning fa-<?= random_element(['shopping-cart', 'shopping-bag', 'shopping-basket', 'bags-shopping', 'dolly-flatbed-empty', 'dolly-empty']) ?> fa-4x"></i>
-                                            <p class="mb-0"><?= random_element(['orderan kosong?', 'isi dulu orderannya ya?', 'jangan lupa isi orderannya ya?']) ?></p>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                            <tfoot class="customBiaya d-none listBiaya">
-                                <tr>
-                                    <td colspan="3" class="text-end">Subtotal</td>
-                                    <td class="text-end" data-totalbiaya="0" data-subtotal="0" id="subTotal"></td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
 
-                    <div class="border-bottom pb-3 customBiaya d-none">
-                        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#biayaOrder" data-biayaID="1" data-judul="Ongkir" data-operasi="1"><i class="fal fa-plus"></i> Ongkir</button>
-                        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-target="#biayaOrder" data-bs-toggle="modal" data-biayaID="2" data-judul="Lain-lain" data-operasi="1"><i class="fal fa-plus"></i> Biaya Lain</button>
-                    </div>
-                    <div class="customBiaya d-none">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h6 class="fw-bold">TOTAL</h6>
-                            <div class="h2 text-primary" id="grandTotal"></div>
-                        </div>
+                <div class="border-bottom pb-3 customBiaya d-none">
+                    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#biayaOrder" data-biayaID="1" data-judul="Ongkir" data-operasi="1"><i class="fal fa-plus"></i> Ongkir</button>
+                    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-target="#biayaOrder" data-bs-toggle="modal" data-biayaID="2" data-judul="Lain-lain" data-operasi="1"><i class="fal fa-plus"></i> Biaya Lain</button>
+                </div>
+                <div class="customBiaya d-none">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6 class="fw-bold">TOTAL</h6>
+                        <div class="h2 text-primary" id="grandTotal"></div>
                     </div>
                 </div>
             </div>
-
-            <hr>
-            <button type="submit" class="btn btn-primary btn-block text-uppercase">
-                <i class="fal fa-save"></i> Simpan
-            </button>
         </div>
+
+        <div class="form-kartu mb-3">
+            <?= form_label('Note / Keterangan', 'keterangan', ['class' => 'form-label']); ?>
+            <?= form_textarea(['name' => 'keterangan', 'id' => 'keterangan', 'class' => 'form-control', 'rows' => '3', 'placeholder' => 'opsional']); ?>
+        </div>
+
+        <hr class="my-4 border-0 border-t border-ink-200 opacity-100">
+        <button type="submit" class="btn btn-primary w-100 rounded-[0.75rem] py-2.5 text-uppercase">
+            <i class="fal fa-save"></i> Simpan
+        </button>
     </div>
     <?= form_close(); ?>
 
