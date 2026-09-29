@@ -12,7 +12,7 @@ class BarangDibeli extends Model
     protected $returnType       = 'object';
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = ['invoice_id', 'stok_id', 'kode', 'ukuran', 'qty', 'harga'];
+    protected $allowedFields    = ['invoice_id', 'stok_id', 'kode', 'ukuran', 'qty', 'harga', 'rincian'];
 
     /**
      * Ambil data dari tabel dibeli berdasarkan invoice_id
@@ -21,7 +21,7 @@ class BarangDibeli extends Model
      */
     public function getSimple(int $invoice_id): array
     {
-        return $this->select('id_beli as id,kode, ukuran, qty, harga')
+        return $this->select('id_beli as id,kode, ukuran, qty, harga, rincian')
             ->where('invoice_id', $invoice_id)
             ->findAll();
     }

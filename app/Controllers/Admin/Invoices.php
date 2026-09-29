@@ -151,6 +151,7 @@ class Invoices extends BaseController
                 // 'status_pembayaran'=> '',
                 // 'status_pengiriman'=> '',
                 'keterangan' => ($this->request->getPost('keterangan') !== '' ? $this->request->getPost('keterangan') : null),
+                'rincian'    => rincian_json($this->request->getPost('rincian'), array_keys(meta_rincian('pesanan'))),
             ];
 
             $invModel = new InvoiceModel();
@@ -176,12 +177,22 @@ class Invoices extends BaseController
                 $produk = [];
 
                 foreach ($produks as $k => $v) {
+                    $rincian_produk = [];
+
                     foreach ($v as $p => $d) {
+                        if ($p === 'rincian') {
+                            $rincian_produk = is_array($d) ? $d : [];
+
+                            continue;
+                        }
+
                         $produk[$k]['invoice_id'] = $invoice_id;
                         $produk[$k][$p]           = $d;
                     }
+
+                    $produk[$k]['rincian'] = rincian_json($rincian_produk, array_keys(meta_rincian('produk')));
                 }
-                $db->table('dibeli')->insertBatch($produk);
+                $db->table('dibeli')->insertBatch(lengkapi_produk($produk));
 
                 // simpan notif
                 simpan_notif(1, $juragan_id, $invoice_id);
@@ -243,6 +254,13 @@ class Invoices extends BaseController
                 'keterangan'     => ($this->request->getPost('keterangan') !== '' ? $this->request->getPost('keterangan') : null),
             ];
 
+            // rincian invoice lama jangan ikut hilang kalau form tidak mengirimkannya
+            $rincian_invoice = $this->request->getPost('rincian');
+
+            if (is_array($rincian_invoice)) {
+                $data_invoice['rincian'] = rincian_json($rincian_invoice, array_keys(meta_rincian('pesanan')));
+            }
+
             $invModel = new InvoiceModel();
 
             // simpan ke database
@@ -272,12 +290,22 @@ class Invoices extends BaseController
                 $produk = [];
 
                 foreach ($produks as $k => $v) {
+                    $rincian_produk = [];
+
                     foreach ($v as $p => $d) {
+                        if ($p === 'rincian') {
+                            $rincian_produk = is_array($d) ? $d : [];
+
+                            continue;
+                        }
+
                         $produk[$k]['invoice_id'] = $invoice_id;
                         $produk[$k][$p]           = $d;
                     }
+
+                    $produk[$k]['rincian'] = rincian_json($rincian_produk, array_keys(meta_rincian('produk')));
                 }
-                $db->table('dibeli')->insertBatch($produk);
+                $db->table('dibeli')->insertBatch(lengkapi_produk($produk));
 
                 // hapus biaya
                 $db->table('biaya')->delete(['invoice_id' => $invoice_id]);
