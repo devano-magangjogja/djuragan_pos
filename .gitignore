@@ -1,2 +1,19 @@
-/.env
-/node_modules
+# Environment
+.env
+.env.production
+.env.testing
+
+# Writable directory (berisi file cache, log, debugbar, dll.)
+/writable
+
+# IDE
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# PHP
+*.log
+composer.lock
+vendor/
+/storage

@@ -108563,7 +108563,11 @@ WARNING - 2026-09-29 16:38:37 --> [DEPRECATED] Passing lowercase HTTP method "po
 10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
 11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
 12 SYSTEMPATH\rewrite.php(44): require_once('D:\\Magang\\Coding\\djuragan_pos\\public\\index.php')
+<<<<<<< HEAD
 WARNING - 2026-09-29 16:46:37 --> [DEPRECATED] Passing lowercase HTTP method "get" is deprecated. Use uppercase HTTP method like "GET". in SYSTEMPATH\Router\RouteCollection.php on line 1026.
+=======
+WARNING - 2026-09-29 16:44:37 --> [DEPRECATED] Passing lowercase HTTP method "get" is deprecated. Use uppercase HTTP method like "GET". in SYSTEMPATH\Router\RouteCollection.php on line 1026.
+>>>>>>> 321fa51633b45dd6c98037d76e20afc04fbc6d9b
  1 SYSTEMPATH\Router\RouteCollection.php(1026): trigger_error('Passing lowercase HTTP method "get" is deprecated. Use uppercase HTTP method like "GET".', 16384)
  2 APPPATH\Config\Routes.php(41): CodeIgniter\Router\RouteCollection->match([...], 'index', 'Auth::index', [...])
  3 SYSTEMPATH\Router\RouteCollection.php(799): CodeIgniter\Router\RouteCollection::{closure:D:\Magang\Coding\djuragan_pos\app\Config\Routes.php:40}(Object(CodeIgniter\Router\RouteCollection))
@@ -108576,7 +108580,11 @@ WARNING - 2026-09-29 16:46:37 --> [DEPRECATED] Passing lowercase HTTP method "ge
 10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
 11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
 12 SYSTEMPATH\rewrite.php(44): require_once('D:\\Magang\\Coding\\djuragan_pos\\public\\index.php')
+<<<<<<< HEAD
 WARNING - 2026-09-29 16:46:37 --> [DEPRECATED] Passing lowercase HTTP method "post" is deprecated. Use uppercase HTTP method like "POST". in SYSTEMPATH\Router\RouteCollection.php on line 1026.
+=======
+WARNING - 2026-09-29 16:44:37 --> [DEPRECATED] Passing lowercase HTTP method "post" is deprecated. Use uppercase HTTP method like "POST". in SYSTEMPATH\Router\RouteCollection.php on line 1026.
+>>>>>>> 321fa51633b45dd6c98037d76e20afc04fbc6d9b
  1 SYSTEMPATH\Router\RouteCollection.php(1026): trigger_error('Passing lowercase HTTP method "post" is deprecated. Use uppercase HTTP method like "POST".', 16384)
  2 APPPATH\Config\Routes.php(41): CodeIgniter\Router\RouteCollection->match([...], 'index', 'Auth::index', [...])
  3 SYSTEMPATH\Router\RouteCollection.php(799): CodeIgniter\Router\RouteCollection::{closure:D:\Magang\Coding\djuragan_pos\app\Config\Routes.php:40}(Object(CodeIgniter\Router\RouteCollection))
@@ -108589,7 +108597,11 @@ WARNING - 2026-09-29 16:46:37 --> [DEPRECATED] Passing lowercase HTTP method "po
 10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
 11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
 12 SYSTEMPATH\rewrite.php(44): require_once('D:\\Magang\\Coding\\djuragan_pos\\public\\index.php')
+<<<<<<< HEAD
 WARNING - 2026-09-29 16:46:37 --> [DEPRECATED] Passing lowercase HTTP method "get" is deprecated. Use uppercase HTTP method like "GET". in SYSTEMPATH\Router\RouteCollection.php on line 1026.
+=======
+WARNING - 2026-09-29 16:44:37 --> [DEPRECATED] Passing lowercase HTTP method "get" is deprecated. Use uppercase HTTP method like "GET". in SYSTEMPATH\Router\RouteCollection.php on line 1026.
+>>>>>>> 321fa51633b45dd6c98037d76e20afc04fbc6d9b
  1 SYSTEMPATH\Router\RouteCollection.php(1026): trigger_error('Passing lowercase HTTP method "get" is deprecated. Use uppercase HTTP method like "GET".', 16384)
  2 APPPATH\Config\Routes.php(42): CodeIgniter\Router\RouteCollection->match([...], 'daftar', 'Auth::daftar')
  3 SYSTEMPATH\Router\RouteCollection.php(799): CodeIgniter\Router\RouteCollection::{closure:D:\Magang\Coding\djuragan_pos\app\Config\Routes.php:40}(Object(CodeIgniter\Router\RouteCollection))
@@ -108602,7 +108614,11 @@ WARNING - 2026-09-29 16:46:37 --> [DEPRECATED] Passing lowercase HTTP method "ge
 10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
 11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
 12 SYSTEMPATH\rewrite.php(44): require_once('D:\\Magang\\Coding\\djuragan_pos\\public\\index.php')
+<<<<<<< HEAD
 WARNING - 2026-09-29 16:46:37 --> [DEPRECATED] Passing lowercase HTTP method "post" is deprecated. Use uppercase HTTP method like "POST". in SYSTEMPATH\Router\RouteCollection.php on line 1026.
+=======
+WARNING - 2026-09-29 16:44:37 --> [DEPRECATED] Passing lowercase HTTP method "post" is deprecated. Use uppercase HTTP method like "POST". in SYSTEMPATH\Router\RouteCollection.php on line 1026.
+>>>>>>> 321fa51633b45dd6c98037d76e20afc04fbc6d9b
  1 SYSTEMPATH\Router\RouteCollection.php(1026): trigger_error('Passing lowercase HTTP method "post" is deprecated. Use uppercase HTTP method like "POST".', 16384)
  2 APPPATH\Config\Routes.php(42): CodeIgniter\Router\RouteCollection->match([...], 'daftar', 'Auth::daftar')
  3 SYSTEMPATH\Router\RouteCollection.php(799): CodeIgniter\Router\RouteCollection::{closure:D:\Magang\Coding\djuragan_pos\app\Config\Routes.php:40}(Object(CodeIgniter\Router\RouteCollection))
@@ -108615,7 +108631,11 @@ WARNING - 2026-09-29 16:46:37 --> [DEPRECATED] Passing lowercase HTTP method "po
 10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
 11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
 12 SYSTEMPATH\rewrite.php(44): require_once('D:\\Magang\\Coding\\djuragan_pos\\public\\index.php')
+<<<<<<< HEAD
 WARNING - 2026-09-29 16:46:37 --> [DEPRECATED] Passing lowercase HTTP method "get" is deprecated. Use uppercase HTTP method like "GET". in SYSTEMPATH\Router\RouteCollection.php on line 1026.
+=======
+WARNING - 2026-09-29 16:44:37 --> [DEPRECATED] Passing lowercase HTTP method "get" is deprecated. Use uppercase HTTP method like "GET". in SYSTEMPATH\Router\RouteCollection.php on line 1026.
+>>>>>>> 321fa51633b45dd6c98037d76e20afc04fbc6d9b
  1 SYSTEMPATH\Router\RouteCollection.php(1026): trigger_error('Passing lowercase HTTP method "get" is deprecated. Use uppercase HTTP method like "GET".', 16384)
  2 APPPATH\Config\Routes.php(43): CodeIgniter\Router\RouteCollection->match([...], 'lupa', 'Auth::lupa')
  3 SYSTEMPATH\Router\RouteCollection.php(799): CodeIgniter\Router\RouteCollection::{closure:D:\Magang\Coding\djuragan_pos\app\Config\Routes.php:40}(Object(CodeIgniter\Router\RouteCollection))
@@ -108628,6 +108648,7 @@ WARNING - 2026-09-29 16:46:37 --> [DEPRECATED] Passing lowercase HTTP method "ge
 10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
 11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
 12 SYSTEMPATH\rewrite.php(44): require_once('D:\\Magang\\Coding\\djuragan_pos\\public\\index.php')
+<<<<<<< HEAD
 WARNING - 2026-09-29 16:46:37 --> [DEPRECATED] Passing lowercase HTTP method "post" is deprecated. Use uppercase HTTP method like "POST". in SYSTEMPATH\Router\RouteCollection.php on line 1026.
  1 SYSTEMPATH\Router\RouteCollection.php(1026): trigger_error('Passing lowercase HTTP method "post" is deprecated. Use uppercase HTTP method like "POST".', 16384)
  2 APPPATH\Config\Routes.php(43): CodeIgniter\Router\RouteCollection->match([...], 'lupa', 'Auth::lupa')
@@ -108707,6 +108728,9 @@ WARNING - 2026-09-29 16:47:37 --> [DEPRECATED] Passing lowercase HTTP method "ge
 11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
 12 SYSTEMPATH\rewrite.php(44): require_once('D:\\Magang\\Coding\\djuragan_pos\\public\\index.php')
 WARNING - 2026-09-29 16:47:37 --> [DEPRECATED] Passing lowercase HTTP method "post" is deprecated. Use uppercase HTTP method like "POST". in SYSTEMPATH\Router\RouteCollection.php on line 1026.
+=======
+WARNING - 2026-09-29 16:44:37 --> [DEPRECATED] Passing lowercase HTTP method "post" is deprecated. Use uppercase HTTP method like "POST". in SYSTEMPATH\Router\RouteCollection.php on line 1026.
+>>>>>>> 321fa51633b45dd6c98037d76e20afc04fbc6d9b
  1 SYSTEMPATH\Router\RouteCollection.php(1026): trigger_error('Passing lowercase HTTP method "post" is deprecated. Use uppercase HTTP method like "POST".', 16384)
  2 APPPATH\Config\Routes.php(43): CodeIgniter\Router\RouteCollection->match([...], 'lupa', 'Auth::lupa')
  3 SYSTEMPATH\Router\RouteCollection.php(799): CodeIgniter\Router\RouteCollection::{closure:D:\Magang\Coding\djuragan_pos\app\Config\Routes.php:40}(Object(CodeIgniter\Router\RouteCollection))
