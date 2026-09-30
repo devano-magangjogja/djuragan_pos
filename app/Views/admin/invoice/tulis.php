@@ -474,6 +474,14 @@ $link_invoice        = site_url('admin/invoices/lihat/');
 $link_post_pelanggan = site_url('pelanggan/baru');
 $link_api_notif      = site_url('api/notifikasi/');
 
+?>
+<script>
+    window.CARI_PELANGGAN = '<?= $link_cari_pelanggan ?>';
+</script>
+<script defer src="<?= base_url('assets/js/cari-pelanggan.js') ?>?v=<?= (int) @filemtime(FCPATH . 'assets/js/cari-pelanggan.js') ?>"></script>
+
+<?php
+
 $js = <<< JS
     $(function() {
     	'use strict';

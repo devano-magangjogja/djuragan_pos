@@ -1,7 +1,29 @@
+# Environment
+.env
+.env.*
 /.env
+
+# Node
 /node_modules
 
-/writable/cache/
-/writable/logs/
-/writable/session/
-/writable/debugbar/
+# Writable directory
+/writable/cache/*
+/writable/logs/*
+/writable/session/*
+/writable/debugbar/*
+/writable/*
+!/writable/index.html
+!/writable/uploads/
+
+# IDE
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# PHP
+*.log
+composer.lock
+vendor/
+/storage
+

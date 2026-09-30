@@ -24,6 +24,12 @@ use CodeIgniter\Debug\Toolbar\Collectors\Views;
 class Toolbar extends BaseConfig
 {
     /**
+     * Matikan toolbar tanpa harus pindah ke environment production.
+     * Bisa dilewati dari .env: `toolbar.enabled = false`.
+     */
+    public bool $enabled = true;
+
+    /**
      * --------------------------------------------------------------------------
      * Toolbar Collectors
      * --------------------------------------------------------------------------
