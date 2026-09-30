@@ -220,7 +220,7 @@ $session  = \Config\Services::session();
                         </ul>
                     </div>
                 </div>
-                <hr class="my-4 border-0 border-t border-ink-200 opacity-100" />
+                <hr class="my-1 border-0 border-t border-ink-200 opacity-100" />
 
                 <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-12 lg:gap-6">
                     <section class="col-span-full lg:col-span-6">
@@ -266,7 +266,7 @@ $session  = \Config\Services::session();
                             <?php
                             if ($pesanan->kirimKepada_id !== $pesanan->pemesan_id) {
                                 $kirimKe = $pesanan->kirimKe; ?>
-                                <h6 class="mb-2 flex items-center gap-1.5 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500 [&_.fal]:text-[0.95rem] [&_.fal]:text-ink-400 mt-4 border-t border-dashed border-ink-200 pt-3"><i class="fal fa-map-marker-alt"></i> Kirim Kepada</h6>
+                                <h6 class="mb-2 flex items-center gap-1.5 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500 [&_.fal]:text-[0.95rem] [&_.fal]:text-ink-400 mt-4 border-t border-ink-200 pt-3"><i class="fal fa-map-marker-alt"></i> Kirim Kepada</h6>
                                 <div class="text-sm leading-[1.55] text-ink-800">
                                     <span class="block font-bold"><?= strtoupper($kirimKe->nama); ?></span>
                                     <span class="block">
@@ -298,7 +298,7 @@ $session  = \Config\Services::session();
                                 </div>
                             <?php } ?>
 
-                            <h6 class="mb-2 flex items-center gap-1.5 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500 [&_.fal]:text-[0.95rem] [&_.fal]:text-ink-400 mt-4 border-t border-dashed border-ink-200 pt-3"><i class="fal fa-inbox-in"></i> Asal Orderan</h6>
+                            <h6 class="mb-2 flex items-center gap-1.5 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500 [&_.fal]:text-[0.95rem] [&_.fal]:text-ink-400 mt-4 border-t border-ink-200 pt-3"><i class="fal fa-inbox-in"></i> Asal Orderan</h6>
                             <div class="text-sm leading-[1.55] text-ink-800"><?= label_asal($pesanan->source->id, $pesanan->source->label) ?></div>
                         </div>
                     </section>
@@ -354,7 +354,7 @@ $session  = \Config\Services::session();
 
                                 <?php
                                 if ($sudah_bayar > 0) { ?>
-                                    <li class="flex items-baseline justify-between gap-3 py-1 mt-1 border-t border-dashed border-ink-200 pt-2">
+                                    <li class="flex items-baseline justify-between gap-3 py-1 mt-1 border-t border-ink-200 pt-2">
                                         <span class="uppercase tracking-wide text-ink-500">
                                             <span class="font-bold">Sudah</span>&nbsp;Bayar
                                             <?= form_button([
@@ -402,7 +402,7 @@ $session  = \Config\Services::session();
                     </h6>
 
                     <div class="collapse" id="produk-<?= esc($pesanan->id_invoice) ?>">
-                        <div class="border-t border-dashed border-ink-200 px-[1.15rem] py-3">
+                        <div class="border-t border-ink-200 px-[1.15rem] py-3">
                             <ul class="m-0 list-none p-0 text-sm">
                                 <?php foreach ($pesanan->barang as $b) { ?>
                                     <li class="flex flex-wrap items-baseline gap-1 py-[0.2rem]">
@@ -489,7 +489,7 @@ $session  = \Config\Services::session();
                     </div>
                 <?php } ?>
 
-                <hr class="my-4 border-0 border-t border-ink-200 opacity-100" />
+                <hr class="my-2 border-0 border-t border-ink-200 opacity-100" />
 
                 <div class="flex flex-wrap items-center gap-1">
                     <?php if (! $sudah_lunas) : ?>
@@ -675,8 +675,6 @@ $current_user_id         = $session->get('id');
 $link_api_get_bank       = site_url('api/juragan/all/');
 $link_api_get_pembayaran = site_url('user/invoices/info_pembayaran');
 $link_api_juragan        = site_url('api/juragan/by_user/');
-$link_get_status_invoice = site_url('admin/invoices/detail_status/');
-$link_hapus_orderan      = site_url('user/invoices/hapus_orderan/');
 $link_invoice            = site_url('user/invoices/lihat/');
 $link_tambah_pembayaran  = site_url('user/invoices/simpan_pembayaran');
 $link_api_notif          = site_url('api/notifikasi/');
@@ -1025,13 +1023,23 @@ $js = <<< JS
     	};
     });
     // document ready
+
+    // badge merah hanya untuk tab yang isinya bukan nol, supaya tidak semua tab terlihat mendesak
+    function pasangBadge(pilihan, hitungan) {
+        var badge = $(pilihan).html(hitungan.text),
+            ada = parseInt(hitungan.num, 10) > 0;
+
+        badge.toggleClass('bg-danger text-white', ada);
+        badge.toggleClass('bg-ink-100 text-ink-600', !ada);
+    }
+
     document.addEventListener("DOMContentLoaded", function(event) {
         $.getJSON('{$link_api_counter_tab}', {}, function(counter){
-            $('#counterSemua').html(counter.semua.text);
-            $('#counterCekBayar').html(counter.cek_bayar.text);
-            $('#counterBelumProses').html(counter.belum_proses.text);
-            $('#counterDalamProses').html(counter.dalam_proses.text);
-            $('#counterSelesai').html(counter.selesai.text);
+            pasangBadge('#counterSemua', counter.semua);
+            pasangBadge('#counterCekBayar', counter.cek_bayar);
+            pasangBadge('#counterBelumProses', counter.belum_proses);
+            pasangBadge('#counterDalamProses', counter.dalam_proses);
+            pasangBadge('#counterSelesai', counter.selesai);
         });
     });
     JS;

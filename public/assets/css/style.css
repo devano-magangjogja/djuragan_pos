@@ -71,14 +71,26 @@
    tanpa class = belum (abu-abu). Li terakhir diberi class "end".
    ------------------------------------------------------------------ */
 .timeliner {
+    /* jarak antar langkah: label nowrap butuh napas, jangan sampai menempel */
+    --tl-gap: 0.5rem;
     display: flex;
     flex-wrap: nowrap;
     align-items: flex-start;
-    gap: 0;
+    gap: var(--tl-gap);
+    /* rapet: selebar isinya, bukan melebar memenuhi kartu */
+    width: max-content;
+    max-width: 100%;
+    /* rata kanan terhadap pembungkusnya; jangan pakai justify-content:flex-end
+       karena langkah pertama jadi tidak terjangkau saat ul-nya di-scroll */
+    margin-left: auto;
+    /* kalau tetap tidak muat (langkah banyak / layar sempit) geser, bukan menabrak */
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: thin;
 }
 .timeliner > li {
-    flex: 1 1 0;
-    min-width: 3.2rem;
+    /* 0 0 auto: lebar li = lebar labelnya, tidak pernah menyusut lagi */
+    flex: 0 0 auto;
     padding-top: 0.25rem;
 }
 /* garis penghubung: dari ikon langkah ini ke ikon langkah berikutnya */
@@ -87,7 +99,7 @@
     position: absolute;
     top: 1.25rem;
     left: 50%;
-    width: 100%;
+    width: calc(100% + var(--tl-gap));
     height: 2px;
     background: #dee2e6;
     border-radius: 2px;

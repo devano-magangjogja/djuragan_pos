@@ -178,7 +178,7 @@ class Invoices extends BaseController
             }
 
             $data = [
-                'title'               => 'Invoice ' . $title,
+                'title'               => 'Transaksi ' . $title,
                 'orderan'             => $invModel->getAll($hal, $id_juragan, $cari, $limit, $offset, $kategori),
                 'juragan'             => $juragan,
                 'juragan_id'          => $id_juragan,

@@ -218,7 +218,7 @@ $session  = \Config\Services::session();
                         </ul>
                     </div>
                 </div>
-                <hr class="my-4 border-0 border-t border-ink-200 opacity-100" />
+                <hr class="my-1 border-0 border-t border-ink-200 opacity-100" />
 
                 <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-12 lg:gap-6">
                     <section class="col-span-full lg:col-span-6">
@@ -264,7 +264,7 @@ $session  = \Config\Services::session();
                             <?php
                             if ($pesanan->kirimKepada_id !== $pesanan->pemesan_id) {
                                 $kirimKe = $pesanan->kirimKe; ?>
-                                <h6 class="mb-2 flex items-center gap-1.5 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500 [&_.fal]:text-[0.95rem] [&_.fal]:text-ink-400 mt-4 border-t border-dashed border-ink-200 pt-3"><i class="fal fa-map-marker-alt"></i> Kirim Kepada</h6>
+                                <h6 class="mb-2 flex items-center gap-1.5 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500 [&_.fal]:text-[0.95rem] [&_.fal]:text-ink-400 mt-4 border-t border-ink-200 pt-3"><i class="fal fa-map-marker-alt"></i> Kirim Kepada</h6>
                                 <div class="text-sm leading-[1.55] text-ink-800">
                                     <span class="block font-bold"><?= strtoupper($kirimKe->nama); ?></span>
                                     <span class="block">
@@ -296,7 +296,7 @@ $session  = \Config\Services::session();
                                 </div>
                             <?php } ?>
 
-                            <h6 class="mb-2 flex items-center gap-1.5 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500 [&_.fal]:text-[0.95rem] [&_.fal]:text-ink-400 mt-4 border-t border-dashed border-ink-200 pt-3"><i class="fal fa-inbox-in"></i> Asal Orderan</h6>
+                            <h6 class="mb-2 flex items-center gap-1.5 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500 [&_.fal]:text-[0.95rem] [&_.fal]:text-ink-400 mt-4 border-t border-ink-200 pt-3"><i class="fal fa-inbox-in"></i> Asal Orderan</h6>
                             <div class="text-sm leading-[1.55] text-ink-800"><?= label_asal($pesanan->source->id, $pesanan->source->label) ?></div>
                         </div>
                     </section>
@@ -352,7 +352,7 @@ $session  = \Config\Services::session();
 
                                 <?php
                                 if ($sudah_bayar > 0) { ?>
-                                    <li class="flex items-baseline justify-between gap-3 py-1 mt-1 border-t border-dashed border-ink-200 pt-2">
+                                    <li class="flex items-baseline justify-between gap-3 py-1 mt-1 border-t border-ink-200 pt-2">
                                         <span class="uppercase tracking-wide text-ink-500">
                                             <span class="font-bold">Sudah</span>&nbsp;Bayar
                                             <?= form_button([
@@ -400,7 +400,7 @@ $session  = \Config\Services::session();
                     </h6>
 
                     <div class="collapse" id="produk-<?= esc($pesanan->id_invoice) ?>">
-                        <div class="border-t border-dashed border-ink-200 px-[1.15rem] py-3">
+                        <div class="border-t border-ink-200 px-[1.15rem] py-3">
                             <ul class="m-0 list-none p-0 text-sm">
                                 <?php foreach ($pesanan->barang as $b) { ?>
                                     <li class="flex flex-wrap items-baseline gap-1 py-[0.2rem]">
@@ -493,7 +493,7 @@ $session  = \Config\Services::session();
                     </div>
                 <?php } ?>
 
-                <hr class="my-4 border-0 border-t border-ink-200 opacity-100" />
+                <hr class="my-2 border-0 border-t border-ink-200 opacity-100" />
 
                 <div class="flex flex-wrap items-center gap-1">
                     <?= anchor('admin/invoices/sunting/' . esc($pesanan->seri), '<i class="fal fa-pencil"></i> Sunting', ['class' => 'btn btn-outline-secondary', 'role' => 'button']) ?>
