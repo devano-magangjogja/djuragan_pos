@@ -33,7 +33,7 @@ $routes->set404Override(static fn () => view('errors/html/error_page'));
  * --------------------------------------------------------------------
  */
 $routes->addPlaceholder('juragan', '[a-z0-9]{40}|semua');
-$routes->addPlaceholder('tab', 'semua|cek-bayar|dalam-proses|belum-proses|selesai');
+$routes->addPlaceholder('tab', 'semua|pembayaran|cek-bayar|dalam-proses|belum-proses|selesai');
 
 // We get a performance increase by specifying the default
 // route since we don't have to scan directories.
@@ -62,6 +62,7 @@ $routes->group('admin', static function ($routes) {
         $routes->get('sunting/(:any)', 'Admin\Invoices::sunting/$1');
         $routes->get('lihat/(:juragan)', 'Admin\Invoices::lihat/$1');
         $routes->get('lihat/(:juragan)/(:tab)', 'Admin\Invoices::lihat/$1/$2');
+        $routes->get('lihat/(:juragan)/(:tab)/(:segment)', 'Admin\Invoices::lihat/$1/$2/$3');
         $routes->get('info_pembayaran', 'Admin\Invoices::info_pembayaran');
         $routes->get('detail_status/(:any)', 'Admin\Invoices::detail_status/$1');
         $routes->post('save', 'Admin\Invoices::save');
@@ -70,6 +71,17 @@ $routes->group('admin', static function ($routes) {
         $routes->post('save_progress', 'Admin\Invoices::save_progress');
         $routes->post('update_bayar', 'Admin\Invoices::update_bayar');
         $routes->post('hapus_orderan', 'Admin\Invoices::hapus_orderan');
+    });
+
+    // dasbor: ringkasan transaksi, pembayaran, dan stok
+    $routes->get('dasbor', 'Admin\Dasbor::index', ['filter' => 'auth:admin,superadmin', 'as' => 'hal.dasbor']);
+
+    // pantau stok & tambah barang
+    $routes->group('produk', ['filter' => 'auth:admin,superadmin'], static function ($routes) {
+        $routes->get('/', 'Admin\Produk::index');
+        $routes->post('save', 'Admin\Produk::simpan');
+        $routes->post('update', 'Admin\Produk::perbarui');
+        $routes->post('hapus', 'Admin\Produk::hapus');
     });
 
     $routes->group('settings', ['filter' => 'auth:superadmin'], static function ($routes) {
@@ -91,7 +103,8 @@ $routes->group('admin', static function ($routes) {
         $routes->post('update_pengguna', 'Admin\Settings\Pengguna::update_pengguna');
     });
 
-    $routes->addRedirect('/', 'hal.admin');
+    // halaman depan admin = dasbor, daftar invoice sekarang lewat menu Transaksi
+    $routes->addRedirect('/', 'hal.dasbor');
 });
 
 // user
@@ -102,6 +115,7 @@ $routes->group('user', ['filter' => 'auth:user'], static function ($routes) {
         $routes->get('tulis', 'User\Invoices::tulis');
         $routes->get('lihat/([a-z0-9]{40})', 'User\Invoices::lihat/$1');
         $routes->get('lihat/([a-z0-9]{40})/(:tab)', 'User\Invoices::lihat/$1/$2');
+        $routes->get('lihat/([a-z0-9]{40})/(:tab)/(:segment)', 'User\Invoices::lihat/$1/$2/$3');
         $routes->get('info_pembayaran', 'User\Invoices::info_pembayaran');
         $routes->post('simpan_pembayaran', 'User\Invoices::simpan_pembayaran');
         $routes->post('save', 'User\Invoices::save');

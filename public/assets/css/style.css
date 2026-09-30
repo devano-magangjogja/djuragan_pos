@@ -30,7 +30,7 @@
     -webkit-font-smoothing: antialiased;
 }
 .fal.fa-user-circle::before     { content: "\f2bd"; } /* circle-user   */
-.fal.fa-plus::before            { content: "\f067"; }
+.fal.fa-plus::before            { content: "\2b"; } /* FA6 free memakai U+002B */
 .fal.fa-save::before            { content: "\f0c7"; } /* floppy-disk   */
 .fal.fa-circle::before          { content: "\f111"; }
 .fal.fa-bell-slash::before      { content: "\f1f6"; }
@@ -48,7 +48,7 @@
 .fal.fa-money-check-edit::before  { content: "\f53d"; } /* money-check-dollar (Pro→free) */
 .fal.fa-ellipsis-h-alt::before    { content: "\f141"; } /* ellipsis (Pro→free) */
 .fal.fa-ellipsis-h::before        { content: "\f141"; }
-.fal.fa-comment-alt-plus::before  { content: "\f4b5"; } /* comment-plus (Pro→free) */
+.fal.fa-comment-alt-plus::before  { content: "\f075"; } /* comment (f4b5 Pro-only) */
 .fal.fa-cogs::before              { content: "\f085"; } /* gears */
 .fal.fa-ballot-check::before      { content: "\f14a"; } /* square-check (Pro→free) */
 .fal.fa-arrow-alt-to-right::before { content: "\f101"; } /* angles-right (pager) */
@@ -56,13 +56,14 @@
 .fal.fa-arrow-alt-right::before    { content: "\f178"; } /* arrow-right-long */
 .fal.fa-arrow-alt-left::before     { content: "\f30a"; } /* arrow-left-long  */
 /* ikon timeline dari fungsi_helper.php */
-.fal.fa-file-alt::before        { content: "\f15b"; } /* file        */
-.fal.fa-layer-group::before     { content: "\f5be"; }
+.fal.fa-file-alt::before        { content: "\f15c"; } /* file-text     */
+.fal.fa-layer-group::before     { content: "\f5fd"; } /* f5be = squarespace */
 .fal.fa-print::before           { content: "\f02f"; }
 .fal.fa-waveform-path::before   { content: "\f83e"; } /* wave-square (Pro→free) */
 .fal.fa-cut::before             { content: "\f0c4"; } /* scissors    */
 .fal.fa-tasks::before           { content: "\f0ae"; } /* list-check  */
 .fal.fa-box-alt::before         { content: "\f466"; } /* box (Pro→free) */
+.fal.fa-inbox-in::before        { content: "\f01c"; } /* inbox (Pro→free) */
 
 /* ------------------------------------------------------------------
    Timeline status invoice (.timeliner)
@@ -73,39 +74,68 @@
     display: flex;
     flex-wrap: nowrap;
     align-items: flex-start;
+    gap: 0;
 }
 .timeliner > li {
-    flex: 0 0 auto;
-    min-width: 2.5rem;
+    flex: 1 1 0;
+    min-width: 3.2rem;
     padding-top: 0.25rem;
 }
-/* garis penghubung antar langkah */
+/* garis penghubung: dari ikon langkah ini ke ikon langkah berikutnya */
 .timeliner > li::after {
     content: "";
     position: absolute;
-    top: calc(0.25rem + 0.65em);
+    top: 1.25rem;
     left: 50%;
     width: 100%;
-    height: 4px;
+    height: 2px;
     background: #dee2e6;
     border-radius: 2px;
     z-index: 0;
 }
 .timeliner > li.full::after { background: #198754; }
 .timeliner > li.half::after { background: linear-gradient(90deg, #198754 50%, #dee2e6 50%); }
-.timeliner > li.end::after  { display: none; }
+.timeliner > li.end::after { display: none; }
+/* ikon ditaruh di atas bulatan berlatar supaya garis tidak menimpa glifnya */
 .timeliner .icon {
     position: relative;
     z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.1rem;
+    height: 2.1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 999px;
     background: #fff;
-    padding: 0 0.35rem;
-    font-size: 1.15rem;
+    font-size: 0.95rem;
     color: #adb5bd;
 }
-.timeliner > li.full .icon { color: #198754; }
-.timeliner > li.half .icon { color: #ffc107; }
-.timeliner span { font-size: 0.72rem; color: #6c757d; }
-.timeliner abbr { text-decoration: none; cursor: default; }
+.timeliner > li.full .icon {
+    border-color: #198754;
+    color: #198754;
+}
+.timeliner > li.half .icon {
+    border-color: #ffc107;
+    color: #b88600;
+}
+.timeliner .tl-label {
+    display: block;
+    margin-top: 0.3rem;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #64748b;
+    white-space: nowrap;
+}
+.timeliner .tl-date {
+    display: block;
+    font-size: 0.72rem;
+    color: #94a3b8;
+    white-space: nowrap;
+}
+.timeliner .tl-date abbr { text-decoration: none; cursor: default; }
 
 /* ------------------------------------------------------------------
    Offcanvas "Pilih Juragan": list-group default Bootstrap berlatar

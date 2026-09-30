@@ -126,10 +126,25 @@ class Invoices extends BaseController
     }
 
     // menampilkan semua invoice
-    public function lihat($juragan = '', $hal = 'dalam-proses')
+    public function lihat($juragan = '', $hal = 'dalam-proses', $kategori = '')
     {
-        if (! in_array($hal, ['semua', 'cek-bayar', 'dalam-proses', 'belum-proses', 'selesai'], true)) {
+        if (! in_array($hal, ['semua', 'pembayaran', 'cek-bayar', 'dalam-proses', 'belum-proses', 'selesai'], true)) {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+
+        // tiap tab punya chip filter sendiri, jadi kategori hanya boleh dari daftar tab ini
+        $daftar_kategori = kategori_tab($hal);
+
+        if ($kategori === '') {
+            $kategori = $hal === 'belum-proses' ? 'semua' : 'perlu-cek';
+        }
+
+        if (! array_key_exists($kategori, $daftar_kategori)) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+
+        if ($hal === 'cek-bayar') {
+            return redirect()->to(site_url('user/invoices/lihat/' . $juragan . '/pembayaran/' . $kategori));
         }
 
         // pencarian
@@ -163,13 +178,16 @@ class Invoices extends BaseController
             }
 
             $data = [
-                'title'      => 'Invoice ' . $title,
-                'orderan'    => $invModel->getAll($hal, $id_juragan, $cari, $limit, $offset),
-                'juragan'    => $juragan,
-                'juragan_id' => $id_juragan,
-                'hal'        => $hal,
-                'limit'      => $limit,
-                'page'       => $page,
+                'title'               => 'Invoice ' . $title,
+                'orderan'             => $invModel->getAll($hal, $id_juragan, $cari, $limit, $offset, $kategori),
+                'juragan'             => $juragan,
+                'juragan_id'          => $id_juragan,
+                'hal'                 => $hal,
+                'kategori'            => $kategori,
+                'kategori_pembayaran' => $daftar_kategori,
+                'jumlah_kategori'     => in_array($hal, ['pembayaran', 'belum-proses'], true) ? $invModel->countPembayaran($id_juragan, $hal) : [],
+                'limit'               => $limit,
+                'page'                => $page,
             ];
 
             return view('user/invoice/lihat', $data);
@@ -197,8 +215,18 @@ class Invoices extends BaseController
 
             $juraganModel    = new JuraganModel();
             $pembayaranModel = new PembayaranModel();
+            $invModel        = new InvoiceModel();
             $time            = Time::parse($this->request->getPost('tanggal_pembayaran'))->getTimestamp();
             $invoice_id      = $this->request->getPost('invoice_id');
+
+            // halaman lama masih bisa menampilkan tombolnya, jadi invoice lunas ditolak di sini juga
+            if (tagihan_lunas($invModel->find($invoice_id)->status_pembayaran)) {
+                $this->response->setStatusCode(406);
+
+                return $this->response->setJSON([
+                    'total_pembayaran' => 'Invoice ini sudah lunas, tidak bisa ditambah pembayaran lagi.',
+                ]);
+            }
 
             $data = [
                 'invoice_id'         => $invoice_id,

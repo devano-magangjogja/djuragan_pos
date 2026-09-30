@@ -18,7 +18,7 @@ $session  = \Config\Services::session();
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb p-0">
             <li class="breadcrumb-item"><?= anchor('', 'Dasbor') ?></li>
-            <li class="breadcrumb-item"><?= anchor('invoices', 'Orderan') ?></li>
+            <li class="breadcrumb-item"><?= anchor('admin/invoices/lihat/semua/semua', 'Transaksi') ?></li>
             <li class="breadcrumb-item active" aria-current="page">Tulis Orderan</li>
         </ol>
     </nav>

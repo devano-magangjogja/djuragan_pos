@@ -135,117 +135,170 @@ if (! function_exists('first_letter')) {
     }
 }
 
+if (! function_exists('timeline_langkah')) {
+    /**
+     * Satu langkah di timeline .timeliner. $label pendek biar terbaca tanpa
+     * hover, $title lengkap tetap jadi tooltip.
+     */
+    function timeline_langkah($class, $ikon, $label, $tanggal, $title)
+    {
+        $tgl = $tanggal instanceof Time
+            ? '<abbr title="' . esc($tanggal->humanize()) . '">' . esc($tanggal->day . '/' . $tanggal->month) . '</abbr>'
+            : '&mdash;';
+
+        $html = '<li class="list-inline-item me-0 position-relative ' . $class . '" data-bs-toggle="tooltip" data-bs-placement="top" title="' . esc($title) . '">';
+        $html .= '<div class="flex flex-col items-center text-center">';
+        $html .= '<i class="fal fa-' . $ikon . ' icon"></i>';
+        $html .= '<span class="tl-label">' . esc($label) . '</span>';
+        $html .= '<span class="tl-date">' . $tgl . '</span>';
+        $html .= '</div></li>';
+
+        return $html;
+    }
+}
+
 if (! function_exists('status_orderan')) {
     function status_orderan($status, $mulai, $selesai, $keterangan_mulai, $keterangan_selesai)
     {
+        $tahap = [
+            1 => ['file-alt', 'Data', 'orderan'],
+            2 => ['layer-group', 'Bahan', 'bahan'],
+            3 => ['print', 'Sablon', 'sablon'],
+            4 => ['waveform-path fa-rotate-90', 'Bordir', 'bordir'],
+            5 => ['cut fa-rotate-270', 'Jahit', 'penjahit'],
+            6 => ['tasks', 'QC', 'QC'],
+            7 => ['box-alt', 'Packing', 'packing'],
+        ];
+
+        [$ico, $label, $apa] = $tahap[(int) $status] ?? ['circle', 'Tahap', 'orderan'];
+
         $class = '';
+        $time  = null;
 
-        switch ($status) {
-            case 1:
-                $ico = 'file-alt';
-                if ($mulai !== null && $selesai !== null) {
-                    $class = 'full';
-                    $title = 'Data orderan sudah lengkap';
-                    $time  = Time::createFromTimestamp($selesai);
-                    $title .= ($keterangan_selesai !== 'null' ? ': ' . $keterangan_selesai : '');
-                } elseif ($mulai !== null && $selesai === null) {
-                    $title = 'Data orderan belum lengkap';
-                    $time  = Time::createFromTimestamp($mulai);
-                    $title .= ($keterangan_mulai !== 'null' ? ': ' . $keterangan_mulai : '');
-                }
-                break;
+        if ($mulai !== null && $selesai !== null) {
+            $class = 'full';
+            $title = 'Sudah selesai ' . $apa;
+            $time  = Time::createFromTimestamp($selesai);
 
-            case 2:
-                $ico = 'layer-group';
-                if ($mulai !== null && $selesai !== null) {
-                    $class = 'full';
-                    $title = 'Bahan sudah ada';
-                    $time  = Time::createFromTimestamp($selesai);
-                    $title .= ($keterangan_selesai !== 'null' ? ': ' . $keterangan_selesai : '');
-                } elseif ($mulai !== null && $selesai === null) {
-                    $title = 'Bahan belum ada';
-                    $time  = Time::createFromTimestamp($mulai);
-                    $title .= ($keterangan_mulai !== 'null' ? ': ' . $keterangan_mulai : '');
-                }
-                break;
+            if ($keterangan_selesai !== 'null' && $keterangan_selesai !== null) {
+                $title .= ': ' . $keterangan_selesai;
+            }
+        } elseif ($mulai !== null) {
+            $class = 'half';
+            $title = 'Masih berjalan ' . $apa;
+            $time  = Time::createFromTimestamp($mulai);
 
-            case 3:
-                $ico = 'print';
-                if ($mulai !== null && $selesai !== null) {
-                    $class = 'full';
-                    $title = 'Sudah selesai sablon';
-                    $time  = Time::createFromTimestamp($selesai);
-                    $title .= ($keterangan_selesai !== 'null' ? ': ' . $keterangan_selesai : '');
-                } elseif ($mulai !== null && $selesai === null) {
-                    $title = 'Mulai di-sablon';
-                    $time  = Time::createFromTimestamp($mulai);
-                    $title .= ($keterangan_mulai !== 'null' ? ': ' . $keterangan_mulai : '');
-                }
-                break;
-
-            case 4:
-                $ico = 'waveform-path fa-rotate-90';
-                if ($mulai !== null && $selesai !== null) {
-                    $class = 'full';
-                    $title = 'Sudah selesai bordir';
-                    $time  = Time::createFromTimestamp($selesai);
-                    $title .= ($keterangan_selesai !== 'null' ? ': ' . $keterangan_selesai : '');
-                } elseif ($mulai !== null && $selesai === null) {
-                    $title = 'Mulai di-bordir';
-                    $time  = Time::createFromTimestamp($mulai);
-                    $title .= ($keterangan_mulai !== 'null' ? ': ' . $keterangan_mulai : '');
-                }
-                break;
-
-            case 5:
-                $ico = 'cut fa-rotate-270';
-                if ($mulai !== null && $selesai !== null) {
-                    $class = 'full';
-                    $title = 'Selesai dari penjahit';
-                    $time  = Time::createFromTimestamp($selesai);
-                    $title .= ($keterangan_selesai !== 'null' ? ': ' . $keterangan_selesai : '');
-                } elseif ($mulai !== null && $selesai === null) {
-                    $title = 'Masuk ke penjahit';
-                    $time  = Time::createFromTimestamp($mulai);
-                    $title .= ($keterangan_mulai !== 'null' ? ': ' . $keterangan_mulai : '');
-                }
-                break;
-
-            case 6:
-                $ico = 'tasks';
-                if ($mulai !== null && $selesai !== null) {
-                    $class = 'full';
-                    $title = 'QC selesai';
-                    $time  = Time::createFromTimestamp($selesai);
-                    $title .= ($keterangan_selesai !== 'null' ? ': ' . $keterangan_selesai : '');
-                } elseif ($mulai !== null && $selesai === null) {
-                    $title = 'Masuk QC';
-                    $time  = Time::createFromTimestamp($mulai);
-                    $title .= ($keterangan_mulai !== 'null' ? ': ' . $keterangan_mulai : '');
-                }
-                break;
-
-            case 7:
-                $ico = 'box-alt';
-                if ($mulai !== null && $selesai !== null) {
-                    $class = 'full';
-                    $title = 'Selesai dipacking';
-                    $time  = Time::createFromTimestamp($selesai);
-                    $title .= ($keterangan_selesai !== 'null' ? ': ' . $keterangan_selesai : '');
-                } elseif ($mulai !== null && $selesai === null) {
-                    $title = 'Sedang dipacking';
-                    $time  = Time::createFromTimestamp($mulai);
-                    $title .= ($keterangan_mulai !== 'null' ? ': ' . $keterangan_mulai : '');
-                }
-                break;
+            if ($keterangan_mulai !== 'null' && $keterangan_mulai !== null) {
+                $title .= ': ' . $keterangan_mulai;
+            }
+        } else {
+            $title = 'Belum ada catatan ' . $apa;
         }
 
-        $html = '<li class="list-inline-item me-0 position-relative ' . $class . '" data-toggle="tooltip" data-placement="top" title="' . $title . '"><div class="d-flex justify-content-center">';
-        $html .= '<div class="text-center"><i class="fal fa-' . $ico . ' icon d-block"></i>';
-        $html .= '<span><abbr title="' . $time->humanize() . '">' . $time->day . '/' . $time->month . '</abbr></span></div></div>';
-        $html .= '</li>';
+        return timeline_langkah($class, $ico, $label, $time, $title);
+    }
+}
 
-        return $html;
+if (! function_exists('kategori_pembayaran')) {
+    /**
+     * Kelompok orderan untuk tab Pembayaran, kunci = slug kategori.
+     *
+     * Urutan array ini juga dipakai sebagai urutan chip, jadi yang mendesak
+     * (butuh dicek pembayarannya) ditaruh paling depan. 'status' berisi nilai
+     * invoice.status_pembayaran yang termasuk, sesuai _update_status_pembayaran()
+     * di Admin/User Invoices:
+     *   1 belum ada pembayaran, 2 transfer belum dicek (belum ada dana masuk),
+     *   3 transfer belum dicek (sudah ada dana masuk), 4 dicicil, 5 lunas lebih, 6 lunas.
+     */
+    function kategori_pembayaran(): array
+    {
+        return [
+            'perlu-cek' => [
+                'label'    => 'Perlu Dicek',
+                'ikon'     => 'fa-clock',
+                'mendesak' => true,
+                'status'   => ['2', '3'],
+                'catatan'  => 'Orderan yang perlu diperiksa dulu: ada transfer yang belum dikonfirmasi.',
+            ],
+            'dp' => [
+                'label'    => 'DP Menunggu Konfirmasi',
+                'ikon'     => 'fa-money-check-edit',
+                'mendesak' => true,
+                'status'   => ['3'],
+                'catatan'  => 'Sudah ada dana yang masuk dan terkonfirmasi, tapi masih ada transfer lain yang belum dicek.',
+            ],
+            'menunggu' => [
+                'label'    => 'Menunggu Pembayaran',
+                'ikon'     => 'fa-hourglass-half',
+                'mendesak' => true,
+                'status'   => ['2'],
+                'catatan'  => 'Katanya sudah transfer, tapi belum ada satu pun dana yang berhasil dicek.',
+            ],
+            'belum' => [
+                'label'    => 'Belum Bayar',
+                'ikon'     => 'fa-wallet',
+                'mendesak' => false,
+                'status'   => ['0', '1'],
+                'catatan'  => 'Belum ada pembayaran sama sekali dan tidak ada yang perlu dicek.',
+            ],
+            'dicicil' => [
+                'label'    => 'Bayar Dicicil',
+                'ikon'     => 'fa-coins',
+                'mendesak' => false,
+                'status'   => ['4'],
+                'catatan'  => 'Sebagian sudah dibayar dan sudah dicek, sisanya masih kurang.',
+            ],
+            'lunas' => [
+                'label'    => 'Lunas',
+                'ikon'     => 'fa-check-circle',
+                'mendesak' => false,
+                'status'   => ['5', '6'],
+                'catatan'  => 'Sudah terbayar penuh (termasuk yang ada kelebihan pembayaran).',
+            ],
+        ];
+    }
+}
+
+if (! function_exists('kategori_tab')) {
+    /**
+     * Chip filter pembayaran untuk satu tab.
+     *
+     * Tab pembayaran membuka 'perlu-cek' lebih dulu, sedangkan tab belum-proses
+     * memakai alur lengkap dari belum bayar sampai lunas (plus 'semua' sebagai
+     * pilihan awal, statusnya dikosongkan artinya "tanpa filter").
+     */
+    function kategori_tab(string $hal): array
+    {
+        $daftar = kategori_pembayaran();
+
+        if ($hal !== 'belum-proses') {
+            return $daftar;
+        }
+
+        $pilihan = [
+            'semua' => [
+                'label'    => 'Semua',
+                'ikon'     => 'fa-inbox',
+                'mendesak' => false,
+                'status'   => [],
+                'catatan'  => 'Semua orderan yang belum masuk proses, dari yang belum bayar sampai yang sudah lunas.',
+            ],
+        ];
+
+        foreach (['belum', 'menunggu', 'dp', 'dicicil', 'lunas'] as $slug) {
+            $pilihan[$slug] = $daftar[$slug];
+        }
+
+        return $pilihan;
+    }
+}
+
+if (! function_exists('tagihan_lunas')) {
+    // patokan tunggal "lunas": status 5 (lunas, ada kelebihan) dan 6 (lunas).
+    // dipakai view untuk menyembunyikan tombol Tambah Pembayaran dan controller untuk menolaknya.
+    function tagihan_lunas($status_pembayaran)
+    {
+        return in_array((int) $status_pembayaran, [5, 6], true);
     }
 }
 
@@ -306,14 +359,7 @@ if (! function_exists('status_pembayaran')) {
             }
         }
 
-        $html = '<li class="list-inline-item me-0 position-relative ' . $class . '" data-toggle="tooltip" data-placement="top" title="' . $title . '"><div class="d-flex justify-content-center">';
-        $html .= '<div class="text-center"><i class="fal fa-wallet icon d-block"></i>';
-        if ($tanggal_bayar !== '') {
-            $html .= '<span><abbr title="' . $tanggal_bayar->humanize() . '">' . $tanggal_bayar->day . '/' . $tanggal_bayar->month . '</abbr></span></div></div>';
-        } else {
-            $html .= '<span>??/??</span>';
-        }
-        $html .= '</li>';
+        $html = timeline_langkah($class, 'wallet', 'Bayar', $tanggal_bayar, $title);
 
         if ($return === 'html') {
             return $html;
@@ -346,7 +392,7 @@ if (! function_exists('status_pengiriman')) {
 
             default: // belum kirim
                 $class = '';
-                $title = 'Masih menunggu';
+                $title = 'Belum dikirim';
                 break;
         }
 
@@ -356,16 +402,7 @@ if (! function_exists('status_pengiriman')) {
             $tanggal_kirim = Time::createFromTimestamp($kirim->tanggal_kirim);
         }
 
-        $html = '<li class="list-inline-item me-0 position-relative ' . $class . ' end" data-toggle="tooltip" data-placement="top" title="' . $title . '"><div class="d-flex justify-content-center">';
-        $html .= '<div class="text-center"><i class="fal fa-shipping-fast icon d-block"></i>';
-        if ($tanggal_kirim !== '') {
-            $html .= '<span><abbr title="' . $tanggal_kirim->humanize() . '">' . $tanggal_kirim->day . '/' . $tanggal_kirim->month . '</abbr></span></div></div>';
-        } else {
-            $html .= '<span>??/??</span>';
-        }
-        $html .= '</li>';
-
-        return $html;
+        return timeline_langkah($class . ' end', 'shipping-fast', 'Kirim', $tanggal_kirim, $title);
     }
 }
 
