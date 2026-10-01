@@ -135,117 +135,170 @@ if (! function_exists('first_letter')) {
     }
 }
 
+if (! function_exists('timeline_langkah')) {
+    /**
+     * Satu langkah di timeline .timeliner. $label pendek biar terbaca tanpa
+     * hover, $title lengkap tetap jadi tooltip.
+     */
+    function timeline_langkah($class, $ikon, $label, $tanggal, $title)
+    {
+        $tgl = $tanggal instanceof Time
+            ? '<abbr title="' . esc($tanggal->humanize()) . '">' . esc($tanggal->day . '/' . $tanggal->month) . '</abbr>'
+            : '&mdash;';
+
+        $html = '<li class="list-inline-item me-0 position-relative ' . $class . '" data-bs-toggle="tooltip" data-bs-placement="top" title="' . esc($title) . '">';
+        $html .= '<div class="flex flex-col items-center text-center">';
+        $html .= '<i class="fal fa-' . $ikon . ' icon"></i>';
+        $html .= '<span class="tl-label">' . esc($label) . '</span>';
+        $html .= '<span class="tl-date">' . $tgl . '</span>';
+        $html .= '</div></li>';
+
+        return $html;
+    }
+}
+
 if (! function_exists('status_orderan')) {
     function status_orderan($status, $mulai, $selesai, $keterangan_mulai, $keterangan_selesai)
     {
+        $tahap = [
+            1 => ['file-alt', 'Data', 'orderan'],
+            2 => ['layer-group', 'Bahan', 'bahan'],
+            3 => ['print', 'Sablon', 'sablon'],
+            4 => ['waveform-path fa-rotate-90', 'Bordir', 'bordir'],
+            5 => ['cut fa-rotate-270', 'Jahit', 'penjahit'],
+            6 => ['tasks', 'QC', 'QC'],
+            7 => ['box-alt', 'Packing', 'packing'],
+        ];
+
+        [$ico, $label, $apa] = $tahap[(int) $status] ?? ['circle', 'Tahap', 'orderan'];
+
         $class = '';
+        $time  = null;
 
-        switch ($status) {
-            case 1:
-                $ico = 'file-alt';
-                if ($mulai !== null && $selesai !== null) {
-                    $class = 'full';
-                    $title = 'Data orderan sudah lengkap';
-                    $time  = Time::createFromTimestamp($selesai);
-                    $title .= ($keterangan_selesai !== 'null' ? ': ' . $keterangan_selesai : '');
-                } elseif ($mulai !== null && $selesai === null) {
-                    $title = 'Data orderan belum lengkap';
-                    $time  = Time::createFromTimestamp($mulai);
-                    $title .= ($keterangan_mulai !== 'null' ? ': ' . $keterangan_mulai : '');
-                }
-                break;
+        if ($mulai !== null && $selesai !== null) {
+            $class = 'full';
+            $title = 'Sudah selesai ' . $apa;
+            $time  = Time::createFromTimestamp($selesai);
 
-            case 2:
-                $ico = 'layer-group';
-                if ($mulai !== null && $selesai !== null) {
-                    $class = 'full';
-                    $title = 'Bahan sudah ada';
-                    $time  = Time::createFromTimestamp($selesai);
-                    $title .= ($keterangan_selesai !== 'null' ? ': ' . $keterangan_selesai : '');
-                } elseif ($mulai !== null && $selesai === null) {
-                    $title = 'Bahan belum ada';
-                    $time  = Time::createFromTimestamp($mulai);
-                    $title .= ($keterangan_mulai !== 'null' ? ': ' . $keterangan_mulai : '');
-                }
-                break;
+            if ($keterangan_selesai !== 'null' && $keterangan_selesai !== null) {
+                $title .= ': ' . $keterangan_selesai;
+            }
+        } elseif ($mulai !== null) {
+            $class = 'half';
+            $title = 'Masih berjalan ' . $apa;
+            $time  = Time::createFromTimestamp($mulai);
 
-            case 3:
-                $ico = 'print';
-                if ($mulai !== null && $selesai !== null) {
-                    $class = 'full';
-                    $title = 'Sudah selesai sablon';
-                    $time  = Time::createFromTimestamp($selesai);
-                    $title .= ($keterangan_selesai !== 'null' ? ': ' . $keterangan_selesai : '');
-                } elseif ($mulai !== null && $selesai === null) {
-                    $title = 'Mulai di-sablon';
-                    $time  = Time::createFromTimestamp($mulai);
-                    $title .= ($keterangan_mulai !== 'null' ? ': ' . $keterangan_mulai : '');
-                }
-                break;
-
-            case 4:
-                $ico = 'waveform-path fa-rotate-90';
-                if ($mulai !== null && $selesai !== null) {
-                    $class = 'full';
-                    $title = 'Sudah selesai bordir';
-                    $time  = Time::createFromTimestamp($selesai);
-                    $title .= ($keterangan_selesai !== 'null' ? ': ' . $keterangan_selesai : '');
-                } elseif ($mulai !== null && $selesai === null) {
-                    $title = 'Mulai di-bordir';
-                    $time  = Time::createFromTimestamp($mulai);
-                    $title .= ($keterangan_mulai !== 'null' ? ': ' . $keterangan_mulai : '');
-                }
-                break;
-
-            case 5:
-                $ico = 'cut fa-rotate-270';
-                if ($mulai !== null && $selesai !== null) {
-                    $class = 'full';
-                    $title = 'Selesai dari penjahit';
-                    $time  = Time::createFromTimestamp($selesai);
-                    $title .= ($keterangan_selesai !== 'null' ? ': ' . $keterangan_selesai : '');
-                } elseif ($mulai !== null && $selesai === null) {
-                    $title = 'Masuk ke penjahit';
-                    $time  = Time::createFromTimestamp($mulai);
-                    $title .= ($keterangan_mulai !== 'null' ? ': ' . $keterangan_mulai : '');
-                }
-                break;
-
-            case 6:
-                $ico = 'tasks';
-                if ($mulai !== null && $selesai !== null) {
-                    $class = 'full';
-                    $title = 'QC selesai';
-                    $time  = Time::createFromTimestamp($selesai);
-                    $title .= ($keterangan_selesai !== 'null' ? ': ' . $keterangan_selesai : '');
-                } elseif ($mulai !== null && $selesai === null) {
-                    $title = 'Masuk QC';
-                    $time  = Time::createFromTimestamp($mulai);
-                    $title .= ($keterangan_mulai !== 'null' ? ': ' . $keterangan_mulai : '');
-                }
-                break;
-
-            case 7:
-                $ico = 'box-alt';
-                if ($mulai !== null && $selesai !== null) {
-                    $class = 'full';
-                    $title = 'Selesai dipacking';
-                    $time  = Time::createFromTimestamp($selesai);
-                    $title .= ($keterangan_selesai !== 'null' ? ': ' . $keterangan_selesai : '');
-                } elseif ($mulai !== null && $selesai === null) {
-                    $title = 'Sedang dipacking';
-                    $time  = Time::createFromTimestamp($mulai);
-                    $title .= ($keterangan_mulai !== 'null' ? ': ' . $keterangan_mulai : '');
-                }
-                break;
+            if ($keterangan_mulai !== 'null' && $keterangan_mulai !== null) {
+                $title .= ': ' . $keterangan_mulai;
+            }
+        } else {
+            $title = 'Belum ada catatan ' . $apa;
         }
 
-        $html = '<li class="list-inline-item me-0 position-relative ' . $class . '" data-toggle="tooltip" data-placement="top" title="' . $title . '"><div class="d-flex justify-content-center">';
-        $html .= '<div class="text-center"><i class="fal fa-' . $ico . ' icon d-block"></i>';
-        $html .= '<span><abbr title="' . $time->humanize() . '">' . $time->day . '/' . $time->month . '</abbr></span></div></div>';
-        $html .= '</li>';
+        return timeline_langkah($class, $ico, $label, $time, $title);
+    }
+}
 
-        return $html;
+if (! function_exists('kategori_pembayaran')) {
+    /**
+     * Kelompok orderan untuk tab Pembayaran, kunci = slug kategori.
+     *
+     * Urutan array ini juga dipakai sebagai urutan chip, jadi yang mendesak
+     * (butuh dicek pembayarannya) ditaruh paling depan. 'status' berisi nilai
+     * invoice.status_pembayaran yang termasuk, sesuai _update_status_pembayaran()
+     * di Admin/User Invoices:
+     *   1 belum ada pembayaran, 2 transfer belum dicek (belum ada dana masuk),
+     *   3 transfer belum dicek (sudah ada dana masuk), 4 dicicil, 5 lunas lebih, 6 lunas.
+     */
+    function kategori_pembayaran(): array
+    {
+        return [
+            'perlu-cek' => [
+                'label'    => 'Perlu Dicek',
+                'ikon'     => 'fa-clock',
+                'mendesak' => true,
+                'status'   => ['2', '3'],
+                'catatan'  => 'Orderan yang perlu diperiksa dulu: ada transfer yang belum dikonfirmasi.',
+            ],
+            'dp' => [
+                'label'    => 'DP Menunggu Konfirmasi',
+                'ikon'     => 'fa-money-check-edit',
+                'mendesak' => true,
+                'status'   => ['3'],
+                'catatan'  => 'Sudah ada dana yang masuk dan terkonfirmasi, tapi masih ada transfer lain yang belum dicek.',
+            ],
+            'menunggu' => [
+                'label'    => 'Menunggu Pembayaran',
+                'ikon'     => 'fa-hourglass-half',
+                'mendesak' => true,
+                'status'   => ['2'],
+                'catatan'  => 'Katanya sudah transfer, tapi belum ada satu pun dana yang berhasil dicek.',
+            ],
+            'belum' => [
+                'label'    => 'Belum Bayar',
+                'ikon'     => 'fa-wallet',
+                'mendesak' => false,
+                'status'   => ['0', '1'],
+                'catatan'  => 'Belum ada pembayaran sama sekali dan tidak ada yang perlu dicek.',
+            ],
+            'dicicil' => [
+                'label'    => 'Bayar Dicicil',
+                'ikon'     => 'fa-coins',
+                'mendesak' => false,
+                'status'   => ['4'],
+                'catatan'  => 'Sebagian sudah dibayar dan sudah dicek, sisanya masih kurang.',
+            ],
+            'lunas' => [
+                'label'    => 'Lunas',
+                'ikon'     => 'fa-check-circle',
+                'mendesak' => false,
+                'status'   => ['5', '6'],
+                'catatan'  => 'Sudah terbayar penuh (termasuk yang ada kelebihan pembayaran).',
+            ],
+        ];
+    }
+}
+
+if (! function_exists('kategori_tab')) {
+    /**
+     * Chip filter pembayaran untuk satu tab.
+     *
+     * Tab pembayaran membuka 'perlu-cek' lebih dulu, sedangkan tab belum-proses
+     * memakai alur lengkap dari belum bayar sampai lunas (plus 'semua' sebagai
+     * pilihan awal, statusnya dikosongkan artinya "tanpa filter").
+     */
+    function kategori_tab(string $hal): array
+    {
+        $daftar = kategori_pembayaran();
+
+        if ($hal !== 'belum-proses') {
+            return $daftar;
+        }
+
+        $pilihan = [
+            'semua' => [
+                'label'    => 'Semua',
+                'ikon'     => 'fa-inbox',
+                'mendesak' => false,
+                'status'   => [],
+                'catatan'  => 'Semua orderan yang belum masuk proses, dari yang belum bayar sampai yang sudah lunas.',
+            ],
+        ];
+
+        foreach (['belum', 'menunggu', 'dp', 'dicicil', 'lunas'] as $slug) {
+            $pilihan[$slug] = $daftar[$slug];
+        }
+
+        return $pilihan;
+    }
+}
+
+if (! function_exists('tagihan_lunas')) {
+    // patokan tunggal "lunas": status 5 (lunas, ada kelebihan) dan 6 (lunas).
+    // dipakai view untuk menyembunyikan tombol Tambah Pembayaran dan controller untuk menolaknya.
+    function tagihan_lunas($status_pembayaran)
+    {
+        return in_array((int) $status_pembayaran, [5, 6], true);
     }
 }
 
@@ -306,14 +359,7 @@ if (! function_exists('status_pembayaran')) {
             }
         }
 
-        $html = '<li class="list-inline-item me-0 position-relative ' . $class . '" data-toggle="tooltip" data-placement="top" title="' . $title . '"><div class="d-flex justify-content-center">';
-        $html .= '<div class="text-center"><i class="fal fa-wallet icon d-block"></i>';
-        if ($tanggal_bayar !== '') {
-            $html .= '<span><abbr title="' . $tanggal_bayar->humanize() . '">' . $tanggal_bayar->day . '/' . $tanggal_bayar->month . '</abbr></span></div></div>';
-        } else {
-            $html .= '<span>??/??</span>';
-        }
-        $html .= '</li>';
+        $html = timeline_langkah($class, 'wallet', 'Bayar', $tanggal_bayar, $title);
 
         if ($return === 'html') {
             return $html;
@@ -346,7 +392,7 @@ if (! function_exists('status_pengiriman')) {
 
             default: // belum kirim
                 $class = '';
-                $title = 'Masih menunggu';
+                $title = 'Belum dikirim';
                 break;
         }
 
@@ -356,16 +402,7 @@ if (! function_exists('status_pengiriman')) {
             $tanggal_kirim = Time::createFromTimestamp($kirim->tanggal_kirim);
         }
 
-        $html = '<li class="list-inline-item me-0 position-relative ' . $class . ' end" data-toggle="tooltip" data-placement="top" title="' . $title . '"><div class="d-flex justify-content-center">';
-        $html .= '<div class="text-center"><i class="fal fa-shipping-fast icon d-block"></i>';
-        if ($tanggal_kirim !== '') {
-            $html .= '<span><abbr title="' . $tanggal_kirim->humanize() . '">' . $tanggal_kirim->day . '/' . $tanggal_kirim->month . '</abbr></span></div></div>';
-        } else {
-            $html .= '<span>??/??</span>';
-        }
-        $html .= '</li>';
-
-        return $html;
+        return timeline_langkah($class . ' end', 'shipping-fast', 'Kirim', $tanggal_kirim, $title);
     }
 }
 
@@ -748,6 +785,191 @@ if (! function_exists('lengkapi_produk')) {
     }
 }
 
+if (! function_exists('ukuran_form_panel')) {
+    /**
+     * Kerangka panel inputan ukuran untuk satu baris orderan. Isinya (dropdown
+     * jenis + kolom angkanya) dibangun assets/js/ukuran-form.js dari atribut
+     * data di bawah sini, jadi bentuknya identik di form Tulis, form Sunting,
+     * dan modal tambah produk.
+     *
+     * Panel baris lama dapat $nama (prefix nama input) sehingga angka yang sudah
+     * tercatat ikut terkirim terus setiap kali orderan disunting; panel modal
+     * tanpa $nama karena kunci barisnya baru ada saat produk ditambahkan.
+     *
+     * @param array $isi nama, jenis, nilai ([id_komponen => angka]), id
+     */
+    function ukuran_form_panel(array $isi = []): string
+    {
+        static $peta = null;
+
+        if ($peta === null) {
+            $model  = new \App\Models\UkuranKomponenModel();
+            $peta   = [
+                'semua'    => array_column($model->findAll(), null, 'id_komponen'),
+                'template' => $model->semuaTemplate(),
+            ];
+        }
+
+        $isi    += ['nama' => '', 'jenis' => null, 'nilai' => [], 'id' => ''];
+        $jenis   = (int) $isi['jenis'];
+        $template = $jenis > 0 ? $peta['template'][$jenis] ?? [] : [];
+        $daftar  = array_merge($peta['template'][0] ?? [], $template);
+        $punya   = array_column($daftar, null, 'id_komponen');
+
+        // angka yang tersimpan tapi komponennya sudah tidak masuk template
+        // (jenisnya ganti atau komponennya dinonaktifkan) tetap ditampilkan,
+        // kalau tidak barisnya ikut terhapus waktu orderan disimpan
+        $lebih = [];
+
+        foreach ($isi['nilai'] as $id_komponen => $nilai) {
+            if (isset($punya[(int) $id_komponen])) {
+                continue;
+            }
+
+            $k = $peta['semua'][(int) $id_komponen] ?? null;
+
+            if ($k === null) {
+                continue;
+            }
+
+            $lebih[] = [
+                'id_komponen' => (int) $k['id_komponen'],
+                'nama'        => $k['nama'],
+                'satuan'      => $k['satuan'],
+            ];
+        }
+
+        $data = [
+            'data-nama'  => $isi['nama'],
+            'data-jenis' => $jenis > 0 ? (string) $jenis : '',
+            'data-nilai' => json_encode((object) $isi['nilai']),
+            'data-lebih' => json_encode($lebih),
+        ];
+
+        $attr = [];
+
+        foreach ($data as $k => $v) {
+            $attr[] = $k . '="' . esc($v, 'attr') . '"';
+        }
+
+        $id = $isi['id'] === '' ? '' : ' id="' . esc($isi['id'], 'attr') . '"';
+
+        // panel baris lama dibuka lewat tombol "ukuran", panel modal selalu tampil
+        $sembunyi = $isi['nama'] === '' ? '' : ' d-none';
+
+        return '<div class="col-12"><div class="ukuran-panel row gx-2' . $sembunyi . '"' . $id
+            . ' ' . implode(' ', $attr) . '></div></div>';
+    }
+}
+
+if (! function_exists('ukuran_form_data')) {
+    /**
+     * Peta jenis + komponen untuk JavaScript ukuran-form.js, satu kali ambil
+     * per request. Dipakai form Tulis dan form Sunting.
+     */
+    function ukuran_form_data(): string
+    {
+        static $json = null;
+
+        if ($json === null) {
+            $model = new \App\Models\UkuranKomponenModel();
+            $json  = json_encode([
+                'jenis'    => (object) $model->jenis(),
+                'komponen' => (object) $model->semuaTemplate(),
+            ], JSON_UNESCAPED_UNICODE);
+        }
+
+        return $json;
+    }
+}
+
+if (! function_exists('anggota_baris_form')) {
+    /**
+     * Satu baris anggota rombongan: nama, nomor/tinggi, catatan, plus panel
+     * ukuran orang itu (memakai ukuran_form_panel yang sama dengan baris produk).
+     *
+     * Kunci baris dipakai apa adanya di nama input sehingga form Tulis dan form
+     * Sununting mengirim bentuk payload yang identik: anggota[k][nama],
+     * anggota[k][nilai_ukuran][id]. Baris cadangan pakai kunci `__K__` yang
+     * nanti ditukar JavaScript waktu barisnya ditambah.
+     *
+     * @param array $isi nama, nomor, catatan, jenis, nilai ([id_komponen => angka])
+     */
+    function anggota_baris_form(array $isi = [], string $key = ''): string
+    {
+        $isi += ['nama' => '', 'nomor' => '', 'catatan' => '', 'jenis' => null, 'nilai' => []];
+
+        $teks = static function (string $kolom, string $ulasan, int $maks, string $kelas = '') use ($isi, $key): string {
+            return '<input type="text" class="form-control form-control-sm ' . $kelas . '"'
+                . ' name="anggota[' . $key . '][' . $kolom . ']"'
+                . ' value="' . esc((string) $isi[$kolom], 'attr') . '"'
+                . ' placeholder="' . esc($ulasan, 'attr') . '" maxlength="' . $maks . '" autocomplete="off">';
+        };
+
+        return '<div class="anggota-baris row gx-2 align-items-start mb-1">'
+            . '<div class="col-5 col-sm-4">' . $teks('nama', 'Nama', 60, 'anggota-nama') . '</div>'
+            . '<div class="col-3 col-sm-3">' . $teks('nomor', 'No. / tinggi', 30) . '</div>'
+            . '<div class="col-3 col-sm-4">' . $teks('catatan', 'Catatan', 255) . '</div>'
+            . '<div class="col-1 text-end">'
+            . '<button type="button" class="bg-transparent border-0 hapus-anggota p-0 text-danger" aria-label="Hapus anggota"><i class="fal fa-trash-alt"></i></button>'
+            . '</div>'
+            . '<div class="col-12"><div class="ukuran-wrapper ps-4">'
+            . '<button type="button" class="bg-transparent border-0 buka-ukuran small p-0 text-primary" aria-expanded="false"><i class="fal fa-ruler-combined"></i> ukuran</button>'
+            . '<span class="uk-ringkas small text-muted d-none"></span>'
+            . ukuran_form_panel(['nama' => 'anggota[' . $key . ']', 'jenis' => $isi['jenis'], 'nilai' => $isi['nilai']])
+            . '</div></div>'
+            . '</div>';
+    }
+}
+
+if (! function_exists('anggota_panel_form')) {
+    /**
+     * Panel "Anggota Rombongan" di bawah tabel produk, form Tulis dan Sunting.
+     *
+     * Defaultnya tertutup supaya order satuan hari ini tidak berubah bentuk.
+     * Penanda `anggota_dikirim` ditulis PHP, bukan JavaScript: kalau JS gagal
+     * dimuat, penandanya tetap ada untuk baris yang sudah tersimpan, sedangkan
+     * order yang belum punya anggota sama sekali tidak akan pernah tersentuh.
+     *
+     * @param array $daftar baris anggota: id_anggota, nama, nomor, catatan, jenis, nilai
+     */
+    function anggota_panel_form(array $daftar = []): string
+    {
+        $ada   = $daftar !== [];
+        $baris = '';
+
+        foreach ($daftar as $a) {
+            $baris .= anggota_baris_form($a, (string) $a['id_anggota']);
+        }
+
+        return '<div class="card mb-3 overflow-hidden rounded-kartu border-ink-200 shadow-kartu">'
+            . '<div class="card-header border-ink-100 bg-ink-50/60">'
+            . '<button type="button" class="buka-anggota flex w-full cursor-pointer items-center gap-1.5 border-0 bg-transparent p-0 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500" aria-expanded="' . ($ada ? 'true' : 'false') . '">'
+            . '<i class="fal fa-users"></i> Anggota Rombongan'
+            . '<span class="inline-block rounded-full bg-ink-900 px-2 py-0.5 text-xs font-semibold text-white jumlah-anggota">' . count($daftar) . '</span>'
+            . '<i class="fal fa-chevron-down ms-auto transition rotate-[-90deg]"></i>'
+            . '</button>'
+            . '</div>'
+            . '<div class="card-body anggota-isi' . ($ada ? '' : ' d-none') . '">'
+            . '<input type="hidden" name="anggota_dikirim" value="1">'
+            . '<div class="row gx-2">'
+            . '<div class="col-12"><p class="small text-muted mb-2">Isi satu baris per orang untuk order rombongan. Order satuan boleh dibiarkan kosong.</p></div>'
+            . '<div class="col-12 anggota-daftar">' . $baris . '</div>'
+            . '<div class="col-12 mt-1">'
+            . '<button type="button" class="btn btn-sm btn-outline-primary tambah-anggota"><i class="fal fa-plus"></i> Tambah anggota</button>'
+            . '</div>'
+            . '<div class="col-12 mt-3 rounded-[0.85rem] border border-dashed border-[#dbe3ee] bg-ink-50 px-[0.85rem] pb-[0.6rem] pt-[0.4rem]">'
+            . '<label class="form-label text-xs text-ink-500" for="anggota_tempel">Tempel daftar nama dari WhatsApp</label>'
+            . '<textarea class="form-control form-control-sm" id="anggota_tempel" rows="3" placeholder="satu nama per baris, boleh bernomor: 1. A.N DEVI"></textarea>'
+            . '<button type="button" class="btn btn-sm btn-link text-decoration-none p-0 mt-1 tambah-tempelan"><i class="fal fa-plus"></i> Jadikan baris anggota</button>'
+            . '</div>'
+            . '</div>'
+            . '<template class="anggota-cadang">' . anggota_baris_form([], '__K__') . '</template>'
+            . '</div>'
+            . '</div>';
+    }
+}
+
 if (! function_exists('sinkron_kontak')) {
     /**
      * Pecah kolom JSON order_pelanggan.hp menjadi satu baris per nomor di
@@ -786,5 +1008,298 @@ if (! function_exists('sinkron_kontak')) {
         if ($baru !== []) {
             $db->table('pelanggan_kontak')->insertBatch(array_values($baru));
         }
+    }
+}
+
+if (! function_exists('deadline_iso')) {
+    /**
+     * Deadline jadi tanggal Y-m-d untuk kolom order_invoice.deadline, supaya
+     * bisa diindeks dan dipakai laporan. Inputan lama masih tersimpan di rincian
+     * dan tetap dibaca dari sana; teks yang bukan tanggal hanya jadi NULL.
+     *
+     * @param string|array|null $rincian
+     */
+    function deadline_iso($rincian): ?string
+    {
+        $data    = is_array($rincian) ? $rincian : baca_rincian($rincian);
+        $tanggal = trim((string) ($data['deadline'] ?? ''));
+
+        if ($tanggal === '') {
+            return null;
+        }
+
+        $urai = date_parse($tanggal);
+
+        if ($urai === false || $urai['error_count'] > 0 || ! checkdate((int) $urai['month'], (int) $urai['day'], (int) $urai['year'])) {
+            return null;
+        }
+
+        return sprintf('%04d-%02d-%02d', (int) $urai['year'], (int) $urai['month'], (int) $urai['day']);
+    }
+}
+
+if (! function_exists('produk_dibeli')) {
+    /**
+     * Belah payload `produk[...]` dari form orderan jadi dua bagian: baris tabel
+     * order_dibeli dan nilai ukuran terstruktur per item.
+     *
+     * Hanya kolom yang benar-benar ada di order_dibeli yang diambil (kecuali
+     * primary key-nya), jadi form tidak bisa menulis kolom karangan maupun
+     * memindahkan baris milik orderan lain. `rincian` dan `nilai_ukuran`
+     * dikirim sebagai array di dalam tiap item, bukan kolom order_dibeli,
+     * jadi keduanya dipisah di sini.
+     *
+     * @param mixed $produks
+     * @return array{baris: array, ukuran: array}
+     */
+    function produk_dibeli($produks, int $invoice_id): array
+    {
+        if (! is_array($produks)) {
+            return ['baris' => [], 'ukuran' => []];
+        }
+
+        $kolom = array_diff(
+            \Config\Database::connect()->getFieldNames('dibeli'),
+            ['id_beli', 'rincian']
+        );
+
+        $baris  = [];
+        $ukuran = [];
+
+        foreach ($produks as $k => $v) {
+            if (! is_array($v)) {
+                continue;
+            }
+
+            if (isset($v['nilai_ukuran']) && is_array($v['nilai_ukuran'])) {
+                $ukuran[$k] = $v['nilai_ukuran'];
+            }
+
+            $siap = [];
+
+            foreach ($v as $p => $d) {
+                if (in_array($p, $kolom, true)) {
+                    $siap[$p] = $d;
+                }
+            }
+
+            $siap['invoice_id'] = $invoice_id;
+            $siap['rincian']    = rincian_json($v['rincian'] ?? [], array_keys(meta_rincian('produk')));
+            $baris[$k]          = $siap;
+        }
+
+        return ['baris' => $baris, 'ukuran' => $ukuran];
+    }
+}
+
+if (! function_exists('sinkron_dibeli')) {
+    /**
+     * Samakan isi order_dibeli satu invoice dengan kiriman form.
+     *
+     * Key payload dari halaman Sunting adalah id_beli aslinya, jadi baris yang
+     * nomornya masih dikenal di-update, bukan dihapus lalu disisip ulang. Itu
+     * yang membuat nilai ukuran bisa menempel terus pada itemnya. Key buatan
+     * (uniqId di form Tulis) disisip sebagai baris baru, dan baris yang hilang
+     * dari payload dibuang — ukurannya ikut terhapus lewat foreign key CASCADE.
+     *
+     * Dipanggil di dalam transaksi; pemanggil yang memutuskan rollback.
+     *
+     * @param array $baris hasil produk_dibeli()['baris']
+     * @return array<string|int, int> key form => id_beli
+     */
+    function sinkron_dibeli(int $invoice_id, array $baris): array
+    {
+        $db = \Config\Database::connect();
+
+        $punya = array_map('intval', array_column(
+            $db->table('dibeli')
+                ->select('id_beli')
+                ->where('invoice_id', $invoice_id)
+                ->get()
+                ->getResultArray(),
+            'id_beli'
+        ));
+
+        $siap = lengkapi_produk(array_values($baris));
+        $peta = [];
+        $sisa = $punya;
+
+        foreach (array_keys($baris) as $i => $key) {
+            $lama = is_numeric($key) && in_array((int) $key, $sisa, true) ? (int) $key : null;
+
+            if ($lama === null) {
+                $db->table('dibeli')->insert($siap[$i]);
+                $id = (int) $db->insertID();
+            } else {
+                $db->table('dibeli')->where('id_beli', $lama)->update($siap[$i]);
+                unset($sisa[array_search($lama, $sisa, true)]);
+                $id = $lama;
+            }
+
+            $peta[$key] = $id;
+        }
+
+        foreach ($sisa as $lama) {
+            $db->table('dibeli')->where('id_beli', $lama)->where('invoice_id', $invoice_id)->delete();
+        }
+
+        return $peta;
+    }
+}
+
+if (! function_exists('simpan_ukuran_produk')) {
+    /**
+     * Tulis ukuran terstruktur tiap item orderan.
+     *
+     * Mengembalikan pesan per kolom supaya pemanggil bisa me-rollback
+     * seluruh transaksi dan mengirimnya sebagai galat 406, sama seperti
+     * galat validasi yang sudah ditonjolkan JS form. Nama komponen ikut
+     * ditulis karena JS hanya menampilkan isinya.
+     *
+     * @param array<string|int, int>             $peta   key form => id_beli
+     * @param array<string|int, array>           $ukuran key form => [id_komponen => teks]
+     * @return array<string, string>
+     */
+    function simpan_ukuran_produk(int $invoice_id, array $peta, array $ukuran): array
+    {
+        if ($ukuran === []) {
+            return [];
+        }
+
+        $komponen = new \App\Models\UkuranKomponenModel();
+        $model    = new \App\Models\NilaiUkuranModel();
+        $sah      = $komponen->idSah();
+        $galat    = [];
+
+        foreach ($ukuran as $key => $kiriman) {
+            if (! isset($peta[$key]) || ! is_array($kiriman)) {
+                continue;
+            }
+
+            $ditolak = $model->sinkron($invoice_id, (int) $peta[$key], null, $kiriman, $sah);
+
+            if ($ditolak === []) {
+                continue;
+            }
+
+            $nama = $komponen->label(array_keys($ditolak));
+
+            foreach ($ditolak as $id_komponen => $pesan) {
+                $galat['produk[' . $key . '][nilai_ukuran][' . $id_komponen . ']']
+                    = ($nama[$id_komponen]['nama'] ?? 'Ukuran') . ': ' . $pesan;
+            }
+        }
+
+        return $galat;
+    }
+}
+
+if (! function_exists('daftar_anggota')) {
+    /**
+     * Pecah kiriman form `anggota[k]` jadi baris anggota dan angka ukurannya,
+     * sama seperti produk_dibeli() untuk baris produk.
+     *
+     * @return array{baris: array<string|int, array>, ukuran: array<string|int, array>}
+     */
+    function daftar_anggota($anggotas): array
+    {
+        if (! is_array($anggotas)) {
+            return ['baris' => [], 'ukuran' => []];
+        }
+
+        $baris  = [];
+        $ukuran = [];
+
+        foreach ($anggotas as $k => $v) {
+            if (! is_array($v)) {
+                continue;
+            }
+
+            if (isset($v['nilai_ukuran']) && is_array($v['nilai_ukuran'])) {
+                $ukuran[$k] = $v['nilai_ukuran'];
+            }
+
+            $siap = [];
+
+            foreach (['nama', 'nomor', 'catatan'] as $kolom) {
+                $siap[$kolom] = (string) ($v[$kolom] ?? '');
+            }
+
+            $baris[$k] = $siap;
+        }
+
+        return ['baris' => $baris, 'ukuran' => $ukuran];
+    }
+}
+
+if (! function_exists('simpan_ukuran_anggota')) {
+    /**
+     * Tulis ukuran terstruktur tiap anggota rombongan. Sasarannya anggota_id,
+     * jadi kolom id_beli dibiarkan NULL — satu orang bisa diukur untuk seluruh
+     * orderan tanpa harus dikaitkan ke satu baris produk.
+     *
+     * @param array<string|int, int>  $peta   key form => id_anggota
+     * @param array<string|int, array> $ukuran key form => [id_komponen => teks]
+     * @return array<string, string>
+     */
+    function simpan_ukuran_anggota(int $invoice_id, array $peta, array $ukuran): array
+    {
+        if ($ukuran === []) {
+            return [];
+        }
+
+        $komponen = new \App\Models\UkuranKomponenModel();
+        $model    = new \App\Models\NilaiUkuranModel();
+        $sah      = $komponen->idSah();
+        $galat    = [];
+
+        foreach ($ukuran as $key => $kiriman) {
+            if (! isset($peta[$key]) || ! is_array($kiriman)) {
+                continue;
+            }
+
+            $ditolak = $model->sinkron($invoice_id, null, (int) $peta[$key], $kiriman, $sah);
+
+            if ($ditolak === []) {
+                continue;
+            }
+
+            $nama = $komponen->label(array_keys($ditolak));
+
+            foreach ($ditolak as $id_komponen => $pesan) {
+                $galat['anggota[' . $key . '][nilai_ukuran][' . $id_komponen . ']']
+                    = ($nama[$id_komponen]['nama'] ?? 'Ukuran') . ': ' . $pesan;
+            }
+        }
+
+        return $galat;
+    }
+}
+
+if (! function_exists('simpan_anggota')) {
+    /**
+     * Simpan daftar anggota rombongan beserta ukuran tiap orang, dipakai
+     * jalur simpan admin dan CS.
+     *
+     * Penanda `anggota_dikirim` ditulis PHP di dalam panel, bukan JavaScript.
+     * Tanpa penanda itu daftar yang sudah ada tidak disentuh sama sekali, jadi
+     * script yang gagal dimuat tidak bisa menghapus orang-orang dari orderan.
+     *
+     * @return array<string, string> pesan per kolom, kosong kalau lolos
+     */
+    function simpan_anggota(int $invoice_id, $penanda, $kiriman): array
+    {
+        if ($penanda === null) {
+            return [];
+        }
+
+        $anggota = daftar_anggota($kiriman);
+        $hasil   = (new \App\Models\AnggotaModel())->sinkron($invoice_id, $anggota['baris']);
+
+        if ($hasil['galat'] !== []) {
+            return $hasil['galat'];
+        }
+
+        return simpan_ukuran_anggota($invoice_id, $hasil['peta'], $anggota['ukuran']);
     }
 }

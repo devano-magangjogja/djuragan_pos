@@ -84,6 +84,39 @@ abstract class BaseController extends Controller
         return $return;
     }
 
+    /**
+     * ID juragan milik pengguna yang sedang login. Dasar pembatas semua halaman
+     * baru (Produk, Dasbor) supaya data juragan lain tidak ikut terbaca.
+     *
+     * @return list<int>
+     */
+    public function juraganIds(): array
+    {
+        $user_id  = (int) session()->get('id');
+        $juragans = Jrgn::by_user($user_id)[$user_id]['juragan'] ?? [];
+
+        return array_map('intval', array_column($juragans, 'id'));
+    }
+
+    /**
+     * Pilihan juragan untuk dropdown filter, sudah terbatas pada milik pengguna.
+     *
+     * @return array<int, string> id_juragan => nama
+     */
+    public function juraganPilihan(): array
+    {
+        $user_id  = (int) session()->get('id');
+        $pilihan  = [];
+
+        foreach (Jrgn::by_user($user_id)[$user_id]['juragan'] ?? [] as $j) {
+            $pilihan[(int) $j['id']] = $j['nama'];
+        }
+
+        asort($pilihan);
+
+        return $pilihan;
+    }
+
     public function isJuragan($juragan)
     {
         $juraganModel = new JuraganModel();
