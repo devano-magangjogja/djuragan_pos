@@ -11,7 +11,7 @@ class InvoiceModel extends Model
     protected $primaryKey         = 'id_invoice';
     protected $returnType         = 'object';
     protected $useSoftDeletes     = true;
-    protected $allowedFields      = ['seri', 'tanggal_pesan', 'pemesan_id', 'kirimKepada_id', 'juragan_id', 'user_id', 'status_pesanan', 'status_pembayaran', 'status_pengiriman', 'keterangan', 'rincian'];
+    protected $allowedFields      = ['seri', 'tanggal_pesan', 'pemesan_id', 'kirimKepada_id', 'juragan_id', 'user_id', 'status_pesanan', 'status_pembayaran', 'status_pengiriman', 'keterangan', 'rincian', 'deadline'];
     protected $useTimestamps      = true;
     protected $createdField       = 'created_at';
     protected $updatedField       = 'update_at';
@@ -38,6 +38,7 @@ class InvoiceModel extends Model
         $invStatusModel  = new StatusModel();
         $juraganModel    = new JuraganModel();
         $labelInvModel   = new LabelInvoice();
+        $nilaiModel      = new NilaiUkuranModel();
         $pelangganModel  = new PelangganModel();
         $pembayaranModel = new PembayaranModel();
         $penggunaModel   = new UserModel();
@@ -105,6 +106,16 @@ class InvoiceModel extends Model
             $return[$invoice->id_invoice]['pengiriman'] = $pengirimanModel->getSimple($invoice->id_invoice);
             $return[$invoice->id_invoice]['source']     = $labelInvModel->getSimple($invoice->id_invoice);
             $return[$invoice->id_invoice]['status']     = $invStatusModel->getSimple($invoice->id_invoice);
+        }
+
+        // ukuran terstruktur menempel di baris produknya; order lama tidak punya
+        // baris di tabel nilai_ukuran, jadi daftar ini memang kosong untuk mereka
+        $ukuran = $nilaiModel->perBarang(array_keys($return));
+
+        foreach ($return as $r) {
+            foreach ($r['barang'] as $b) {
+                $b->nilai_ukuran = $ukuran[$b->id] ?? [];
+            }
         }
 
         return [

@@ -234,6 +234,8 @@ $session  = \Config\Services::session();
             </div>
         </div>
 
+        <?= anggota_panel_form() ?>
+
         <div class="form-kartu mb-3">
             <?= form_label('Note / Keterangan', 'keterangan', ['class' => 'form-label']); ?>
             <?= form_textarea(['name' => 'keterangan', 'id' => 'keterangan', 'class' => 'form-control', 'rows' => '3', 'placeholder' => 'opsional']); ?>
@@ -446,6 +448,15 @@ $session  = \Config\Services::session();
                         <textarea class="form-control ri-field" id="ri_ukuran_detail" data-key="ukuran_detail" rows="2" placeholder="cth: P.JAS 75, L.DADA 103, L.PINGGANG 80"></textarea>
                     </div>
                 </div>
+                <div class="row gx-2 mt-1 rounded-[0.85rem] border border-dashed border-[#dbe3ee] bg-ink-50 px-[0.85rem] pb-[0.6rem] pt-[0.4rem] [&_h6]:text-[0.78rem] [&_h6]:font-bold [&_h6]:uppercase [&_h6]:tracking-[0.06em] [&_h6]:text-ink-600 [&_.fal]:text-brand-500 [&_.form-label]:text-xs [&_.form-label]:text-ink-500">
+                    <div class="col-12">
+                        <h6 class="mb-2 mt-3 fw-bold">
+                            <i class="fal fa-ruler-combined text-danger"></i> Ukuran Terstruktur
+                            <span class="fw-normal text-muted small">- opsional, pilih jenisnya lalu isi hasil ukurnya</span>
+                        </h6>
+                    </div>
+                    <?= ukuran_form_panel(['id' => 'ukuranModal']) ?>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-link text-decoration-none" data-bs-dismiss="modal">Batal</button>
@@ -476,8 +487,11 @@ $link_api_notif      = site_url('api/notifikasi/');
 
 ?>
 <script>
+    window.UKURAN_FORM = <?= ukuran_form_data() ?>;
     window.CARI_PELANGGAN = '<?= $link_cari_pelanggan ?>';
 </script>
+<script defer src="<?= base_url('assets/js/ukuran-form.js') ?>?v=<?= (int) @filemtime(FCPATH . 'assets/js/ukuran-form.js') ?>"></script>
+<script defer src="<?= base_url('assets/js/anggota-form.js') ?>?v=<?= (int) @filemtime(FCPATH . 'assets/js/anggota-form.js') ?>"></script>
 <script defer src="<?= base_url('assets/js/cari-pelanggan.js') ?>?v=<?= (int) @filemtime(FCPATH . 'assets/js/cari-pelanggan.js') ?>"></script>
 
 <?php
@@ -933,6 +947,15 @@ $js = <<< JS
     			});
     		}
 
+    		// ukuran terstruktur: nama inputnya baru bisa dibuat sekarang karena
+    		// kunci barisnya (j) baru ketemu di sini
+    		var uku = UKURAN.nilai('#ukuranModal');
+    		$.each(uku, function (i, u) {
+    			p.append($('<input/>', {'type':'hidden','name':'produk['+j+'][nilai_ukuran]['+u.key+']','value':u.nilai}));
+    		});
+    		if (uku.length) {
+    			t.append($('<div/>', {'class':'small text-muted'}).text(UKURAN.ringkas('#ukuranModal')));
+    		}
     		newRow(tb,[t,f,b,p]);
     		subtotal();
 
@@ -958,6 +981,7 @@ $js = <<< JS
     		var a=$('#nambahProduk');
     		a.removeClass('was-validated')[0].reset();
     		$('#customDetail').addClass('d-none');
+    		UKURAN.kosongkan('#ukuranModal');
     	});
 
     	function subtotal(){

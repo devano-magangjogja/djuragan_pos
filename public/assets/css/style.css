@@ -64,6 +64,9 @@
 .fal.fa-tasks::before           { content: "\f0ae"; } /* list-check  */
 .fal.fa-box-alt::before         { content: "\f466"; } /* box (Pro→free) */
 .fal.fa-inbox-in::before        { content: "\f01c"; } /* inbox (Pro→free) */
+.fal.fa-ruler-combined::before  { content: "\f5af"; } /* ruler-combined (free) */
+.fal.fa-users::before           { content: "\f0c0"; } /* users (free)          */
+.fal.fa-chevron-down::before    { content: "\f078"; } /* chevron-down (free)   */
 
 /* ------------------------------------------------------------------
    Timeline status invoice (.timeliner)

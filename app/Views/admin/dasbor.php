@@ -31,7 +31,7 @@ $tautan_transaksi = static function (string $slug, string $seri): string {
 <?= $this->include('admin/navbar') ?>
 
 <div class="container-xxl">
-    <h1 class="h3 mt-5">Dasbor</h1>
+    <h1 class="h3 mt-3">Dasbor</h1>
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb p-0">
             <li class="breadcrumb-item active" aria-current="page"><?= esc($tanggal_hari_ini) ?></li>

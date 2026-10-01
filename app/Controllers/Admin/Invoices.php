@@ -3,9 +3,12 @@
 namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
+use App\Models\AnggotaModel;
 use App\Models\InvoiceModel;
 use App\Models\JuraganModel;
+use App\Models\NilaiUkuranModel;
 use App\Models\PembayaranModel;
+use App\Models\UkuranKomponenModel;
 use App\Models\UserModel;
 use CodeIgniter\I18n\Time;
 
@@ -18,8 +21,12 @@ class Invoices extends BaseController
      */
     public function tulis()
     {
+        $komponen = new UkuranKomponenModel();
+
         $data = [
-            'title' => 'Tulis Orderan Baru',
+            'title'           => 'Tulis Orderan Baru',
+            'jenis_produk'    => $komponen->jenis(),
+            'template_ukuran' => $komponen->semuaTemplate(),
         ];
 
         return view('admin/invoice/tulis', $data);
@@ -107,10 +114,30 @@ class Invoices extends BaseController
             'q'     => $seri,
         ];
 
-        $pesanan = $invModel->getAll('semua', 0, $cari);
-        $data    = [
-            'title'   => 'Sunting Orderan #' . $seri,
-            'pesanan' => $pesanan['data'],
+        $pesanan  = $invModel->getAll('semua', 0, $cari);
+        $komponen = new UkuranKomponenModel();
+        $nilai    = new NilaiUkuranModel();
+        $anggota  = new AnggotaModel();
+        $id       = (int) $x->id_invoice;
+
+        // ukuran tiap orang ikut menempel di baris anggota form
+        $jenis_org   = $nilai->petaJenis($id, 'anggota_id');
+        $ukuran_org  = $nilai->perItemForm($id, 'anggota_id');
+        $anggota_item = $anggota->untukInvoice($id);
+
+        foreach ($anggota_item as $i => $a) {
+            $anggota_item[$i]['jenis'] = $jenis_org[(int) $a['id_anggota']] ?? null;
+            $anggota_item[$i]['nilai'] = $ukuran_org[(int) $a['id_anggota']] ?? [];
+        }
+
+        $data = [
+            'title'           => 'Sunting Orderan #' . $seri,
+            'pesanan'         => $pesanan['data'],
+            'jenis_produk'    => $komponen->jenis(),
+            'template_ukuran' => $komponen->semuaTemplate(),
+            'ukuran_item'     => $nilai->perItemForm($id),
+            'jenis_item'      => $nilai->petaJenis($id),
+            'anggota_item'    => $anggota_item,
         ];
 
         return view('admin/invoice/sunting', $data);
@@ -157,6 +184,7 @@ class Invoices extends BaseController
             $t          = $userModel->find($user_id);
             $seri       = strtoupper(first_letter($t->name) . time());
             $juragan_id = $this->request->getPost('juragan');
+            $rincian    = $this->request->getPost('rincian');
 
             $data_invoice = [
                 'tanggal_pesan'  => $this->request->getPost('tanggal_order'),
@@ -169,17 +197,21 @@ class Invoices extends BaseController
                 // 'status_pembayaran'=> '',
                 // 'status_pengiriman'=> '',
                 'keterangan' => ($this->request->getPost('keterangan') !== '' ? $this->request->getPost('keterangan') : null),
-                'rincian'    => rincian_json($this->request->getPost('rincian'), array_keys(meta_rincian('pesanan')), ['tipe' => array_keys(tipe_pesanan())]),
+                'deadline'   => deadline_iso($rincian),
+                'rincian'    => rincian_json($rincian, array_keys(meta_rincian('pesanan')), ['tipe' => array_keys(tipe_pesanan())]),
             ];
 
             $invModel = new InvoiceModel();
 
-            // simpan ke database
+            // invoice, produk, ukuran, dan biaya ditulis sebagai satu transaksi:
+            // orderan tidak boleh sampai tersimpan separuh
+            $db->transBegin();
+
             $invModel->insert($data_invoice);
+            $invoice_id = (int) $db->insertID();
+            $galat      = [];
 
-            if ($db->affectedRows() > 0) {
-                $invoice_id = $db->insertID();
-
+            if ($invoice_id > 0) {
                 // simpan asal orderan
                 $data_asal = [
                     'invoice_id' => $invoice_id,
@@ -188,49 +220,46 @@ class Invoices extends BaseController
                 ];
                 $db->table('label_invoice')->insert($data_asal);
 
-                // simpan produk
-                $produks = $this->request->getPost('produk');
+                // simpan produk, lalu ukuran terstruktur per item
+                $produk = produk_dibeli($this->request->getPost('produk'), $invoice_id);
+                $peta   = sinkron_dibeli($invoice_id, $produk['baris']);
+                $galat  = array_merge(
+                    simpan_ukuran_produk($invoice_id, $peta, $produk['ukuran']),
+                    simpan_anggota($invoice_id, $this->request->getPost('anggota_dikirim'), $this->request->getPost('anggota'))
+                );
 
-                // tambahkan `invoice_id` untuk tiap pesanan
-                $produk = [];
+                if ($galat === []) {
+                    // simpan biaya
+                    if ($this->request->getVar('biaya') !== null) {
+                        $biayas = $this->request->getPost('biaya');
 
-                foreach ($produks as $k => $v) {
-                    $rincian_produk = [];
+                        // tambahkan `invoice_id` untuk tiap biaya
+                        $biaya = [];
 
-                    foreach ($v as $p => $d) {
-                        if ($p === 'rincian') {
-                            $rincian_produk = is_array($d) ? $d : [];
-
-                            continue;
+                        foreach ($biayas as $k => $v) {
+                            foreach ($v as $p => $d) {
+                                $biaya[$k]['invoice_id'] = $invoice_id;
+                                $biaya[$k][$p]           = ($d !== '' ? $d : null);
+                            }
                         }
-
-                        $produk[$k]['invoice_id'] = $invoice_id;
-                        $produk[$k][$p]           = $d;
+                        $db->table('biaya')->insertBatch($biaya);
                     }
 
-                    $produk[$k]['rincian'] = rincian_json($rincian_produk, array_keys(meta_rincian('produk')));
+                    // simpan notif, kirim kesemua user
+                    simpan_notif(1, $juragan_id, $invoice_id);
                 }
-                $db->table('dibeli')->insertBatch(lengkapi_produk($produk));
-
-                // simpan notif
-                simpan_notif(1, $juragan_id, $invoice_id);
-
-                // simpan biaya
-                if ($this->request->getVar('biaya') !== null) {
-                    $biayas = $this->request->getPost('biaya');
-
-                    // tambahkan `invoice_id` untuk tiap biaya
-                    $biaya = [];
-
-                    foreach ($biayas as $k => $v) {
-                        foreach ($v as $p => $d) {
-                            $biaya[$k]['invoice_id'] = $invoice_id;
-                            $biaya[$k][$p]           = ($d !== '' ? $d : null);
-                        }
-                    }
-                    $db->table('biaya')->insertBatch($biaya);
-                }
+            } else {
+                $galat['invoice'] = 'Orderan gagal disimpan, coba lagi ya.';
             }
+
+            if ($galat !== [] || ! $db->transStatus()) {
+                $db->transRollback();
+                $this->response->setStatusCode(406);
+
+                return $this->response->setJSON($galat);
+            }
+
+            $db->transCommit();
 
             $ret = [
                 'status' => 'data tersimpan',
@@ -258,8 +287,15 @@ class Invoices extends BaseController
             }
             $db = \Config\Database::connect();
 
-            $invoice_id = $this->request->getPost('id_invoice');
+            $invModel   = new InvoiceModel();
+            $invoice_id = (int) $this->request->getPost('id_invoice');
             $user_id    = $this->request->getPost('pengguna');
+
+            if ($invModel->find($invoice_id) === null) {
+                $this->response->setStatusCode(406);
+
+                return $this->response->setJSON(['id_invoice' => 'Orderannya tidak ditemukan, mungkin sudah dihapus.']);
+            }
 
             $data_invoice = [
                 'id_invoice'    => $invoice_id,
@@ -276,61 +312,40 @@ class Invoices extends BaseController
             $rincian_invoice = $this->request->getPost('rincian');
 
             if (is_array($rincian_invoice)) {
-                $data_invoice['rincian'] = rincian_json($rincian_invoice, array_keys(meta_rincian('pesanan')), ['tipe' => array_keys(tipe_pesanan())]);
+                $data_invoice['rincian']  = rincian_json($rincian_invoice, array_keys(meta_rincian('pesanan')), ['tipe' => array_keys(tipe_pesanan())]);
+                $data_invoice['deadline'] = deadline_iso($rincian_invoice);
             }
 
-            $invModel = new InvoiceModel();
+            // sama seperti save(): semua tabel ikut satu transaksi supaya suntingan
+            // yang ditolak (misalnya angka ukuran tidak sah) tidak meninggalkan
+            // orderan separuh jadi
+            $db->transBegin();
 
-            // simpan ke database
             $invModel->save($data_invoice);
 
-            if ($db->affectedRows() > 0) {
-                // $invoice_id = $db->insertID();
+            // hapus data asal orderan
+            $db->table('label_invoice')->delete(['invoice_id' => $invoice_id]);
 
-                // hapus data asal orderan
-                $db->table('label_invoice')->delete(['invoice_id' => $invoice_id]);
+            // simpan asal orderan
+            $data_asal = [
+                'invoice_id' => $invoice_id,
+                'source_id'  => $this->request->getPost('asal_orderan'),
+                'label'      => ($this->request->getPost('label') !== '' ? $this->request->getPost('label') : null),
+            ];
+            $db->table('label_invoice')->insert($data_asal);
 
-                // simpan asal orderan
-                $data_asal = [
-                    'invoice_id' => $invoice_id,
-                    'source_id'  => $this->request->getPost('asal_orderan'),
-                    'label'      => ($this->request->getPost('label') !== '' ? $this->request->getPost('label') : null),
-                ];
-                $db->table('label_invoice')->insert($data_asal);
+            // simpan produk; baris yang nomornya (key = id_beli) masih ada di-update
+            // supaya ukuran yang sudah tercatat tetap nempel di itemnya
+            $produk = produk_dibeli($this->request->getPost('produk'), $invoice_id);
+            $peta   = sinkron_dibeli($invoice_id, $produk['baris']);
+            $galat  = array_merge(
+                simpan_ukuran_produk($invoice_id, $peta, $produk['ukuran']),
+                simpan_anggota($invoice_id, $this->request->getPost('anggota_dikirim'), $this->request->getPost('anggota'))
+            );
 
-                // hapus produk dibeli
-                $db->table('dibeli')->delete(['invoice_id' => $invoice_id]);
-
-                // simpan produk
-                $produks = $this->request->getPost('produk');
-
-                // tambahkan `invoice_id` untuk tiap pesanan
-                $produk = [];
-
-                foreach ($produks as $k => $v) {
-                    $rincian_produk = [];
-
-                    foreach ($v as $p => $d) {
-                        if ($p === 'rincian') {
-                            $rincian_produk = is_array($d) ? $d : [];
-
-                            continue;
-                        }
-
-                        $produk[$k]['invoice_id'] = $invoice_id;
-                        $produk[$k][$p]           = $d;
-                    }
-
-                    $produk[$k]['rincian'] = rincian_json($rincian_produk, array_keys(meta_rincian('produk')));
-                }
-                $db->table('dibeli')->insertBatch(lengkapi_produk($produk));
-
+            if ($galat === []) {
                 // hapus biaya
                 $db->table('biaya')->delete(['invoice_id' => $invoice_id]);
-
-                // simpan notif
-                $juragan_id = $invModel->find($invoice_id)->juragan_id;
-                simpan_notif(2, $juragan_id, $invoice_id);
 
                 // simpan biaya
                 if ($this->request->getVar('biaya') !== null) {
@@ -347,7 +362,20 @@ class Invoices extends BaseController
                     }
                     $db->table('biaya')->insertBatch($biaya);
                 }
+
+                // simpan notif
+                $juragan_id = $invModel->find($invoice_id)->juragan_id;
+                simpan_notif(2, $juragan_id, $invoice_id);
             }
+
+            if ($galat !== [] || ! $db->transStatus()) {
+                $db->transRollback();
+                $this->response->setStatusCode(406);
+
+                return $this->response->setJSON($galat);
+            }
+
+            $db->transCommit();
 
             $ret = [
                 'status' => 'data tersimpan',

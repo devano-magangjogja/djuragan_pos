@@ -401,6 +401,7 @@ $session  = \Config\Services::session();
 
                     <div class="collapse" id="produk-<?= esc($pesanan->id_invoice) ?>">
                         <div class="border-t border-ink-200 px-[1.15rem] py-3">
+                            <?php $punya_ukuran = false; ?>
                             <ul class="m-0 list-none p-0 text-sm">
                                 <?php foreach ($pesanan->barang as $b) { ?>
                                     <li class="flex flex-wrap items-baseline gap-1 py-[0.2rem]">
@@ -431,9 +432,26 @@ $session  = \Config\Services::session();
                                                 <?php } ?>
                                             </div>
                                         <?php } ?>
+
+                                        <?php $ukuran_item = $b->nilai_ukuran ?? []; ?>
+
+                                        <?php if ($ukuran_item !== []) { ?>
+                                            <?php $punya_ukuran = true; ?>
+                                            <div class="basis-full mb-[0.15rem] mt-[0.3rem] flex flex-wrap items-baseline gap-[0.3rem] pl-[1.1rem]">
+                                                <span class="text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500"><i class="fal fa-ruler-combined"></i> Ukuran</span>
+
+                                                <?php foreach ($ukuran_item as $u) { ?>
+                                                    <span class="inline-flex max-w-full items-baseline gap-1 rounded-full border border-ink-200 bg-[#f6f8fb] px-[0.55rem] py-[0.2rem] text-xs leading-snug text-ink-600"><span class="font-bold tracking-wide text-ink-500 whitespace-nowrap"><?= esc($u[0]) ?></span> <span class="break-words"><?= esc($u[1]) ?></span></span>
+                                                <?php } ?>
+                                            </div>
+                                        <?php } ?>
                                     </li>
                                 <?php } ?>
                             </ul>
+
+                            <?php if (! $punya_ukuran) { ?>
+                                <p class="mb-0 mt-2 text-xs text-ink-500"><i class="fal fa-ruler-combined"></i> Ukuran belum diisi</p>
+                            <?php } ?>
                         </div>
                     </div>
                 </div>
