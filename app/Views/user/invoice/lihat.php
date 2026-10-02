@@ -167,6 +167,19 @@ $session  = \Config\Services::session();
                                 <?= esc(status_pembayaran($pesanan->pembayaran, $pesanan->status_pembayaran, 'label')) ?>
                             </span>
 
+                            <?php
+                            // tenggat hanya ditampilkan kalau memang diisi; order lama tetap polos
+                            $dead = label_deadline($pesanan->deadline ?? null);
+
+                            if ($dead['teks'] !== '-') :
+                                $pil_dead = $dead['kelas'] === ''
+                                    ? 'border border-ink-200 bg-ink-50 text-ink-700'
+                                    : $pil[$dead['kelas']]['pill']; ?>
+                                <span class="rounded-full px-3 py-1 text-xs font-semibold <?= $pil_dead ?>" title="Tenggat: <?= esc($dead['teks']) ?>">
+                                    <i class="fal fa-clock me-1"></i><?= esc($dead['teks']) ?>
+                                </span>
+                            <?php endif; ?>
+
                             <div class="ms-auto flex items-center gap-1 max-sm:ms-0">
                                 <a class="inline-flex cursor-pointer items-center gap-1 rounded-[0.7rem] border border-ink-200 bg-ink-50 px-2.5 py-1 text-sm text-ink-700 transition hover:bg-ink-100 hover:text-ink-900" href="<?= site_url('download/invoice/' . $pesanan->seri) ?>" target="_blank" rel="noopener" title="Cetak pesanan ini">
                                     <i class="fal fa-print"></i> <span class="hidden md:inline">Cetak</span>

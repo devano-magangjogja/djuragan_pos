@@ -456,7 +456,9 @@ class InvoiceModel extends Model
 
         $this->join('pelanggan p', 'p.id_pelanggan=invoice.pemesan_id');
         $this->join('pelanggan k', 'k.id_pelanggan=invoice.kirimKepada_id');
-        $this->join('dibeli b', 'b.invoice_id=invoice.id_invoice');
+        // orderan yang belum punya satu pun baris produk tetap harus muncul di
+        // daftar (LEFT, bukan INNER), kalau tidak ia tidak bisa dibuka sama sekali
+        $this->join('dibeli b', 'b.invoice_id=invoice.id_invoice', 'left');
 
         if (! empty($cari) && is_array($cari)) {
             if (! empty($cari['pembayaran'])) {
