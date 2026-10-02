@@ -50,30 +50,7 @@ class InvoiceModel extends Model
         // IN () kosong adalah SQL invalid, gunakan [0] saat tidak ada id yang cocok
         $builder->whereIn('id_invoice', $this->ambilIds($cari) ?: [0]);
 
-        switch ($hal) {
-            case 'selesai':
-                $builder->where('status_pengiriman', '3');
-                break;
-
-            case 'belum-proses':
-                $builder->where('status_pesanan', '1');
-
-                if ($kategori !== 'semua') {
-                    $builder->whereIn('status_pembayaran', self::statusKategori($kategori));
-                }
-
-                break;
-
-            case 'pembayaran':
-            case 'cek-bayar':
-                $builder->whereIn('status_pembayaran', self::statusKategori($kategori));
-                break;
-
-            case 'dalam-proses':
-                $builder->where('status_pesanan', '2');
-                $builder->whereNotIn('status_pengiriman', ['3']);
-                break;
-        }
+        $this->terapkanTab($builder, $hal, $kategori);
 
         if ($juragan_id > 0) {
             $builder->where('juragan_id', $juragan_id);
@@ -203,6 +180,23 @@ class InvoiceModel extends Model
 
         $builder->whereIn('id_invoice', $this->ambilIds($cari) ?: [0]);
 
+        $this->terapkanTab($builder, $hal, $kategori);
+
+        if ($juragan_id > 0) {
+            $builder->where('juragan_id', $juragan_id);
+        }
+
+        return $builder->countAllResults();
+    }
+
+    /**
+     * Klausul satu tab daftar transaksi. Satu tempat supaya tab, counter, dan
+     * angka dasbor tidak bisa lagi berbeda aturan.
+     *
+     * @param \CodeIgniter\Model|\CodeIgniter\Database\BaseBuilder $builder
+     */
+    private function terapkanTab($builder, string $hal, string $kategori = 'perlu-cek'): void
+    {
         switch ($hal) {
             case 'selesai':
                 $builder->where('status_pengiriman', '3');
@@ -226,13 +220,155 @@ class InvoiceModel extends Model
                 $builder->where('status_pesanan', '2');
                 $builder->whereNotIn('status_pengiriman', ['3']);
                 break;
+
+            case 'saring':
+                $this->terapkanSaring($builder, $kategori);
+                break;
+        }
+    }
+
+    /**
+     * Klausul satu saringan orderan dari kartu/panel dasbor.
+     *
+     * Semua saringan kerja hanya menghitung orderan yang belum diambil
+     * pelanggan; yang sudah diserahkan jadi riwayat, bukan pekerjaan hari ini.
+     *
+     * @param \CodeIgniter\Model|\CodeIgniter\Database\BaseBuilder $builder
+     */
+    private function terapkanSaring($builder, string $slug): void
+    {
+        helper('fungsi');
+
+        $orderan = $this->db->prefixTable('invoice');
+        $tahap   = $this->db->prefixTable('invoice_status');
+        $packing = array_key_last(tahap_produksi());
+
+        // kartu yang isinya sama dengan tab yang sudah ada ikut tab itu saja
+        if ($slug === 'produksi' || $slug === 'belum-diproses') {
+            $this->terapkanTab(
+                $builder,
+                $slug === 'produksi' ? 'dalam-proses' : 'belum-proses',
+                'semua'
+            );
+
+            return;
         }
 
-        if ($juragan_id > 0) {
-            $builder->where('juragan_id', $juragan_id);
+        $belum_diambil = "status_pengiriman <> '3' AND ";
+
+        switch ($slug) {
+            case 'pesan-hari-ini':
+                $sql = 'tanggal_pesan = CURDATE()';
+                break;
+
+            case 'aktif':
+                $sql = "status_pesanan IN ('1', '2') AND status_pengiriman <> '3'";
+                break;
+
+            case 'belum-lunas':
+                $sql = "status_pembayaran NOT IN ('5', '6')";
+                break;
+
+            case 'siap-diambil':
+                $sql = $belum_diambil
+                    . "EXISTS (SELECT 1 FROM `{$tahap}` s WHERE s.invoice_id = `{$orderan}`.id_invoice"
+                    . " AND s.status = '{$packing}' AND s.tanggal_selesai IS NOT NULL)";
+                break;
+
+            case 'ukuran-belum-lengkap':
+                $anggota = $this->db->prefixTable('anggota');
+                $nilai   = $this->db->prefixTable('nilai_ukuran');
+
+                $sql = $belum_diambil
+                    . "EXISTS (SELECT 1 FROM `{$anggota}` a WHERE a.invoice_id = `{$orderan}`.id_invoice)"
+                    . " AND NOT EXISTS (SELECT 1 FROM `{$nilai}` v WHERE v.invoice_id = `{$orderan}`.id_invoice)";
+                break;
+
+            case 'deadline-hari-ini':
+                $sql = $belum_diambil . 'deadline = CURDATE()';
+                break;
+
+            case 'deadline-besok':
+                $sql = $belum_diambil . 'deadline = CURDATE() + INTERVAL 1 DAY';
+                break;
+
+            case 'deadline-3-hari':
+                $sql = $belum_diambil . 'deadline BETWEEN CURDATE() AND CURDATE() + INTERVAL 3 DAY';
+                break;
+
+            case 'deadline-terlewat':
+                $sql = $belum_diambil . 'deadline < CURDATE()';
+                break;
+
+            default:
+                // slug tidak dikenal: jangan kembalikan seluruh isi tabel
+                $sql = '0 = 1';
         }
 
-        return $builder->countAllResults();
+        $builder->where($sql, null, false);
+    }
+
+    /**
+     * Pembangun query untuk satu saringan, dibatasi pada daftar juragan pemakai.
+     *
+     * @param array<int> $juragan_ids
+     *
+     * @return \CodeIgniter\Database\BaseBuilder
+     */
+    private function pembangunSaring(array $juragan_ids, string $slug)
+    {
+        $ids = array_values(array_filter(array_map('intval', $juragan_ids)));
+
+        $builder = $this->db->table('invoice');
+        $builder->select('id_invoice');
+        $builder->where('deleted_at', null);
+        $builder->whereIn('juragan_id', $ids === [] ? [0] : $ids);
+
+        $this->terapkanSaring($builder, $slug);
+
+        return $builder;
+    }
+
+    /**
+     * Jumlah orderan untuk satu saringan pada kartu/panel dasbor.
+     *
+     * Dipakai lewat model yang sama dengan daftar transaksinya, jadi angka
+     * kartu dan halaman yang dibuka dari kartu itu tidak bisa berbeda lagi.
+     *
+     * @param array<int> $juragan_ids
+     */
+    public function hitungSaring(array $juragan_ids, string $slug): int
+    {
+        return $this->pembangunSaring($juragan_ids, $slug)->countAllResults();
+    }
+
+    /**
+     * Sebaran tahap produksi tertinggi dari satu saringan orderan untuk blok
+     * Ringkasan Produksi. Tahap 0 berarti orderan belum masuk antrean kerja.
+     *
+     * @param array<int> $juragan_ids
+     *
+     * @return array<int, int> nomor tahap => jumlah orderan
+     */
+    public function sebaranTahap(array $juragan_ids, string $slug = 'aktif'): array
+    {
+        $status = $this->db->prefixTable('invoice_status');
+        $dasar  = $this->pembangunSaring($juragan_ids, $slug)->getCompiledSelect(false);
+
+        $baris = $this->db->query('SELECT IFNULL(s.tahap, 0) AS tahap, COUNT(*) AS jumlah'
+            . ' FROM (' . $dasar . ') o'
+            . ' LEFT JOIN (SELECT invoice_id, MAX(CAST(status AS UNSIGNED)) AS tahap'
+            . ' FROM `' . $status . '` WHERE tanggal_masuk IS NOT NULL GROUP BY invoice_id) s'
+            . ' ON s.invoice_id = o.id_invoice'
+            . ' GROUP BY IFNULL(s.tahap, 0) ORDER BY tahap ASC')->getResultArray();
+
+        $sebaran = [];
+
+        foreach ($baris as $b) {
+            $sebaran[(int) $b['tahap']] = (int) $b['jumlah'];
+        }
+
+        return $sebaran;
     }
 
     public function getCount(int $id_juragan = 0): array
@@ -406,21 +542,77 @@ class InvoiceModel extends Model
         return $return;
     }
 
+    /**
+     * Ringkasan uang satu invoice: barang, lain-lain, sudah terbayar, dan yang belum dicek.
+     */
     public function total_biaya($invoice_id)
     {
-        $biaya = $this->db->table('dibeli d');
-        $biaya->select('SUM(DISTINCT d.harga*d.qty) as barang');
-        $biaya->select('SUM(DISTINCT c.nominal) as lain');
-        $biaya->select("SUM(DISTINCT case when x.status='3' then x.total_pembayaran else 0 end) as terbayar");
-        $biaya->select("SUM(DISTINCT case when x.status='1' then x.total_pembayaran else 0 end) as belumcek");
+        $id = (int) $invoice_id;
 
-        $biaya->join('biaya c', 'c.invoice_id = d.invoice_id', 'left');
-        $biaya->join('pembayaran x', 'x.invoice_id = d.invoice_id', 'left');
+        // masing-masing tabel dijumlah sendiri; digabung lewat JOIN malah membuat nilai
+        // yang sama persis ikut terhapus oleh SUM(DISTINCT ...)
+        $barang = $this->db->table('dibeli')
+            ->select('IFNULL(SUM(harga * qty), 0) AS n', false)
+            ->where('invoice_id', $id)
+            ->getCompiledSelect();
 
-        $biaya->where('d.invoice_id', $invoice_id);
+        $lain = $this->db->table('biaya')
+            ->select('IFNULL(SUM(nominal), 0) AS n', false)
+            ->where('invoice_id', $id)
+            ->getCompiledSelect();
 
-        // $biaya->groupBy("d.invoice_id");
-        return $biaya->get();
+        $terbayar = $this->db->table('pembayaran')
+            ->select('IFNULL(SUM(total_pembayaran), 0) AS n', false)
+            ->where('invoice_id', $id)
+            ->where('status', '3')
+            ->getCompiledSelect();
+
+        $belumcek = $this->db->table('pembayaran')
+            ->select('IFNULL(SUM(total_pembayaran), 0) AS n', false)
+            ->where('invoice_id', $id)
+            ->where('status', '1')
+            ->getCompiledSelect();
+
+        return $this->db->query("SELECT ({$barang}) AS barang, ({$lain}) AS lain, ({$terbayar}) AS terbayar, ({$belumcek}) AS belumcek");
+    }
+
+    /**
+     * Aturan status pembayaran, hanya dari angka: 1 belum bayar, 2 menunggu konfirmasi
+     * (belum ada dana masuk), 3 menunggu konfirmasi (kredit), 4 dicicil, 5 lunas ada kelebihan, 6 lunas.
+     */
+    public static function statusPembayaran(int $total, int $terbayar, int $belumcek): string
+    {
+        if ($belumcek > 0) {
+            return $terbayar > 0 ? '3' : '2';
+        }
+        if ($terbayar === 0) {
+            return '1';
+        }
+        if ($terbayar === $total) {
+            return '6';
+        }
+
+        return $terbayar < $total ? '4' : '5';
+    }
+
+    /**
+     * Hitung lalu simpan status_pembayaran satu invoice.
+     */
+    public function perbaruiStatusPembayaran($invoice_id): string
+    {
+        $cek    = $this->total_biaya($invoice_id)->getResult()[0];
+        $status = self::statusPembayaran(
+            (int) $cek->barang + (int) $cek->lain,
+            (int) $cek->terbayar,
+            (int) $cek->belumcek
+        );
+
+        $this->save([
+            'id_invoice'        => $invoice_id,
+            'status_pembayaran' => $status,
+        ]);
+
+        return $status;
     }
 
     public function status($invoice_id)

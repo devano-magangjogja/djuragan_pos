@@ -33,7 +33,7 @@ $routes->set404Override(static fn () => view('errors/html/error_page'));
  * --------------------------------------------------------------------
  */
 $routes->addPlaceholder('juragan', '[a-z0-9]{40}|semua');
-$routes->addPlaceholder('tab', 'semua|pembayaran|cek-bayar|dalam-proses|belum-proses|selesai');
+$routes->addPlaceholder('tab', 'semua|pembayaran|cek-bayar|dalam-proses|belum-proses|selesai|saring');
 
 // We get a performance increase by specifying the default
 // route since we don't have to scan directories.
