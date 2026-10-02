@@ -34,6 +34,7 @@ class InvoiceModel extends Model
     public function getAll(string $hal = 'semua', int $juragan_id = 0, $cari = '', int $limit = 0, int $offset = 0, string $kategori = 'perlu-cek'): array
     {
         $biayaModel      = new BiayaModel();
+        $anggotaModel    = new AnggotaModel();
         $dibeliModel     = new BarangDibeli();
         $invStatusModel  = new StatusModel();
         $juraganModel    = new JuraganModel();
@@ -116,6 +117,14 @@ class InvoiceModel extends Model
             foreach ($r['barang'] as $b) {
                 $b->nilai_ukuran = $ukuran[$b->id] ?? [];
             }
+        }
+
+        // daftar rombongan menempel di kartunya; order satuan tidak punya baris
+        // sama sekali di order_anggota jadi bloknya tidak dirender
+        $rombongan = $anggotaModel->banyak(array_keys($return));
+
+        foreach (array_keys($return) as $i) {
+            $return[$i]['anggota'] = $rombongan[$i] ?? [];
         }
 
         return [

@@ -47,6 +47,61 @@ class AnggotaModel extends Model
     }
 
     /**
+     * Anggota + ukuran siap tampil untuk banyak orderan sekaligus dalam SATU query,
+     * dipakai kartu transaksi (admin dan CS). Order satuan tidak muncul di sini,
+     * jadi pemanggil cukup menyembunyikan bloknya kalau hasilnya kosong.
+     *
+     * @param  array<int, int> $invoice_ids
+     * @return array<int, array<int, array{nama:string, nomor:?string, catatan:?string, nilai: array<int, array{0:string, 1:string}>}>>
+     */
+    public function banyak(array $invoice_ids): array
+    {
+        $id = array_values(array_filter(array_map('intval', $invoice_ids)));
+
+        if ($id === []) {
+            return [];
+        }
+
+        $anggota = $this->db->prefixTable('anggota');
+        $nilai   = $this->db->prefixTable('nilai_ukuran');
+        $kompo   = $this->db->prefixTable('ukuran_komponen');
+
+        $hasil  = [];
+        $indeks = [];
+
+        // LEFT JOIN: orang yang belum diukur tetap muncul dengan namanya
+        foreach ($this->db->query('SELECT a.invoice_id, a.id_anggota, a.nama, a.nomor, a.catatan'
+            . ', k.nama komponen, n.nilai, n.satuan FROM `' . $anggota . '` a'
+            . ' LEFT JOIN `' . $nilai . '` n ON n.anggota_id = a.id_anggota'
+            . ' LEFT JOIN `' . $kompo . '` k ON k.id_komponen = n.komponen_id'
+            . ' WHERE a.invoice_id IN (' . implode(',', $id) . ')'
+            . ' ORDER BY a.invoice_id, a.urutan, a.id_anggota, k.urutan, k.nama')->getResultArray() as $r) {
+            $inv = (int) $r['invoice_id'];
+            $ori = (int) $r['id_anggota'];
+
+            if (! isset($indeks[$inv][$ori])) {
+                $indeks[$inv][$ori] = count($hasil[$inv] ?? []);
+
+                $hasil[$inv][] = [
+                    'nama'    => $r['nama'],
+                    'nomor'   => $r['nomor'],
+                    'catatan' => $r['catatan'],
+                    'nilai'   => [],
+                ];
+            }
+
+            if ($r['komponen'] !== null) {
+                $hasil[$inv][$indeks[$inv][$ori]]['nilai'][] = [
+                    $r['komponen'],
+                    $r['nilai'] === null ? 'belum diukur' : NilaiUkuranModel::tampil((float) $r['nilai'], $r['satuan']),
+                ];
+            }
+        }
+
+        return $hasil;
+    }
+
+    /**
      * Samakan isi order_anggota satu invoice dengan kiriman form.
      *
      * @param array<string|int, array> $baris key form => [nama, nomor, catatan]

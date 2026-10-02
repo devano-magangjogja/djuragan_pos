@@ -456,6 +456,49 @@ $session  = \Config\Services::session();
                     </div>
                 </div>
 
+                <?php if (! empty($pesanan->anggota)) { ?>
+                    <div class="mt-4 overflow-hidden rounded-2xl border border-ink-200 bg-[#fcfdfe]">
+                        <h6 class="mb-0">
+                            <button class="flex w-full cursor-pointer items-center gap-1.5 border-0 bg-transparent px-[1.15rem] py-4 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500 [&_.fal]:text-[0.95rem] [&_.fal]:text-ink-400" type="button" data-bs-toggle="collapse" data-bs-target="#anggota-<?= esc($pesanan->id_invoice) ?>" aria-expanded="false" aria-controls="anggota-<?= esc($pesanan->id_invoice) ?>">
+                                <i class="fal fa-users"></i> Anggota Rombongan
+                                <span class="inline-block rounded-full bg-ink-900 px-2 py-0.5 text-xs font-semibold text-white"><?= count($pesanan->anggota) ?></span>
+                                <span class="text-[0.8rem] font-semibold normal-case tracking-normal">orang</span>
+                                <i class="fal fa-chevron-down ms-auto transition rotate-[-90deg] aria-expanded:rotate-0"></i>
+                            </button>
+                        </h6>
+
+                        <div class="collapse" id="anggota-<?= esc($pesanan->id_invoice) ?>">
+                            <div class="border-t border-ink-200 px-[1.15rem] py-3">
+                                <ul class="m-0 list-none p-0 text-sm">
+                                    <?php foreach ($pesanan->anggota as $o) { ?>
+                                        <li class="flex flex-wrap items-baseline gap-1 py-[0.2rem]">
+                                            <span class="grow"><?= esc($o->nama) ?></span>
+
+                                            <?php if (! empty($o->nomor)) { ?>
+                                                <span class="shrink-0 font-semibold whitespace-nowrap"><?= esc($o->nomor) ?></span>
+                                            <?php } ?>
+
+                                            <?php if (! empty($o->catatan)) { ?>
+                                                <div class="basis-full mt-[0.15rem] break-words text-xs leading-[1.5] text-ink-500"><?= esc($o->catatan) ?></div>
+                                            <?php } ?>
+
+                                            <?php if (! empty($o->nilai)) { ?>
+                                                <div class="basis-full mb-[0.15rem] mt-[0.3rem] flex flex-wrap items-baseline gap-[0.3rem] pl-[1.1rem]">
+                                                    <span class="text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500"><i class="fal fa-ruler-combined"></i> Ukuran</span>
+
+                                                    <?php foreach ($o->nilai as $u) { ?>
+                                                        <span class="inline-flex max-w-full items-baseline gap-1 rounded-full border border-ink-200 bg-[#f6f8fb] px-[0.55rem] py-[0.2rem] text-xs leading-snug text-ink-600"><span class="font-bold tracking-wide text-ink-500 whitespace-nowrap"><?= esc($u[0]) ?></span> <span class="break-words"><?= esc($u[1]) ?></span></span>
+                                                    <?php } ?>
+                                                </div>
+                                            <?php } ?>
+                                        </li>
+                                    <?php } ?>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                <?php } ?>
+
                 <?php $rincian_pesanan = daftar_rincian($pesanan->rincian ?? null, 'pesanan'); ?>
                 <?php if ($rincian_pesanan !== []) { ?>
                     <div class="rounded-2xl border border-ink-200 border-l-[3px] border-l-proses bg-[#fcfdfe] px-[1.15rem] py-4 mt-4">
