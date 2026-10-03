@@ -54,13 +54,6 @@ $tautan_transaksi = static function (string $slug, string $seri): string {
         </ol>
     </nav>
 
-    <?php if ($nama_juragan !== []) : ?>
-        <p class="small text-muted mb-3">
-            <?= count($nama_juragan) === 1 ? 'Toko' : count($nama_juragan) . ' toko' ?> yang dipantau:
-            <?= esc(implode(', ', $nama_juragan)) ?>
-        </p>
-    <?php endif; ?>
-
     <?php
     // kartu utama versi brief: order hari ini sampai siap diambil
     $kartu = [

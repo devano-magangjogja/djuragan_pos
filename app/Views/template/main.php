@@ -19,6 +19,29 @@
     <?= $this->renderSection('modal') ?>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script>
+        // Semua jalur tulis app ini lewat $.ajax/$.post, jadi token CSRF dipasang
+        // sekali di header agar tiap permintaan ikut terlindungi.
+        $.ajaxSetup({
+            headers: { '<?= csrf_header() ?>': '<?= esc(csrf_hash()) ?>' }
+        });
+
+        // Cookie CSRF berumur 2 jam; kalau halaman masih terbuka setelah itu,
+        // permintaan ditolak 403. Muat ulang satu kali untuk mengambil token baru.
+        $(document).ajaxError(function (_event, jqXHR) {
+            if (jqXHR.status !== 403) {
+                return;
+            }
+
+            var terakhir = Number(sessionStorage.getItem('csrf_muat_ulang') || 0);
+            if (Date.now() - terakhir < 10000) {
+                return;
+            }
+
+            sessionStorage.setItem('csrf_muat_ulang', String(Date.now()));
+            window.location.reload();
+        });
+    </script>
     <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <?= $this->renderSection('js') ?>

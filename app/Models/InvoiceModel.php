@@ -450,6 +450,19 @@ class InvoiceModel extends Model
      *
      * @return array list ID Invoice
      */
+    /**
+     * Satu nilai pencarian yang datang mentah dari GET, sudah jadi string.
+     *
+     * Array dikirim lewat `cari[q][]=x`; kalau diteruskan ke builder nilai itu
+     * membuat TypeError (halaman mati). Di sini cukup sekali disaring.
+     */
+    private static function teksCari(array $cari, string $kunci): string
+    {
+        $nilai = $cari[$kunci] ?? '';
+
+        return is_scalar($nilai) ? trim((string) $nilai) : '';
+    }
+
     private function ambilIds($cari): array
     {
         $this->select('invoice.id_invoice');
@@ -461,57 +474,77 @@ class InvoiceModel extends Model
         $this->join('dibeli b', 'b.invoice_id=invoice.id_invoice', 'left');
 
         if (! empty($cari) && is_array($cari)) {
-            if (! empty($cari['pembayaran'])) {
-                $status_pembayaran = "invoice.status_pembayaran='" . $cari['pembayaran'] . "'";
-                if ($cari['pembayaran'] === '2A') {
-                    $status_pembayaran = "(invoice.status_pembayaran='2' OR invoice.status_pembayaran='3')";
+            $kata = self::teksCari($cari, 'q');
+
+            $status_pembayaran = self::teksCari($cari, 'pembayaran');
+
+            if ($status_pembayaran !== '') {
+                if ($status_pembayaran === '2A') {
+                    $this->groupStart()
+                        ->where('invoice.status_pembayaran', '2')
+                        ->orWhere('invoice.status_pembayaran', '3')
+                        ->groupEnd();
+                } else {
+                    $this->where('invoice.status_pembayaran', $status_pembayaran);
                 }
-                $this->where($status_pembayaran);
             }
 
-            if (! empty($cari['pengiriman'])) {
-                $status_pengiriman = "invoice.status_pengiriman='" . $cari['pengiriman'] . "'";
-                if ($cari['pengiriman'] === '2A') {
-                    $status_pengiriman = "(invoice.status_pengiriman='2' OR invoice.status_pengiriman='3')";
+            $status_pengiriman = self::teksCari($cari, 'pengiriman');
+
+            if ($status_pengiriman !== '') {
+                if ($status_pengiriman === '2A') {
+                    $this->groupStart()
+                        ->where('invoice.status_pengiriman', '2')
+                        ->orWhere('invoice.status_pengiriman', '3')
+                        ->groupEnd();
+                } else {
+                    $this->where('invoice.status_pengiriman', $status_pengiriman);
                 }
-                $this->where($status_pengiriman);
             }
 
-            if (! empty($cari['orderan'])) {
-                $this->where('invoice.status_pesanan', $cari['orderan']);
+            $status_orderan = self::teksCari($cari, 'orderan');
+
+            if ($status_orderan !== '') {
+                $this->where('invoice.status_pesanan', $status_orderan);
             }
 
             if (! empty($cari['kolom'])) {
                 switch ($cari['kolom']) {
                     case 'id':
-                        $this->where('invoice.id_invoice', $cari['q']);
+                        $this->where('invoice.id_invoice', $kata);
                         break;
 
                     case 'faktur':
-                        $this->where('invoice.seri', $cari['q']);
+                        $this->where('invoice.seri', $kata);
                         break;
 
                     case 'nama':
-                        $this->where("(p.nama_pelanggan LIKE '%" . $cari['q'] . "%' OR k.nama_pelanggan LIKE '%" . $cari['q'] . "%')");
+                        $this->groupStart()
+                            ->orLike('p.nama_pelanggan', $kata, 'both')
+                            ->orLike('k.nama_pelanggan', $kata, 'both')
+                            ->groupEnd();
                         break;
 
                     case 'hp':
-                        $this->where("(p.hp LIKE '%" . $cari['q'] . "%' OR k.hp LIKE '%" . $cari['q'] . "%')");
+                        $this->groupStart()
+                            ->orLike('p.hp', $kata, 'both')
+                            ->orLike('k.hp', $kata, 'both')
+                            ->groupEnd();
                         break;
 
                     case 'kode':
-                        $this->where("(b.kode LIKE '%" . $cari['q'] . "%')");
+                        $this->like('b.kode', $kata, 'both');
                         break;
 
                     case 'tanggal_pesan':
                         // DATE(CONVERT_TZ(FROM_UNIXTIME(tanggal_dibuat, '%Y-%m-%d %H:%i:%s'), '+00:00', '+00:00'))='".$cari['tanggal']."'
-                        $this->where('invoice.tanggal_pesan', $cari['q']);
+                        $this->where('invoice.tanggal_pesan', $kata);
                         break;
                 }
             } else {
-                $query = '(';
-                $query .= "b.kode LIKE '%" . $cari['q'] . "%' ";
-                preg_match_all('/%22(?:\\\\.|(?!%22).)*%22|\S+/', $cari['q'], $matches);
+                // kode dicocokkan dengan kalimat utuh, kolom sisanya dengan tiap kata
+                $this->groupStart()->orLike('b.kode', $kata, 'both');
+                preg_match_all('/%22(?:\\\\.|(?!%22).)*%22|\S+/', $kata, $matches);
 
                 $term = '';
 
@@ -519,20 +552,19 @@ class InvoiceModel extends Model
                     $term = trim($term);
                     if (! empty($term)) {
                         $term = str_replace('"', '', $term);
-                        $query .= "OR invoice.id_invoice LIKE '%" . $term . "%' ";
-                        $query .= "OR invoice.seri LIKE '%" . $term . "%' ";
-                        $query .= "OR p.nama_pelanggan LIKE '%" . $term . "%' ";
-                        $query .= "OR k.nama_pelanggan LIKE '%" . $term . "%' ";
-                        $query .= "OR p.hp LIKE '%" . $term . "%' ";
-                        $query .= "OR k.hp LIKE '%" . $term . "%' ";
-                        $query .= "OR p.alamat LIKE '%" . $term . "%' ";
-                        $query .= "OR k.alamat LIKE '%" . $term . "%' ";
-                        $query .= "OR invoice.keterangan LIKE '%" . $term . "%' ";
+                        $this->orLike('invoice.id_invoice', $term, 'both')
+                            ->orLike('invoice.seri', $term, 'both')
+                            ->orLike('p.nama_pelanggan', $term, 'both')
+                            ->orLike('k.nama_pelanggan', $term, 'both')
+                            ->orLike('p.hp', $term, 'both')
+                            ->orLike('k.hp', $term, 'both')
+                            ->orLike('p.alamat', $term, 'both')
+                            ->orLike('k.alamat', $term, 'both')
+                            ->orLike('invoice.keterangan', $term, 'both');
                     }
                 }
 
-                $query .= ')';
-                $this->where($query);
+                $this->groupEnd();
             }
         }
         $return = [];

@@ -81,9 +81,13 @@ class Security extends BaseConfig
      *
      * Regenerate CSRF Token on every submission.
      *
+     * Dimatikan karena hampir semua jalur tulis app ini berjalan lewat jQuery
+     * AJAX: token dikirim sekali di header saat halaman dimuat, jadi hash lama
+     * harus tetap berlaku untuk submit berikutnya.
+     *
      * @var bool
      */
-    public $regenerate = true;
+    public $regenerate = false;
 
     /**
      * --------------------------------------------------------------------------

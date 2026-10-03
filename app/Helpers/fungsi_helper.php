@@ -472,6 +472,79 @@ if (! function_exists('kategori_tab')) {
     }
 }
 
+if (! function_exists('laporan_jenis')) {
+    /**
+     * Jenis laporan di halaman Laporan. Satu daftar ini yang dibaca controller
+     * (whitelist segmen), view (tab) dan model (cara menghitung), jadi nama
+     * laporan tidak bisa bercabang.
+     *
+     * 'uang' menandai laporan yang menampilkan angka uang; view pakai penanda itu
+     * untuk memutuskan perlu menulis dua kolom uang atau tidak.
+     */
+    function laporan_jenis(): array
+    {
+        return [
+            'pesanan' => [
+                'label'   => 'Laporan Pesanan',
+                'ikon'    => 'fa-file-alt',
+                'catatan' => 'Orderan masuk dan nilainya, per hari atau per bulan.',
+                'uang'    => true,
+            ],
+            'pendapatan' => [
+                'label'   => 'Laporan Pendapatan',
+                'ikon'    => 'fa-wallet',
+                'catatan' => 'Nilai orderan dibanding dana yang benar-benar sudah masuk, per bulan.',
+                'uang'    => true,
+            ],
+            'pembayaran' => [
+                'label'   => 'Laporan Pembayaran',
+                'ikon'    => 'fa-money-check-edit',
+                'catatan' => 'Semua catatan pembayaran pada tanggal transfer, berikut status diceknya.',
+                'uang'    => true,
+            ],
+            'piutang' => [
+                'label'   => 'Laporan Piutang',
+                'ikon'    => 'fa-inbox-in',
+                'catatan' => 'Orderan yang belum lunas, paling besar lebih dulu, lengkap dengan umur tunggakan.',
+                'uang'    => false,
+            ],
+            'produksi' => [
+                'label'   => 'Laporan Produksi',
+                'ikon'    => 'fa-tasks',
+                'catatan' => 'Orderan berhenti di tahap mana, plus lama kerja dari pesan sampai tahap terakhir.',
+                'uang'    => false,
+            ],
+            'produk' => [
+                'label'   => 'Laporan Produk',
+                'ikon'    => 'fa-box-alt',
+                'catatan' => 'Produk dengan nilai dan jumlah penjualan terbesar pada rentang ini.',
+                'uang'    => false,
+            ],
+            'pelanggan' => [
+                'label'   => 'Laporan Customer',
+                'ikon'    => 'fa-user',
+                'catatan' => 'Pelanggan dengan orderan dan nilai terbesar; sisa bayarnya ikut terlihat.',
+                'uang'    => false,
+            ],
+        ];
+    }
+}
+
+if (! function_exists('label_bayar_cek')) {
+    /**
+     * Status pengecekan satu baris pembayaran (order_pembayaran.status):
+     * 1 belum dicek, 2 dana tidak ada, 3 dana ada.
+     */
+    function label_bayar_cek($status): array
+    {
+        return match ((int) $status) {
+            2       => ['teks' => 'Dana tidak ada', 'kelas' => 'danger'],
+            3       => ['teks' => 'Sudah dicek', 'kelas' => 'success'],
+            default => ['teks' => 'Belum dicek', 'kelas' => 'warning'],
+        };
+    }
+}
+
 if (! function_exists('tagihan_lunas')) {
     // patokan tunggal "lunas": status 5 (lunas, ada kelebihan) dan 6 (lunas).
     // dipakai view untuk menyembunyikan tombol Tambah Pembayaran dan controller untuk menolaknya.

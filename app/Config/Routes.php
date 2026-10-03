@@ -84,6 +84,12 @@ $routes->group('admin', static function ($routes) {
         $routes->post('hapus', 'Admin\Produk::hapus');
     });
 
+    // laporan per jenis: pesanan, pendapatan, pembayaran, piutang, produksi, produk, pelanggan
+    $routes->group('laporan', ['filter' => 'auth:admin,superadmin'], static function ($routes) {
+        $routes->get('/', 'Admin\Laporan::index', ['as' => 'hal.laporan']);
+        $routes->get('(:segment)', 'Admin\Laporan::index/$1');
+    });
+
     $routes->group('settings', ['filter' => 'auth:superadmin'], static function ($routes) {
         $routes->get('/', 'Admin\Settings::index');
 
