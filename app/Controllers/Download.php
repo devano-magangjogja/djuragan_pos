@@ -19,6 +19,10 @@ class Download extends BaseController
 
         $get_invoice = $invModel->getAll('semua', 0, $cari);
 
+        if (! isset($get_invoice['data'][0])) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+
         $filename = time();
 
         // instantiate and use the dompdf class

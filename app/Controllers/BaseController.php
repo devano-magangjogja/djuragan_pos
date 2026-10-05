@@ -59,9 +59,13 @@ abstract class BaseController extends Controller
         $juragan      = Jrgn::by_user($user_id);
         $juraganModel = new JuraganModel();
 
+        // akun lama ada yang belum punya baris order_relasi, jadi peta juragannya bisa
+        // tidak ada sama sekali; tanpa pagar ini PHP 8 melempar "foreach on null"
+        $punya = $juragan[$user_id]['juragan'] ?? [];
+
         $ids = [];
 
-        foreach ($juragan[$user_id]['juragan'] as $r) {
+        foreach ($punya as $r) {
             $ids = array_merge($ids, [$r['id']]);
         }
 
@@ -71,7 +75,7 @@ abstract class BaseController extends Controller
             //  $juragan[$user_id]['juragan'];
             $arr = [];
 
-            foreach ($juragan[$user_id]['juragan'] as $r => $v) {
+            foreach ($punya as $r => $v) {
                 $arr['id_juragan']   = $v['id'];
                 $arr['juragan']      = $v['slug'];
                 $arr['nama_juragan'] = $v['nama'];
@@ -139,11 +143,18 @@ abstract class BaseController extends Controller
         if ($this->isJuragan($juragan)) {
             $get = $juraganModel->where('juragan', $juragan)->first();
 
-            $result = array_search($get->id_juragan, array_column($juragans[$user_id]['juragan'], 'id'), false);  // false if not found, key off array if exist
+            // slug boleh berbentuk benar tapi juragannya sudah tidak ada, dan akun lama
+            // bisa tidak punya peta juragan sama sekali; keduanya harus cukup dijawab
+            // "tidak diijinkan" supaya halaman memberi 404, bukan galat PHP
+            if ($get !== null) {
+                $punya = $juragans[$user_id]['juragan'] ?? [];
 
-            $return = false;
-            if ($result !== false) {
-                $return = true;
+                $result = array_search($get->id_juragan, array_column($punya, 'id'), false);  // false if not found, key off array if exist
+
+                $return = false;
+                if ($result !== false) {
+                    $return = true;
+                }
             }
         }
 

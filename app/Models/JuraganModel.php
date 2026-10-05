@@ -94,20 +94,27 @@ class JuraganModel extends Model
 
     public function terakhir_update($ids_juragan)
     {
-        if (is_array($ids_juragan)) {
-            $juragan = $this->db->table($this->table . ' j');
-            $juragan->select('i.juragan_id as id_juragan, j.*');
-            $juragan->join('relasi r', 'r.juragan_id = j.id_juragan', 'left');
-            $juragan->join('user u', 'u.id = r.val_id', 'left');
-            $juragan->join('invoice i', 'i.juragan_id = j.id_juragan', 'left');
-
-            $juragan->havingIn('i.juragan_id', $ids_juragan);
-            $juragan->orderBy('i.update_at', 'ASC');
-
-            return $juragan->get()->getLastRow();
+        if (! is_array($ids_juragan)) {
+            return ['error' => '$ids_juragan harus array'];
         }
 
-        return ['error' => '$ids_juragan harus array'];
+        if ($ids_juragan === []) {
+            return null;
+        }
+
+        // relasi + user tidak ikut di-join lagi: keduanya LEFT JOIN tanpa penyaring, jadi
+        // tiap orderan terkali jumlah relasi juragan pemiliknya (akun tertaut 21 juragan
+        // menyeret 444.347 baris ke memori). Pemanggil hanya membaca kolom juragan + id_juragan.
+        $juragan = $this->db->table($this->table . ' j');
+        $juragan->select('i.juragan_id as id_juragan, j.*');
+        $juragan->join('invoice i', 'i.juragan_id = j.id_juragan', 'left');
+
+        $juragan->whereIn('i.juragan_id', $ids_juragan);
+        // dulu ASC + getLastRow(); sama-sama jatuh di update_at terbesar, tapi DESC + limit 1
+        // hanya memindahkan satu baris dari database, bukan seluruh hasilnya
+        $juragan->orderBy('i.update_at', 'DESC');
+
+        return $juragan->limit(1)->get()->getRow();
     }
 
     /**

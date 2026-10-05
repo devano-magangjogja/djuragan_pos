@@ -21,6 +21,7 @@
                     ['admin/dasbor', 'Dasbor', 'fa-home', url_is('admin/dasbor*') || $di_halaman === 'admin'],
                     ['admin/invoices/lihat/semua/semua', 'Transaksi', 'fa-receipt', url_is('admin/invoices*')],
                     ['admin/produk', 'Produk', 'fa-tshirt', url_is('admin/produk*')],
+                    ['admin/laporan', 'Laporan', 'fa-file-alt', url_is('admin/laporan*')],
                 ];
 
                 foreach ($menu as [$alamat, $label, $ikon, $aktif]) {

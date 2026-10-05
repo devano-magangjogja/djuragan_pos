@@ -157,10 +157,16 @@ if (! function_exists('timeline_langkah')) {
     }
 }
 
-if (! function_exists('status_orderan')) {
-    function status_orderan($status, $mulai, $selesai, $keterangan_mulai, $keterangan_selesai)
+if (! function_exists('tahap_produksi')) {
+    /**
+     * Peta tahap produksi: nomor => [ikon, label pendek, kata kerja].
+     * Satu-satunya sumber nama tahap; kartu transaksi dan nota cetak pakainya ini.
+     *
+     * @return array<int, array{0: string, 1: string, 2: string}>
+     */
+    function tahap_produksi(): array
     {
-        $tahap = [
+        return [
             1 => ['file-alt', 'Data', 'orderan'],
             2 => ['layer-group', 'Bahan', 'bahan'],
             3 => ['print', 'Sablon', 'sablon'],
@@ -169,6 +175,80 @@ if (! function_exists('status_orderan')) {
             6 => ['tasks', 'QC', 'QC'],
             7 => ['box-alt', 'Packing', 'packing'],
         ];
+    }
+}
+
+if (! function_exists('label_status_orderan')) {
+    /**
+     * Nama tab orderan untuk invoice.status_pesanan.
+     */
+    function label_status_orderan($status): string
+    {
+        $label = [
+            '1' => 'Belum diproses',
+            '2' => 'Sedang/sudah diproses',
+            '3' => 'Dibatalkan',
+        ];
+
+        return $label[(string) $status] ?? '-';
+    }
+}
+
+if (! function_exists('tahap_terakhir')) {
+    /**
+     * Tahap produksi tertinggi yang sudah dicatat, baris ganda per tahap digabung
+     * seperti timeline kartu (masuk paling awal, selesai paling akhir).
+     *
+     * @param iterable|null $status baris invoice_status
+     * @return array{no: int, nama: string, tanggal: string, selesai: bool}|null
+     */
+    function tahap_terakhir($status): ?array
+    {
+        $gabung = [];
+
+        foreach ((array) $status as $baris) {
+            $b = (array) $baris;
+            $n = (int) ($b['status'] ?? 0);
+
+            if ($n <= 0 || ($b['tanggal_masuk'] ?? null) === null) {
+                continue;
+            }
+
+            $masuk   = (int) $b['tanggal_masuk'];
+            $selesai = isset($b['tanggal_selesai']) ? $b['tanggal_selesai'] : null;
+
+            if (! isset($gabung[$n])) {
+                $gabung[$n] = ['masuk' => $masuk, 'selesai' => null];
+            } else {
+                $gabung[$n]['masuk'] = min($gabung[$n]['masuk'], $masuk);
+            }
+
+            if ($selesai !== null) {
+                $gabung[$n]['selesai'] = $selesai === null
+                    ? (int) $selesai
+                    : max($gabung[$n]['selesai'], (int) $selesai);
+            }
+        }
+
+        if ($gabung === []) {
+            return null;
+        }
+
+        $n = max(array_keys($gabung));
+
+        return [
+            'no'      => $n,
+            'nama'    => tahap_produksi()[$n][1] ?? 'Tahap',
+            'tanggal' => tanggal_rincian(date('Y-m-d', $gabung[$n]['selesai'] ?? $gabung[$n]['masuk'])),
+            'selesai' => $gabung[$n]['selesai'] !== null,
+        ];
+    }
+}
+
+if (! function_exists('status_orderan')) {
+    function status_orderan($status, $mulai, $selesai, $keterangan_mulai, $keterangan_selesai)
+    {
+        $tahap = tahap_produksi();
 
         [$ico, $label, $apa] = $tahap[(int) $status] ?? ['circle', 'Tahap', 'orderan'];
 
@@ -205,8 +285,7 @@ if (! function_exists('kategori_pembayaran')) {
      *
      * Urutan array ini juga dipakai sebagai urutan chip, jadi yang mendesak
      * (butuh dicek pembayarannya) ditaruh paling depan. 'status' berisi nilai
-     * invoice.status_pembayaran yang termasuk, sesuai _update_status_pembayaran()
-     * di Admin/User Invoices:
+     * invoice.status_pembayaran yang termasuk, sesuai InvoiceModel::perbaruiStatusPembayaran():
      *   1 belum ada pembayaran, 2 transfer belum dicek (belum ada dana masuk),
      *   3 transfer belum dicek (sudah ada dana masuk), 4 dicicil, 5 lunas lebih, 6 lunas.
      */
@@ -259,9 +338,105 @@ if (! function_exists('kategori_pembayaran')) {
     }
 }
 
+if (! function_exists('saring_transaksi')) {
+    /**
+     * Saringan orderan untuk dasbor.
+     *
+     * Satu-satunya tempat definisi "aktif", "siap diambil", "deadline terlewat"
+     * dan kawan-kawannya. Dasbor mengambil angkanya lewat InvoiceModel dengan
+     * slug ini, jadi angka di kartu selalu sama dengan isi halaman yang dibuka
+     * saat kartunya diklik.
+     *
+     * 'tautan' = [segmen tab, segmen kategori] tujuan klik.
+     */
+    function saring_transaksi(): array
+    {
+        return [
+            'pesan-hari-ini' => [
+                'label'    => 'Order hari ini',
+                'ikon'     => 'fa-file-alt',
+                'mendesak' => false,
+                'catatan'  => 'Orderan yang ditulis pada tanggal hari ini.',
+                'tautan'   => ['saring', 'pesan-hari-ini'],
+            ],
+            'aktif' => [
+                'label'    => 'Order aktif',
+                'ikon'     => 'fa-box-alt',
+                'mendesak' => false,
+                'catatan'  => 'Belum selesai dikerjakan atau belum diambil pelanggan.',
+                'tautan'   => ['saring', 'aktif'],
+            ],
+            'belum-lunas' => [
+                'label'    => 'Belum lunas',
+                'ikon'     => 'fa-wallet',
+                'mendesak' => true,
+                'catatan'  => 'Tagihan yang belum terbayar penuh.',
+                'tautan'   => ['saring', 'belum-lunas'],
+            ],
+            'produksi' => [
+                'label'    => 'Sedang produksi',
+                'ikon'     => 'fa-tasks',
+                'mendesak' => false,
+                'catatan'  => 'Sudah masuk antrean kerja tapi belum diambil.',
+                'tautan'   => ['dalam-proses', ''],
+            ],
+            'belum-diproses' => [
+                'label'    => 'Belum diproses',
+                'ikon'     => 'fa-inbox-in',
+                'mendesak' => true,
+                'catatan'  => 'Orderan yang belum masuk antrean kerja sama sekali.',
+                'tautan'   => ['belum-proses', 'semua'],
+            ],
+            'siap-diambil' => [
+                'label'    => 'Siap diambil',
+                'ikon'     => 'fa-shipping-fast',
+                'mendesak' => false,
+                'catatan'  => 'Packing sudah selesai, menunggu pelanggan mengambil.',
+                'tautan'   => ['saring', 'siap-diambil'],
+            ],
+            'ukuran-belum-lengkap' => [
+                'label'    => 'Ukuran belum lengkap',
+                'ikon'     => 'fa-ruler-combined',
+                'mendesak' => true,
+                'catatan'  => 'Orderan rombongan yang belum ada satu pun ukuran terisi.',
+                'tautan'   => ['saring', 'ukuran-belum-lengkap'],
+            ],
+            'deadline-hari-ini' => [
+                'label'    => 'Deadline hari ini',
+                'ikon'     => 'fa-ballot-check',
+                'mendesak' => true,
+                'catatan'  => 'Jatuh tempo hari ini dan belum diambil.',
+                'tautan'   => ['saring', 'deadline-hari-ini'],
+            ],
+            'deadline-besok' => [
+                'label'    => 'Deadline besok',
+                'ikon'     => 'fa-ballot-check',
+                'mendesak' => true,
+                'catatan'  => 'Jatuh tempo besok dan belum diambil.',
+                'tautan'   => ['saring', 'deadline-besok'],
+            ],
+            'deadline-3-hari' => [
+                'label'    => 'Deadline dekat',
+                'ikon'     => 'fa-ballot-check',
+                'mendesak' => true,
+                'catatan'  => 'Jatuh tempo dalam tiga hari ke depan, hari ini termasuk.',
+                'tautan'   => ['saring', 'deadline-3-hari'],
+            ],
+            'deadline-terlewat' => [
+                'label'    => 'Deadline terlewat',
+                'ikon'     => 'fa-print',
+                'mendesak' => true,
+                'catatan'  => 'Lewat dari tanggal janji dan belum diambil.',
+                'tautan'   => ['saring', 'deadline-terlewat'],
+            ],
+        ];
+    }
+}
+
 if (! function_exists('kategori_tab')) {
     /**
-     * Chip filter pembayaran untuk satu tab.
+     * Chip filter untuk satu tab: kategori pembayaran, atau daftar saringan
+     * orderan pada tab 'saring' yang dipakai dasbor.
      *
      * Tab pembayaran membuka 'perlu-cek' lebih dulu, sedangkan tab belum-proses
      * memakai alur lengkap dari belum bayar sampai lunas (plus 'semua' sebagai
@@ -270,6 +445,10 @@ if (! function_exists('kategori_tab')) {
     function kategori_tab(string $hal): array
     {
         $daftar = kategori_pembayaran();
+
+        if ($hal === 'saring') {
+            return saring_transaksi();
+        }
 
         if ($hal !== 'belum-proses') {
             return $daftar;
@@ -290,6 +469,79 @@ if (! function_exists('kategori_tab')) {
         }
 
         return $pilihan;
+    }
+}
+
+if (! function_exists('laporan_jenis')) {
+    /**
+     * Jenis laporan di halaman Laporan. Satu daftar ini yang dibaca controller
+     * (whitelist segmen), view (tab) dan model (cara menghitung), jadi nama
+     * laporan tidak bisa bercabang.
+     *
+     * 'uang' menandai laporan yang menampilkan angka uang; view pakai penanda itu
+     * untuk memutuskan perlu menulis dua kolom uang atau tidak.
+     */
+    function laporan_jenis(): array
+    {
+        return [
+            'pesanan' => [
+                'label'   => 'Laporan Pesanan',
+                'ikon'    => 'fa-file-alt',
+                'catatan' => 'Orderan masuk dan nilainya, per hari atau per bulan.',
+                'uang'    => true,
+            ],
+            'pendapatan' => [
+                'label'   => 'Laporan Pendapatan',
+                'ikon'    => 'fa-wallet',
+                'catatan' => 'Nilai orderan dibanding dana yang benar-benar sudah masuk, per bulan.',
+                'uang'    => true,
+            ],
+            'pembayaran' => [
+                'label'   => 'Laporan Pembayaran',
+                'ikon'    => 'fa-money-check-edit',
+                'catatan' => 'Semua catatan pembayaran pada tanggal transfer, berikut status diceknya.',
+                'uang'    => true,
+            ],
+            'piutang' => [
+                'label'   => 'Laporan Piutang',
+                'ikon'    => 'fa-inbox-in',
+                'catatan' => 'Orderan yang belum lunas, paling besar lebih dulu, lengkap dengan umur tunggakan.',
+                'uang'    => false,
+            ],
+            'produksi' => [
+                'label'   => 'Laporan Produksi',
+                'ikon'    => 'fa-tasks',
+                'catatan' => 'Orderan berhenti di tahap mana, plus lama kerja dari pesan sampai tahap terakhir.',
+                'uang'    => false,
+            ],
+            'produk' => [
+                'label'   => 'Laporan Produk',
+                'ikon'    => 'fa-box-alt',
+                'catatan' => 'Produk dengan nilai dan jumlah penjualan terbesar pada rentang ini.',
+                'uang'    => false,
+            ],
+            'pelanggan' => [
+                'label'   => 'Laporan Customer',
+                'ikon'    => 'fa-user',
+                'catatan' => 'Pelanggan dengan orderan dan nilai terbesar; sisa bayarnya ikut terlihat.',
+                'uang'    => false,
+            ],
+        ];
+    }
+}
+
+if (! function_exists('label_bayar_cek')) {
+    /**
+     * Status pengecekan satu baris pembayaran (order_pembayaran.status):
+     * 1 belum dicek, 2 dana tidak ada, 3 dana ada.
+     */
+    function label_bayar_cek($status): array
+    {
+        return match ((int) $status) {
+            2       => ['teks' => 'Dana tidak ada', 'kelas' => 'danger'],
+            3       => ['teks' => 'Sudah dicek', 'kelas' => 'success'],
+            default => ['teks' => 'Belum dicek', 'kelas' => 'warning'],
+        };
     }
 }
 
@@ -350,12 +602,16 @@ if (! function_exists('status_pembayaran')) {
         }
 
         $sudah_bayar   = 0;
+        $menunggu      = 0;
         $tanggal_bayar = '';
 
         foreach ($pembayaran as $pay) {
             if ($pay->status === '3') {
                 $sudah_bayar += $pay->nominal;
                 $tanggal_bayar = Time::createFromTimestamp($pay->tanggal_bayar);
+            }
+            if ($pay->status === '1') {
+                $menunggu += $pay->nominal;
             }
         }
 
@@ -366,6 +622,9 @@ if (! function_exists('status_pembayaran')) {
         }
         if ($return === 'sudah_bayar') {
             return $sudah_bayar;
+        }
+        if ($return === 'menunggu') {
+            return $menunggu;
         }
         if ($return === 'l_class') {
             return $l_class;
@@ -705,22 +964,28 @@ if (! function_exists('tanggal_rincian')) {
 if (! function_exists('daftar_rincian')) {
     /**
      * Rincian (JSON/string/array) jadi daftar [label, ikon, nilai] yang siap tampil.
-     * Baris lama tanpa rincian mengembalikan array kosong.
+     * Baris lama tanpa rincian mengembalikan array kosong, kecuali $dengan_kosong:
+     * key yang dikenal tapi belum terisi ikut dibawa dengan nilai null supaya
+     * pembedanya bisa menampilkan "-", bukan menghilangkan barisnya.
      *
      * @param string|array|null $rincian
      */
-    function daftar_rincian($rincian, string $tipe = 'pesanan'): array
+    function daftar_rincian($rincian, string $tipe = 'pesanan', bool $dengan_kosong = false): array
     {
-        $data  = is_array($rincian) ? $rincian : baca_rincian($rincian);
+        $data    = is_array($rincian) ? $rincian : baca_rincian($rincian);
         $tanggal = ['deadline', 'ambil', 'kembali'];
         $hasil   = [];
 
         foreach (meta_rincian($tipe) as $key => $meta) {
-            if (! isset($data[$key]) || trim((string) $data[$key]) === '') {
+            $nilai = isset($data[$key]) ? trim((string) $data[$key]) : '';
+
+            if ($nilai === '') {
+                if ($dengan_kosong) {
+                    $hasil[] = ['label' => $meta[0], 'ikon' => $meta[1], 'nilai' => null];
+                }
+
                 continue;
             }
-
-            $nilai = trim((string) $data[$key]);
 
             if ($key === 'tipe') {
                 $nilai = tipe_pesanan()[$nilai] ?? $nilai;
@@ -1035,6 +1300,48 @@ if (! function_exists('deadline_iso')) {
         }
 
         return sprintf('%04d-%02d-%02d', (int) $urai['year'], (int) $urai['month'], (int) $urai['day']);
+    }
+}
+
+if (! function_exists('label_deadline')) {
+    /**
+     * Deadline jadi [teks, kelas badge] untuk dasbor. Jaraknya dihitung dari hari
+     * ini supaya admin cukup membaca badge, bukan menghitung tanggal. 'kelas' kosong
+     * berarti tanggalnya masih jauh dan cukup ditulis polos.
+     */
+    function label_deadline(?string $deadline): array
+    {
+        if ($deadline === null || trim($deadline) === '') {
+            return ['teks' => '-', 'kelas' => ''];
+        }
+
+        try {
+            $hari_ini = new DateTimeImmutable('today');
+            $tanggal  = new DateTimeImmutable(substr($deadline, 0, 10) . ' 00:00:00');
+        } catch (Throwable $e) {
+            return ['teks' => tanggal_rincian($deadline), 'kelas' => ''];
+        }
+
+        $selisih = (int) $hari_ini->diff($tanggal)->format('%r%a');
+        $tertulis = tanggal_rincian($deadline);
+
+        if ($selisih < 0) {
+            return ['teks' => $tertulis . ' · terlewat', 'kelas' => 'danger'];
+        }
+
+        if ($selisih === 0) {
+            return ['teks' => 'Hari ini', 'kelas' => 'danger'];
+        }
+
+        if ($selisih === 1) {
+            return ['teks' => 'Besok', 'kelas' => 'warning'];
+        }
+
+        if ($selisih <= 3) {
+            return ['teks' => $selisih . ' hari lagi', 'kelas' => 'warning'];
+        }
+
+        return ['teks' => $tertulis, 'kelas' => ''];
     }
 }
 

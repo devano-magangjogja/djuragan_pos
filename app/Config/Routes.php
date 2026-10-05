@@ -20,6 +20,9 @@ $routes->setDefaultNamespace('App\Controllers');
 $routes->setDefaultController('Auth');
 $routes->setDefaultMethod('index');
 $routes->setTranslateURIDashes(false);
+// pesan 404 sengaja tidak diteruskan ke sini: override selalu menerima pesan apa adanya
+// (CodeIgniter::display404errors memanggil $override($e->getMessage())), termasuk teks
+// internal router seperti "Can't find a route for ...", yang tidak layak dibaca tamu
 $routes->set404Override(static fn () => view('errors/html/error_page'));
 // The Auto Routing (Legacy) is very dangerous. It is easy to create vulnerable apps
 // where controller filters or CSRF protection are bypassed.
@@ -33,7 +36,7 @@ $routes->set404Override(static fn () => view('errors/html/error_page'));
  * --------------------------------------------------------------------
  */
 $routes->addPlaceholder('juragan', '[a-z0-9]{40}|semua');
-$routes->addPlaceholder('tab', 'semua|pembayaran|cek-bayar|dalam-proses|belum-proses|selesai');
+$routes->addPlaceholder('tab', 'semua|pembayaran|cek-bayar|dalam-proses|belum-proses|selesai|saring');
 
 // We get a performance increase by specifying the default
 // route since we don't have to scan directories.
@@ -84,6 +87,12 @@ $routes->group('admin', static function ($routes) {
         $routes->post('hapus', 'Admin\Produk::hapus');
     });
 
+    // laporan per jenis: pesanan, pendapatan, pembayaran, piutang, produksi, produk, pelanggan
+    $routes->group('laporan', ['filter' => 'auth:admin,superadmin'], static function ($routes) {
+        $routes->get('/', 'Admin\Laporan::index', ['as' => 'hal.laporan']);
+        $routes->get('(:segment)', 'Admin\Laporan::index/$1');
+    });
+
     $routes->group('settings', ['filter' => 'auth:superadmin'], static function ($routes) {
         $routes->get('/', 'Admin\Settings::index');
 
@@ -123,7 +132,9 @@ $routes->group('user', ['filter' => 'auth:user'], static function ($routes) {
     $routes->addRedirect('/', 'hal.user');
 });
 
-$routes->group('api', static function ($routes) {
+// seluruh endpoint API hanya dipanggil jQuery dari halaman yang sudah login,
+// jadi tamu tidak boleh masuk; filter grup bersarang digabung, bukan ditimpa
+$routes->group('api', ['filter' => 'auth:admin,superadmin,user'], static function ($routes) {
     $routes->get('invoice/counter_tab/(:num)', 'Api\Invoice::counter_tab/$1');
 
     $routes->group('juragan', static function ($routes) {
@@ -134,7 +145,9 @@ $routes->group('api', static function ($routes) {
         $routes->add('(:segment)', 'Api\Notifikasi::$1');
     });
 
-    $routes->group('pengguna', static function ($routes) {
+    // daftar akun + surel + login_terakhir hanya dipakai halaman
+    // Pengaturan > Pengguna, yang memang khusus superadmin
+    $routes->group('pengguna', ['filter' => 'auth:superadmin'], static function ($routes) {
         $routes->add('(:segment)', 'Api\Pengguna::$1');
     });
 
@@ -146,9 +159,11 @@ $routes->group('api', static function ($routes) {
 
 $routes->addRedirect('/', 'hal.index');
 
-$routes->get('rajaongkir/kecamatan', 'Rajaongkir::kecamatan');
-$routes->get('rajaongkir/kota', 'Rajaongkir::kota');
-$routes->get('rajaongkir/provinsi', 'Rajaongkir::provinsi');
+// tiga lookup RajaOngkir memakai kunci berbayar dan hanya dipakai form
+// tulis/sunting orderan (admin & CS), jadi tidak boleh dipanggil tamu
+$routes->get('rajaongkir/kecamatan', 'Rajaongkir::kecamatan', ['filter' => 'auth:admin,superadmin,user']);
+$routes->get('rajaongkir/kota', 'Rajaongkir::kota', ['filter' => 'auth:admin,superadmin,user']);
+$routes->get('rajaongkir/provinsi', 'Rajaongkir::provinsi', ['filter' => 'auth:admin,superadmin,user']);
 $routes->get('download/invoice/(:any)', 'Download::invoice/$1', ['filter' => 'auth:admin,superadmin,user']);
 $routes->get('pelanggan/cari', 'Pelanggan::cari', ['filter' => 'auth:admin,superadmin,user']);
 $routes->post('pelanggan/baru', 'Pelanggan::baru', ['filter' => 'auth:admin,superadmin,user']);

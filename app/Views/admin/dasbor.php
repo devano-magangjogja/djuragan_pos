@@ -19,7 +19,23 @@ $persen = static function (int $sekarang, int $sebelum): ?int {
 };
 
 $pct_order = $persen($bulan[$bulan_ini]['orderan'], $bulan[$bulan_lalu]['orderan']);
-$pct_total = $persen($bulan[$bulan_ini]['total'], $bulan[$bulan_lalu]['total']);
+
+$saring = saring_transaksi();
+$tahap  = tahap_produksi();
+
+// nama tahap produksi untuk kolom Status, 0 artinya belum masuk antrean kerja
+$label_tahap = static function (int $no) use ($tahap): string {
+    return $no > 0 ? ($tahap[$no][1] ?? '-') : 'Belum mulai';
+};
+
+// kartu dan panel mengarah ke daftar yang angkanya dihitung dengan klausul yang sama
+$tautan_saring = static function (array $pil) use ($sasaran): string {
+    return 'admin/invoices/lihat/' . $sasaran . '/' . $pil[0] . ($pil[1] === '' ? '' : '/' . $pil[1]);
+};
+
+$tautan_bayar = static function (string $kategori) use ($sasaran): string {
+    return 'admin/invoices/lihat/' . $sasaran . '/pembayaran/' . $kategori;
+};
 
 $tautan_transaksi = static function (string $slug, string $seri): string {
     return site_url('admin/invoices/lihat/' . $slug . '/semua?cari[kolom]=faktur&cari[q]=' . urlencode($seri));
@@ -38,56 +54,66 @@ $tautan_transaksi = static function (string $slug, string $seri): string {
         </ol>
     </nav>
 
+    <?php
+    // kartu utama versi brief: order hari ini sampai siap diambil
+    $kartu = [
+        [
+            'label'  => $saring['pesan-hari-ini']['label'],
+            'nilai'  => (string) $saringan['pesan-hari-ini'],
+            'ket'    => 'Rp ' . formatRibuan($hari['total']) . ' · ' . $hari['pelanggan'] . ' pelanggan',
+            'ikon'   => $saring['pesan-hari-ini']['ikon'],
+            'tautan' => $tautan_saring($saring['pesan-hari-ini']['tautan']),
+        ],
+        [
+            'label'  => $saring['aktif']['label'],
+            'nilai'  => (string) $saringan['aktif'],
+            'ket'    => $saringan['belum-diproses'] . ' belum mulai dikerjakan',
+            'ikon'   => $saring['aktif']['ikon'],
+            'tautan' => $tautan_saring($saring['aktif']['tautan']),
+        ],
+        [
+            'label'    => $saring['belum-lunas']['label'],
+            'nilai'    => (string) $saringan['belum-lunas'],
+            'ket'      => 'Sisa tagihan Rp ' . formatRibuan($sisa),
+            'ikon'     => $saring['belum-lunas']['ikon'],
+            'tautan'   => $tautan_saring($saring['belum-lunas']['tautan']),
+            'mendesak' => true,
+        ],
+        [
+            'label'  => $saring['produksi']['label'],
+            'nilai'  => (string) $saringan['produksi'],
+            'ket'    => 'Antrean kerja berjalan',
+            'ikon'   => $saring['produksi']['ikon'],
+            'tautan' => $tautan_saring($saring['produksi']['tautan']),
+        ],
+        [
+            'label'    => $saring['deadline-3-hari']['label'],
+            'nilai'    => (string) $saringan['deadline-3-hari'],
+            'ket'      => $saringan['deadline-terlewat'] . ' sudah terlewat',
+            'ikon'     => $saring['deadline-3-hari']['ikon'],
+            'tautan'   => $tautan_saring($saring['deadline-3-hari']['tautan']),
+            'mendesak' => $saringan['deadline-terlewat'] > 0,
+        ],
+        [
+            'label'  => $saring['siap-diambil']['label'],
+            'nilai'  => (string) $saringan['siap-diambil'],
+            'ket'    => 'Packing selesai, menunggu pelanggan',
+            'ikon'   => $saring['siap-diambil']['ikon'],
+            'tautan' => $tautan_saring($saring['siap-diambil']['tautan']),
+        ],
+    ];
+    ?>
     <div class="row gx-2 gy-3 mb-4">
-        <?php
-        $kartu = [
-            [
-                'label' => 'Order hari ini',
-                'nilai' => (string) $hari['orderan'],
-                'ket'   => 'Rp ' . formatRibuan($hari['total']) . ' · ' . $hari['pelanggan'] . ' pelanggan',
-                'ikon'  => 'fa-calendar-check',
-                'tautan' => 'admin/invoices/lihat/semua/semua',
-            ],
-            [
-                'label'   => 'Order bulan ini',
-                'nilai'   => (string) $bulan[$bulan_ini]['orderan'] ?? 0,
-                'ket'     => $pct_order === null
-                    ? 'Belum ada pembanding bulan lalu'
-                    : ($pct_order >= 0 ? '↑ ' : '↓ ') . abs($pct_order) . '% dari bulan lalu',
-                'ikon'    => 'fa-receipt',
-                'tautan'  => 'admin/invoices/lihat/semua/semua',
-            ],
-            [
-                'label'  => 'Uang masuk bulan ini',
-                'nilai'  => 'Rp ' . formatRibuan($bulan[$bulan_ini]['dibayar']),
-                'ket'    => 'Sisa tagihan Rp ' . formatRibuan($bulan[$bulan_ini]['sisa']),
-                'ikon'   => 'fa-wallet',
-                'tautan' => 'admin/invoices/lihat/semua/pembayaran/perlu-cek',
-            ],
-            [
-                'label'  => 'Perlu dicek',
-                'nilai'  => (string) $aksi['perlu_dicek'],
-                'ket'    => $aksi['transfer'] . ' transfer menunggu · Rp ' . formatRibuan($aksi['nominal']),
-                'ikon'   => 'fa-money-check-edit',
-                'tautan' => 'admin/invoices/lihat/semua/pembayaran/perlu-cek',
-            ],
-            [
-                'label'  => 'Stok menipis',
-                'nilai'  => (string) $stok['menipis'],
-                'ket'    => $stok['habis'] . ' varian habis dari ' . $stok['varian'] . ' tercatat',
-                'ikon'   => 'fa-triangle-exclamation',
-                'tautan' => 'admin/produk?keadaan=menipis',
-            ],
-        ];
-
-        foreach ($kartu as $k) { ?>
-            <div class="col-6 col-lg">
+        <?php foreach ($kartu as $k) {
+            // angka nol tidak perlu ikut mencolok
+            $mendesak = ! empty($k['mendesak']) && (int) $k['nilai'] > 0; ?>
+            <div class="col-6 col-md-4 col-lg-2">
                 <a class="h-100 d-block rounded-3 border border-ink-200 bg-white px-3 py-2 text-decoration-none"
                     href="<?= site_url($k['tautan']) ?>">
                     <div class="text-muted small text-uppercase">
                         <i class="fal <?= $k['ikon'] ?>"></i> <?= esc($k['label']) ?>
                     </div>
-                    <div class="fs-4 fw-bold text-ink-900"><?= esc($k['nilai']) ?></div>
+                    <div class="fs-4 fw-bold <?= $mendesak ? 'text-danger' : 'text-ink-900' ?>"><?= esc($k['nilai']) ?></div>
                     <div class="small text-ink-500"><?= esc($k['ket']) ?></div>
                 </a>
             </div>
@@ -114,6 +140,31 @@ $tautan_transaksi = static function (string $slug, string $seri): string {
             </div>
 
             <div class="card mb-3">
+                <div class="card-header bg-white d-flex align-items-center justify-content-between">
+                    <h2 class="h6 mb-0">Ringkasan Produksi</h2>
+                    <?= anchor('admin/invoices/lihat/' . $sasaran . '/dalam-proses', 'Lihat antrean', ['class' => 'btn btn-sm btn-outline-primary']) ?>
+                </div>
+                <div class="card-body">
+                    <div class="row gx-2 gy-2">
+                        <?php foreach ($produksi as $p) { ?>
+                            <div class="col-6 col-md-3">
+                                <div class="rounded-3 border border-ink-200 px-3 py-2">
+                                    <div class="small text-uppercase text-muted">
+                                        <i class="fal fa-<?= $p['ikon'] ?>"></i> <?= esc($p['label']) ?>
+                                    </div>
+                                    <div class="fw-bold"><?= (int) $p['jumlah'] ?></div>
+                                </div>
+                            </div>
+                        <?php } ?>
+                    </div>
+                    <p class="small text-muted mb-0 mt-2">
+                        Sebaran tahap terakhir <?= $saringan['aktif'] ?> order aktif;
+                        <?= $produksi[0]['jumlah'] ?> di antaranya belum masuk antrean kerja.
+                    </p>
+                </div>
+            </div>
+
+            <div class="card mb-3">
                 <div class="card-header bg-white">
                     <h2 class="h6 mb-0">Transaksi terbaru</h2>
                 </div>
@@ -121,18 +172,19 @@ $tautan_transaksi = static function (string $slug, string $seri): string {
                     <table class="table table-hover align-middle mb-0">
                         <thead class="small text-muted text-uppercase">
                             <tr>
-                                <th scope="col">Faktur</th>
+                                <th scope="col">No Nota</th>
                                 <th scope="col">Pelanggan</th>
-                                <th scope="col">Juragan</th>
-                                <th scope="col" class="text-end">Total</th>
-                                <th scope="col" class="text-end">Sisa</th>
+                                <th scope="col">Produk</th>
+                                <th scope="col">Deadline</th>
+                                <th scope="col" class="text-end">Total / Sisa</th>
                                 <th scope="col">Status</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php foreach ($transaksi as $t) {
-                                $kelas = status_pembayaran([], $t['status_pembayaran'], 'l_class');
-                                $label = status_pembayaran([], $t['status_pembayaran'], 'label'); ?>
+                                $kelas     = status_pembayaran([], $t['status_pembayaran'], 'l_class');
+                                $label_bayar = status_pembayaran([], $t['status_pembayaran'], 'label');
+                                $dead      = label_deadline($t['deadline'] ?? null); ?>
                                 <tr>
                                     <td class="text-nowrap">
                                         <a href="<?= $tautan_transaksi($t['slug'], $t['seri']) ?>" class="text-decoration-none">
@@ -140,14 +192,34 @@ $tautan_transaksi = static function (string $slug, string $seri): string {
                                         </a>
                                         <div class="small text-muted"><?= esc($t['tanggal_pesan']) ?></div>
                                     </td>
-                                    <td><?= esc($t['nama_pelanggan'] ?? '—') ?></td>
-                                    <td><?= esc($t['nama_juragan']) ?></td>
-                                    <td class="text-end text-nowrap">Rp <?= formatRibuan((int) $t['total']) ?></td>
-                                    <td class="text-end text-nowrap <?= (int) $t['sisa'] > 0 ? 'text-danger' : 'text-muted' ?>">
-                                        Rp <?= formatRibuan((int) $t['sisa']) ?>
+                                    <td>
+                                        <?= esc($t['nama_pelanggan'] ?? '—') ?>
+                                        <?php if ($jum_juragan > 1) { ?>
+                                            <div class="small text-muted"><?= esc($t['nama_juragan']) ?></div>
+                                        <?php } ?>
+                                    </td>
+                                    <td>
+                                        <?= $t['produk'] === '' ? '-' : esc($t['produk']) ?>
+                                        <?php if ((int) $t['item'] > 1) { ?>
+                                            <div class="small text-muted">+<?= (int) $t['item'] - 1 ?> item lain</div>
+                                        <?php } ?>
                                     </td>
                                     <td class="text-nowrap">
-                                        <span class="badge text-bg-<?= $kelas ?>"><?= esc($label) ?></span>
+                                        <?php if ($dead['kelas'] === '') { ?>
+                                            <span class="text-muted"><?= esc($dead['teks']) ?></span>
+                                        <?php } else { ?>
+                                            <span class="badge text-bg-<?= $dead['kelas'] ?>"><?= esc($dead['teks']) ?></span>
+                                        <?php } ?>
+                                    </td>
+                                    <td class="text-end text-nowrap">
+                                        Rp <?= formatRibuan((int) $t['total']) ?>
+                                        <div class="small <?= (int) $t['sisa'] > 0 ? 'text-danger' : 'text-muted' ?>">
+                                            sisa Rp <?= formatRibuan((int) $t['sisa']) ?>
+                                        </div>
+                                    </td>
+                                    <td class="text-nowrap">
+                                        <span class="badge text-bg-<?= $kelas ?>"><?= esc($label_bayar) ?></span>
+                                        <div class="small text-muted"><?= esc($label_tahap((int) $t['tahap'])) ?></div>
                                     </td>
                                 </tr>
                             <?php } ?>
@@ -164,39 +236,78 @@ $tautan_transaksi = static function (string $slug, string $seri): string {
                     </table>
                 </div>
                 <div class="card-footer bg-white text-end">
-                    <?= anchor('admin/invoices/lihat/semua/semua', 'Lihat semua transaksi', ['class' => 'btn btn-sm btn-outline-primary']) ?>
+                    <?= anchor('admin/invoices/lihat/' . $sasaran . '/semua', 'Lihat semua transaksi', ['class' => 'btn btn-sm btn-outline-primary']) ?>
                 </div>
             </div>
         </div>
 
         <div class="col-lg-4">
+            <?php
+            // panel "butuh tindakan hari ini", urut dari pembayaran lalu alur kerja
+            $butuh_tindakan = [
+                ['fa-money-check-edit', 'Pembayaran belum dicek', (string) $aksi['perlu_dicek'],
+                    'status 2 dan 3', $tautan_bayar('perlu-cek'), true],
+                ['fa-hourglass-half', 'Transfer menunggu dicek', (string) $aksi['transfer'],
+                    'Rp ' . formatRibuan($aksi['nominal']), $tautan_bayar('menunggu'), true],
+                ['fa-wallet', 'Belum ada pembayaran', (string) $aksi['belum_bayar'],
+                    'status 1', $tautan_bayar('belum'), false],
+            ];
+
+            $catatan_panel = [
+                'belum-diproses'       => 'status pesanan 1',
+                'ukuran-belum-lengkap' => 'rombongan belum ada ukuran',
+                'deadline-3-hari'      => 'tenggat hari ini sampai 3 hari',
+                'deadline-terlewat'    => 'lewat tenggat, belum diambil',
+                'produksi'             => 'antrean kerja berjalan',
+                'siap-diambil'         => 'menunggu pelanggan mengambil',
+                'belum-lunas'          => 'sisa Rp ' . formatRibuan($sisa),
+            ];
+
+            foreach (['belum-diproses', 'ukuran-belum-lengkap', 'deadline-3-hari', 'deadline-terlewat',
+                'produksi', 'siap-diambil', 'belum-lunas'] as $slug) {
+                $butuh_tindakan[] = [
+                    $saring[$slug]['ikon'],
+                    $saring[$slug]['label'],
+                    (string) $saringan[$slug],
+                    $catatan_panel[$slug],
+                    $tautan_saring($saring[$slug]['tautan']),
+                    $saring[$slug]['mendesak'],
+                ];
+            }
+            ?>
             <div class="card mb-3">
                 <div class="card-header bg-white">
-                    <h2 class="h6 mb-0">Menunggu tindakan</h2>
+                    <h2 class="h6 mb-0">Perlu Tindakan</h2>
                 </div>
                 <ul class="list-group list-group-flush">
-                    <?php
-                    $daftar_aksi = [
-                        ['fa-money-check-edit', 'Transfer belum dicek', (string) $aksi['transfer'],
-                            'Rp ' . formatRibuan($aksi['nominal']), 'admin/invoices/lihat/semua/pembayaran/menunggu'],
-                        ['fa-hourglass-half', 'Tagihan menunggu konfirmasi', (string) $aksi['perlu_dicek'],
-                            'status 2 dan 3', 'admin/invoices/lihat/semua/pembayaran/perlu-cek'],
-                        ['fa-inbox', 'Orderan belum diproses', (string) $aksi['belum_proses'],
-                            'status pesanan 1', 'admin/invoices/lihat/semua/belum-proses/semua'],
-                        ['fa-shipping-fast', 'Sudah diproses, belum dikirim', (string) $aksi['belum_terkirim'],
-                            'cek progres pengiriman', 'admin/invoices/lihat/semua/dalam-proses'],
-                        ['fa-wallet', 'Pembayaran dicicil', (string) $aksi['dicicil'],
-                            'sisa tagihan masih jalan', 'admin/invoices/lihat/semua/pembayaran/dicicil'],
-                        ['fa-triangle-exclamation', 'Stok menipis', (string) $stok['menipis'],
-                            'ambang ' . $ambangnya . ' unit', 'admin/produk?keadaan=menipis'],
-                        ['fa-circle-xmark', 'Stok habis', (string) $stok['habis'],
-                            'butuh tambah barang', 'admin/produk?keadaan=habis'],
-                    ];
-
-                    foreach ($daftar_aksi as [$ikon, $label_aksi, $jumlah, $catatan, $tautan]) { ?>
+                    <?php foreach ($butuh_tindakan as [$ikon, $label_aksi, $jumlah, $catatan, $tautan, $mendesak]) {
+                        $padas = $mendesak && (int) $jumlah > 0; ?>
                         <li class="list-group-item">
                             <a class="d-flex align-items-center text-decoration-none" href="<?= site_url($tautan) ?>">
-                                <i class="fal <?= $ikon ?> text-brand-500 me-2"></i>
+                                <i class="fal <?= $ikon ?> <?= $padas ? 'text-danger' : 'text-brand-500' ?> me-2"></i>
+                                <span class="me-auto">
+                                    <span class="d-block"><?= esc($label_aksi) ?></span>
+                                    <span class="small text-muted"><?= esc($catatan) ?></span>
+                                </span>
+                                <span class="fw-bold <?= $padas ? 'text-danger' : '' ?>"><?= esc($jumlah) ?></span>
+                            </a>
+                        </li>
+                    <?php } ?>
+                </ul>
+            </div>
+
+            <div class="card mb-3">
+                <div class="card-header bg-white d-flex align-items-center justify-content-between">
+                    <h2 class="h6 mb-0">Stok</h2>
+                    <?= anchor('admin/produk', 'Kelola stok', ['class' => 'btn btn-sm btn-outline-primary']) ?>
+                </div>
+                <ul class="list-group list-group-flush">
+                    <?php foreach ([
+                        ['Stok menipis', (string) $stok['menipis'], 'ambang ' . $ambangnya . ' unit', 'admin/produk?keadaan=menipis'],
+                        ['Varian habis', (string) $stok['habis'], 'dari ' . $stok['varian'] . ' varian tercatat', 'admin/produk?keadaan=habis'],
+                    ] as [$label_aksi, $jumlah, $catatan, $tautan]) { ?>
+                        <li class="list-group-item">
+                            <a class="d-flex align-items-center text-decoration-none" href="<?= site_url($tautan) ?>">
                                 <span class="me-auto">
                                     <span class="d-block"><?= esc($label_aksi) ?></span>
                                     <span class="small text-muted"><?= esc($catatan) ?></span>
@@ -231,9 +342,6 @@ $tautan_transaksi = static function (string $slug, string $seri): string {
                         </tbody>
                     </table>
                 </div>
-                <div class="card-footer bg-white text-end">
-                    <?= anchor('admin/produk', 'Kelola stok', ['class' => 'btn btn-sm btn-outline-primary']) ?>
-                </div>
             </div>
 
             <div class="card mb-3">
@@ -242,6 +350,15 @@ $tautan_transaksi = static function (string $slug, string $seri): string {
                     <dl class="row small mb-0">
                         <dt class="col-7 text-normal text-muted">Juragan yang dipantau</dt>
                         <dd class="col-5 text-end mb-2"><?= $jum_juragan ?></dd>
+                        <dt class="col-7 text-normal text-muted">Order bulan ini</dt>
+                        <dd class="col-5 text-end mb-2">
+                            <?= $bulan[$bulan_ini]['orderan'] ?>
+                            <?php if ($pct_order !== null) { ?>
+                                <span class="small">(<?= $pct_order >= 0 ? '↑' : '↓' ?> <?= abs($pct_order) ?>%)</span>
+                            <?php } ?>
+                        </dd>
+                        <dt class="col-7 text-normal text-muted">Uang masuk bulan ini</dt>
+                        <dd class="col-5 text-end mb-2">Rp <?= formatRibuan($bulan[$bulan_ini]['dibayar']) ?></dd>
                         <dt class="col-7 text-normal text-muted">Varian stok tercatat</dt>
                         <dd class="col-5 text-end mb-2"><?= $stok['varian'] ?></dd>
                         <dt class="col-7 text-normal text-muted">Nilai stok saat ini</dt>

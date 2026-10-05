@@ -321,7 +321,7 @@ $rincian_pesanan = baca_rincian($orderan->rincian);
                                         <div class="text-end" data-uang1="<?= $produk_total; ?>"><?= number_to_currency($produk_total, 'IDR'); ?>
                                             <?= form_hidden('produk[' . $produk->id . '][kode]', $produk->kode); ?>
                                             <?= form_hidden('produk[' . $produk->id . '][harga]', $produk->harga); ?>
-                                            <?= form_hidden('produk[' . $produk->id . '][ukuran]', $produk->ukuran); ?>
+                                            <?= form_hidden('produk[' . $produk->id . '][ukuran]', (string) $produk->ukuran); ?>
                                             <?= form_hidden('produk[' . $produk->id . '][qty]', $produk->qty); ?>
                                             <?php foreach (baca_rincian($produk->rincian) as $key_rincian => $nilai_rincian) { ?>
                                                 <?= form_hidden('produk[' . $produk->id . '][rincian][' . $key_rincian . ']', $nilai_rincian); ?>
@@ -361,7 +361,8 @@ $rincian_pesanan = baca_rincian($orderan->rincian);
                                             <div data-biaya="<?= $o->nominal; ?>" class="text-end "><?= number_to_currency($o->nominal, 'IDR'); ?></div>
                                             <?= form_hidden('biaya[' . $o->id . '][biaya_id]', $o->biaya_id); ?>
                                             <?= form_hidden('biaya[' . $o->id . '][nominal]', $o->nominal); ?>
-                                            <?= form_hidden('biaya[' . $o->id . '][label]', $o->label); ?>
+                                            <?php // order lama boleh punya label biaya NULL; form_hidden() menolak null, jadi dikosongkan saja ?>
+                                            <?= form_hidden('biaya[' . $o->id . '][label]', (string) $o->label); ?>
                                         </td>
                                     </tr>
                             <?php }

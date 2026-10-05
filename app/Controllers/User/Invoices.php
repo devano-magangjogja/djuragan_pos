@@ -134,7 +134,7 @@ class Invoices extends BaseController
     // menampilkan semua invoice
     public function lihat($juragan = '', $hal = 'dalam-proses', $kategori = '')
     {
-        if (! in_array($hal, ['semua', 'pembayaran', 'cek-bayar', 'dalam-proses', 'belum-proses', 'selesai'], true)) {
+        if (! in_array($hal, ['semua', 'pembayaran', 'cek-bayar', 'dalam-proses', 'belum-proses', 'selesai', 'saring'], true)) {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
 
@@ -142,7 +142,12 @@ class Invoices extends BaseController
         $daftar_kategori = kategori_tab($hal);
 
         if ($kategori === '') {
-            $kategori = $hal === 'belum-proses' ? 'semua' : 'perlu-cek';
+            // tab saring dibuka dari kartu dasbor, defaultnya saringan paling luas
+            $kategori = match ($hal) {
+                'belum-proses' => 'semua',
+                'saring'       => 'aktif',
+                default        => 'perlu-cek',
+            };
         }
 
         if (! array_key_exists($kategori, $daftar_kategori)) {
@@ -160,6 +165,19 @@ class Invoices extends BaseController
 
         if ($juragan === '') {
             $juragan = $this->juraganBy($user_id);
+
+            // akun warisan ada yang belum punya relasi juragan, jadi tidak ada slug untuk
+            // dituju; tanpa pagar ini halaman hanya melempar property tak dikenal (HTTP 500).
+            // Pesannya dikirim lewat view 404 milik app, bukan PageNotFoundException, karena
+            // override 404 di Config/Routes.php membuang semua pesan supaya detail internal
+            // router tidak terbaca tamu.
+            if (empty($juragan->juragan)) {
+                return response()->setStatusCode(404)->setBody(
+                    view('errors/html/error_page', [
+                        'message' => 'Akun ini belum ditautkan ke juragan mana pun, jadi belum ada orderan yang bisa dibuka. Hubungi admin untuk menautkan akun ke juragan.',
+                    ]),
+                );
+            }
 
             return redirect()->to('/user/invoices/lihat/' . $juragan->juragan);
         }
@@ -243,8 +261,11 @@ class Invoices extends BaseController
 
             $pembayaranModel->save($data);
 
+            // simpan notif
+            simpan_notif(4, $invModel->find($invoice_id)->juragan_id, $invoice_id);
+
             // update status pembayaran (invoice)
-            $this->_update_status_pembayaran($invoice_id);
+            $invModel->perbaruiStatusPembayaran($invoice_id);
 
             $juragan = $juraganModel->byInvoiceId($invoice_id)->getResult()[0]->juragan;
 
@@ -252,55 +273,6 @@ class Invoices extends BaseController
                 'url' => site_url('user/invoices/lihat/' . $juragan . '/semua?cari[kolom]=id&cari[q]=' . $invoice_id),
             ]);
         }
-    }
-
-    private function _update_status_pembayaran($invoice_id)
-    {
-        $invModel = new InvoiceModel();
-        $cek      = $invModel->total_biaya($invoice_id)->getResult()[0];
-
-        // cek yang terbayar dan belum terbayar
-        $terbayar    = (int) $cek->terbayar;
-        $total_bayar = (int) $cek->barang + (int) $cek->lain;
-        $belum_bayar = $total_bayar - $terbayar;
-        $belum_cek   = (int) $cek->belumcek;
-
-        if ($belum_cek > 0) {
-            if ($terbayar > 0) { // ada yang belum dicek, tapi sudah ada dana masuk
-                $status_bayar = '3';
-            } else {
-                $status_bayar = '2';
-            }
-        } else { //  tidak ada yang pelu dicek
-            if ($terbayar === 0) {
-                $status_bayar = '1';
-            } else {
-                if ($terbayar === $total_bayar) {
-                    // sudah lunas
-                    $status_bayar = '6';
-                } elseif ($terbayar < $total_bayar) {
-                    // masih belum lunas / kredit
-                    $status_bayar = '4';
-                } elseif ($terbayar > $total_bayar) {
-                    // ada kelebihan
-                    $status_bayar = '5';
-                }
-            }
-        }
-
-        // simpan notif
-        $juragan_id = $invModel->find($invoice_id)->juragan_id;
-        simpan_notif(4, $juragan_id, $invoice_id);
-
-        // update status_pembayaran
-        // jadikan status
-        $update_invoice = [
-            'id_invoice'        => $invoice_id,
-            'status_pembayaran' => $status_bayar,
-        ];
-        $invModel->save($update_invoice);
-
-        return true;
     }
 
     // hapus invoice

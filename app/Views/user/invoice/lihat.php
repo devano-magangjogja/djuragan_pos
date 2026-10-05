@@ -57,18 +57,27 @@ $session  = \Config\Services::session();
         </div>
     </div>
 
-    <?php if (in_array($hal, ['pembayaran', 'belum-proses'], true)) : ?>
+    <?php if (in_array($hal, ['pembayaran', 'belum-proses', 'saring'], true)) : ?>
         <?php
-        // pilihan filter dibungkus label kategorinya plus jumlah orderan pada kategori itu
+        // pilihan filter dibungkus label kategorinya plus jumlah orderan pada kategori itu.
+        // tab saring angkanya sudah dibaca di dasbor, jadi labelnya polos
         $opsi_kategori = [];
 
         foreach ($kategori_pembayaran as $slug => $k) {
-            $opsi_kategori[$slug] = $k['label'] . ' (' . formatRibuan($jumlah_kategori[$slug] ?? 0) . ')';
+            $opsi_kategori[$slug] = $jumlah_kategori === []
+                ? $k['label']
+                : $k['label'] . ' (' . formatRibuan($jumlah_kategori[$slug] ?? 0) . ')';
         }
+
+        $label_filter = match ($hal) {
+            'belum-proses' => 'Status pembayaran',
+            'saring'       => 'Saringan orderan',
+            default        => 'Kategori pembayaran',
+        };
         ?>
         <div class="mb-4 rounded-2xl border border-ink-200 bg-[#fcfdfe] px-3.5 py-3">
             <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
-                <label class="text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500" for="filterKategori"><?= $hal === 'belum-proses' ? 'Status pembayaran' : 'Kategori pembayaran' ?></label>
+                <label class="text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500" for="filterKategori"><?= esc($label_filter) ?></label>
 
                 <?= form_dropdown('kategori', $opsi_kategori, $kategori, [
                     'class'       => 'form-select form-select-sm w-auto',
@@ -84,7 +93,9 @@ $session  = \Config\Services::session();
     <?php if ($orderan['data'] === []) : ?>
         <div class="mb-4 rounded-2xl border border-dashed border-ink-200 bg-[#fcfdfe] px-4 py-6 text-center text-ink-500">
             <i class="fal fa-inbox block text-[1.35rem] text-ink-400 mb-2"></i>
-            <?php if ($kategori !== 'semua' && in_array($hal, ['pembayaran', 'belum-proses'], true)) : ?>
+            <?php if ($hal === 'saring') : ?>
+                Belum ada orderan pada saringan <?= esc($kategori_pembayaran[$kategori]['label']) ?>.
+            <?php elseif ($kategori !== 'semua' && in_array($hal, ['pembayaran', 'belum-proses'], true)) : ?>
                 Belum ada transaksi berkategori <?= esc($kategori_pembayaran[$kategori]['label']) ?>.
             <?php else : ?>
                 Belum ada transaksi di tab ini.
@@ -96,6 +107,10 @@ $session  = \Config\Services::session();
     // untuk tab pembayaran 'perlu-cek': status invoice -> slug kategorinya, dipakai sebagai judul kelompok
     $kelompok_perlu_cek = [2 => 'menunggu', 3 => 'dp'];
     $grup_sebelumnya    = null;
+
+    // satu kartu di layar = orderan dibuka sendiri. Aturan "kalau kosong tampilkan
+    // -" hanya berlaku di mode itu, supaya daftar panjang tidak ikut penuh baris kosong
+    $satu_orderan = count($orderan['data']) === 1;
 
     foreach ($orderan['data'] as $pesanan) { ?>
         <?php
@@ -151,6 +166,19 @@ $session  = \Config\Services::session();
                             <span class="rounded-full px-3 py-1 text-xs font-semibold <?= $pil[$kelas_status]['pill'] ?>">
                                 <?= esc(status_pembayaran($pesanan->pembayaran, $pesanan->status_pembayaran, 'label')) ?>
                             </span>
+
+                            <?php
+                            // tenggat hanya ditampilkan kalau memang diisi; order lama tetap polos
+                            $dead = label_deadline($pesanan->deadline ?? null);
+
+                            if ($dead['teks'] !== '-') :
+                                $pil_dead = $dead['kelas'] === ''
+                                    ? 'border border-ink-200 bg-ink-50 text-ink-700'
+                                    : $pil[$dead['kelas']]['pill']; ?>
+                                <span class="rounded-full px-3 py-1 text-xs font-semibold <?= $pil_dead ?>" title="Tenggat: <?= esc($dead['teks']) ?>">
+                                    <i class="fal fa-clock me-1"></i><?= esc($dead['teks']) ?>
+                                </span>
+                            <?php endif; ?>
 
                             <div class="ms-auto flex items-center gap-1 max-sm:ms-0">
                                 <a class="inline-flex cursor-pointer items-center gap-1 rounded-[0.7rem] border border-ink-200 bg-ink-50 px-2.5 py-1 text-sm text-ink-700 transition hover:bg-ink-100 hover:text-ink-900" href="<?= site_url('download/invoice/' . $pesanan->seri) ?>" target="_blank" rel="noopener" title="Cetak pesanan ini">
@@ -353,6 +381,9 @@ $session  = \Config\Services::session();
                                 } ?>
 
                                 <?php
+                                $menunggu = status_pembayaran($pesanan->pembayaran, $pesanan->status_pembayaran, 'menunggu');
+                                $sisa     = $wajib_bayar - $sudah_bayar;
+
                                 if ($sudah_bayar > 0) { ?>
                                     <li class="flex items-baseline justify-between gap-3 py-1 mt-1 border-t border-ink-200 pt-2">
                                         <span class="uppercase tracking-wide text-ink-500">
@@ -371,17 +402,24 @@ $session  = \Config\Services::session();
                                     </li>
                                 <?php
                                 }
-                                if (($wajib_bayar - $sudah_bayar) > 0) { ?>
+                                if ($menunggu > 0) { ?>
                                     <li class="flex items-baseline justify-between gap-3 py-1">
-                                        <span class="uppercase tracking-wide text-ink-500"><span class="font-bold">Kurang</span>&nbsp;Bayar</span>
-                                        <span class="font-bold whitespace-nowrap text-red-600"><?= number_to_currency(-($wajib_bayar - $sudah_bayar), 'IDR'); ?></span>
+                                        <span class="uppercase tracking-wide text-ink-500"><span class="font-bold">Menunggu</span>&nbsp;dicek</span>
+                                        <span class="font-bold whitespace-nowrap"><?= number_to_currency($menunggu, 'IDR'); ?></span>
                                     </li>
                                 <?php
                                 }
-                                if ($sudah_bayar > $wajib_bayar) { ?>
+                                if ($sisa > 0) { ?>
+                                    <li class="flex items-baseline justify-between gap-3 py-1">
+                                        <span class="uppercase tracking-wide text-ink-500"><span class="font-bold">Sisa</span>&nbsp;Bayar</span>
+                                        <span class="font-bold whitespace-nowrap text-red-600"><?= number_to_currency($sisa, 'IDR'); ?></span>
+                                    </li>
+                                <?php
+                                }
+                                if ($sisa < 0) { ?>
                                     <li class="flex items-baseline justify-between gap-3 py-1">
                                         <span class="uppercase tracking-wide text-ink-500"><span class="font-bold">Lebih</span>&nbsp;Bayar</span>
-                                        <span class="font-bold whitespace-nowrap"><?= number_to_currency(($sudah_bayar - $wajib_bayar), 'IDR'); ?></span>
+                                        <span class="font-bold whitespace-nowrap"><?= number_to_currency(-$sisa, 'IDR'); ?></span>
                                     </li>
                                 <?php
                                 } ?>
@@ -409,6 +447,7 @@ $session  = \Config\Services::session();
                                     <li class="flex flex-wrap items-baseline gap-1 py-[0.2rem]">
                                         <span class="grow"><?= strtoupper($b->kode) ?> (<?= strtoupper($b->ukuran) ?>)</span>
                                         <span class="shrink-0 font-semibold whitespace-nowrap"><?= $b->qty ?> pcs</span>
+                                        <span class="shrink-0 font-semibold whitespace-nowrap tabular-nums"><?= number_to_currency($b->harga * $b->qty, 'IDR'); ?></span>
 
                                         <?php
                                         $content = '<div class=\'text-end\'>';
@@ -458,7 +497,70 @@ $session  = \Config\Services::session();
                     </div>
                 </div>
 
-                <?php $rincian_pesanan = daftar_rincian($pesanan->rincian ?? null, 'pesanan'); ?>
+                <?php if (! empty($pesanan->anggota)) { ?>
+                    <div class="mt-4 overflow-hidden rounded-2xl border border-ink-200 bg-[#fcfdfe]">
+                        <h6 class="mb-0">
+                            <button class="flex w-full cursor-pointer items-center gap-1.5 border-0 bg-transparent px-[1.15rem] py-4 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500 [&_.fal]:text-[0.95rem] [&_.fal]:text-ink-400" type="button" data-bs-toggle="collapse" data-bs-target="#anggota-<?= esc($pesanan->id_invoice) ?>" aria-expanded="false" aria-controls="anggota-<?= esc($pesanan->id_invoice) ?>">
+                                <i class="fal fa-users"></i> Anggota Rombongan
+                                <span class="inline-block rounded-full bg-ink-900 px-2 py-0.5 text-xs font-semibold text-white"><?= count($pesanan->anggota) ?></span>
+                                <span class="text-[0.8rem] font-semibold normal-case tracking-normal">orang</span>
+                                <i class="fal fa-chevron-down ms-auto transition rotate-[-90deg] aria-expanded:rotate-0"></i>
+                            </button>
+                        </h6>
+
+                        <div class="collapse" id="anggota-<?= esc($pesanan->id_invoice) ?>">
+                            <div class="border-t border-ink-200 px-[1.15rem] py-3">
+                                <?php
+                                // daftar nama orang tidak menyebut bajunya apa; produk orderan ini
+                                // jadi acuannya karena ukuran anggota belum ditautkan per barang
+                                $produk_rombongan = [];
+
+                                foreach ($pesanan->barang as $b) {
+                                    $produk_rombongan[] = strtoupper($b->kode) . ' (' . strtoupper($b->ukuran) . ') × ' . $b->qty;
+                                }
+                                ?>
+                                <?php if ($produk_rombongan !== []) { ?>
+                                    <p class="mb-2 text-xs text-ink-500"><i class="fal fa-tshirt"></i> Produk: <?= esc(implode(', ', $produk_rombongan)) ?></p>
+                                <?php } ?>
+
+                                <ul class="m-0 list-none p-0 text-sm">
+                                    <?php foreach ($pesanan->anggota as $o) { ?>
+                                        <li class="flex flex-wrap items-baseline gap-1 py-[0.2rem]">
+                                            <span class="grow"><?= esc($o->nama) ?></span>
+
+                                            <?php if (! empty($o->nomor)) { ?>
+                                                <span class="shrink-0 font-semibold whitespace-nowrap"><?= esc($o->nomor) ?></span>
+                                            <?php } ?>
+
+                                            <?php if (! empty($o->catatan)) { ?>
+                                                <div class="basis-full mt-[0.15rem] break-words text-xs leading-[1.5] text-ink-500"><?= esc($o->catatan) ?></div>
+                                            <?php } ?>
+
+                                            <?php if (! empty($o->nilai)) { ?>
+                                                <div class="basis-full mb-[0.15rem] mt-[0.3rem] flex flex-wrap items-baseline gap-[0.3rem] pl-[1.1rem]">
+                                                    <span class="text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500"><i class="fal fa-ruler-combined"></i> Ukuran</span>
+
+                                                    <?php foreach ($o->nilai as $u) { ?>
+                                                        <span class="inline-flex max-w-full items-baseline gap-1 rounded-full border border-ink-200 bg-[#f6f8fb] px-[0.55rem] py-[0.2rem] text-xs leading-snug text-ink-600"><span class="font-bold tracking-wide text-ink-500 whitespace-nowrap"><?= esc($u[0]) ?></span> <span class="break-words"><?= esc($u[1]) ?></span></span>
+                                                    <?php } ?>
+                                                </div>
+                                            <?php } else { ?>
+                                                <div class="basis-full mt-[0.15rem] text-xs text-ink-500"><i class="fal fa-ruler-combined"></i> Ukuran belum diisi</div>
+                                            <?php } ?>
+                                        </li>
+                                    <?php } ?>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                <?php } ?>
+
+                <?php
+                // saat satu orderan dibuka sendiri, field yang belum terisi ikut ditampilkan
+                // dengan "-" supaya jelas bagian mana yang masih kosong
+                $rincian_pesanan = daftar_rincian($pesanan->rincian ?? null, 'pesanan', $satu_orderan);
+                $isi_keterangan  = trim((string) $pesanan->keterangan);
+                ?>
                 <?php if ($rincian_pesanan !== []) { ?>
                     <div class="rounded-2xl border border-ink-200 border-l-[3px] border-l-proses bg-[#fcfdfe] px-[1.15rem] py-4 mt-4">
                         <h6 class="mb-2 flex items-center gap-1.5 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500 [&_.fal]:text-[0.95rem] [&_.fal]:text-ink-400"><i class="fal fa-list-check"></i> Detail Pesanan</h6>
@@ -466,18 +568,18 @@ $session  = \Config\Services::session();
                             <?php foreach ($rincian_pesanan as $item) { ?>
                                 <div class="min-w-0">
                                     <span class="block text-[0.7rem] font-bold uppercase tracking-[0.08em] text-ink-500 [&_.fal]:mr-1 [&_.fal]:text-ink-400"><i class="fal <?= $item['ikon'] ?>"></i> <?= esc($item['label']) ?></span>
-                                    <span class="mt-[0.1rem] block break-words text-[0.92rem] font-semibold leading-normal text-ink-900"><?= esc($item['nilai']) ?></span>
+                                    <span class="mt-[0.1rem] block break-words text-[0.92rem] font-semibold leading-normal <?= $item['nilai'] === null ? 'text-ink-400' : 'text-ink-900' ?>"><?= $item['nilai'] === null ? '-' : esc($item['nilai']) ?></span>
                                 </div>
                             <?php } ?>
                         </div>
                     </div>
                 <?php } ?>
 
-                <?php if ($pesanan->keterangan !== null && trim($pesanan->keterangan) !== '') { ?>
+                <?php if ($isi_keterangan !== '' || $satu_orderan) { ?>
                     <div class="rounded-2xl border border-ink-200 border-l-[3px] border-l-brand-500 bg-[#fcfdfe] px-[1.15rem] py-4 mt-4">
                         <h6 class="mb-2 flex items-center gap-1.5 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500 [&_.fal]:text-[0.95rem] [&_.fal]:text-ink-400"><i class="fal fa-clipboard-list"></i> Keterangan</h6>
-                        <p class="keterangan mb-0 break-words text-sm leading-[1.65] text-ink-700" id="keterangan-<?= esc($pesanan->id_invoice) ?>">
-                            <?= nl2br(esc($pesanan->keterangan)) ?>
+                        <p class="keterangan mb-0 break-words text-sm leading-[1.65] <?= $isi_keterangan === '' ? 'text-ink-400' : 'text-ink-700' ?>" id="keterangan-<?= esc($pesanan->id_invoice) ?>">
+                            <?= $isi_keterangan === '' ? '-' : nl2br(esc($isi_keterangan)) ?>
                         </p>
                     </div>
                 <?php } ?>
@@ -516,7 +618,7 @@ $session  = \Config\Services::session();
                             'content'        => '<i class="fal fa-plus-circle"></i> Tambah Pembayaran',
                             'data-invoice'   => $pesanan->id_invoice,
                             'data-juragan'   => $pesanan->juragan_id,
-                            'data-kurang'    => $wajib_bayar - $sudah_bayar,
+                            'data-kurang'    => max(0, $sisa),
                             'data-seri'      => $pesanan->seri,
                             'data-bs-target' => '#modalTambahBayar',
                             'data-bs-toggle' => 'modal',

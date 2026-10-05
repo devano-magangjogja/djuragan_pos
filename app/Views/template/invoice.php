@@ -48,12 +48,14 @@ $html_logo = '<img src="' . str_replace('\\', '/', rtrim(FCPATH, '/\\')) . '/ass
             color: red;
         }
 
+        /* absolute, bukan fixed: dompdf menggambar elemen fixed di setiap halaman
+           jadi stempelnya ikut muncul di halaman lampiran */
         .ribbon {
             padding-top: 15px;
             padding-bottom: 15px;
             text-align: center;
             width: 400px;
-            position: fixed;
+            position: absolute;
             color: white;
             font-size: 18px;
             transform: rotate(45deg);
@@ -68,18 +70,36 @@ $html_logo = '<img src="' . str_replace('\\', '/', rtrim(FCPATH, '/\\')) . '/ass
         .ribbon.green {
             background: #5cb85c;
         }
+
+        /* ukuran rombongan dicetak di halaman sendiri supaya nota utama tetap pendek */
+        .lampiran {
+            page-break-before: always;
+        }
+
+        .lampiran td {
+            vertical-align: top;
+            padding: 4px 6px;
+        }
     </style>
 
 </head>
 
 <body>
-    <div class="ribbon top-left <?= ($invoice->status_pembayaran === '5' || $invoice->status_pembayaran === '6' ? 'green' : 'red'); ?>"><?= ($invoice->status_pembayaran === '5' || $invoice->status_pembayaran === '6' ? 'Lunas' : 'Belum Lunas'); ?></div>
+    <?php
+    // status pembayaran dan tahap produksi dibaca dari helper yang sama dengan kartu
+    // transaksi, supaya angka di kertas tidak lagi berbeda dengan di layar
+    $lunas       = tagihan_lunas($invoice->status_pembayaran);
+    $label_bayar = status_pembayaran($invoice->pembayaran, $invoice->status_pembayaran, 'label');
+    $dibayarkan  = status_pembayaran($invoice->pembayaran, $invoice->status_pembayaran, 'sudah_bayar');
+    $tahap       = tahap_terakhir($invoice->status ?? []);
+    ?>
+    <div class="ribbon top-left <?= $lunas ? 'green' : 'red'; ?>"><?= $lunas ? 'Lunas' : 'Belum Lunas'; ?></div>
 
     <table width="100%" class="bb">
         <tr>
             <td><?= $html_logo ?></td>
             <td align="right">
-                <h3>Seven Inc</h3>
+                <h3><?= esc($invoice->juragan?->nama ?? 'Seven Inc') ?></h3>
                 <p>Karangjambe, Banguntapan<br>Bantul, D.I Yogyakarta - 55198</p>
             </td>
         </tr>
@@ -91,8 +111,12 @@ $html_logo = '<img src="' . str_replace('\\', '/', rtrim(FCPATH, '/\\')) . '/ass
             <tr>
                 <td>
                     No Invoice: #<?= esc($invoice->seri) ?><br>
-                    Tanggal: <?= esc($invoice->tanggal_pesan) ?><br>
-                    Status: <?= esc($invoice->status_pembayaran === '5' || $invoice->status_pembayaran === '6' ? 'Lunas' : 'Belum Lunas'); ?>
+                    Tanggal: <?= esc(tanggal_rincian((string) $invoice->tanggal_pesan)) ?><br>
+                    Status: <?= esc($label_bayar) ?><br>
+                    Status Produksi: <?= esc(label_status_orderan($invoice->status_pesanan)) ?>
+                    <?php if ($tahap !== null) { ?>
+                        <br>Tahap terakhir: <?= esc($tahap['nama']) ?> (<?= esc($tahap['tanggal']) ?>, <?= $tahap['selesai'] ? 'selesai' : 'berjalan' ?>)
+                    <?php } ?>
                 </td>
             </tr>
         </tbody>
@@ -168,9 +192,9 @@ $html_logo = '<img src="' . str_replace('\\', '/', rtrim(FCPATH, '/\\')) . '/ass
         <thead style="background-color: lightgray;">
             <tr>
                 <th>Deskripsi</th>
-                <th>QTY</th>
-                <th>Satuan</th>
-                <th>Total</th>
+                <th>Qty</th>
+                <th>Harga</th>
+                <th>Subtotal</th>
             </tr>
         </thead>
         <tbody>
@@ -245,14 +269,6 @@ $html_logo = '<img src="' . str_replace('\\', '/', rtrim(FCPATH, '/\\')) . '/ass
                 <td align="right" class="gray"><?= number_to_currency($wajib_bayar, 'IDR') ?></td>
             </tr>
 
-            <?php $dibayarkan = 0;
-
-            foreach ($invoice->pembayaran as $byr) {
-                if ($byr->tanggal_cek !== null && $byr->status === '3') {
-                    $dibayarkan += $byr->nominal;
-                }
-            }
-            ?>
             <tr>
                 <td colspan="2"></td>
                 <td align="right">DP/dibayar</td>
@@ -272,6 +288,57 @@ $html_logo = '<img src="' . str_replace('\\', '/', rtrim(FCPATH, '/\\')) . '/ass
 
         </tfoot>
     </table>
+
+    <?php $anggota = $invoice->anggota ?? []; ?>
+    <?php if ($anggota !== []) { ?>
+        <?php
+        // ukuran anggota belum ditautkan per barang, jadi produk orderan ini
+        // yang jadi acuan di judul lampiran
+        $produk = [];
+
+        foreach ($invoice->barang as $b) {
+            $produk[] = strtoupper($b->kode) . ' (' . strtoupper($b->ukuran) . ') x ' . $b->qty;
+        }
+        ?>
+        <div class="lampiran">
+            <h4>Lampiran Ukuran Rombongan</h4>
+            <p>
+                No Invoice: #<?= esc($invoice->seri) ?><br>
+                Produk: <?= esc(implode(', ', $produk)) ?>
+            </p>
+
+            <table width="100%" class="inv">
+                <thead style="background-color: lightgray;">
+                    <tr>
+                        <th width="6%">No</th>
+                        <th width="26%">Nama</th>
+                        <th width="12%">Nomor</th>
+                        <th>Ukuran</th>
+                        <th width="20%">Catatan</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($anggota as $i => $o) { ?>
+                        <tr>
+                            <td align="center"><?= $i + 1 ?></td>
+                            <td><?= esc($o->nama) ?></td>
+                            <td><?= esc($o->nomor ?: '-') ?></td>
+                            <td>
+                                <?php if (empty($o->nilai)) { ?>
+                                    <em>belum diukur</em>
+                                <?php } else { ?>
+                                    <?php foreach ($o->nilai as $j => $u) { ?>
+                                        <?= $j > 0 ? '; ' : '' ?><?= esc($u[0]) ?>: <strong><?= esc($u[1]) ?></strong>
+                                    <?php } ?>
+                                <?php } ?>
+                            </td>
+                            <td><?= esc($o->catatan ?: '-') ?></td>
+                        </tr>
+                    <?php } ?>
+                </tbody>
+            </table>
+        </div>
+    <?php } ?>
 
 </body>
 

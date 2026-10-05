@@ -66,7 +66,20 @@
 .fal.fa-inbox-in::before        { content: "\f01c"; } /* inbox (Pro→free) */
 .fal.fa-ruler-combined::before  { content: "\f5af"; } /* ruler-combined (free) */
 .fal.fa-users::before           { content: "\f0c0"; } /* users (free)          */
+.fal.fa-user-plus::before       { content: "\f234"; } /* user-plus (free)      */
 .fal.fa-chevron-down::before    { content: "\f078"; } /* chevron-down (free)   */
+.fal.fa-eye::before             { content: "\f06e"; } /* eye (free)            */
+.fal.fa-eye-slash::before       { content: "\f070"; } /* eye-slash (free)      */
+
+/* ------------------------------------------------------------------
+   Wadah pilihan bergulir — pemilih juragan di Pengaturan > Pengguna.
+   Pil-nya memakai pola Bootstrap (.btn-check + .btn rounded-pill), jadi
+   status terpilih sudah ikut berwarna tanpa gaya tambahan di sini.
+   ------------------------------------------------------------------ */
+.gulir-pilihan {
+    max-height: 11rem;
+    overflow-y: auto;
+}
 
 /* ------------------------------------------------------------------
    Timeline status invoice (.timeliner)
