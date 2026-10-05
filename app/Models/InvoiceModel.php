@@ -30,8 +30,9 @@ class InvoiceModel extends Model
      * @param int    $limit      Batas/Limit data yang akan ditampilkan
      * @param int    $offset     Awal data yang akan ditampilkan
      * @param string $kategori   Kunci dari kategori_tab($hal), dipakai saat $hal pembayaran/belum-proses
+     * @param array<int>|null $hanya Daftar id juragan yang boleh dilihat, null = tidak membatasi
      */
-    public function getAll(string $hal = 'semua', int $juragan_id = 0, $cari = '', int $limit = 0, int $offset = 0, string $kategori = 'perlu-cek'): array
+    public function getAll(string $hal = 'semua', int $juragan_id = 0, $cari = '', int $limit = 0, int $offset = 0, string $kategori = 'perlu-cek', ?array $hanya = null): array
     {
         $biayaModel      = new BiayaModel();
         $anggotaModel    = new AnggotaModel();
@@ -55,6 +56,8 @@ class InvoiceModel extends Model
         if ($juragan_id > 0) {
             $builder->where('juragan_id', $juragan_id);
         }
+
+        $this->batasiToko($builder, $hanya);
 
         if ($hal === 'pembayaran' || $hal === 'cek-bayar') {
             if ($kategori === 'perlu-cek') {
@@ -106,7 +109,7 @@ class InvoiceModel extends Model
 
         return [
             'data'      => json_decode(json_encode(array_values($return))),
-            'totalPage' => $this->counter($hal, $juragan_id, $cari, $kategori),
+            'totalPage' => $this->counter($hal, $juragan_id, $cari, $kategori, $hanya),
         ];
     }
 
@@ -128,7 +131,7 @@ class InvoiceModel extends Model
      *
      * @return array<string, int> kategori_tab() slug => jumlah
      */
-    public function countPembayaran(int $juragan_id = 0, string $hal = 'pembayaran'): array
+    public function countPembayaran(int $juragan_id = 0, string $hal = 'pembayaran', ?array $hanya = null): array
     {
         helper('fungsi');
 
@@ -143,6 +146,8 @@ class InvoiceModel extends Model
         if ($juragan_id > 0) {
             $b->where('juragan_id', $juragan_id);
         }
+
+        $this->batasiToko($b, $hanya);
 
         $b->groupBy('status_pembayaran');
 
@@ -174,7 +179,7 @@ class InvoiceModel extends Model
      *
      * @param mixed $cari Bisa berupa array atau string
      */
-    private function counter(string $hal = 'semua', int $juragan_id = 0, $cari = '', string $kategori = 'perlu-cek'): int
+    private function counter(string $hal = 'semua', int $juragan_id = 0, $cari = '', string $kategori = 'perlu-cek', ?array $hanya = null): int
     {
         $builder = $this->select('id_invoice');
 
@@ -185,6 +190,8 @@ class InvoiceModel extends Model
         if ($juragan_id > 0) {
             $builder->where('juragan_id', $juragan_id);
         }
+
+        $this->batasiToko($builder, $hanya);
 
         return $builder->countAllResults();
     }
@@ -309,6 +316,24 @@ class InvoiceModel extends Model
     }
 
     /**
+     * Batasi query pada daftar toko yang boleh dibuka akun ini.
+     * null = tidak membatasi, sama seperti sebelum pagar kepemilikan ada.
+     *
+     * @param \CodeIgniter\Model|\CodeIgniter\Database\BaseBuilder $builder
+     * @param array<int>|null                                      $hanya
+     */
+    private function batasiToko($builder, ?array $hanya): void
+    {
+        if ($hanya === null) {
+            return;
+        }
+
+        $ids = array_values(array_filter(array_map('intval', $hanya)));
+
+        $builder->whereIn('juragan_id', $ids === [] ? [0] : $ids);
+    }
+
+    /**
      * Pembangun query untuk satu saringan, dibatasi pada daftar juragan pemakai.
      *
      * @param array<int> $juragan_ids
@@ -371,14 +396,14 @@ class InvoiceModel extends Model
         return $sebaran;
     }
 
-    public function getCount(int $id_juragan = 0): array
+    public function getCount(int $id_juragan = 0, ?array $hanya = null): array
     {
         helper('fungsi');
-        $countSemua       = $this->counts($id_juragan);
-        $countSelesai     = $this->counts($id_juragan, 'selesai');
-        $countBelum       = $this->counts($id_juragan, 'belum-proses');
-        $countCekBayar    = $this->counts($id_juragan, 'cek-bayar');
-        $countDalamProses = $this->counts($id_juragan, 'dalam-proses');
+        $countSemua       = $this->counts($id_juragan, 'semua', $hanya);
+        $countSelesai     = $this->counts($id_juragan, 'selesai', $hanya);
+        $countBelum       = $this->counts($id_juragan, 'belum-proses', $hanya);
+        $countCekBayar    = $this->counts($id_juragan, 'cek-bayar', $hanya);
+        $countDalamProses = $this->counts($id_juragan, 'dalam-proses', $hanya);
 
         return [
             'semua' => [
@@ -409,13 +434,15 @@ class InvoiceModel extends Model
         ];
     }
 
-    private function counts(int $id_juragan, string $output = 'semua'): int
+    private function counts(int $id_juragan, string $output = 'semua', ?array $hanya = null): int
     {
         $q = $this->join('juragan j', 'j.id_juragan = invoice.juragan_id');
 
         if ($id_juragan > 0) {
             $q->where(['juragan_id' => $id_juragan]);
         }
+
+        $this->batasiToko($q, $hanya);
 
         switch ($output) {
             case 'selesai':

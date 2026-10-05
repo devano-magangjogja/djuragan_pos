@@ -75,6 +75,43 @@ class JuraganModel extends Model
         return $builder->get();
     }
 
+    /**
+     * Admin dan CS yang tertaut pada tiap toko, untuk layar penanggung jawab.
+     * Hanya id dan nama yang dibawa keluar; kolom akun lain (termasuk sandi)
+     * tidak boleh sampai ke view.
+     *
+     * @param array<int> $juragan_ids kosong = semua toko
+     *
+     * @return array<int, array{admin: array<int, array{id:int, nama:string}>, cs: array<int, array{id:int, nama:string}>}>
+     */
+    public function pengelola(array $juragan_ids = []): array
+    {
+        $b = $this->db->table('relasi r');
+        $b->select('r.juragan_id, u.id as user_id, u.name as nama, u.level');
+        $b->join('user u', 'u.id = r.val_id');
+        $b->where('r.table', 1); // juragan-user
+        $b->whereIn('u.level', ['admin', 'cs']);
+
+        if ($juragan_ids !== []) {
+            $b->whereIn('r.juragan_id', array_map('intval', $juragan_ids));
+        }
+
+        $b->orderBy('u.name', 'ASC');
+
+        $return = [];
+
+        foreach ($b->get()->getResult() as $r) {
+            $level = $r->level === 'cs' ? 'cs' : 'admin';
+
+            $return[(int) $r->juragan_id][$level][] = [
+                'id'   => (int) $r->user_id,
+                'nama' => (string) $r->nama,
+            ];
+        }
+
+        return $return;
+    }
+
     public function ambil_bank($juragan_id)
     {
         $bank = $this->db->table($this->table . ' j');

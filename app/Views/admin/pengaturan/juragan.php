@@ -18,6 +18,13 @@ $session = \Config\Services::session();
             <li class="breadcrumb-item active" aria-current="page">Juragan</li>
         </ol>
     </nav>
+
+    <?php if (($sukses ?? null) !== null) { ?>
+        <div class="alert alert-success py-2"><?= esc($sukses) ?></div>
+    <?php } ?>
+    <?php if (($gagal ?? null) !== null) { ?>
+        <div class="alert alert-danger py-2"><?= esc($gagal) ?></div>
+    <?php } ?>
 </div>
 <div class="container">
 
@@ -30,14 +37,44 @@ $session = \Config\Services::session();
                             <thead>
                                 <tr>
                                     <th>Juragan</th>
+                                    <th>Penanggung jawab</th>
                                 </tr>
                             </thead>
                             <tbody>
+                                <?php
+                                // pilihan akun untuk pemilih penanggung jawab
+                                $isi_opsi = static function (array $daftar): array {
+                                    $opsi = ['' => '— tidak ada —'];
+
+                                    foreach ($daftar as $u) {
+                                        $opsi[(string) $u['id']] = $u['nama'];
+                                    }
+
+                                    return $opsi;
+                                };
+                                $opsi_admin = $isi_opsi($admins);
+                                $opsi_cs    = $isi_opsi($cs_list);
+
+                                // satu baris daftar pemegang: label + pil nama, atau keterangan kosong
+                                $chip = static function (string $label, array $daftar): void { ?>
+                                    <div class="d-flex align-items-center flex-wrap gap-1">
+                                        <span class="text-muted"><?= esc($label) ?></span>
+                                        <?php if ($daftar === []) { ?>
+                                            <span class="badge rounded-pill fw-light bg-secondary">belum ada</span>
+                                        <?php } ?>
+                                        <?php foreach ($daftar as $u) { ?>
+                                            <span class="badge rounded-pill fw-light bg-dark"><?= esc($u['nama']) ?></span>
+                                        <?php } ?>
+                                    </div>
+                                <?php };
+                                ?>
                                 <?php foreach ($juragan as $j) { ?>
                                     <?php
                                     $bank = model('JuraganModel')->getBank($j->id_juragan);
+                                    // kunci yang belum ada diisi daftar kosong, baris ini tidak perlu lagi menebak
+                                    $pg = ($pengelola[$j->id_juragan] ?? []) + ['admin' => [], 'cs' => []];
                                     ?>
-                                    <tr data-arr="<?= esc(json_encode(compact('bank', 'j'))) ?>">
+                                    <tr data-arr="<?= esc(json_encode(compact('bank', 'j', 'pg'))) ?>">
                                         <td class="d-flex align-items-center">
                                             <span class="lead me-auto"><?= esc($j->nama_juragan) ?></span>
                                             <span class="small">
@@ -50,6 +87,19 @@ $session = \Config\Services::session();
                                                     'data-bs-toggle' => 'modal',
                                                 ]) ?>
                                             </span>
+                                        </td>
+                                        <td class="align-middle small">
+                                            <?php $chip('Admin', $pg['admin']); ?>
+                                            <?php $chip('CS', $pg['cs']); ?>
+                                            <?php if (count($pg['admin']) > 1 || count($pg['cs']) > 1) { ?>
+                                                <div class="text-warning mt-1">lebih dari satu — tunjuk satu Admin dan satu CS</div>
+                                            <?php } ?>
+                                            <?= form_button([
+                                                'class'          => 'btn btn-link btn-sm p-0 mt-1',
+                                                'content'        => '<i class="fal fa-user-plus"></i> Tunjuk penanggung jawab',
+                                                'data-bs-target' => '#modalPengelola',
+                                                'data-bs-toggle' => 'modal',
+                                            ]) ?>
                                         </td>
                                     </tr>
                                 <?php } ?>
@@ -138,6 +188,39 @@ $session = \Config\Services::session();
     </div>
 </div>
 
+<div class="modal fade" id="modalPengelola" data-backdrop="static" tabindex="-1" aria-labelledby="modalPengelolaLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <?= form_open('admin/settings/juragan/pengelola', ['id' => 'mg']); ?>
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalPengelolaLabel">Penanggung jawab toko</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="small text-muted" id="peng_sekarang"></p>
+                <?= form_hidden('juragan', ''); ?>
+                <div class="mb-3">
+                    <?= form_label('Admin', 'admin', ['class' => 'form-label']); ?>
+                    <?= form_dropdown('admin', $opsi_admin, '', ['class' => 'form-select', 'id' => 'peng_admin']); ?>
+                    <div class="form-text">satu toko dipegang satu Admin</div>
+                </div>
+                <div class="mb-3">
+                    <?= form_label('CS', 'cs', ['class' => 'form-label']); ?>
+                    <?= form_dropdown('cs', $opsi_cs, '', ['class' => 'form-select', 'id' => 'peng_cs']); ?>
+                    <div class="form-text">pilih “— tidak ada —” untuk melepas penanggung jawab</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-link text-decoration-none" data-bs-dismiss="modal">Batal</button>
+                <button type="submit" class="btn btn-primary"><i class="fal fa-save"></i> Simpan</button>
+            </div>
+            <?= form_close(); ?>
+        </div>
+    </div>
+</div>
+
 <?= $this->endSection() ?>
 
 <?= $this->section('js') ?>
@@ -161,7 +244,12 @@ $js = <<< JS
                 $('#listLi').empty();
                 $.getJSON('{$link_api_juragan}', { id: id }, function(b){
                     var a=[];
-                    a.push('<a class="list-group-item text-light list-group-item-action" href="{$link_invoice}semua"><i class="fal fa-user-circle"></i> Semua Juragan</a>');
+                    // akun yang cuma pegang satu toko tidak perlu memilih
+                    var ada = 0;
+                    $.each(b[id].juragan, function() { ada++; });
+                    if (ada > 1) {
+                        a.push('<a class="list-group-item text-light list-group-item-action" href="{$link_invoice}semua"><i class="fal fa-user-circle"></i> Semua Juragan</a>');
+                    }
 
                     $.each(b[id].juragan,function(c,b){
                         a.push('<a href="{$link_invoice}'+b.slug+'" class="list-group-item text-light list-group-item-action"><i class="fal fa-user-circle"></i> '+b.nama+'</a>');
@@ -294,6 +382,29 @@ $js = <<< JS
     	}),
     	modalSuntingJuragan.addEventListener('hide.bs.modal',function(a){
     		document.getElementById('mf').reset();
+    	});
+
+    	var modalPengelola=document.getElementById('modalPengelola');
+    	modalPengelola.addEventListener('show.bs.modal',function(event){
+    		var parent = event.relatedTarget.closest('tr');
+    		var data   = JSON.parse(parent.dataset.arr);
+    		var pg     = data.pg || {admin: [], cs: []};
+
+    		var nama = function(daftar) {
+    			var x = [];
+    			daftar.forEach(function (u) { x.push(u.nama); });
+
+    			return x.length === 0 ? 'belum ada' : x.join(', ');
+    		};
+
+    		modalPengelola.querySelector('input[name="juragan"]').value = data.j.id_juragan;
+    		modalPengelola.querySelector('#peng_admin').value = pg.admin.length === 1 ? pg.admin[0].id : '';
+    		modalPengelola.querySelector('#peng_cs').value    = pg.cs.length === 1 ? pg.cs[0].id : '';
+    		modalPengelola.querySelector('#peng_sekarang').textContent =
+    			data.j.nama_juragan + ' — Admin: ' + nama(pg.admin) + ' | CS: ' + nama(pg.cs);
+    	}),
+    	modalPengelola.addEventListener('hide.bs.modal',function(a){
+    		document.getElementById('mg').reset();
     	});
     });
     JS;

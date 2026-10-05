@@ -244,7 +244,12 @@ $js = <<< JS
                 $('#listLi').empty();
                 $.getJSON('{$link_api_juragan}', { id: id }, function(b){
                     var a=[];
-                    a.push('<a class="list-group-item text-light list-group-item-action" href="{$link_invoice}semua"><i class="fal fa-user-circle"></i> Semua Juragan</a>');
+                    // akun yang cuma pegang satu toko tidak perlu memilih
+                    var ada = 0;
+                    $.each(b[id].juragan, function() { ada++; });
+                    if (ada > 1) {
+                        a.push('<a class="list-group-item text-light list-group-item-action" href="{$link_invoice}semua"><i class="fal fa-user-circle"></i> Semua Juragan</a>');
+                    }
 
                     $.each(b[id].juragan,function(c,b){
                         a.push('<a href="{$link_invoice}'+b.slug+'" class="list-group-item text-light list-group-item-action"><i class="fal fa-user-circle"></i> '+b.nama+'</a>');

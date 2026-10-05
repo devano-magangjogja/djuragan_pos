@@ -181,8 +181,11 @@ $session  = \Config\Services::session();
                             <?php endif; ?>
 
                             <div class="ms-auto flex items-center gap-1 max-sm:ms-0">
-                                <a class="inline-flex cursor-pointer items-center gap-1 rounded-[0.7rem] border border-ink-200 bg-ink-50 px-2.5 py-1 text-sm text-ink-700 transition hover:bg-ink-100 hover:text-ink-900" href="<?= site_url('download/invoice/' . $pesanan->seri) ?>" target="_blank" rel="noopener" title="Cetak pesanan ini">
-                                    <i class="fal fa-print"></i> <span class="hidden md:inline">Cetak</span>
+                                <a class="inline-flex cursor-pointer items-center gap-1 rounded-[0.7rem] border border-ink-200 bg-ink-50 px-2.5 py-1 text-sm text-ink-700 transition hover:bg-ink-100 hover:text-ink-900" href="<?= site_url('download/penjahit/' . $pesanan->seri) ?>" target="_blank" rel="noopener" title="Cetak lembar kerja penjahit (tanpa harga)">
+                                    <i class="fal fa-cut"></i> <span class="hidden md:inline">Penjahit</span>
+                                </a>
+                                <a class="inline-flex cursor-pointer items-center gap-1 rounded-[0.7rem] border border-ink-200 bg-ink-50 px-2.5 py-1 text-sm text-ink-700 transition hover:bg-ink-100 hover:text-ink-900" href="<?= site_url('download/invoice/' . $pesanan->seri) ?>" target="_blank" rel="noopener" title="Cetak invoice untuk pelanggan">
+                                    <i class="fal fa-print"></i> <span class="hidden md:inline">Invoice</span>
                                 </a>
                                 <button type="button" class="inline-flex cursor-pointer items-center gap-1 rounded-[0.7rem] border border-ink-200 bg-ink-50 px-2.5 py-1 text-sm text-ink-700 transition hover:bg-ink-100 hover:text-ink-900 salinTautan" data-link="<?= esc(site_url('download/invoice/' . $pesanan->seri), 'attr') ?>" title="Salin tautan invoice">
                                     <i class="fal fa-copy"></i><span class="sr-only">Salin tautan</span>

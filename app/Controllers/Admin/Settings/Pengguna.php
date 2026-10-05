@@ -189,6 +189,13 @@ class Pengguna extends BaseController
 
         $db->transCommit();
 
+        // daftar juragan disimpan 30 menit di writable/cache (kunci juragan_by_user_<id>),
+        // jadi relasi yang baru dihapus masih bisa dipakai membuka halaman akun itu sampai
+        // kuncinya dibuang
+        $cache = \Config\Services::cache();
+        $cache->delete('juragan_by_user_' . $id);
+        $cache->delete('juragan_by_user_' . $id . '_bank');
+
         return redirect()->to('/admin/settings/pengguna')
             ->with('sukses', 'Perubahan pengguna tersimpan.');
     }

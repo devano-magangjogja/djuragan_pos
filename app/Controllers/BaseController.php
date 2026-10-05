@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Controllers\Juragan as Jrgn;
+use App\Models\InvoiceModel;
 use App\Models\JuraganModel;
 use CodeIgniter\Controller;
 use CodeIgniter\HTTP\CLIRequest;
@@ -119,6 +120,79 @@ abstract class BaseController extends Controller
         asort($pilihan);
 
         return $pilihan;
+    }
+
+    /**
+     * Daftar toko yang boleh dibuka akun ini. superadmin memegang semuanya, jadi
+     * daftar lengkap dikembalikan apa adanya; admin/CS/viewer hanya toko yang
+     * tertaut di order_relasi (table=1).
+     *
+     * @return list<int>
+     */
+    public function tokoBoleh(): array
+    {
+        if (session()->get('level') === 'superadmin') {
+            $semua = (new JuraganModel())->select('id_juragan')->findAll();
+
+            return array_map('intval', array_column($semua, 'id_juragan'));
+        }
+
+        return $this->juraganIds();
+    }
+
+    public function bolehToko($juragan_id): bool
+    {
+        return in_array((int) $juragan_id, $this->tokoBoleh(), true);
+    }
+
+    /**
+     * Toko satu-satunya milik akun ini, atau null kalau pegang nol / lebih dari satu.
+     * Dipakai untuk membuang pilihan "Semua Juragan": kalau yang dipegang cuma satu
+     * toko, orang tidak perlu memilih dan tidak bisa nyasar ke toko lain.
+     *
+     * @return array{id:int,slug:string,nama:string}|null
+     */
+    public function tokoTunggal(): ?array
+    {
+        $ids = $this->juraganIds();
+
+        if (count($ids) !== 1 || session()->get('level') === 'superadmin') {
+            return null;
+        }
+
+        $toko = (new JuraganModel())->where('id_juragan', $ids[0])->first();
+
+        if ($toko === null) {
+            return null;
+        }
+
+        return ['id' => (int) $toko->id_juragan, 'slug' => $toko->juragan, 'nama' => $toko->nama_juragan];
+    }
+
+    /**
+     * Satu nota, diambil hanya kalau tokonya memang dipegang akun ini.
+     * null menjawab dua hal sekaligus: notanya tidak ada, atau itu nota toko lain.
+     * Halaman admin dan halaman CS memakai pagar yang sama.
+     */
+    public function notaMilikToko(int $invoice_id): ?object
+    {
+        $nota = (new InvoiceModel())->find($invoice_id);
+
+        if ($nota === null || ! $this->bolehToko((int) $nota->juragan_id)) {
+            return null;
+        }
+
+        return $nota;
+    }
+
+    /**
+     * Jawaban baku untuk permintaan ke nota toko lain: tidak ada yang diubah.
+     */
+    public function tolakToko()
+    {
+        $this->response->setStatusCode(403);
+
+        return $this->response->setJSON(['status' => 'Orderan ini bukan milik tokomu.']);
     }
 
     public function isJuragan($juragan)

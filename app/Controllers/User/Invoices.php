@@ -52,6 +52,13 @@ class Invoices extends BaseController
             $juragan_id = $this->request->getPost('juragan');
             $rincian    = $this->request->getPost('rincian');
 
+            // orderan hanya boleh dititipkan ke toko yang dipegang akun ini
+            if (! $this->bolehToko((int) $juragan_id)) {
+                $this->response->setStatusCode(406);
+
+                return $this->response->setJSON(['juragan' => 'Toko ini tidak berada di bawah akun Anda.']);
+            }
+
             $data_invoice = [
                 'tanggal_pesan'  => $this->request->getPost('tanggal_order'),
                 'seri'           => $seri,
@@ -242,9 +249,15 @@ class Invoices extends BaseController
             $invModel        = new InvoiceModel();
             $time            = Time::parse($this->request->getPost('tanggal_pembayaran'))->getTimestamp();
             $invoice_id      = $this->request->getPost('invoice_id');
+            $nota            = $this->notaMilikToko((int) $invoice_id);
+
+            // pembayaran hanya boleh dicatat untuk nota di toko sendiri
+            if ($nota === null) {
+                return $this->tolakToko();
+            }
 
             // halaman lama masih bisa menampilkan tombolnya, jadi invoice lunas ditolak di sini juga
-            if (tagihan_lunas($invModel->find($invoice_id)->status_pembayaran)) {
+            if (tagihan_lunas($nota->status_pembayaran)) {
                 $this->response->setStatusCode(406);
 
                 return $this->response->setJSON([
@@ -262,7 +275,7 @@ class Invoices extends BaseController
             $pembayaranModel->save($data);
 
             // simpan notif
-            simpan_notif(4, $invModel->find($invoice_id)->juragan_id, $invoice_id);
+            simpan_notif(4, $nota->juragan_id, $invoice_id);
 
             // update status pembayaran (invoice)
             $invModel->perbaruiStatusPembayaran($invoice_id);
@@ -298,6 +311,12 @@ class Invoices extends BaseController
         if ($this->request->isAJAX()) {
             $pembayaranModel = new PembayaranModel();
             $invoice_id      = $this->request->getGet('id');
+
+            // riwayat pembayaran nota toko lain tidak boleh dibaca
+            if ($this->notaMilikToko((int) $invoice_id) === null) {
+                return $this->tolakToko();
+            }
+
             $x               = $pembayaranModel->ambil($invoice_id)->get()->getResult();
             $res             = [];
 
