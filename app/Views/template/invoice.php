@@ -2,161 +2,280 @@
 
 use App\Libraries\Ongkir;
 
-$html_logo = '<img src="' . str_replace('\\', '/', rtrim(FCPATH, '/\\')) . '/assets/img/logo-invoice.png" width="100" height="100" />';
+$html_logo = '<img src="' . str_replace('\\', '/', rtrim(FCPATH, '/\\')) . '/assets/img/logo-invoice.png" width="92" height="92" />';
 ?>
 <!doctype html>
-<html lang="en">
+<html lang="id">
 
 <head>
     <meta charset="UTF-8">
-    <title>Invoice <?= $invoice->seri; ?></title>
+    <title>Invoice <?= esc($invoice->seri); ?></title>
 
     <style type="text/css">
+        /* Dompdf 2 tidak mengenal flex/grid/border-radius, jadi semua tata letak disusun
+           dengan tabel; yang dipakai hanya warna, garis dan tipografi. */
         * {
-            font-family: Verdana, Arial, sans-serif;
+            font-family: Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            color: #1f2933;
+            font-size: 11px;
+            margin: 0;
         }
 
         table {
-            font-size: small;
+            width: 100%;
+            font-size: 11px;
         }
 
-        tfoot tr td {
+        .kop {
+            border-bottom: 2px solid #12232e;
+            padding-bottom: 10px;
+        }
+
+        .toko {
+            font-size: 15px;
             font-weight: bold;
-            font-size: small;
+            letter-spacing: 0.5px;
         }
 
-        table.inv {
-            border: 1px solid lightgrey;
+        .alamat {
+            color: #6b7a89;
+            font-size: 10px;
+            line-height: 15px;
         }
 
-        .gray {
-            background-color: lightgray
+        .judul {
+            font-size: 22px;
+            font-weight: bold;
+            letter-spacing: 3px;
+            color: #12232e;
         }
 
-        .bb {
-            border-bottom: 1px solid #ddd;
-            margin-bottom: 30px;
-            padding-bottom: 15px
+        .nomor {
+            color: #6b7a89;
+            font-size: 11px;
         }
 
-        .inf {
-            text-transform: uppercase;
-            color: #ccc;
-        }
-
-        .text-danger {
-            color: red;
-        }
-
-        .ribbon {
-            padding-top: 15px;
-            padding-bottom: 15px;
+        .stempel {
+            border: 1px solid #d6dde4;
+            padding: 7px 12px;
             text-align: center;
-            width: 400px;
-            position: fixed;
-            color: white;
-            font-size: 18px;
-            transform: rotate(45deg);
-            top: -20px;
-            right: -210px;
+            width: 150px;
         }
 
-        .ribbon.red {
-            background: #d9534f;
+        .stempel .besar {
+            font-size: 13px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            text-transform: uppercase;
         }
 
-        .ribbon.green {
-            background: #5cb85c;
+        .stempel .kecil {
+            font-size: 9px;
+        }
+
+        .lunas {
+            background: #1b5e37;
+            border-color: #1b5e37;
+            color: #ffffff;
+        }
+
+        .lunas .kecil {
+            color: #d3e7da;
+        }
+
+        .belum {
+            background: #fdf3e3;
+            border-color: #ecc79b;
+            color: #8a5216;
+        }
+
+        .cap {
+            color: #6b7a89;
+            font-size: 9px;
+            font-weight: bold;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+        }
+
+        /* kotak keterangan: judul kecil di atas, isinya di bawah */
+        .kotak {
+            background: #f5f7f9;
+            border-left: 3px solid #12232e;
+            padding: 8px 10px;
+            vertical-align: top;
+        }
+
+        .isi {
+            line-height: 16px;
+            padding-top: 4px;
+        }
+
+        table.rapi {
+            border-collapse: collapse;
+            margin-top: 6px;
+        }
+
+        table.rapi th {
+            background: #12232e;
+            color: #ffffff;
+            font-size: 9px;
+            letter-spacing: 1px;
+            padding: 7px 8px;
+            text-align: left;
+            text-transform: uppercase;
+        }
+
+        table.rapi td {
+            border-bottom: 1px solid #e6eaee;
+            padding: 7px 8px;
+            vertical-align: top;
+        }
+
+        table.rapi tr.selang {
+            background: #f7f9fb;
+        }
+
+        .angka {
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .tengah {
+            text-align: center;
+        }
+
+        .kode {
+            font-weight: bold;
+        }
+
+        .abu {
+            color: #6b7a89;
+        }
+
+        .gelap {
+            background: #12232e;
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .merah {
+            color: #b3261e;
+        }
+
+        .kaki {
+            border-top: 1px solid #e6eaee;
+            color: #6b7a89;
+            font-size: 9px;
+            padding-top: 8px;
+        }
+
+        /* ukuran rombongan dicetak di halaman sendiri supaya nota utama tetap pendek */
+        .lampiran {
+            page-break-before: always;
         }
     </style>
 
 </head>
 
 <body>
-    <div class="ribbon top-left <?= ($invoice->status_pembayaran === '5' || $invoice->status_pembayaran === '6' ? 'green' : 'red'); ?>"><?= ($invoice->status_pembayaran === '5' || $invoice->status_pembayaran === '6' ? 'Lunas' : 'Belum Lunas'); ?></div>
+    <?php
+    // status pembayaran dan tahap produksi dibaca dari helper yang sama dengan kartu
+    // transaksi, supaya angka di kertas tidak lagi berbeda dengan di layar
+    $lunas       = tagihan_lunas($invoice->status_pembayaran);
+    $label_bayar = status_pembayaran($invoice->pembayaran, $invoice->status_pembayaran, 'label');
+    $dibayarkan  = status_pembayaran($invoice->pembayaran, $invoice->status_pembayaran, 'sudah_bayar');
+    $tahap       = tahap_terakhir($invoice->status ?? []);
+    $tenggat     = label_deadline(($invoice->deadline ?? '') ?: deadline_iso($invoice->rincian ?? null));
+    $ongkir      = new Ongkir();
+    $pemesan     = $invoice->pelanggan;
+    $kirimKe     = $invoice->kirimKe;
 
-    <table width="100%" class="bb">
+    // alamat lengkap sekali saja: kolom per kolom, supaya tidak ada teks yang hilang
+    $alamat = static function ($orang) use ($ongkir): string {
+        if ($orang->cod === '1') {
+            return 'C.O.D';
+        }
+
+        $kec  = strtoupper(esc($ongkir->kecamatan($orang->kabupaten, $orang->kecamatan)['subdistrict_name'] ?? ''));
+        $kab  = strtoupper(esc($ongkir->kota($orang->provinsi, $orang->kabupaten)['city_name'] ?? ''));
+        $prov = strtoupper(esc($ongkir->provinsi($orang->provinsi)['province_name'] ?? ''));
+
+        return esc($orang->alamat) . '<br>' . $kec . ', ' . $kab . '<br>' . $prov
+            . (empty($orang->kodepos) || $orang->kodepos === '0' ? '' : ' - ' . esc($orang->kodepos));
+    };
+
+    $kontak = static fn ($orang): string => implode(' / ', array_map(
+        static fn ($n): string => esc($n),
+        (array) json_decode((string) $orang->hp),
+    ));
+    ?>
+
+    <table class="kop">
         <tr>
-            <td><?= $html_logo ?></td>
-            <td align="right">
-                <h3>Seven Inc</h3>
-                <p>Karangjambe, Banguntapan<br>Bantul, D.I Yogyakarta - 55198</p>
+            <td valign="middle" width="28%"><?= $html_logo ?></td>
+            <td align="right" valign="middle" width="72%">
+                <div class="toko"><?= esc($invoice->juragan?->nama ?? 'Seven Inc') ?></div>
+                <div class="alamat">Karangjambe, Banguntapan, Bantul<br>D.I. Yogyakarta 55198</div>
             </td>
         </tr>
-
     </table>
 
-    <table width="100%" class="bb">
-        <tbody>
-            <tr>
-                <td>
-                    No Invoice: #<?= esc($invoice->seri) ?><br>
-                    Tanggal: <?= esc($invoice->tanggal_pesan) ?><br>
-                    Status: <?= esc($invoice->status_pembayaran === '5' || $invoice->status_pembayaran === '6' ? 'Lunas' : 'Belum Lunas'); ?>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-
-    <table width="100%">
-        <?php
-        $ongkir     = new Ongkir();
-        $pemesan    = $invoice->pelanggan;
-        $kirimKe    = $invoice->kirimKe;
-        ?>
+    <table>
         <tr>
-            <td>
-                <span class="inf">Pemesan<?= esc($pemesan->id === $kirimKe->id ? ' / Kirim Kepada' : '') ?></span> <br>
-                <?= $pemesan->nama; ?><br>
-                <?php
-                $i = 0;
-
-                foreach (json_decode($pemesan->hp) as $hp) {
-                    if ($i === 1) {
-                        echo ' / ';
-                    }
-                    echo esc($hp);
-                    $i++;
-                }
-                ?><br>
-                <?php
-                if ($pemesan->cod === '1') {
-                    echo 'C.O.D';
-                } else {
-                    $kec  = strtoupper(esc($ongkir->kecamatan($pemesan->kabupaten, $pemesan->kecamatan)['subdistrict_name']));
-                    $kab  = strtoupper(esc($ongkir->kota($pemesan->provinsi, $pemesan->kabupaten)['city_name']));
-                    $prov = strtoupper(esc($ongkir->provinsi($pemesan->provinsi)['province_name']));
-
-                    echo $pemesan->alamat . '<br/>' . $kec . ', ' . $kab . '<br/>' . $prov . ($pemesan->kodepos === '0' ? '' : ' - ' . $pemesan->kodepos);
-                }
-                ?>
+            <td width="58%" valign="middle">
+                <div class="judul">INVOICE</div>
+                <div class="nomor">Nomor <?= esc($invoice->seri) ?> &nbsp;·&nbsp; <?= esc(tanggal_rincian((string) $invoice->tanggal_pesan)) ?></div>
             </td>
-            <td>
+            <td align="right" valign="middle" width="42%">
+                <table>
+                    <tr>
+                        <td>
+                            <div class="stempel <?= $lunas ? 'lunas' : 'belum'; ?>">
+                                <div class="besar"><?= $lunas ? 'Lunas' : 'Belum Lunas' ?></div>
+                                <div class="kecil"><?= esc($label_bayar) ?></div>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+
+    <br>
+
+    <table>
+        <tr>
+            <td class="kotak" width="50%">
+                <div class="cap">Pemesan</div>
+                <div class="isi">
+                    <?= esc($pemesan->nama) ?><br>
+                    <?= $kontak($pemesan) ?><br>
+                    <?= $alamat($pemesan) ?>
+                </div>
+            </td>
+            <td class="kotak" width="50%">
                 <?php if ($pemesan->id !== $kirimKe->id) { ?>
-                    <span class="inf">Kirim Kepada</span> <br>
-                    <?= esc($kirimKe->nama) ?><br>
-                    <?php
-                    $i = 0;
-
-                    foreach (json_decode($kirimKe->hp) as $hp) {
-                        if ($i === 1) {
-                            echo ' / ';
-                        }
-                        echo esc($hp);
-                        $i++;
-                    }
-                    ?><br>
-                    <?php
-                    if ($kirimKe->cod === '1') {
-                        echo 'C.O.D';
-                    } else {
-                        $kec  = strtoupper(esc($ongkir->kecamatan($kirimKe->kabupaten, $kirimKe->kecamatan)['subdistrict_name']));
-                        $kab  = strtoupper(esc($ongkir->kota($kirimKe->provinsi, $kirimKe->kabupaten)['city_name']));
-                        $prov = strtoupper(esc($ongkir->provinsi($kirimKe->provinsi)['province_name']));
-
-                        echo $kirimKe->alamat . '<br/>' . $kec . ', ' . $kab . '<br/>' . $prov . ($kirimKe->kodepos === '0' ? '' : ' - ' . $kirimKe->kodepos);
-                    }
-                    ?>
+                    <div class="cap">Kirim Kepada</div>
+                    <div class="isi">
+                        <?= esc($kirimKe->nama) ?><br>
+                        <?= $kontak($kirimKe) ?><br>
+                        <?= $alamat($kirimKe) ?>
+                    </div>
+                <?php } else { ?>
+                    <div class="cap">Status Pesanan</div>
+                    <div class="isi">
+                        <?= esc(label_status_orderan($invoice->status_pesanan)) ?>
+                        <?php if ($tenggat['teks'] !== '-') { ?>
+                            <br>Tenggat: <?= esc($tenggat['teks']) ?>
+                        <?php } ?>
+                        <?php if ($tahap !== null) { ?>
+                            <br>Tahap terakhir: <?= esc($tahap['nama']) ?> (<?= esc($tahap['tanggal']) ?>, <?= $tahap['selesai'] ? 'selesai' : 'berjalan' ?>)
+                        <?php } ?>
+                    </div>
                 <?php } ?>
             </td>
         </tr>
@@ -164,113 +283,153 @@ $html_logo = '<img src="' . str_replace('\\', '/', rtrim(FCPATH, '/\\')) . '/ass
 
     <br>
 
-    <table width="100%" class="inv">
-        <thead style="background-color: lightgray;">
+    <table class="rapi">
+        <thead>
             <tr>
-                <th>Deskripsi</th>
-                <th>QTY</th>
-                <th>Satuan</th>
-                <th>Total</th>
+                <th>Pesanan</th>
+                <th width="8%" class="tengah">Qty</th>
+                <th width="18%" class="angka">Harga</th>
+                <th width="18%" class="angka">Subtotal</th>
             </tr>
         </thead>
         <tbody>
             <?php
-            $wajib_bayar = 0;
-            // $count_barang = 0;
             $harga_barang = 0;
+            $wajib_bayar  = 0;
 
-            foreach ($invoice->barang as $b) {
-                // $count_barang += $b->qty;
-                $wajib_bayar += $b->qty * $b->harga;
+            foreach ($invoice->barang as $i => $b) :
                 $harga_barang += $b->qty * $b->harga;
-                echo '<tr>';
-                echo '<td>' . strtoupper($b->kode) . ' (' . strtoupper($b->ukuran) . ')';
-
-                echo '</td>';
-                echo '<td style="text-align:center">' . $b->qty . '</td>';
-                echo '<td style="text-align:right">' . number_to_currency($b->harga, 'IDR') . '</td>';
-                echo '<td style="text-align:right">' . number_to_currency($b->harga * $b->qty, 'IDR') . '</td>';
-                echo '</tr>';
-            }
+                $wajib_bayar  += $b->qty * $b->harga;
+                $rincian_item  = daftar_rincian($b->rincian ?? null, 'produk');
             ?>
-            <tr>
-                <td>&nbsp;</td>
-            </tr>
-            <tr>
-                <td>&nbsp;</td>
-            </tr>
-            <tr>
-                <td>&nbsp;</td>
-            </tr>
+                <tr class="<?= $i % 2 ? 'selang' : ''; ?>">
+                    <td>
+                        <span class="kode"><?= esc(strtoupper($b->kode)) ?></span>
+                        <?php if (! empty($b->ukuran)) { ?>
+                            <span class="abu">/ <?= esc(strtoupper($b->ukuran)) ?></span>
+                        <?php } ?>
+                        <?php if ($rincian_item !== []) { ?>
+                            <div class="abu">
+                                <?php
+                                $bagian = [];
+
+                                foreach ($rincian_item as $item) {
+                                    $bagian[] = esc($item['label']) . ': ' . esc($item['nilai']);
+                                }
+
+                                echo implode(' &nbsp;·&nbsp; ', $bagian);
+                                ?>
+                            </div>
+                        <?php } ?>
+                    </td>
+                    <td class="tengah"><?= (int) $b->qty ?></td>
+                    <td class="angka"><?= number_to_currency($b->harga, 'IDR') ?></td>
+                    <td class="angka"><?= number_to_currency($b->harga * $b->qty, 'IDR') ?></td>
+                </tr>
+            <?php endforeach; ?>
+
+            <?php foreach ($invoice->biaya as $c) : ?>
+                <?php
+                // label biaya lama tersimpan di kolom label; ongkir punya nama sendiri
+                $nama_biaya = $c->biaya_id === '1'
+                    ? 'Ongkir'
+                    : ($c->label === 'null' || empty($c->label) ? 'Biaya lainnya' : $c->label);
+                ?>
+                <tr>
+                    <td><span class="abu"><?= esc($nama_biaya) ?></span></td>
+                    <td></td>
+                    <td></td>
+                    <td class="angka <?= $c->nominal < 0 ? 'merah' : ''; ?>"><?= number_to_currency($c->nominal, 'IDR') ?></td>
+                </tr>
+            <?php endforeach; ?>
         </tbody>
 
         <tfoot>
             <tr>
-                <td colspan="2"></td>
-                <td align="right">Subtotal</td>
-                <td align="right"><?= number_to_currency($harga_barang, 'IDR') ?></td>
+                <td class="angka abu" colspan="3">Subtotal barang</td>
+                <td class="angka"><?= number_to_currency($harga_barang, 'IDR') ?></td>
             </tr>
-
-            <?php
-            foreach ($invoice->biaya as $c) {
-                $wajib_bayar += $c->nominal; ?>
-                <tr>
-                    <td colspan="2"></td>
-                    <td align="right">
-                        <?php
-                        $biaya = 'Lainnya';
-                        if ($c->biaya_id === '1') {
-                            $biaya = 'Ongkir';
-                        }
-                        $label = $c->label;
-                        if ($c->label !== 'null' && $c->biaya_id !== '1') {
-                            $biaya = $c->label . ' ';
-                            $label = '';
-                        } elseif ($c->label === 'null') {
-                            $label = '';
-                        } ?>
-                        <?= $biaya; ?>
-                        <?= $label; ?>
-                    </td>
-                    <td align="right" class="<?= ($c->nominal < 0 ? 'text-danger' : 'normal'); ?>">
-                        <?= number_to_currency($c->nominal, 'IDR'); ?>
-                    </td>
-                </tr>
-            <?php
-            }
-            ?>
-            <tr style="font-size: 1.5em !important;">
-                <td colspan="2"></td>
-                <td align="right">Total</td>
-                <td align="right" class="gray"><?= number_to_currency($wajib_bayar, 'IDR') ?></td>
-            </tr>
-
-            <?php $dibayarkan = 0;
-
-            foreach ($invoice->pembayaran as $byr) {
-                if ($byr->tanggal_cek !== null && $byr->status === '3') {
-                    $dibayarkan += $byr->nominal;
-                }
-            }
-            ?>
             <tr>
-                <td colspan="2"></td>
-                <td align="right">DP/dibayar</td>
-                <td align="right"><?= number_to_currency($dibayarkan, 'IDR') ?></td>
+                <td class="gelap angka" colspan="3">Total tagihan</td>
+                <td class="gelap angka"><?= number_to_currency($wajib_bayar, 'IDR') ?></td>
             </tr>
-            <?php $kekurangan = $wajib_bayar - $dibayarkan;
-
-            if ($kekurangan > 0) {
-            ?>
-                <tr class="text-danger">
-                    <td colspan="2"></td>
-                    <td align="right">Kekurangan</td>
-                    <td align="right"><?= number_to_currency($kekurangan, 'IDR') ?></td>
+            <tr>
+                <td class="angka abu" colspan="3">Dibayar</td>
+                <td class="angka"><?= number_to_currency($dibayarkan, 'IDR') ?></td>
+            </tr>
+            <?php if ($wajib_bayar - $dibayarkan > 0) { ?>
+                <tr>
+                    <td class="merah angka" colspan="3">Sisa bayar</td>
+                    <td class="merah angka"><?= number_to_currency($wajib_bayar - $dibayarkan, 'IDR') ?></td>
                 </tr>
-            <?php
-            } ?>
-
+            <?php } ?>
         </tfoot>
+    </table>
+
+    <?php $anggota = $invoice->anggota ?? []; ?>
+    <?php if ($anggota !== []) { ?>
+        <?php
+        // ukuran anggota belum ditautkan per barang, jadi produk orderan ini
+        // yang jadi acuan di judul lampiran
+        $produk = [];
+
+        foreach ($invoice->barang as $b) {
+            $produk[] = strtoupper($b->kode) . ' (' . strtoupper($b->ukuran) . ') x ' . $b->qty;
+        }
+        ?>
+        <div class="lampiran">
+            <table class="kop">
+                <tr>
+                    <td width="62%">
+                        <div class="cap">Lampiran</div>
+                        <div class="judul" style="font-size: 16px;">UKURAN ROMBONGAN</div>
+                        <div class="nomor">Nomor <?= esc($invoice->seri) ?> &nbsp;·&nbsp; <?= esc(implode(', ', $produk)) ?></div>
+                    </td>
+                    <td align="right" class="alamat" valign="bottom">
+                        <?= esc($invoice->juragan?->nama ?? 'Seven Inc') ?><br>
+                        <?= count($anggota) ?> orang
+                    </td>
+                </tr>
+            </table>
+
+            <table class="rapi">
+                <thead>
+                    <tr>
+                        <th width="6%" class="tengah">No</th>
+                        <th width="24%">Nama</th>
+                        <th width="10%" class="tengah">Nomor</th>
+                        <th>Ukuran</th>
+                        <th width="20%">Catatan</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($anggota as $i => $o) { ?>
+                        <tr class="<?= $i % 2 ? 'selang' : ''; ?>">
+                            <td class="tengah"><?= $i + 1 ?></td>
+                            <td><?= esc($o->nama) ?></td>
+                            <td class="tengah"><?= esc($o->nomor ?: '-') ?></td>
+                            <td>
+                                <?php if (empty($o->nilai)) { ?>
+                                    <span class="abu">belum diukur</span>
+                                <?php } else { ?>
+                                    <?php foreach ($o->nilai as $j => $u) { ?>
+                                        <?= $j > 0 ? '&nbsp;·&nbsp; ' : '' ?><span class="abu"><?= esc($u[0]) ?>:</span> <strong><?= esc($u[1]) ?></strong>
+                                    <?php } ?>
+                                <?php } ?>
+                            </td>
+                            <td><?= esc($o->catatan ?: '-') ?></td>
+                        </tr>
+                    <?php } ?>
+                </tbody>
+            </table>
+        </div>
+    <?php } ?>
+
+    <table class="kaki">
+        <tr>
+            <td>Terima kasih atas kepercayaan Anda.</td>
+            <td align="right">Dicetak <?= esc(date('d M Y')) ?> &nbsp;·&nbsp; dokumen tagihan</td>
+        </tr>
     </table>
 
 </body>

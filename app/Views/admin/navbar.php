@@ -12,9 +12,24 @@
         </div>
         <div id="menu" class="order-3 order-md-0 navbar-nav-scroll d-flex justify-content-center">
             <ul class="navbar-nav bd-navbar-nav flex-row py-2 py-md-0">
-                <li class="nav-item">
-                    <?= anchor('admin/invoices/tulis', 'Tulis Orderan', ['class' => 'nav-link']) ?>
-                </li>
+                <?php
+                $di_halaman = trim(uri_string(), '/');
+
+                // menu utama; yang sedang dibuka ditandai .active
+                // Tulis Orderan tidak lagi di sini, tombolnya ada di halaman Transaksi
+                $menu = [
+                    ['admin/dasbor', 'Dasbor', 'fa-home', url_is('admin/dasbor*') || $di_halaman === 'admin'],
+                    ['admin/invoices/lihat/semua/semua', 'Transaksi', 'fa-receipt', url_is('admin/invoices*')],
+                    ['admin/produk', 'Produk', 'fa-tshirt', url_is('admin/produk*')],
+                    ['admin/laporan', 'Laporan', 'fa-file-alt', url_is('admin/laporan*')],
+                ];
+
+                foreach ($menu as [$alamat, $label, $ikon, $aktif]) {
+                    echo '<li class="nav-item"><a class="nav-link' . ($aktif ? ' active' : '') . '" href="' . site_url($alamat) . '">'
+                        . '<i class="fal ' . $ikon . ' d-block d-md-none"></i>'
+                        . '<span class="d-none d-md-inline-block">' . $label . '</span></a></li>';
+                }
+                ?>
             </ul>
         </div>
         <div id="topmenu" class="ms-sm-auto">

@@ -14,7 +14,8 @@ class Notifikasi extends \CodeIgniter\Controller
         $notifikasi = new \App\Models\NotifikasiModel();
         helper('fungsi');
 
-        $user_id = $this->request->getGet('id');
+        // kotak notifikasi selalu milik akun yang login; `id` dari request diabaikan
+        $user_id = (int) session()->get('id');
         $page    = $this->request->getGet('page');
         $baca    = $this->request->getGet('dibaca');
 
@@ -65,7 +66,8 @@ class Notifikasi extends \CodeIgniter\Controller
     {
         $notifikasi = new \App\Models\NotifikasiModel();
 
-        $user_id = $this->request->getPost('id');
+        // sama seperti get(): yang ditandai terbaca hanyalah milik akun yang login
+        $user_id = (int) session()->get('id');
         $notifikasi->whereIn('for', [$user_id])
             ->set(['read_at' => time()])
             ->update();
@@ -77,7 +79,7 @@ class Notifikasi extends \CodeIgniter\Controller
     {
         $notifikasi = new \App\Models\NotifikasiModel();
 
-        $id     = $this->request->getPost('id');
+        $id     = (int) $this->request->getPost('id');
         $action = $this->request->getPost('action');
 
         $dibaca = time();
@@ -89,7 +91,14 @@ class Notifikasi extends \CodeIgniter\Controller
             'id_notifikasi' => $id,
             'read_at'       => $dibaca,
         ];
-        $notifikasi->save($data);
+
+        // `save()` dulu mengubah baris mana pun tanpa peduli pemiliknya; sekarang
+        // hanya notifikasi milik akun ini yang tersentuh
+        $notifikasi
+            ->where('id_notifikasi', $id)
+            ->where('for', (int) session()->get('id'))
+            ->set(['read_at' => $dibaca])
+            ->update();
 
         return $this->respond($data);
     }

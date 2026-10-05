@@ -18,68 +18,100 @@ $session  = \Config\Services::session();
 
     <h1 class="h3 mt-5"><?= esc($title) ?></h1>
 
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb p-0">
-            <li class="breadcrumb-item"><?= anchor('/', 'Dasbor') ?></li>
-            <li class="breadcrumb-item"><?= anchor('user/invoices', 'Orderan') ?></li>
-            <li class="breadcrumb-item active" aria-current="page">Semua Orderan</li>
-        </ol>
-    </nav>
-
-    <div class="wrap-btn-filter mb-3">
+    <?php
+    // [slug tab, label pendek, id badge counter, keterangan tooltip]
+    $tab = [
+        ['semua', 'Semua', 'counterSemua', 'Semua transaksi'],
+        ['pembayaran', 'Pembayaran', 'counterCekBayar', 'Transaksi yang pembayarannya perlu dicek'],
+        ['belum-proses', 'Belum Proses', 'counterBelumProses', 'Transaksi yang belum mulai dikerjakan'],
+        ['dalam-proses', 'Dalam Proses', 'counterDalamProses', 'Transaksi yang sedang dikerjakan'],
+        ['selesai', 'Selesai', 'counterSelesai', 'Transaksi yang sudah selesai'],
+    ];
+    ?>
+    <div class="mb-3 flex flex-wrap items-center gap-x-1 gap-y-2">
         <?php
-        $arr_button = [
-            [
-                'link'  => ['user', 'invoices', 'lihat', $juragan, 'semua'],
-                'title' => 'Semua Orderan <span class="badge rounded-pill bg-danger" id="counterSemua">0</span>',
-                'attr'  => [
-                    'class' => 'mb-2 btn rounded-pill me-1 btn-' . ($hal === 'semua' ? 'primary' : 'outline-secondary'),
-                    'title' => 'Semua Orderan',
-                ],
-            ],
-            [
-                'link'  => ['user', 'invoices', 'lihat', $juragan, 'cek-bayar'],
-                'title' => 'Cek Pembayaran <span class="badge rounded-pill bg-danger" id="counterCekBayar">0</span>',
-                'attr'  => [
-                    'class' => 'mb-2 btn rounded-pill me-1 btn-' . ($hal === 'cek-bayar' ? 'primary' : 'outline-secondary'),
-                    'title' => 'Cek Pembayaran',
-                ],
-            ],
-            [
-                'link'  => ['user', 'invoices', 'lihat', $juragan, 'belum-proses'],
-                'title' => 'Belum Proses <span class="badge rounded-pill bg-danger" id="counterBelumProses">0</span>',
-                'attr'  => [
-                    'class' => 'mb-2 btn rounded-pill me-1 btn-' . ($hal === 'belum-proses' ? 'primary' : 'outline-secondary'),
-                    'title' => 'Belum Proses',
-                ],
-            ],
-            [
-                'link'  => ['user', 'invoices', 'lihat', $juragan, 'dalam-proses'],
-                'title' => 'Dalam Proses <span class="badge rounded-pill bg-danger" id="counterDalamProses">0</span>',
-                'attr'  => [
-                    'class' => 'mb-2 btn rounded-pill me-1 btn-' . ($hal === 'dalam-proses' ? 'primary' : 'outline-secondary'),
-                    'title' => 'Dalam Proses',
-                ],
-            ],
-            [
-                'link'  => ['user', 'invoices', 'lihat', $juragan, 'selesai'],
-                'title' => 'Orderan Selesai <span class="badge rounded-pill bg-danger" id="counterSelesai">0</span>',
-                'attr'  => [
-                    'class' => 'mb-2 btn rounded-pill me-1 btn-' . ($hal === 'selesai' ? 'primary' : 'outline-secondary'),
-                    'title' => 'Orderan Selesai',
-                ],
-            ],
-        ];
-
-        foreach ($arr_button as $key => $b) {
-            echo anchor($b['link'], $b['title'], $b['attr']);
+        foreach ($tab as [$slug, $label, $counter, $keterangan]) {
+            echo anchor(
+                'user/invoices/lihat/' . $juragan . '/' . $slug,
+                $label . ' <span class="badge rounded-pill bg-ink-100 text-ink-600" id="' . $counter . '">0</span>',
+                [
+                    'class' => 'btn rounded-pill btn-' . ($hal === $slug ? 'primary' : 'outline-secondary'),
+                    'title' => $keterangan,
+                ]
+            );
         }
         ?>
 
-        <a class="mb-2 btn btn-warning rounded-pill me-1" data-bs-target="#modalCari" data-bs-toggle="modal" href="#!"><i class="fal fa-search"></i></a>
+        <div class="ms-sm-auto flex items-center gap-1">
+            <?= form_button([
+                'class'          => 'btn rounded-pill btn-outline-secondary',
+                'content'        => '<i class="fal fa-search"></i> <span class="hidden sm:inline">Cari</span>',
+                'title'          => 'Cari transaksi',
+                'data-bs-target' => '#modalCari',
+                'data-bs-toggle' => 'modal',
+            ]) ?>
+            <?= anchor('user/invoices/tulis', '<i class="fal fa-pen-nib"></i> Tulis Orderan', [
+                'class' => 'btn rounded-pill border-0 bg-brand-500 font-semibold text-white hover:bg-brand-600',
+                'title' => 'Buat transaksi baru',
+            ]) ?>
+        </div>
     </div>
 
+    <?php if (in_array($hal, ['pembayaran', 'belum-proses', 'saring'], true)) : ?>
+        <?php
+        // pilihan filter dibungkus label kategorinya plus jumlah orderan pada kategori itu.
+        // tab saring angkanya sudah dibaca di dasbor, jadi labelnya polos
+        $opsi_kategori = [];
+
+        foreach ($kategori_pembayaran as $slug => $k) {
+            $opsi_kategori[$slug] = $jumlah_kategori === []
+                ? $k['label']
+                : $k['label'] . ' (' . formatRibuan($jumlah_kategori[$slug] ?? 0) . ')';
+        }
+
+        $label_filter = match ($hal) {
+            'belum-proses' => 'Status pembayaran',
+            'saring'       => 'Saringan orderan',
+            default        => 'Kategori pembayaran',
+        };
+        ?>
+        <div class="mb-4 rounded-2xl border border-ink-200 bg-[#fcfdfe] px-3.5 py-3">
+            <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
+                <label class="text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500" for="filterKategori"><?= esc($label_filter) ?></label>
+
+                <?= form_dropdown('kategori', $opsi_kategori, $kategori, [
+                    'class'       => 'form-select form-select-sm w-auto',
+                    'id'          => 'filterKategori',
+                    'data-tautan' => site_url('user/invoices/lihat/' . $juragan . '/' . $hal),
+                ]) ?>
+            </div>
+
+            <p class="mb-0 mt-2 text-sm text-ink-500"><?= esc($kategori_pembayaran[$kategori]['catatan']) ?></p>
+        </div>
+    <?php endif; ?>
+
+    <?php if ($orderan['data'] === []) : ?>
+        <div class="mb-4 rounded-2xl border border-dashed border-ink-200 bg-[#fcfdfe] px-4 py-6 text-center text-ink-500">
+            <i class="fal fa-inbox block text-[1.35rem] text-ink-400 mb-2"></i>
+            <?php if ($hal === 'saring') : ?>
+                Belum ada orderan pada saringan <?= esc($kategori_pembayaran[$kategori]['label']) ?>.
+            <?php elseif ($kategori !== 'semua' && in_array($hal, ['pembayaran', 'belum-proses'], true)) : ?>
+                Belum ada transaksi berkategori <?= esc($kategori_pembayaran[$kategori]['label']) ?>.
+            <?php else : ?>
+                Belum ada transaksi di tab ini.
+            <?php endif; ?>
+        </div>
+    <?php endif; ?>
+
     <?php
+    // untuk tab pembayaran 'perlu-cek': status invoice -> slug kategorinya, dipakai sebagai judul kelompok
+    $kelompok_perlu_cek = [2 => 'menunggu', 3 => 'dp'];
+    $grup_sebelumnya    = null;
+
+    // satu kartu di layar = orderan dibuka sendiri. Aturan "kalau kosong tampilkan
+    // -" hanya berlaku di mode itu, supaya daftar panjang tidak ikut penuh baris kosong
+    $satu_orderan = count($orderan['data']) === 1;
+
     foreach ($orderan['data'] as $pesanan) { ?>
         <?php
         // warna pill status dan panel wajib bayar (pengganti text-bg-* dan list-group-item-*)
@@ -90,6 +122,33 @@ $session  = \Config\Services::session();
             'success' => ['pill' => 'bg-selesai text-white', 'band' => 'bg-emerald-100 text-emerald-800'],
         ];
         $kelas_status = status_pembayaran($pesanan->pembayaran, $pesanan->status_pembayaran, 'l_class');
+        ?>
+        <?php if ($hal === 'pembayaran' && $kategori === 'perlu-cek') : ?>
+            <?php
+            $slug_kelompok = $kelompok_perlu_cek[(int) $pesanan->status_pembayaran] ?? null;
+
+            if ($slug_kelompok !== null && $slug_kelompok !== $grup_sebelumnya) :
+                $grup_sebelumnya = $slug_kelompok;
+                $kelompok        = $kategori_pembayaran[$slug_kelompok];
+                ?>
+                <div class="mb-3 flex flex-wrap items-baseline gap-2 border-b border-ink-200 pb-1">
+                    <span class="text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-700">
+                        <i class="fal <?= $kelompok['ikon'] ?> me-1 text-ink-500"></i> <?= esc($kelompok['label']) ?>
+                    </span>
+                    <span class="text-xs text-ink-500">total <?= formatRibuan($jumlah_kategori[$slug_kelompok] ?? 0) ?> orderan, yang paling lama menunggu lebih dulu</span>
+                </div>
+            <?php endif; ?>
+        <?php endif; ?>
+        <?php
+        $count_barang = 0;
+        $harga_barang = 0;
+
+        foreach ($pesanan->barang as $b) {
+            $count_barang += $b->qty;
+            $harga_barang += $b->qty * $b->harga;
+        }
+
+        $wajib_bayar = $harga_barang;
         ?>
         <div class="mb-4 rounded-[1.5rem] border border-ink-200 bg-white shadow-sm">
             <div class="p-3 lg:p-4">
@@ -108,9 +167,25 @@ $session  = \Config\Services::session();
                                 <?= esc(status_pembayaran($pesanan->pembayaran, $pesanan->status_pembayaran, 'label')) ?>
                             </span>
 
+                            <?php
+                            // tenggat hanya ditampilkan kalau memang diisi; order lama tetap polos
+                            $dead = label_deadline($pesanan->deadline ?? null);
+
+                            if ($dead['teks'] !== '-') :
+                                $pil_dead = $dead['kelas'] === ''
+                                    ? 'border border-ink-200 bg-ink-50 text-ink-700'
+                                    : $pil[$dead['kelas']]['pill']; ?>
+                                <span class="rounded-full px-3 py-1 text-xs font-semibold <?= $pil_dead ?>" title="Tenggat: <?= esc($dead['teks']) ?>">
+                                    <i class="fal fa-clock me-1"></i><?= esc($dead['teks']) ?>
+                                </span>
+                            <?php endif; ?>
+
                             <div class="ms-auto flex items-center gap-1 max-sm:ms-0">
-                                <a class="inline-flex cursor-pointer items-center gap-1 rounded-[0.7rem] border border-ink-200 bg-ink-50 px-2.5 py-1 text-sm text-ink-700 transition hover:bg-ink-100 hover:text-ink-900" href="<?= site_url('download/invoice/' . $pesanan->seri) ?>" target="_blank" rel="noopener" title="Cetak pesanan ini">
-                                    <i class="fal fa-print"></i> <span class="hidden md:inline">Cetak</span>
+                                <a class="inline-flex cursor-pointer items-center gap-1 rounded-[0.7rem] border border-ink-200 bg-ink-50 px-2.5 py-1 text-sm text-ink-700 transition hover:bg-ink-100 hover:text-ink-900" href="<?= site_url('download/penjahit/' . $pesanan->seri) ?>" target="_blank" rel="noopener" title="Cetak lembar kerja penjahit (tanpa harga)">
+                                    <i class="fal fa-cut"></i> <span class="hidden md:inline">Penjahit</span>
+                                </a>
+                                <a class="inline-flex cursor-pointer items-center gap-1 rounded-[0.7rem] border border-ink-200 bg-ink-50 px-2.5 py-1 text-sm text-ink-700 transition hover:bg-ink-100 hover:text-ink-900" href="<?= site_url('download/invoice/' . $pesanan->seri) ?>" target="_blank" rel="noopener" title="Cetak invoice untuk pelanggan">
+                                    <i class="fal fa-print"></i> <span class="hidden md:inline">Invoice</span>
                                 </a>
                                 <button type="button" class="inline-flex cursor-pointer items-center gap-1 rounded-[0.7rem] border border-ink-200 bg-ink-50 px-2.5 py-1 text-sm text-ink-700 transition hover:bg-ink-100 hover:text-ink-900 salinTautan" data-link="<?= esc(site_url('download/invoice/' . $pesanan->seri), 'attr') ?>" title="Salin tautan invoice">
                                     <i class="fal fa-copy"></i><span class="sr-only">Salin tautan</span>
@@ -130,40 +205,56 @@ $session  = \Config\Services::session();
                         </div>
                     </div>
 
-                    <div>
+                    <div class="min-w-0 shrink grow basis-40">
                         <ul class="list-inline mb-0 timeliner">
-                            <li class="list-inline-item me-0 position-relative start full" data-bs-toggle="tooltip" data-bs-placement="top" title="Pesanan Ditambahkan">
-                                <div class="flex justify-center">
-                                    <div class="text-center">
-                                        <i class="fal fa-plus-circle icon block"></i>
-                                        <?= '<span><abbr title="' . esc($time->humanize()) . '">' . esc($time->day . '/' . $time->month) . '</abbr></span>' ?>
-                                    </div>
-                                </div>
-                            </li>
+                            <?= timeline_langkah('start full', 'plus-circle', 'Buat', $time, 'Pesanan Ditambahkan') ?>
 
                             <?= status_pembayaran($pesanan->pembayaran, $pesanan->status_pembayaran) ?>
 
                             <?php
-                            $dipacking = false;
+                            // satu langkah per jenis status: gabung baris status yang sama
+                            // supaya timeline tidak penuh langkah berulang
+                            $langkah = [];
 
                             foreach ($pesanan->status as $status) {
-                                echo status_orderan($status->status, $status->tanggal_masuk, $status->tanggal_selesai, $status->keterangan_masuk, $status->keterangan_selesai);
+                                $no = (int) $status->status;
 
-                                if (isset($status->status) && $status->status === '7') {
+                                if (! isset($langkah[$no])) {
+                                    $langkah[$no] = [
+                                        'masuk'   => $status->tanggal_masuk,
+                                        'selesai' => $status->tanggal_selesai,
+                                        'ket_masuk'   => $status->keterangan_masuk,
+                                        'ket_selesai' => $status->keterangan_selesai,
+                                    ];
+                                } else {
+                                    $langkah[$no]['masuk'] = $langkah[$no]['masuk'] === null
+                                        ? $status->tanggal_masuk
+                                        : min($langkah[$no]['masuk'], $status->tanggal_masuk);
+
                                     if ($status->tanggal_selesai !== null) {
-                                        $dipacking = true;
+                                        $langkah[$no]['selesai'] = $langkah[$no]['selesai'] === null
+                                            ? $status->tanggal_selesai
+                                            : max($langkah[$no]['selesai'], $status->tanggal_selesai);
+                                        $langkah[$no]['ket_selesai'] = $status->keterangan_selesai;
                                     }
                                 }
                             }
+
+                            ksort($langkah);
+                            $dipacking = isset($langkah[7]) && $langkah[7]['selesai'] !== null;
+
+                            foreach ($langkah as $no => $l) {
+                                echo status_orderan($no, $l['masuk'], $l['selesai'], $l['ket_masuk'], $l['ket_selesai']);
+                            }
                             ?>
-                            <?= ($dipacking ? status_pengiriman($pesanan->pengiriman, $pesanan->status_pengiriman) : '') ?>
+                            <?= status_pengiriman($pesanan->pengiriman, $pesanan->status_pengiriman) ?>
                         </ul>
                     </div>
                 </div>
-                <hr class="my-4 border-0 border-t border-ink-200 opacity-100" />
+                <hr class="my-1 border-0 border-t border-ink-200 opacity-100" />
 
                 <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-12 lg:gap-6">
-                    <section class="col-span-full lg:col-span-4">
+                    <section class="col-span-full lg:col-span-6">
                         <div class="h-full rounded-2xl border border-ink-200 bg-[#fcfdfe] px-[1.15rem] py-4">
                             <h6 class="mb-2 flex items-center gap-1.5 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500 [&_.fal]:text-[0.95rem] [&_.fal]:text-ink-400">
                                 <i class="fal fa-user-circle"></i>
@@ -206,7 +297,7 @@ $session  = \Config\Services::session();
                             <?php
                             if ($pesanan->kirimKepada_id !== $pesanan->pemesan_id) {
                                 $kirimKe = $pesanan->kirimKe; ?>
-                                <h6 class="mb-2 flex items-center gap-1.5 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500 [&_.fal]:text-[0.95rem] [&_.fal]:text-ink-400 mt-4 border-t border-dashed border-ink-200 pt-3"><i class="fal fa-map-marker-alt"></i> Kirim Kepada</h6>
+                                <h6 class="mb-2 flex items-center gap-1.5 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500 [&_.fal]:text-[0.95rem] [&_.fal]:text-ink-400 mt-4 border-t border-ink-200 pt-3"><i class="fal fa-map-marker-alt"></i> Kirim Kepada</h6>
                                 <div class="text-sm leading-[1.55] text-ink-800">
                                     <span class="block font-bold"><?= strtoupper($kirimKe->nama); ?></span>
                                     <span class="block">
@@ -238,76 +329,12 @@ $session  = \Config\Services::session();
                                 </div>
                             <?php } ?>
 
-                            <h6 class="mb-2 flex items-center gap-1.5 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500 [&_.fal]:text-[0.95rem] [&_.fal]:text-ink-400 mt-4 border-t border-dashed border-ink-200 pt-3"><i class="fal fa-inbox-in"></i> Asal Orderan</h6>
+                            <h6 class="mb-2 flex items-center gap-1.5 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500 [&_.fal]:text-[0.95rem] [&_.fal]:text-ink-400 mt-4 border-t border-ink-200 pt-3"><i class="fal fa-inbox-in"></i> Asal Orderan</h6>
                             <div class="text-sm leading-[1.55] text-ink-800"><?= label_asal($pesanan->source->id, $pesanan->source->label) ?></div>
                         </div>
                     </section>
 
-                    <section class="col-span-full md:col-span-1 lg:col-span-3">
-                        <div class="h-full rounded-2xl border border-ink-200 bg-[#fcfdfe] px-[1.15rem] py-4">
-                            <h6 class="mb-2 flex items-center gap-1.5 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500 [&_.fal]:text-[0.95rem] [&_.fal]:text-ink-400"><i class="fal fa-tshirt"></i> Produk</h6>
-
-                            <?php
-                            $count_barang = 0;
-                            $harga_barang = 0;
-                            $dibeli       = $pesanan->barang;
-
-                            foreach ($pesanan->barang as $b) {
-                                $count_barang += $b->qty;
-                                $harga_barang += $b->qty * $b->harga;
-                            }
-
-                            $wajib_bayar = $harga_barang;
-                            ?>
-
-                            <ul class="m-0 list-none p-0 text-sm">
-                                <?php
-                                foreach ($pesanan->barang as $b) {
-                                    echo '<li class="flex flex-wrap items-baseline gap-1 py-[0.2rem]">';
-                                    echo '<span class="grow">' . strtoupper($b->kode) . ' (' . strtoupper($b->ukuran) . ')</span>';
-                                    echo '<span class="shrink-0 font-semibold whitespace-nowrap">' . $b->qty . ' pcs</span>';
-
-                                    $content = '<div class=\'text-end\'>';
-                                    $content .= 'harga @: <strong>' . number_to_currency($b->harga, 'IDR') . '</strong>';
-                                    if ($b->qty > 1) {
-                                        $content .= '<br/>harga @ x ' . $b->qty . ': <strong>' . number_to_currency($b->harga * $b->qty, 'IDR') . '</strong>';
-                                    }
-                                    $content .= '</div>';
-
-                                    echo form_button(
-                                        [
-                                            'data-bs-toggle'  => 'popHarga',
-                                            'data-bs-content' => $content,
-                                            'content'         => '<i class="fal fa-info-circle"></i> <span class="sr-only">info</span>',
-                                            'class'           => 'cursor-pointer border-0 bg-transparent p-0 text-xs text-ink-500 hover:underline',
-                                        ]
-                                    );
-
-                                    $rincian_item = daftar_rincian($b->rincian ?? null, 'produk');
-
-                                    if ($rincian_item !== []) {
-                                        echo '<div class="basis-full mb-[0.15rem] mt-[0.3rem] flex flex-wrap gap-[0.3rem] pl-[1.1rem]">';
-
-                                        foreach ($rincian_item as $item) {
-                                            echo '<span class="inline-flex max-w-full items-baseline gap-1 rounded-full border border-ink-200 bg-[#f6f8fb] px-[0.55rem] py-[0.2rem] text-xs leading-snug text-ink-600 [&>.fal]:text-[0.7rem] [&>.fal]:text-ink-400"><i class="fal ' . $item['ikon'] . '"></i> '
-                                                . '<span class="font-bold tracking-wide text-ink-500 whitespace-nowrap">' . esc($item['label']) . '</span>'
-                                                . '<span class="break-words">' . esc($item['nilai']) . '</span></span>';
-                                        }
-
-                                        echo '</div>';
-                                    }
-
-                                    echo '</li>';
-                                }
-                                ?>
-                            </ul>
-                            <div class="mt-2 border-t border-dashed border-ink-200 pt-2 text-[0.85rem] text-ink-500">
-                                total: <span class="inline-block rounded-full bg-ink-900 px-2 py-0.5 text-xs font-semibold text-white"><?= $count_barang; ?></span> pcs
-                            </div>
-                        </div>
-                    </section>
-
-                    <section class="col-span-full md:col-span-1 lg:col-span-5">
+                    <section class="col-span-full md:col-span-1 lg:col-span-6">
                         <div class="h-full rounded-2xl border border-ink-200 bg-[#fcfdfe] px-[1.15rem] py-4">
                             <h6 class="mb-2 flex items-center gap-1.5 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500 [&_.fal]:text-[0.95rem] [&_.fal]:text-ink-400"><i class="fal fa-receipt"></i> Info Biaya</h6>
 
@@ -317,6 +344,8 @@ $session  = \Config\Services::session();
                             }
 
                             $sudah_bayar = status_pembayaran($pesanan->pembayaran, $pesanan->status_pembayaran, 'sudah_bayar');
+
+                            $sudah_lunas = tagihan_lunas($pesanan->status_pembayaran);
                             ?>
 
                             <div class="mb-3 flex items-center justify-between gap-3 rounded-xl px-4 py-3 <?= $pil[$kelas_status]['band'] ?>">
@@ -355,8 +384,11 @@ $session  = \Config\Services::session();
                                 } ?>
 
                                 <?php
+                                $menunggu = status_pembayaran($pesanan->pembayaran, $pesanan->status_pembayaran, 'menunggu');
+                                $sisa     = $wajib_bayar - $sudah_bayar;
+
                                 if ($sudah_bayar > 0) { ?>
-                                    <li class="flex items-baseline justify-between gap-3 py-1 mt-1 border-t border-dashed border-ink-200 pt-2">
+                                    <li class="flex items-baseline justify-between gap-3 py-1 mt-1 border-t border-ink-200 pt-2">
                                         <span class="uppercase tracking-wide text-ink-500">
                                             <span class="font-bold">Sudah</span>&nbsp;Bayar
                                             <?= form_button([
@@ -373,17 +405,24 @@ $session  = \Config\Services::session();
                                     </li>
                                 <?php
                                 }
-                                if (($wajib_bayar - $sudah_bayar) > 0) { ?>
+                                if ($menunggu > 0) { ?>
                                     <li class="flex items-baseline justify-between gap-3 py-1">
-                                        <span class="uppercase tracking-wide text-ink-500"><span class="font-bold">Kurang</span>&nbsp;Bayar</span>
-                                        <span class="font-bold whitespace-nowrap text-red-600"><?= number_to_currency(-($wajib_bayar - $sudah_bayar), 'IDR'); ?></span>
+                                        <span class="uppercase tracking-wide text-ink-500"><span class="font-bold">Menunggu</span>&nbsp;dicek</span>
+                                        <span class="font-bold whitespace-nowrap"><?= number_to_currency($menunggu, 'IDR'); ?></span>
                                     </li>
                                 <?php
                                 }
-                                if ($sudah_bayar > $wajib_bayar) { ?>
+                                if ($sisa > 0) { ?>
+                                    <li class="flex items-baseline justify-between gap-3 py-1">
+                                        <span class="uppercase tracking-wide text-ink-500"><span class="font-bold">Sisa</span>&nbsp;Bayar</span>
+                                        <span class="font-bold whitespace-nowrap text-red-600"><?= number_to_currency($sisa, 'IDR'); ?></span>
+                                    </li>
+                                <?php
+                                }
+                                if ($sisa < 0) { ?>
                                     <li class="flex items-baseline justify-between gap-3 py-1">
                                         <span class="uppercase tracking-wide text-ink-500"><span class="font-bold">Lebih</span>&nbsp;Bayar</span>
-                                        <span class="font-bold whitespace-nowrap"><?= number_to_currency(($sudah_bayar - $wajib_bayar), 'IDR'); ?></span>
+                                        <span class="font-bold whitespace-nowrap"><?= number_to_currency(-$sisa, 'IDR'); ?></span>
                                     </li>
                                 <?php
                                 } ?>
@@ -393,7 +432,138 @@ $session  = \Config\Services::session();
 
                 </div>
 
-                <?php $rincian_pesanan = daftar_rincian($pesanan->rincian ?? null, 'pesanan'); ?>
+                <div class="mt-4 overflow-hidden rounded-2xl border border-ink-200 bg-[#fcfdfe]">
+                    <h6 class="mb-0">
+                        <button class="flex w-full cursor-pointer items-center gap-1.5 border-0 bg-transparent px-[1.15rem] py-4 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500 [&_.fal]:text-[0.95rem] [&_.fal]:text-ink-400" type="button" data-bs-toggle="collapse" data-bs-target="#produk-<?= esc($pesanan->id_invoice) ?>" aria-expanded="false" aria-controls="produk-<?= esc($pesanan->id_invoice) ?>">
+                            <i class="fal fa-tshirt"></i> Produk
+                            <span class="inline-block rounded-full bg-ink-900 px-2 py-0.5 text-xs font-semibold text-white"><?= $count_barang; ?></span>
+                            <span class="text-[0.8rem] font-semibold normal-case tracking-normal">pcs</span>
+                            <i class="fal fa-chevron-down ms-auto transition rotate-[-90deg] aria-expanded:rotate-0"></i>
+                        </button>
+                    </h6>
+
+                    <div class="collapse" id="produk-<?= esc($pesanan->id_invoice) ?>">
+                        <div class="border-t border-ink-200 px-[1.15rem] py-3">
+                            <?php $punya_ukuran = false; ?>
+                            <ul class="m-0 list-none p-0 text-sm">
+                                <?php foreach ($pesanan->barang as $b) { ?>
+                                    <li class="flex flex-wrap items-baseline gap-1 py-[0.2rem]">
+                                        <span class="grow"><?= strtoupper($b->kode) ?> (<?= strtoupper($b->ukuran) ?>)</span>
+                                        <span class="shrink-0 font-semibold whitespace-nowrap"><?= $b->qty ?> pcs</span>
+                                        <span class="shrink-0 font-semibold whitespace-nowrap tabular-nums"><?= number_to_currency($b->harga * $b->qty, 'IDR'); ?></span>
+
+                                        <?php
+                                        $content = '<div class=\'text-end\'>';
+                                        $content .= 'harga @: <strong>' . number_to_currency($b->harga, 'IDR') . '</strong>';
+                                        if ($b->qty > 1) {
+                                            $content .= '<br/>harga @ x ' . $b->qty . ': <strong>' . number_to_currency($b->harga * $b->qty, 'IDR') . '</strong>';
+                                        }
+                                        $content .= '</div>';
+
+                                        echo form_button([
+                                            'data-bs-toggle'  => 'popHarga',
+                                            'data-bs-content' => $content,
+                                            'content'         => '<i class="fal fa-info-circle"></i> <span class="sr-only">info</span>',
+                                            'class'           => 'cursor-pointer border-0 bg-transparent p-0 text-xs text-ink-500 hover:underline',
+                                        ]);
+
+                                        $rincian_item = daftar_rincian($b->rincian ?? null, 'produk');
+
+                                        if ($rincian_item !== []) { ?>
+                                            <div class="basis-full mb-[0.15rem] mt-[0.3rem] flex flex-wrap gap-[0.3rem] pl-[1.1rem]">
+                                                <?php foreach ($rincian_item as $item) { ?>
+                                                    <span class="inline-flex max-w-full items-baseline gap-1 rounded-full border border-ink-200 bg-[#f6f8fb] px-[0.55rem] py-[0.2rem] text-xs leading-snug text-ink-600 [&>.fal]:text-[0.7rem] [&>.fal]:text-ink-400"><i class="fal <?= $item['ikon'] ?>"></i> <span class="font-bold tracking-wide text-ink-500 whitespace-nowrap"><?= esc($item['label']) ?></span> <span class="break-words"><?= esc($item['nilai']) ?></span></span>
+                                                <?php } ?>
+                                            </div>
+                                        <?php } ?>
+
+                                        <?php $ukuran_item = $b->nilai_ukuran ?? []; ?>
+
+                                        <?php if ($ukuran_item !== []) { ?>
+                                            <?php $punya_ukuran = true; ?>
+                                            <div class="basis-full mb-[0.15rem] mt-[0.3rem] flex flex-wrap items-baseline gap-[0.3rem] pl-[1.1rem]">
+                                                <span class="text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500"><i class="fal fa-ruler-combined"></i> Ukuran</span>
+
+                                                <?php foreach ($ukuran_item as $u) { ?>
+                                                    <span class="inline-flex max-w-full items-baseline gap-1 rounded-full border border-ink-200 bg-[#f6f8fb] px-[0.55rem] py-[0.2rem] text-xs leading-snug text-ink-600"><span class="font-bold tracking-wide text-ink-500 whitespace-nowrap"><?= esc($u[0]) ?></span> <span class="break-words"><?= esc($u[1]) ?></span></span>
+                                                <?php } ?>
+                                            </div>
+                                        <?php } ?>
+                                    </li>
+                                <?php } ?>
+                            </ul>
+
+                            <?php if (! $punya_ukuran) { ?>
+                                <p class="mb-0 mt-2 text-xs text-ink-500"><i class="fal fa-ruler-combined"></i> Ukuran belum diisi</p>
+                            <?php } ?>
+                        </div>
+                    </div>
+                </div>
+
+                <?php if (! empty($pesanan->anggota)) { ?>
+                    <div class="mt-4 overflow-hidden rounded-2xl border border-ink-200 bg-[#fcfdfe]">
+                        <h6 class="mb-0">
+                            <button class="flex w-full cursor-pointer items-center gap-1.5 border-0 bg-transparent px-[1.15rem] py-4 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500 [&_.fal]:text-[0.95rem] [&_.fal]:text-ink-400" type="button" data-bs-toggle="collapse" data-bs-target="#anggota-<?= esc($pesanan->id_invoice) ?>" aria-expanded="false" aria-controls="anggota-<?= esc($pesanan->id_invoice) ?>">
+                                <i class="fal fa-users"></i> Anggota Rombongan
+                                <span class="inline-block rounded-full bg-ink-900 px-2 py-0.5 text-xs font-semibold text-white"><?= count($pesanan->anggota) ?></span>
+                                <span class="text-[0.8rem] font-semibold normal-case tracking-normal">orang</span>
+                                <i class="fal fa-chevron-down ms-auto transition rotate-[-90deg] aria-expanded:rotate-0"></i>
+                            </button>
+                        </h6>
+
+                        <div class="collapse" id="anggota-<?= esc($pesanan->id_invoice) ?>">
+                            <div class="border-t border-ink-200 px-[1.15rem] py-3">
+                                <?php
+                                // daftar nama orang tidak menyebut bajunya apa; produk orderan ini
+                                // jadi acuannya karena ukuran anggota belum ditautkan per barang
+                                $produk_rombongan = [];
+
+                                foreach ($pesanan->barang as $b) {
+                                    $produk_rombongan[] = strtoupper($b->kode) . ' (' . strtoupper($b->ukuran) . ') × ' . $b->qty;
+                                }
+                                ?>
+                                <?php if ($produk_rombongan !== []) { ?>
+                                    <p class="mb-2 text-xs text-ink-500"><i class="fal fa-tshirt"></i> Produk: <?= esc(implode(', ', $produk_rombongan)) ?></p>
+                                <?php } ?>
+
+                                <ul class="m-0 list-none p-0 text-sm">
+                                    <?php foreach ($pesanan->anggota as $o) { ?>
+                                        <li class="flex flex-wrap items-baseline gap-1 py-[0.2rem]">
+                                            <span class="grow"><?= esc($o->nama) ?></span>
+
+                                            <?php if (! empty($o->nomor)) { ?>
+                                                <span class="shrink-0 font-semibold whitespace-nowrap"><?= esc($o->nomor) ?></span>
+                                            <?php } ?>
+
+                                            <?php if (! empty($o->catatan)) { ?>
+                                                <div class="basis-full mt-[0.15rem] break-words text-xs leading-[1.5] text-ink-500"><?= esc($o->catatan) ?></div>
+                                            <?php } ?>
+
+                                            <?php if (! empty($o->nilai)) { ?>
+                                                <div class="basis-full mb-[0.15rem] mt-[0.3rem] flex flex-wrap items-baseline gap-[0.3rem] pl-[1.1rem]">
+                                                    <span class="text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500"><i class="fal fa-ruler-combined"></i> Ukuran</span>
+
+                                                    <?php foreach ($o->nilai as $u) { ?>
+                                                        <span class="inline-flex max-w-full items-baseline gap-1 rounded-full border border-ink-200 bg-[#f6f8fb] px-[0.55rem] py-[0.2rem] text-xs leading-snug text-ink-600"><span class="font-bold tracking-wide text-ink-500 whitespace-nowrap"><?= esc($u[0]) ?></span> <span class="break-words"><?= esc($u[1]) ?></span></span>
+                                                    <?php } ?>
+                                                </div>
+                                            <?php } else { ?>
+                                                <div class="basis-full mt-[0.15rem] text-xs text-ink-500"><i class="fal fa-ruler-combined"></i> Ukuran belum diisi</div>
+                                            <?php } ?>
+                                        </li>
+                                    <?php } ?>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                <?php } ?>
+
+                <?php
+                // saat satu orderan dibuka sendiri, field yang belum terisi ikut ditampilkan
+                // dengan "-" supaya jelas bagian mana yang masih kosong
+                $rincian_pesanan = daftar_rincian($pesanan->rincian ?? null, 'pesanan', $satu_orderan);
+                $isi_keterangan  = trim((string) $pesanan->keterangan);
+                ?>
                 <?php if ($rincian_pesanan !== []) { ?>
                     <div class="rounded-2xl border border-ink-200 border-l-[3px] border-l-proses bg-[#fcfdfe] px-[1.15rem] py-4 mt-4">
                         <h6 class="mb-2 flex items-center gap-1.5 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500 [&_.fal]:text-[0.95rem] [&_.fal]:text-ink-400"><i class="fal fa-list-check"></i> Detail Pesanan</h6>
@@ -401,18 +571,18 @@ $session  = \Config\Services::session();
                             <?php foreach ($rincian_pesanan as $item) { ?>
                                 <div class="min-w-0">
                                     <span class="block text-[0.7rem] font-bold uppercase tracking-[0.08em] text-ink-500 [&_.fal]:mr-1 [&_.fal]:text-ink-400"><i class="fal <?= $item['ikon'] ?>"></i> <?= esc($item['label']) ?></span>
-                                    <span class="mt-[0.1rem] block break-words text-[0.92rem] font-semibold leading-normal text-ink-900"><?= esc($item['nilai']) ?></span>
+                                    <span class="mt-[0.1rem] block break-words text-[0.92rem] font-semibold leading-normal <?= $item['nilai'] === null ? 'text-ink-400' : 'text-ink-900' ?>"><?= $item['nilai'] === null ? '-' : esc($item['nilai']) ?></span>
                                 </div>
                             <?php } ?>
                         </div>
                     </div>
                 <?php } ?>
 
-                <?php if ($pesanan->keterangan !== null && trim($pesanan->keterangan) !== '') { ?>
+                <?php if ($isi_keterangan !== '' || $satu_orderan) { ?>
                     <div class="rounded-2xl border border-ink-200 border-l-[3px] border-l-brand-500 bg-[#fcfdfe] px-[1.15rem] py-4 mt-4">
                         <h6 class="mb-2 flex items-center gap-1.5 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500 [&_.fal]:text-[0.95rem] [&_.fal]:text-ink-400"><i class="fal fa-clipboard-list"></i> Keterangan</h6>
-                        <p class="keterangan mb-0 break-words text-sm leading-[1.65] text-ink-700" id="keterangan-<?= esc($pesanan->id_invoice) ?>">
-                            <?= nl2br(esc($pesanan->keterangan)) ?>
+                        <p class="keterangan mb-0 break-words text-sm leading-[1.65] <?= $isi_keterangan === '' ? 'text-ink-400' : 'text-ink-700' ?>" id="keterangan-<?= esc($pesanan->id_invoice) ?>">
+                            <?= $isi_keterangan === '' ? '-' : nl2br(esc($isi_keterangan)) ?>
                         </p>
                     </div>
                 <?php } ?>
@@ -442,51 +612,35 @@ $session  = \Config\Services::session();
                     </div>
                 <?php } ?>
 
-                <hr class="my-4 border-0 border-t border-ink-200 opacity-100" />
+                <hr class="my-2 border-0 border-t border-ink-200 opacity-100" />
 
-                <!-- Example split danger button -->
-                <div class="btn-group">
-                    <?= form_button([
-                        'class'          => 'btn btn-outline-secondary tambahBayar',
-                        'content'        => 'Tambah Pembayaran',
-                        'data-invoice'   => $pesanan->id_invoice,
-                        'data-juragan'   => $pesanan->juragan_id,
-                        'data-kurang'    => $wajib_bayar - $sudah_bayar,
-                        'data-seri'      => $pesanan->seri,
-                        'data-bs-target' => '#modalTambahBayar',
-                        'data-bs-toggle' => 'modal',
-                    ]) ?>
-                    <button type="button" class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
-                        <span class="sr-only">Toggle Dropdown</span>
-                    </button>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" target="_blank" href="<?= site_url('download/invoice/' . $pesanan->seri); ?>">Unduh Invoice (PDF)</a></li>
-                        <li>
-                            <hr class="dropdown-divider" />
-                        </li>
-                        <li>
-                            <?= form_button([
-                                'class'   => 'dropdown-item belumFungsi',
-                                'content' => 'Sunting',
-                            ]); ?>
-                        </li>
-                    </ul>
-                </div>
+                <div class="flex flex-wrap items-center gap-1">
+                    <?php if (! $sudah_lunas) : ?>
+                        <?= form_button([
+                            'class'          => 'btn btn-outline-secondary tambahBayar',
+                            'content'        => '<i class="fal fa-plus-circle"></i> Tambah Pembayaran',
+                            'data-invoice'   => $pesanan->id_invoice,
+                            'data-juragan'   => $pesanan->juragan_id,
+                            'data-kurang'    => max(0, $sisa),
+                            'data-seri'      => $pesanan->seri,
+                            'data-bs-target' => '#modalTambahBayar',
+                            'data-bs-toggle' => 'modal',
+                        ]) ?>
+                    <?php endif; ?>
 
-                <?php if ($pesanan->status_pembayaran !== '1') {
-                    if ($pesanan->status_pembayaran === '2' || $pesanan->status_pembayaran === '3') {
+                    <?php if ($pesanan->status_pembayaran === '2' || $pesanan->status_pembayaran === '3') {
                         // tombol cek pembayaran
                         // hanya tampil jika ada pembayaran yang perlu dicek
                         echo form_button([
-                            'class'          => 'btn btn-warning ms-1 pesanBayar',
+                            'class'          => 'btn btn-warning pesanBayar',
                             'content'        => '<i class="fal fa-wallet"></i> Cek Pembayaran',
                             'data-invoice'   => $pesanan->id_invoice,
                             'data-juragan'   => $pesanan->juragan_id,
                             'data-bs-target' => '#modalBayar',
                             'data-bs-toggle' => 'modal',
                         ]);
-                    }
-                } ?>
+                    } ?>
+                </div>
             </div>
         </div>
     <?php
@@ -500,54 +654,6 @@ $session  = \Config\Services::session();
 <?= $this->endSection() ?>
 
 <?= $this->section('modal') ?>
-
-<!-- Modal orderan status-->
-<div class="modal fade" id="modalProgress" tabindex="-1" aria-labelledby="modalProgressLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <?= form_open('', ['class' => 'modal-content', 'id' => 'newStatus'], ['id_invoice' => '']) ?>
-        <div class="modal-header">
-            <h5 class="modal-title" id="modalProgressLabel">Status Proses Orderan</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-
-            </button>
-        </div>
-        <div class="modal-body">
-            <div class="mb-3">
-                <?= form_label('Pilih Status', 'status', ['class' => 'form-label']); ?>
-                <div class="input-group mb-3">
-                    <?php
-                    $list_status = [
-                        ''  => 'Pilih status',
-                        '1' => 'Data Pesanan',
-                        '2' => 'Bahan Produk',
-                        '3' => 'Sablon',
-                        '4' => 'Bordir',
-                        '5' => 'Penjahit',
-                        '6' => 'QC',
-                        '7' => 'Packing',
-                    ];
-                    echo form_dropdown('status', $list_status, '', ['class' => 'form-select', 'id' => 'status', 'required' => '']);
-                    echo form_dropdown('stat', ['' => 'Pilih', '1' => 'Ada', '0' => 'Tidak Ada'], '', ['class' => 'form-select', 'id' => 'stat', 'required' => '', 'disabled' => '']);
-                    ?>
-                </div>
-            </div>
-
-            <div class="mb-3">
-                <?= form_label('Note / Keterangan', 'keterangan', ['class' => 'form-label']) ?>
-                <?= form_input(['name' => 'keterangan', 'id' => 'keterangan', 'class' => 'form-control', 'placeholder' => 'opsional']) ?>
-            </div>
-
-            <div class="bg-warning p-2 border rounded">
-                Perlu diingat, penambahan "status proses orderan" ini tidak bisa diubah.
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-link text-decoration-none" data-bs-dismiss="modal">Batal</button>
-            <button type="submit" class="btn btn-primary">Simpan</button>
-        </div>
-        <?= form_close(); ?>
-    </div>
-</div>
 
 <!-- Modal cek pembayaran -->
 <div class="modal fade" id="modalBayar" tabindex="-1" aria-labelledby="modalBayarLabel" aria-hidden="true">
@@ -692,8 +798,6 @@ $current_user_id         = $session->get('id');
 $link_api_get_bank       = site_url('api/juragan/all/');
 $link_api_get_pembayaran = site_url('user/invoices/info_pembayaran');
 $link_api_juragan        = site_url('api/juragan/by_user/');
-$link_get_status_invoice = site_url('admin/invoices/detail_status/');
-$link_hapus_orderan      = site_url('user/invoices/hapus_orderan/');
 $link_invoice            = site_url('user/invoices/lihat/');
 $link_tambah_pembayaran  = site_url('user/invoices/simpan_pembayaran');
 $link_api_notif          = site_url('api/notifikasi/');
@@ -832,35 +936,6 @@ $js = <<< JS
     		});
     	});
 
-    	//
-    	$("#status").change(function() {
-    		let val = this.value;
-    		// alert("Selected value is : " + val);
-    		let stat = $('#stat');
-    		let v1 = $('#stat option[value=1]');
-    		let v0 = $('#stat option[value=0]');
-
-    		stat.val('');
-
-    		if (val !== '') {
-    			stat.prop('disabled', false);
-    		}
-    		else {
-    			stat.prop('disabled', true);
-    		}
-
-    		if (val == 1) {
-    			v1.text('Lengkap');
-    			v0.text('Tidak Lengkap');
-    		} else if (val == 2) {
-    			v1.text('Ada');
-    			v0.text('Belum Ada');
-    		} else {
-    			v1.text('Selesai');
-    			v0.text('Masuk');
-    		}
-    	});
-
     	// cek pembayaran
     	$('.pesanBayar').on('click',function(){
     		let juragan = $(this).data('juragan'),
@@ -992,9 +1067,18 @@ $js = <<< JS
     		});
 
     		// Callback handler that will be called on failure
-    		req_pay.fail(function (jqXHR, textStatus, errorThrown){
-    			//
-    			// console.log( Object.keys(jqXHR['responseJSON']).length);
+    		req_pay.fail(function (jqXHR){
+    			var err = jqXHR.responseJSON,
+    				pesan = 'Gagal menyimpan pembayaran.';
+
+    			if (err) {
+    				for (var k in err) {
+    					pesan = err[k];
+    					break;
+    				}
+    			}
+
+    			alert(pesan);
     		});
 
     		// Callback handler that will be called regardless
@@ -1004,10 +1088,6 @@ $js = <<< JS
     			inputs.prop("disabled", false);
 
     		});
-    	});
-
-    	$('.belumFungsi').on('click',function(){
-    		alert('Fungsi ini belum tersedia');
     	});
 
     	//
@@ -1044,6 +1124,11 @@ $js = <<< JS
     		});
     	});
 
+    	// filter kategori pembayaran: langsung pindah ke tab yang sama dengan kategori terpilih
+    	$('#filterKategori').on('change', function() {
+    		document.location.href = $(this).data('tautan') + '/' + this.value;
+    	});
+
     	// disable hit enter
     	// https://stackoverflow.com/a/895231/2094645
     	$(document).on("keydown", ":input:not(textarea):not(.allow-enter)", function(event) {
@@ -1061,13 +1146,23 @@ $js = <<< JS
     	};
     });
     // document ready
+
+    // badge merah hanya untuk tab yang isinya bukan nol, supaya tidak semua tab terlihat mendesak
+    function pasangBadge(pilihan, hitungan) {
+        var badge = $(pilihan).html(hitungan.text),
+            ada = parseInt(hitungan.num, 10) > 0;
+
+        badge.toggleClass('bg-danger text-white', ada);
+        badge.toggleClass('bg-ink-100 text-ink-600', !ada);
+    }
+
     document.addEventListener("DOMContentLoaded", function(event) {
         $.getJSON('{$link_api_counter_tab}', {}, function(counter){
-            $('#counterSemua').html(counter.semua.text);
-            $('#counterCekBayar').html(counter.cek_bayar.text);
-            $('#counterBelumProses').html(counter.belum_proses.text);
-            $('#counterDalamProses').html(counter.dalam_proses.text);
-            $('#counterSelesai').html(counter.selesai.text);
+            pasangBadge('#counterSemua', counter.semua);
+            pasangBadge('#counterCekBayar', counter.cek_bayar);
+            pasangBadge('#counterBelumProses', counter.belum_proses);
+            pasangBadge('#counterDalamProses', counter.dalam_proses);
+            pasangBadge('#counterSelesai', counter.selesai);
         });
     });
     JS;

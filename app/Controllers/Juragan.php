@@ -6,6 +6,12 @@ class Juragan extends BaseController
 {
     public static function by_user($user_id, $bank = 'no')
     {
+        // user_id ikut membentuk kunci cache, jadi nilai kosong dulu meninggalkan satu kunci
+        // `juragan_by_user_` yang isinya dipakai bersama oleh semua pemanggil
+        if ((int) $user_id <= 0) {
+            return [];
+        }
+
         $juragan = new \App\Models\JuraganModel();
         $cache   = \Config\Services::cache();
 
@@ -77,6 +83,7 @@ class Juragan extends BaseController
                 'id'       => (int) $u->id,
                 'nama'     => $u->name,
                 'username' => $u->username,
+                'level'    => $u->level,
             ];
         }
 

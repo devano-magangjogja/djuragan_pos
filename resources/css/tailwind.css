@@ -72,3 +72,14 @@
         border-radius: 0 0.7rem 0.7rem 0;
     }
 }
+
+/* Bootstrap memakai class `collapse` untuk accordion/blok form (`.collapse.show`
+   = tampil). Utility `collapse` milik Tailwind isinya `visibility: collapse`,
+   jadi tiap kali class itu dipanggil Tailwind, isi bloknya ikut lenyap walau
+   sudah dibuka. Utility-nya tidak dipakai di proyek ini: ditimpa balik.
+   Diletak setelah import utilities supaya kalah secara urutan, bukan adu
+   spesifikitas. */
+.collapse,
+.collapsing {
+    visibility: visible;
+}

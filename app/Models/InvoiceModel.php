@@ -11,7 +11,7 @@ class InvoiceModel extends Model
     protected $primaryKey         = 'id_invoice';
     protected $returnType         = 'object';
     protected $useSoftDeletes     = true;
-    protected $allowedFields      = ['seri', 'tanggal_pesan', 'pemesan_id', 'kirimKepada_id', 'juragan_id', 'user_id', 'status_pesanan', 'status_pembayaran', 'status_pengiriman', 'keterangan', 'rincian'];
+    protected $allowedFields      = ['seri', 'tanggal_pesan', 'pemesan_id', 'kirimKepada_id', 'juragan_id', 'user_id', 'status_pesanan', 'status_pembayaran', 'status_pengiriman', 'keterangan', 'rincian', 'deadline'];
     protected $useTimestamps      = true;
     protected $createdField       = 'created_at';
     protected $updatedField       = 'update_at';
@@ -24,19 +24,23 @@ class InvoiceModel extends Model
     /**
      * Ambil detail semua invoice
      *
-     * @param string $hal        Hanya berisi semua selesai, belum-proses, cek-bayar, dalam-proses
+     * @param string $hal        semua, selesai, belum-proses, dalam-proses, pembayaran (cek-bayar = nama lama)
      * @param int    $juragan_id ID Juragan
      * @param string $cari       Kata Pencarian
      * @param int    $limit      Batas/Limit data yang akan ditampilkan
      * @param int    $offset     Awal data yang akan ditampilkan
+     * @param string $kategori   Kunci dari kategori_tab($hal), dipakai saat $hal pembayaran/belum-proses
+     * @param array<int>|null $hanya Daftar id juragan yang boleh dilihat, null = tidak membatasi
      */
-    public function getAll(string $hal = 'semua', int $juragan_id = 0, $cari = '', int $limit = 0, int $offset = 0): array
+    public function getAll(string $hal = 'semua', int $juragan_id = 0, $cari = '', int $limit = 0, int $offset = 0, string $kategori = 'perlu-cek', ?array $hanya = null): array
     {
         $biayaModel      = new BiayaModel();
+        $anggotaModel    = new AnggotaModel();
         $dibeliModel     = new BarangDibeli();
         $invStatusModel  = new StatusModel();
         $juraganModel    = new JuraganModel();
         $labelInvModel   = new LabelInvoice();
+        $nilaiModel      = new NilaiUkuranModel();
         $pelangganModel  = new PelangganModel();
         $pembayaranModel = new PembayaranModel();
         $penggunaModel   = new UserModel();
@@ -47,30 +51,27 @@ class InvoiceModel extends Model
         // IN () kosong adalah SQL invalid, gunakan [0] saat tidak ada id yang cocok
         $builder->whereIn('id_invoice', $this->ambilIds($cari) ?: [0]);
 
-        switch ($hal) {
-            case 'selesai':
-                $builder->where('status_pengiriman', '3');
-                break;
-
-            case 'belum-proses':
-                $builder->where('status_pesanan', '1');
-                break;
-
-            case 'cek-bayar':
-                $builder->whereIn('status_pembayaran', ['2', '3']);
-                break;
-
-            case 'dalam-proses':
-                $builder->where('status_pesanan', '2');
-                $builder->whereNotIn('status_pengiriman', ['3']);
-                break;
-        }
+        $this->terapkanTab($builder, $hal, $kategori);
 
         if ($juragan_id > 0) {
             $builder->where('juragan_id', $juragan_id);
         }
 
-        $builder->orderBy('status_pesanan ASC, tanggal_pesan DESC, update_at DESC');
+        $this->batasiToko($builder, $hanya);
+
+        if ($hal === 'pembayaran' || $hal === 'cek-bayar') {
+            if ($kategori === 'perlu-cek') {
+                // digabung dua status, jadi dikelompokkan dulu supaya judul kelompoknya tidak terpotong
+                $builder->orderBy('status_pembayaran ASC, tanggal_pesan ASC, update_at ASC');
+            } elseif (in_array($kategori, ['dicicil', 'lunas'], true)) {
+                $builder->orderBy('tanggal_pesan DESC, update_at DESC');
+            } else {
+                // yang paling lama menunggu diprioritaskan
+                $builder->orderBy('tanggal_pesan ASC, update_at ASC');
+            }
+        } else {
+            $builder->orderBy('status_pesanan ASC, tanggal_pesan DESC, update_at DESC');
+        }
 
         $inv = $builder->findAll($limit, $offset);
         
@@ -88,10 +89,89 @@ class InvoiceModel extends Model
             $return[$invoice->id_invoice]['status']     = $invStatusModel->getSimple($invoice->id_invoice);
         }
 
+        // ukuran terstruktur menempel di baris produknya; order lama tidak punya
+        // baris di tabel nilai_ukuran, jadi daftar ini memang kosong untuk mereka
+        $ukuran = $nilaiModel->perBarang(array_keys($return));
+
+        foreach ($return as $r) {
+            foreach ($r['barang'] as $b) {
+                $b->nilai_ukuran = $ukuran[$b->id] ?? [];
+            }
+        }
+
+        // daftar rombongan menempel di kartunya; order satuan tidak punya baris
+        // sama sekali di order_anggota jadi bloknya tidak dirender
+        $rombongan = $anggotaModel->banyak(array_keys($return));
+
+        foreach (array_keys($return) as $i) {
+            $return[$i]['anggota'] = $rombongan[$i] ?? [];
+        }
+
         return [
             'data'      => json_decode(json_encode(array_values($return))),
-            'totalPage' => $this->counter($hal, $juragan_id, $cari),
+            'totalPage' => $this->counter($hal, $juragan_id, $cari, $kategori, $hanya),
         ];
+    }
+
+    /**
+     * Nilai invoice.status_pembayaran milik satu kategori pembayaran
+     */
+    private static function statusKategori(string $kategori): array
+    {
+        helper('fungsi');
+
+        $daftar = kategori_pembayaran();
+
+        return $daftar[$kategori]['status'] ?? $daftar['perlu-cek']['status'];
+    }
+
+    /**
+     * Jumlah orderan per kategori pembayaran untuk satu juragan (sekali query).
+     * Key 'semua' berisi total orderan pada tab tersebut.
+     *
+     * @return array<string, int> kategori_tab() slug => jumlah
+     */
+    public function countPembayaran(int $juragan_id = 0, string $hal = 'pembayaran', ?array $hanya = null): array
+    {
+        helper('fungsi');
+
+        $b = $this->db->table('invoice');
+        $b->select('status_pembayaran, COUNT(*) AS n');
+        $b->where('deleted_at', null);
+
+        if ($hal === 'belum-proses') {
+            $b->where('status_pesanan', '1');
+        }
+
+        if ($juragan_id > 0) {
+            $b->where('juragan_id', $juragan_id);
+        }
+
+        $this->batasiToko($b, $hanya);
+
+        $b->groupBy('status_pembayaran');
+
+        $per_status = [];
+
+        foreach ($b->get()->getResult() as $r) {
+            $per_status[(string) $r->status_pembayaran] = (int) $r->n;
+        }
+
+        $jumlah = ['semua' => array_sum($per_status)];
+
+        foreach (array_keys(kategori_tab($hal)) as $slug) {
+            if ($slug === 'semua') {
+                continue;
+            }
+
+            $jumlah[$slug] = 0;
+
+            foreach (self::statusKategori($slug) as $s) {
+                $jumlah[$slug] += $per_status[$s] ?? 0;
+            }
+        }
+
+        return $jumlah;
     }
 
     /**
@@ -99,12 +179,31 @@ class InvoiceModel extends Model
      *
      * @param mixed $cari Bisa berupa array atau string
      */
-    private function counter(string $hal = 'semua', int $juragan_id = 0, $cari = ''): int
+    private function counter(string $hal = 'semua', int $juragan_id = 0, $cari = '', string $kategori = 'perlu-cek', ?array $hanya = null): int
     {
         $builder = $this->select('id_invoice');
 
         $builder->whereIn('id_invoice', $this->ambilIds($cari) ?: [0]);
 
+        $this->terapkanTab($builder, $hal, $kategori);
+
+        if ($juragan_id > 0) {
+            $builder->where('juragan_id', $juragan_id);
+        }
+
+        $this->batasiToko($builder, $hanya);
+
+        return $builder->countAllResults();
+    }
+
+    /**
+     * Klausul satu tab daftar transaksi. Satu tempat supaya tab, counter, dan
+     * angka dasbor tidak bisa lagi berbeda aturan.
+     *
+     * @param \CodeIgniter\Model|\CodeIgniter\Database\BaseBuilder $builder
+     */
+    private function terapkanTab($builder, string $hal, string $kategori = 'perlu-cek'): void
+    {
         switch ($hal) {
             case 'selesai':
                 $builder->where('status_pengiriman', '3');
@@ -112,33 +211,199 @@ class InvoiceModel extends Model
 
             case 'belum-proses':
                 $builder->where('status_pesanan', '1');
+
+                if ($kategori !== 'semua') {
+                    $builder->whereIn('status_pembayaran', self::statusKategori($kategori));
+                }
+
                 break;
 
+            case 'pembayaran':
             case 'cek-bayar':
-                $builder->whereIn('status_pembayaran', ['2', '3']);
+                $builder->whereIn('status_pembayaran', self::statusKategori($kategori));
                 break;
 
             case 'dalam-proses':
                 $builder->where('status_pesanan', '2');
                 $builder->whereNotIn('status_pengiriman', ['3']);
                 break;
-        }
 
-        if ($juragan_id > 0) {
-            $builder->where('juragan_id', $juragan_id);
+            case 'saring':
+                $this->terapkanSaring($builder, $kategori);
+                break;
         }
-
-        return $builder->countAllResults();
     }
 
-    public function getCount(int $id_juragan = 0): array
+    /**
+     * Klausul satu saringan orderan dari kartu/panel dasbor.
+     *
+     * Semua saringan kerja hanya menghitung orderan yang belum diambil
+     * pelanggan; yang sudah diserahkan jadi riwayat, bukan pekerjaan hari ini.
+     *
+     * @param \CodeIgniter\Model|\CodeIgniter\Database\BaseBuilder $builder
+     */
+    private function terapkanSaring($builder, string $slug): void
     {
         helper('fungsi');
-        $countSemua       = $this->counts($id_juragan);
-        $countSelesai     = $this->counts($id_juragan, 'selesai');
-        $countBelum       = $this->counts($id_juragan, 'belum-proses');
-        $countCekBayar    = $this->counts($id_juragan, 'cek-bayar');
-        $countDalamProses = $this->counts($id_juragan, 'dalam-proses');
+
+        $orderan = $this->db->prefixTable('invoice');
+        $tahap   = $this->db->prefixTable('invoice_status');
+        $packing = array_key_last(tahap_produksi());
+
+        // kartu yang isinya sama dengan tab yang sudah ada ikut tab itu saja
+        if ($slug === 'produksi' || $slug === 'belum-diproses') {
+            $this->terapkanTab(
+                $builder,
+                $slug === 'produksi' ? 'dalam-proses' : 'belum-proses',
+                'semua'
+            );
+
+            return;
+        }
+
+        $belum_diambil = "status_pengiriman <> '3' AND ";
+
+        switch ($slug) {
+            case 'pesan-hari-ini':
+                $sql = 'tanggal_pesan = CURDATE()';
+                break;
+
+            case 'aktif':
+                $sql = "status_pesanan IN ('1', '2') AND status_pengiriman <> '3'";
+                break;
+
+            case 'belum-lunas':
+                $sql = "status_pembayaran NOT IN ('5', '6')";
+                break;
+
+            case 'siap-diambil':
+                $sql = $belum_diambil
+                    . "EXISTS (SELECT 1 FROM `{$tahap}` s WHERE s.invoice_id = `{$orderan}`.id_invoice"
+                    . " AND s.status = '{$packing}' AND s.tanggal_selesai IS NOT NULL)";
+                break;
+
+            case 'ukuran-belum-lengkap':
+                $anggota = $this->db->prefixTable('anggota');
+                $nilai   = $this->db->prefixTable('nilai_ukuran');
+
+                $sql = $belum_diambil
+                    . "EXISTS (SELECT 1 FROM `{$anggota}` a WHERE a.invoice_id = `{$orderan}`.id_invoice)"
+                    . " AND NOT EXISTS (SELECT 1 FROM `{$nilai}` v WHERE v.invoice_id = `{$orderan}`.id_invoice)";
+                break;
+
+            case 'deadline-hari-ini':
+                $sql = $belum_diambil . 'deadline = CURDATE()';
+                break;
+
+            case 'deadline-besok':
+                $sql = $belum_diambil . 'deadline = CURDATE() + INTERVAL 1 DAY';
+                break;
+
+            case 'deadline-3-hari':
+                $sql = $belum_diambil . 'deadline BETWEEN CURDATE() AND CURDATE() + INTERVAL 3 DAY';
+                break;
+
+            case 'deadline-terlewat':
+                $sql = $belum_diambil . 'deadline < CURDATE()';
+                break;
+
+            default:
+                // slug tidak dikenal: jangan kembalikan seluruh isi tabel
+                $sql = '0 = 1';
+        }
+
+        $builder->where($sql, null, false);
+    }
+
+    /**
+     * Batasi query pada daftar toko yang boleh dibuka akun ini.
+     * null = tidak membatasi, sama seperti sebelum pagar kepemilikan ada.
+     *
+     * @param \CodeIgniter\Model|\CodeIgniter\Database\BaseBuilder $builder
+     * @param array<int>|null                                      $hanya
+     */
+    private function batasiToko($builder, ?array $hanya): void
+    {
+        if ($hanya === null) {
+            return;
+        }
+
+        $ids = array_values(array_filter(array_map('intval', $hanya)));
+
+        $builder->whereIn('juragan_id', $ids === [] ? [0] : $ids);
+    }
+
+    /**
+     * Pembangun query untuk satu saringan, dibatasi pada daftar juragan pemakai.
+     *
+     * @param array<int> $juragan_ids
+     *
+     * @return \CodeIgniter\Database\BaseBuilder
+     */
+    private function pembangunSaring(array $juragan_ids, string $slug)
+    {
+        $ids = array_values(array_filter(array_map('intval', $juragan_ids)));
+
+        $builder = $this->db->table('invoice');
+        $builder->select('id_invoice');
+        $builder->where('deleted_at', null);
+        $builder->whereIn('juragan_id', $ids === [] ? [0] : $ids);
+
+        $this->terapkanSaring($builder, $slug);
+
+        return $builder;
+    }
+
+    /**
+     * Jumlah orderan untuk satu saringan pada kartu/panel dasbor.
+     *
+     * Dipakai lewat model yang sama dengan daftar transaksinya, jadi angka
+     * kartu dan halaman yang dibuka dari kartu itu tidak bisa berbeda lagi.
+     *
+     * @param array<int> $juragan_ids
+     */
+    public function hitungSaring(array $juragan_ids, string $slug): int
+    {
+        return $this->pembangunSaring($juragan_ids, $slug)->countAllResults();
+    }
+
+    /**
+     * Sebaran tahap produksi tertinggi dari satu saringan orderan untuk blok
+     * Ringkasan Produksi. Tahap 0 berarti orderan belum masuk antrean kerja.
+     *
+     * @param array<int> $juragan_ids
+     *
+     * @return array<int, int> nomor tahap => jumlah orderan
+     */
+    public function sebaranTahap(array $juragan_ids, string $slug = 'aktif'): array
+    {
+        $status = $this->db->prefixTable('invoice_status');
+        $dasar  = $this->pembangunSaring($juragan_ids, $slug)->getCompiledSelect(false);
+
+        $baris = $this->db->query('SELECT IFNULL(s.tahap, 0) AS tahap, COUNT(*) AS jumlah'
+            . ' FROM (' . $dasar . ') o'
+            . ' LEFT JOIN (SELECT invoice_id, MAX(CAST(status AS UNSIGNED)) AS tahap'
+            . ' FROM `' . $status . '` WHERE tanggal_masuk IS NOT NULL GROUP BY invoice_id) s'
+            . ' ON s.invoice_id = o.id_invoice'
+            . ' GROUP BY IFNULL(s.tahap, 0) ORDER BY tahap ASC')->getResultArray();
+
+        $sebaran = [];
+
+        foreach ($baris as $b) {
+            $sebaran[(int) $b['tahap']] = (int) $b['jumlah'];
+        }
+
+        return $sebaran;
+    }
+
+    public function getCount(int $id_juragan = 0, ?array $hanya = null): array
+    {
+        helper('fungsi');
+        $countSemua       = $this->counts($id_juragan, 'semua', $hanya);
+        $countSelesai     = $this->counts($id_juragan, 'selesai', $hanya);
+        $countBelum       = $this->counts($id_juragan, 'belum-proses', $hanya);
+        $countCekBayar    = $this->counts($id_juragan, 'cek-bayar', $hanya);
+        $countDalamProses = $this->counts($id_juragan, 'dalam-proses', $hanya);
 
         return [
             'semua' => [
@@ -169,13 +434,15 @@ class InvoiceModel extends Model
         ];
     }
 
-    private function counts(int $id_juragan, string $output = 'semua'): int
+    private function counts(int $id_juragan, string $output = 'semua', ?array $hanya = null): int
     {
         $q = $this->join('juragan j', 'j.id_juragan = invoice.juragan_id');
 
         if ($id_juragan > 0) {
             $q->where(['juragan_id' => $id_juragan]);
         }
+
+        $this->batasiToko($q, $hanya);
 
         switch ($output) {
             case 'selesai':
@@ -210,66 +477,101 @@ class InvoiceModel extends Model
      *
      * @return array list ID Invoice
      */
+    /**
+     * Satu nilai pencarian yang datang mentah dari GET, sudah jadi string.
+     *
+     * Array dikirim lewat `cari[q][]=x`; kalau diteruskan ke builder nilai itu
+     * membuat TypeError (halaman mati). Di sini cukup sekali disaring.
+     */
+    private static function teksCari(array $cari, string $kunci): string
+    {
+        $nilai = $cari[$kunci] ?? '';
+
+        return is_scalar($nilai) ? trim((string) $nilai) : '';
+    }
+
     private function ambilIds($cari): array
     {
         $this->select('invoice.id_invoice');
 
         $this->join('pelanggan p', 'p.id_pelanggan=invoice.pemesan_id');
         $this->join('pelanggan k', 'k.id_pelanggan=invoice.kirimKepada_id');
-        $this->join('dibeli b', 'b.invoice_id=invoice.id_invoice');
+        // orderan yang belum punya satu pun baris produk tetap harus muncul di
+        // daftar (LEFT, bukan INNER), kalau tidak ia tidak bisa dibuka sama sekali
+        $this->join('dibeli b', 'b.invoice_id=invoice.id_invoice', 'left');
 
         if (! empty($cari) && is_array($cari)) {
-            if (! empty($cari['pembayaran'])) {
-                $status_pembayaran = "invoice.status_pembayaran='" . $cari['pembayaran'] . "'";
-                if ($cari['pembayaran'] === '2A') {
-                    $status_pembayaran = "(invoice.status_pembayaran='2' OR invoice.status_pembayaran='3')";
+            $kata = self::teksCari($cari, 'q');
+
+            $status_pembayaran = self::teksCari($cari, 'pembayaran');
+
+            if ($status_pembayaran !== '') {
+                if ($status_pembayaran === '2A') {
+                    $this->groupStart()
+                        ->where('invoice.status_pembayaran', '2')
+                        ->orWhere('invoice.status_pembayaran', '3')
+                        ->groupEnd();
+                } else {
+                    $this->where('invoice.status_pembayaran', $status_pembayaran);
                 }
-                $this->where($status_pembayaran);
             }
 
-            if (! empty($cari['pengiriman'])) {
-                $status_pengiriman = "invoice.status_pengiriman='" . $cari['pengiriman'] . "'";
-                if ($cari['pengiriman'] === '2A') {
-                    $status_pengiriman = "(invoice.status_pengiriman='2' OR invoice.status_pengiriman='3')";
+            $status_pengiriman = self::teksCari($cari, 'pengiriman');
+
+            if ($status_pengiriman !== '') {
+                if ($status_pengiriman === '2A') {
+                    $this->groupStart()
+                        ->where('invoice.status_pengiriman', '2')
+                        ->orWhere('invoice.status_pengiriman', '3')
+                        ->groupEnd();
+                } else {
+                    $this->where('invoice.status_pengiriman', $status_pengiriman);
                 }
-                $this->where($status_pengiriman);
             }
 
-            if (! empty($cari['orderan'])) {
-                $this->where('invoice.status_pesanan', $cari['orderan']);
+            $status_orderan = self::teksCari($cari, 'orderan');
+
+            if ($status_orderan !== '') {
+                $this->where('invoice.status_pesanan', $status_orderan);
             }
 
             if (! empty($cari['kolom'])) {
                 switch ($cari['kolom']) {
                     case 'id':
-                        $this->where('invoice.id_invoice', $cari['q']);
+                        $this->where('invoice.id_invoice', $kata);
                         break;
 
                     case 'faktur':
-                        $this->where('invoice.seri', $cari['q']);
+                        $this->where('invoice.seri', $kata);
                         break;
 
                     case 'nama':
-                        $this->where("(p.nama_pelanggan LIKE '%" . $cari['q'] . "%' OR k.nama_pelanggan LIKE '%" . $cari['q'] . "%')");
+                        $this->groupStart()
+                            ->orLike('p.nama_pelanggan', $kata, 'both')
+                            ->orLike('k.nama_pelanggan', $kata, 'both')
+                            ->groupEnd();
                         break;
 
                     case 'hp':
-                        $this->where("(p.hp LIKE '%" . $cari['q'] . "%' OR k.hp LIKE '%" . $cari['q'] . "%')");
+                        $this->groupStart()
+                            ->orLike('p.hp', $kata, 'both')
+                            ->orLike('k.hp', $kata, 'both')
+                            ->groupEnd();
                         break;
 
                     case 'kode':
-                        $this->where("(b.kode LIKE '%" . $cari['q'] . "%')");
+                        $this->like('b.kode', $kata, 'both');
                         break;
 
                     case 'tanggal_pesan':
                         // DATE(CONVERT_TZ(FROM_UNIXTIME(tanggal_dibuat, '%Y-%m-%d %H:%i:%s'), '+00:00', '+00:00'))='".$cari['tanggal']."'
-                        $this->where('invoice.tanggal_pesan', $cari['q']);
+                        $this->where('invoice.tanggal_pesan', $kata);
                         break;
                 }
             } else {
-                $query = '(';
-                $query .= "b.kode LIKE '%" . $cari['q'] . "%' ";
-                preg_match_all('/%22(?:\\\\.|(?!%22).)*%22|\S+/', $cari['q'], $matches);
+                // kode dicocokkan dengan kalimat utuh, kolom sisanya dengan tiap kata
+                $this->groupStart()->orLike('b.kode', $kata, 'both');
+                preg_match_all('/%22(?:\\\\.|(?!%22).)*%22|\S+/', $kata, $matches);
 
                 $term = '';
 
@@ -277,20 +579,19 @@ class InvoiceModel extends Model
                     $term = trim($term);
                     if (! empty($term)) {
                         $term = str_replace('"', '', $term);
-                        $query .= "OR invoice.id_invoice LIKE '%" . $term . "%' ";
-                        $query .= "OR invoice.seri LIKE '%" . $term . "%' ";
-                        $query .= "OR p.nama_pelanggan LIKE '%" . $term . "%' ";
-                        $query .= "OR k.nama_pelanggan LIKE '%" . $term . "%' ";
-                        $query .= "OR p.hp LIKE '%" . $term . "%' ";
-                        $query .= "OR k.hp LIKE '%" . $term . "%' ";
-                        $query .= "OR p.alamat LIKE '%" . $term . "%' ";
-                        $query .= "OR k.alamat LIKE '%" . $term . "%' ";
-                        $query .= "OR invoice.keterangan LIKE '%" . $term . "%' ";
+                        $this->orLike('invoice.id_invoice', $term, 'both')
+                            ->orLike('invoice.seri', $term, 'both')
+                            ->orLike('p.nama_pelanggan', $term, 'both')
+                            ->orLike('k.nama_pelanggan', $term, 'both')
+                            ->orLike('p.hp', $term, 'both')
+                            ->orLike('k.hp', $term, 'both')
+                            ->orLike('p.alamat', $term, 'both')
+                            ->orLike('k.alamat', $term, 'both')
+                            ->orLike('invoice.keterangan', $term, 'both');
                     }
                 }
 
-                $query .= ')';
-                $this->where($query);
+                $this->groupEnd();
             }
         }
         $return = [];
@@ -302,21 +603,77 @@ class InvoiceModel extends Model
         return $return;
     }
 
+    /**
+     * Ringkasan uang satu invoice: barang, lain-lain, sudah terbayar, dan yang belum dicek.
+     */
     public function total_biaya($invoice_id)
     {
-        $biaya = $this->db->table('dibeli d');
-        $biaya->select('SUM(DISTINCT d.harga*d.qty) as barang');
-        $biaya->select('SUM(DISTINCT c.nominal) as lain');
-        $biaya->select("SUM(DISTINCT case when x.status='3' then x.total_pembayaran else 0 end) as terbayar");
-        $biaya->select("SUM(DISTINCT case when x.status='1' then x.total_pembayaran else 0 end) as belumcek");
+        $id = (int) $invoice_id;
 
-        $biaya->join('biaya c', 'c.invoice_id = d.invoice_id', 'left');
-        $biaya->join('pembayaran x', 'x.invoice_id = d.invoice_id', 'left');
+        // masing-masing tabel dijumlah sendiri; digabung lewat JOIN malah membuat nilai
+        // yang sama persis ikut terhapus oleh SUM(DISTINCT ...)
+        $barang = $this->db->table('dibeli')
+            ->select('IFNULL(SUM(harga * qty), 0) AS n', false)
+            ->where('invoice_id', $id)
+            ->getCompiledSelect();
 
-        $biaya->where('d.invoice_id', $invoice_id);
+        $lain = $this->db->table('biaya')
+            ->select('IFNULL(SUM(nominal), 0) AS n', false)
+            ->where('invoice_id', $id)
+            ->getCompiledSelect();
 
-        // $biaya->groupBy("d.invoice_id");
-        return $biaya->get();
+        $terbayar = $this->db->table('pembayaran')
+            ->select('IFNULL(SUM(total_pembayaran), 0) AS n', false)
+            ->where('invoice_id', $id)
+            ->where('status', '3')
+            ->getCompiledSelect();
+
+        $belumcek = $this->db->table('pembayaran')
+            ->select('IFNULL(SUM(total_pembayaran), 0) AS n', false)
+            ->where('invoice_id', $id)
+            ->where('status', '1')
+            ->getCompiledSelect();
+
+        return $this->db->query("SELECT ({$barang}) AS barang, ({$lain}) AS lain, ({$terbayar}) AS terbayar, ({$belumcek}) AS belumcek");
+    }
+
+    /**
+     * Aturan status pembayaran, hanya dari angka: 1 belum bayar, 2 menunggu konfirmasi
+     * (belum ada dana masuk), 3 menunggu konfirmasi (kredit), 4 dicicil, 5 lunas ada kelebihan, 6 lunas.
+     */
+    public static function statusPembayaran(int $total, int $terbayar, int $belumcek): string
+    {
+        if ($belumcek > 0) {
+            return $terbayar > 0 ? '3' : '2';
+        }
+        if ($terbayar === 0) {
+            return '1';
+        }
+        if ($terbayar === $total) {
+            return '6';
+        }
+
+        return $terbayar < $total ? '4' : '5';
+    }
+
+    /**
+     * Hitung lalu simpan status_pembayaran satu invoice.
+     */
+    public function perbaruiStatusPembayaran($invoice_id): string
+    {
+        $cek    = $this->total_biaya($invoice_id)->getResult()[0];
+        $status = self::statusPembayaran(
+            (int) $cek->barang + (int) $cek->lain,
+            (int) $cek->terbayar,
+            (int) $cek->belumcek
+        );
+
+        $this->save([
+            'id_invoice'        => $invoice_id,
+            'status_pembayaran' => $status,
+        ]);
+
+        return $status;
     }
 
     public function status($invoice_id)

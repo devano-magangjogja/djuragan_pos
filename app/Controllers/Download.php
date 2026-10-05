@@ -8,38 +8,71 @@ use Dompdf\Options;
 
 class Download extends BaseController
 {
+    /**
+     * Nota untuk pelanggan: berisi uang (harga, total, sisa bayar).
+     */
     public function invoice($invoice)
     {
-        $invModel = new InvoiceModel();
+        $get = $this->ambil($invoice);
 
-        $cari = [
+        if ($get === null) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+
+        return $this->sajikan('template/invoice', $get, 'invoice');
+    }
+
+    /**
+     * Lembar kerja untuk penjahit: spesifikasi jahit + ukuran rombongan, tanpa uang.
+     */
+    public function penjahit($invoice)
+    {
+        $get = $this->ambil($invoice);
+
+        if ($get === null) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+
+        return $this->sajikan('template/penjahit', $get, 'penjahit');
+    }
+
+    /**
+     * Satu baris invoice lewat nomor nota; null kalau nomornya tidak dikenal
+     * atau tokonya tidak dipegang akun yang sedang mencetak.
+     */
+    private function ambil($invoice)
+    {
+        $get_invoice = (new InvoiceModel())->getAll('semua', 0, [
             'kolom' => 'faktur',
             'q'     => $invoice,
-        ];
+        ]);
 
-        $get_invoice = $invModel->getAll('semua', 0, $cari);
+        $nota = $get_invoice['data'][0] ?? null;
 
-        $filename = time();
+        if ($nota !== null && ! $this->bolehToko((int) $nota->juragan_id)) {
+            return null;
+        }
 
-        // instantiate and use the dompdf class
+        return $nota;
+    }
+
+    /**
+     * Render view jadi PDF A4 dan kirim ke browser. Dinamakan dari nomor notasinya
+     * supaya berkas yang tersimpan orang masih bisa dibedakan.
+     */
+    private function sajikan(string $view, object $invoice, string $awalan)
+    {
         $opsi = new Options();
         $opsi->set('chroot', [FCPATH]);
+
         $dompdf = new Dompdf($opsi);
-        $dompdf->loadHtml(view('template/invoice', [
-            'invoice' => $get_invoice['data'][0],
-        ]));
-
-        // (Optional) Setup the paper size and orientation
+        $dompdf->loadHtml(view($view, ['invoice' => $invoice]));
         $dompdf->setPaper('A4', 'portrait');
-
-        // Render the HTML as PDF
         $dompdf->render();
 
-        // Output the generated PDF to Browser
-        // $dompdf->stream();
-
-        // Output the generated PDF to Browser
-        $dompdf->stream($filename, ['Attachment' => false]);
+        // hanya karakter aman: nomor nota masuk ke header Content-Disposition
+        $nama = $awalan . '-' . preg_replace('/[^A-Za-z0-9_-]/', '', (string) $invoice->seri);
+        $dompdf->stream($nama, ['Attachment' => false]);
 
         exit(0);
     }

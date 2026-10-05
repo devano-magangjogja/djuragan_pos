@@ -75,6 +75,43 @@ class JuraganModel extends Model
         return $builder->get();
     }
 
+    /**
+     * Admin dan CS yang tertaut pada tiap toko, untuk layar penanggung jawab.
+     * Hanya id dan nama yang dibawa keluar; kolom akun lain (termasuk sandi)
+     * tidak boleh sampai ke view.
+     *
+     * @param array<int> $juragan_ids kosong = semua toko
+     *
+     * @return array<int, array{admin: array<int, array{id:int, nama:string}>, cs: array<int, array{id:int, nama:string}>}>
+     */
+    public function pengelola(array $juragan_ids = []): array
+    {
+        $b = $this->db->table('relasi r');
+        $b->select('r.juragan_id, u.id as user_id, u.name as nama, u.level');
+        $b->join('user u', 'u.id = r.val_id');
+        $b->where('r.table', 1); // juragan-user
+        $b->whereIn('u.level', ['admin', 'cs']);
+
+        if ($juragan_ids !== []) {
+            $b->whereIn('r.juragan_id', array_map('intval', $juragan_ids));
+        }
+
+        $b->orderBy('u.name', 'ASC');
+
+        $return = [];
+
+        foreach ($b->get()->getResult() as $r) {
+            $level = $r->level === 'cs' ? 'cs' : 'admin';
+
+            $return[(int) $r->juragan_id][$level][] = [
+                'id'   => (int) $r->user_id,
+                'nama' => (string) $r->nama,
+            ];
+        }
+
+        return $return;
+    }
+
     public function ambil_bank($juragan_id)
     {
         $bank = $this->db->table($this->table . ' j');
@@ -94,20 +131,27 @@ class JuraganModel extends Model
 
     public function terakhir_update($ids_juragan)
     {
-        if (is_array($ids_juragan)) {
-            $juragan = $this->db->table($this->table . ' j');
-            $juragan->select('i.juragan_id as id_juragan, j.*');
-            $juragan->join('relasi r', 'r.juragan_id = j.id_juragan', 'left');
-            $juragan->join('user u', 'u.id = r.val_id', 'left');
-            $juragan->join('invoice i', 'i.juragan_id = j.id_juragan', 'left');
-
-            $juragan->havingIn('i.juragan_id', $ids_juragan);
-            $juragan->orderBy('i.update_at', 'ASC');
-
-            return $juragan->get()->getLastRow();
+        if (! is_array($ids_juragan)) {
+            return ['error' => '$ids_juragan harus array'];
         }
 
-        return ['error' => '$ids_juragan harus array'];
+        if ($ids_juragan === []) {
+            return null;
+        }
+
+        // relasi + user tidak ikut di-join lagi: keduanya LEFT JOIN tanpa penyaring, jadi
+        // tiap orderan terkali jumlah relasi juragan pemiliknya (akun tertaut 21 juragan
+        // menyeret 444.347 baris ke memori). Pemanggil hanya membaca kolom juragan + id_juragan.
+        $juragan = $this->db->table($this->table . ' j');
+        $juragan->select('i.juragan_id as id_juragan, j.*');
+        $juragan->join('invoice i', 'i.juragan_id = j.id_juragan', 'left');
+
+        $juragan->whereIn('i.juragan_id', $ids_juragan);
+        // dulu ASC + getLastRow(); sama-sama jatuh di update_at terbesar, tapi DESC + limit 1
+        // hanya memindahkan satu baris dari database, bukan seluruh hasilnya
+        $juragan->orderBy('i.update_at', 'DESC');
+
+        return $juragan->limit(1)->get()->getRow();
     }
 
     /**

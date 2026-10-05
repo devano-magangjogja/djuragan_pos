@@ -153,4 +153,21 @@ class Validation extends BaseConfig
         'resi'          => 'required',
         'tanggal_kirim' => 'required',
     ];
+    public $addStok = [
+        'juragan_id' => 'required|integer',
+        'kode'       => 'required|max_length[20]',
+        'ukuran'     => 'permit_empty|max_length[6]',
+        'harga'      => 'required|integer',
+        // stok boleh negatif supaya salah hitung gudang bisa langsung dikoreksi
+        'stok'       => 'required|integer',
+        'keterangan' => 'permit_empty|max_length[120]',
+    ];
+    public $updateStok = [
+        'id_stok'    => 'required|integer',
+        'kode'       => 'required|max_length[20]',
+        'ukuran'     => 'permit_empty|max_length[6]',
+        'harga'      => 'required|integer',
+        'stok'       => 'required|integer',
+        'keterangan' => 'permit_empty|max_length[120]',
+    ];
 }

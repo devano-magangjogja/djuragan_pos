@@ -6,6 +6,7 @@ use App\Controllers\BaseController;
 use App\Models\InvoiceModel;
 use App\Models\JuraganModel;
 use App\Models\PembayaranModel;
+use App\Models\UkuranKomponenModel;
 use App\Models\UserModel;
 use CodeIgniter\I18n\Time;
 
@@ -13,8 +14,12 @@ class Invoices extends BaseController
 {
     public function tulis()
     {
+        $komponen = new UkuranKomponenModel();
+
         $data = [
-            'title' => 'Tulis Orderan Baru',
+            'title'           => 'Tulis Orderan Baru',
+            'jenis_produk'    => $komponen->jenis(),
+            'template_ukuran' => $komponen->semuaTemplate(),
         ];
 
         return view('user/invoice/tulis', $data);
@@ -45,6 +50,14 @@ class Invoices extends BaseController
             $t          = $userModel->find($user_id);
             $seri       = strtoupper(first_letter($t->name) . time());
             $juragan_id = $this->request->getPost('juragan');
+            $rincian    = $this->request->getPost('rincian');
+
+            // orderan hanya boleh dititipkan ke toko yang dipegang akun ini
+            if (! $this->bolehToko((int) $juragan_id)) {
+                $this->response->setStatusCode(406);
+
+                return $this->response->setJSON(['juragan' => 'Toko ini tidak berada di bawah akun Anda.']);
+            }
 
             $data_invoice = [
                 'tanggal_pesan'  => $this->request->getPost('tanggal_order'),
@@ -54,15 +67,18 @@ class Invoices extends BaseController
                 'juragan_id'     => $juragan_id,
                 'user_id'        => $user_id,
                 'keterangan'     => ($this->request->getPost('keterangan') !== '' ? trim($this->request->getPost('keterangan')) : null),
-                'rincian'        => rincian_json($this->request->getPost('rincian'), array_keys(meta_rincian('pesanan')), ['tipe' => array_keys(tipe_pesanan())]),
+                'deadline'       => deadline_iso($rincian),
+                'rincian'        => rincian_json($rincian, array_keys(meta_rincian('pesanan')), ['tipe' => array_keys(tipe_pesanan())]),
             ];
 
-            // simpan ke database
+            // sama seperti di panel admin: satu orderan, satu transaksi
+            $db->transBegin();
+
             $invModel->insert($data_invoice);
+            $invoice_id = (int) $db->insertID();
+            $galat      = [];
 
-            if ($db->affectedRows() > 0) {
-                $invoice_id = $db->insertID();
-
+            if ($invoice_id > 0) {
                 // simpan asal orderan
                 $data_asal = [
                     'invoice_id' => $invoice_id,
@@ -71,49 +87,46 @@ class Invoices extends BaseController
                 ];
                 $db->table('label_invoice')->insert($data_asal);
 
-                // simpan produk
-                $produks = $this->request->getPost('produk');
+                // simpan produk, lalu ukuran terstruktur per item
+                $produk = produk_dibeli($this->request->getPost('produk'), $invoice_id);
+                $peta   = sinkron_dibeli($invoice_id, $produk['baris']);
+                $galat  = array_merge(
+                    simpan_ukuran_produk($invoice_id, $peta, $produk['ukuran']),
+                    simpan_anggota($invoice_id, $this->request->getPost('anggota_dikirim'), $this->request->getPost('anggota'))
+                );
 
-                // tambahkan `invoice_id` untuk tiap pesanan
-                $produk = [];
+                if ($galat === []) {
+                    // simpan biaya
+                    if ($this->request->getVar('biaya') !== null) {
+                        $biayas = $this->request->getPost('biaya');
 
-                foreach ($produks as $k => $v) {
-                    $rincian_produk = [];
+                        // tambahkan `invoice_id` untuk tiap biaya
+                        $biaya = [];
 
-                    foreach ($v as $p => $d) {
-                        if ($p === 'rincian') {
-                            $rincian_produk = is_array($d) ? $d : [];
-
-                            continue;
+                        foreach ($biayas as $k => $v) {
+                            foreach ($v as $p => $d) {
+                                $biaya[$k]['invoice_id'] = $invoice_id;
+                                $biaya[$k][$p]           = ($d !== '' ? $d : null);
+                            }
                         }
-
-                        $produk[$k]['invoice_id'] = $invoice_id;
-                        $produk[$k][$p]           = $d;
+                        $db->table('biaya')->insertBatch($biaya);
                     }
 
-                    $produk[$k]['rincian'] = rincian_json($rincian_produk, array_keys(meta_rincian('produk')));
+                    // simpan notifikasi, kirim kesemua user
+                    simpan_notif(1, $juragan_id, $invoice_id);
                 }
-                $db->table('dibeli')->insertBatch(lengkapi_produk($produk));
-
-                // simpan biaya
-                if ($this->request->getVar('biaya') !== null) {
-                    $biayas = $this->request->getPost('biaya');
-
-                    // tambahkan `invoice_id` untuk tiap biaya
-                    $biaya = [];
-
-                    foreach ($biayas as $k => $v) {
-                        foreach ($v as $p => $d) {
-                            $biaya[$k]['invoice_id'] = $invoice_id;
-                            $biaya[$k][$p]           = ($d !== '' ? $d : null);
-                        }
-                    }
-                    $db->table('biaya')->insertBatch($biaya);
-                }
-
-                // simpan notifikasi, kirim kesemua user
-                simpan_notif(1, $juragan_id, $invoice_id);
+            } else {
+                $galat['invoice'] = 'Orderan gagal disimpan, coba lagi ya.';
             }
+
+            if ($galat !== [] || ! $db->transStatus()) {
+                $db->transRollback();
+                $this->response->setStatusCode(406);
+
+                return $this->response->setJSON($galat);
+            }
+
+            $db->transCommit();
 
             $juragan = $juraganModel->byInvoiceId($invoice_id)->getResult()[0]->juragan;
             $ret     = [
@@ -126,10 +139,30 @@ class Invoices extends BaseController
     }
 
     // menampilkan semua invoice
-    public function lihat($juragan = '', $hal = 'dalam-proses')
+    public function lihat($juragan = '', $hal = 'dalam-proses', $kategori = '')
     {
-        if (! in_array($hal, ['semua', 'cek-bayar', 'dalam-proses', 'belum-proses', 'selesai'], true)) {
+        if (! in_array($hal, ['semua', 'pembayaran', 'cek-bayar', 'dalam-proses', 'belum-proses', 'selesai', 'saring'], true)) {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+
+        // tiap tab punya chip filter sendiri, jadi kategori hanya boleh dari daftar tab ini
+        $daftar_kategori = kategori_tab($hal);
+
+        if ($kategori === '') {
+            // tab saring dibuka dari kartu dasbor, defaultnya saringan paling luas
+            $kategori = match ($hal) {
+                'belum-proses' => 'semua',
+                'saring'       => 'aktif',
+                default        => 'perlu-cek',
+            };
+        }
+
+        if (! array_key_exists($kategori, $daftar_kategori)) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+
+        if ($hal === 'cek-bayar') {
+            return redirect()->to(site_url('user/invoices/lihat/' . $juragan . '/pembayaran/' . $kategori));
         }
 
         // pencarian
@@ -139,6 +172,19 @@ class Invoices extends BaseController
 
         if ($juragan === '') {
             $juragan = $this->juraganBy($user_id);
+
+            // akun warisan ada yang belum punya relasi juragan, jadi tidak ada slug untuk
+            // dituju; tanpa pagar ini halaman hanya melempar property tak dikenal (HTTP 500).
+            // Pesannya dikirim lewat view 404 milik app, bukan PageNotFoundException, karena
+            // override 404 di Config/Routes.php membuang semua pesan supaya detail internal
+            // router tidak terbaca tamu.
+            if (empty($juragan->juragan)) {
+                return response()->setStatusCode(404)->setBody(
+                    view('errors/html/error_page', [
+                        'message' => 'Akun ini belum ditautkan ke juragan mana pun, jadi belum ada orderan yang bisa dibuka. Hubungi admin untuk menautkan akun ke juragan.',
+                    ]),
+                );
+            }
 
             return redirect()->to('/user/invoices/lihat/' . $juragan->juragan);
         }
@@ -163,13 +209,16 @@ class Invoices extends BaseController
             }
 
             $data = [
-                'title'      => 'Invoice ' . $title,
-                'orderan'    => $invModel->getAll($hal, $id_juragan, $cari, $limit, $offset),
-                'juragan'    => $juragan,
-                'juragan_id' => $id_juragan,
-                'hal'        => $hal,
-                'limit'      => $limit,
-                'page'       => $page,
+                'title'               => 'Transaksi ' . $title,
+                'orderan'             => $invModel->getAll($hal, $id_juragan, $cari, $limit, $offset, $kategori),
+                'juragan'             => $juragan,
+                'juragan_id'          => $id_juragan,
+                'hal'                 => $hal,
+                'kategori'            => $kategori,
+                'kategori_pembayaran' => $daftar_kategori,
+                'jumlah_kategori'     => in_array($hal, ['pembayaran', 'belum-proses'], true) ? $invModel->countPembayaran($id_juragan, $hal) : [],
+                'limit'               => $limit,
+                'page'                => $page,
             ];
 
             return view('user/invoice/lihat', $data);
@@ -197,8 +246,24 @@ class Invoices extends BaseController
 
             $juraganModel    = new JuraganModel();
             $pembayaranModel = new PembayaranModel();
+            $invModel        = new InvoiceModel();
             $time            = Time::parse($this->request->getPost('tanggal_pembayaran'))->getTimestamp();
             $invoice_id      = $this->request->getPost('invoice_id');
+            $nota            = $this->notaMilikToko((int) $invoice_id);
+
+            // pembayaran hanya boleh dicatat untuk nota di toko sendiri
+            if ($nota === null) {
+                return $this->tolakToko();
+            }
+
+            // halaman lama masih bisa menampilkan tombolnya, jadi invoice lunas ditolak di sini juga
+            if (tagihan_lunas($nota->status_pembayaran)) {
+                $this->response->setStatusCode(406);
+
+                return $this->response->setJSON([
+                    'total_pembayaran' => 'Invoice ini sudah lunas, tidak bisa ditambah pembayaran lagi.',
+                ]);
+            }
 
             $data = [
                 'invoice_id'         => $invoice_id,
@@ -209,8 +274,11 @@ class Invoices extends BaseController
 
             $pembayaranModel->save($data);
 
+            // simpan notif
+            simpan_notif(4, $nota->juragan_id, $invoice_id);
+
             // update status pembayaran (invoice)
-            $this->_update_status_pembayaran($invoice_id);
+            $invModel->perbaruiStatusPembayaran($invoice_id);
 
             $juragan = $juraganModel->byInvoiceId($invoice_id)->getResult()[0]->juragan;
 
@@ -218,55 +286,6 @@ class Invoices extends BaseController
                 'url' => site_url('user/invoices/lihat/' . $juragan . '/semua?cari[kolom]=id&cari[q]=' . $invoice_id),
             ]);
         }
-    }
-
-    private function _update_status_pembayaran($invoice_id)
-    {
-        $invModel = new InvoiceModel();
-        $cek      = $invModel->total_biaya($invoice_id)->getResult()[0];
-
-        // cek yang terbayar dan belum terbayar
-        $terbayar    = (int) $cek->terbayar;
-        $total_bayar = (int) $cek->barang + (int) $cek->lain;
-        $belum_bayar = $total_bayar - $terbayar;
-        $belum_cek   = (int) $cek->belumcek;
-
-        if ($belum_cek > 0) {
-            if ($terbayar > 0) { // ada yang belum dicek, tapi sudah ada dana masuk
-                $status_bayar = '3';
-            } else {
-                $status_bayar = '2';
-            }
-        } else { //  tidak ada yang pelu dicek
-            if ($terbayar === 0) {
-                $status_bayar = '1';
-            } else {
-                if ($terbayar === $total_bayar) {
-                    // sudah lunas
-                    $status_bayar = '6';
-                } elseif ($terbayar < $total_bayar) {
-                    // masih belum lunas / kredit
-                    $status_bayar = '4';
-                } elseif ($terbayar > $total_bayar) {
-                    // ada kelebihan
-                    $status_bayar = '5';
-                }
-            }
-        }
-
-        // simpan notif
-        $juragan_id = $invModel->find($invoice_id)->juragan_id;
-        simpan_notif(4, $juragan_id, $invoice_id);
-
-        // update status_pembayaran
-        // jadikan status
-        $update_invoice = [
-            'id_invoice'        => $invoice_id,
-            'status_pembayaran' => $status_bayar,
-        ];
-        $invModel->save($update_invoice);
-
-        return true;
     }
 
     // hapus invoice
@@ -292,6 +311,12 @@ class Invoices extends BaseController
         if ($this->request->isAJAX()) {
             $pembayaranModel = new PembayaranModel();
             $invoice_id      = $this->request->getGet('id');
+
+            // riwayat pembayaran nota toko lain tidak boleh dibaca
+            if ($this->notaMilikToko((int) $invoice_id) === null) {
+                return $this->tolakToko();
+            }
+
             $x               = $pembayaranModel->ambil($invoice_id)->get()->getResult();
             $res             = [];
 

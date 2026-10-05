@@ -295,6 +295,9 @@ $rincian_pesanan = baca_rincian($orderan->rincian);
 
                             foreach ($dibeli as $produk) {
                                 $produk_total = $produk->harga * $produk->qty;
+                                $n_nilai  = $ukuran_item[$produk->id] ?? [];
+                                $n_ukuran = count($n_nilai);
+                                $j_ukuran = $jenis_item[$produk->id] ?? null;
                                 $subtotal += $produk_total; ?>
                                 <tr>
                                     <td>
@@ -304,6 +307,13 @@ $rincian_pesanan = baca_rincian($orderan->rincian);
                                             </button>
                                             <?= $produk->kode; ?> ( <?= strtoupper($produk->ukuran); ?> )
                                         </div>
+                                            <div class="ukuran-wrapper ps-4">
+                                                <button type="button" class="bg-transparent border-0 buka-ukuran small p-0 text-primary" aria-expanded="false">
+                                                    <i class="fal fa-ruler-combined"></i> ukuran<?= $n_ukuran ? ' (' . $n_ukuran . ')' : '' ?>
+                                                </button>
+                                                <span class="uk-ringkas small text-muted d-none"></span>
+                                                <?= ukuran_form_panel(['nama' => 'produk[' . $produk->id . ']', 'jenis' => $j_ukuran, 'nilai' => $n_nilai]) ?>
+                                            </div>
                                     </td>
                                     <td><?= number_to_currency($produk->harga, 'IDR'); ?></td>
                                     <td><?= $produk->qty; ?></td>
@@ -311,7 +321,7 @@ $rincian_pesanan = baca_rincian($orderan->rincian);
                                         <div class="text-end" data-uang1="<?= $produk_total; ?>"><?= number_to_currency($produk_total, 'IDR'); ?>
                                             <?= form_hidden('produk[' . $produk->id . '][kode]', $produk->kode); ?>
                                             <?= form_hidden('produk[' . $produk->id . '][harga]', $produk->harga); ?>
-                                            <?= form_hidden('produk[' . $produk->id . '][ukuran]', $produk->ukuran); ?>
+                                            <?= form_hidden('produk[' . $produk->id . '][ukuran]', (string) $produk->ukuran); ?>
                                             <?= form_hidden('produk[' . $produk->id . '][qty]', $produk->qty); ?>
                                             <?php foreach (baca_rincian($produk->rincian) as $key_rincian => $nilai_rincian) { ?>
                                                 <?= form_hidden('produk[' . $produk->id . '][rincian][' . $key_rincian . ']', $nilai_rincian); ?>
@@ -351,7 +361,8 @@ $rincian_pesanan = baca_rincian($orderan->rincian);
                                             <div data-biaya="<?= $o->nominal; ?>" class="text-end "><?= number_to_currency($o->nominal, 'IDR'); ?></div>
                                             <?= form_hidden('biaya[' . $o->id . '][biaya_id]', $o->biaya_id); ?>
                                             <?= form_hidden('biaya[' . $o->id . '][nominal]', $o->nominal); ?>
-                                            <?= form_hidden('biaya[' . $o->id . '][label]', $o->label); ?>
+                                            <?php // order lama boleh punya label biaya NULL; form_hidden() menolak null, jadi dikosongkan saja ?>
+                                            <?= form_hidden('biaya[' . $o->id . '][label]', (string) $o->label); ?>
                                         </td>
                                     </tr>
                             <?php }
@@ -372,6 +383,8 @@ $rincian_pesanan = baca_rincian($orderan->rincian);
                 </div>
             </div>
         </div>
+
+        <?= anggota_panel_form($anggota_item) ?>
 
         <div class="form-kartu mb-3">
             <?= form_label('Note / Keterangan', 'keterangan', ['class' => 'form-label']) ?>
@@ -585,6 +598,15 @@ $rincian_pesanan = baca_rincian($orderan->rincian);
                         <textarea class="form-control ri-field" id="ri_ukuran_detail" data-key="ukuran_detail" rows="2" placeholder="cth: P.JAS 75, L.DADA 103, L.PINGGANG 80"></textarea>
                     </div>
                 </div>
+                <div class="row gx-2 mt-1 rounded-[0.85rem] border border-dashed border-[#dbe3ee] bg-ink-50 px-[0.85rem] pb-[0.6rem] pt-[0.4rem] [&_h6]:text-[0.78rem] [&_h6]:font-bold [&_h6]:uppercase [&_h6]:tracking-[0.06em] [&_h6]:text-ink-600 [&_.fal]:text-brand-500 [&_.form-label]:text-xs [&_.form-label]:text-ink-500">
+                    <div class="col-12">
+                        <h6 class="mb-2 mt-3 fw-bold">
+                            <i class="fal fa-ruler-combined text-danger"></i> Ukuran Terstruktur
+                            <span class="fw-normal text-muted small">- opsional, pilih jenisnya lalu isi hasil ukurnya</span>
+                        </h6>
+                    </div>
+                    <?= ukuran_form_panel(['id' => 'ukuranModal']) ?>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-link text-decoration-none" data-bs-dismiss="modal">Batal</button>
@@ -615,8 +637,11 @@ $link_api_notif          = site_url('api/notifikasi/');
 
 ?>
 <script>
+    window.UKURAN_FORM = <?= ukuran_form_data() ?>;
     window.CARI_PELANGGAN = '<?= $link_cari_pelanggan ?>';
 </script>
+<script defer src="<?= base_url('assets/js/ukuran-form.js') ?>?v=<?= (int) @filemtime(FCPATH . 'assets/js/ukuran-form.js') ?>"></script>
+<script defer src="<?= base_url('assets/js/anggota-form.js') ?>?v=<?= (int) @filemtime(FCPATH . 'assets/js/anggota-form.js') ?>"></script>
 <script defer src="<?= base_url('assets/js/cari-pelanggan.js') ?>?v=<?= (int) @filemtime(FCPATH . 'assets/js/cari-pelanggan.js') ?>"></script>
 
 <?php
@@ -633,7 +658,12 @@ $js = <<< JS
                 $('#listLi').empty();
                 $.getJSON('{$link_api_juragan}', { id: id }, function(b){
                     var a=[];
-                    a.push('<a class="list-group-item text-light list-group-item-action" href="{$link_invoice}semua"><i class="fal fa-user-circle"></i> Semua Juragan</a>');
+                    // akun yang cuma pegang satu toko tidak perlu memilih
+                    var ada = 0;
+                    $.each(b[id].juragan, function() { ada++; });
+                    if (ada > 1) {
+                        a.push('<a class="list-group-item text-light list-group-item-action" href="{$link_invoice}semua"><i class="fal fa-user-circle"></i> Semua Juragan</a>');
+                    }
 
                     $.each(b[id].juragan,function(c,b){
                         a.push('<a href="{$link_invoice}'+b.slug+'" class="list-group-item text-light list-group-item-action"><i class="fal fa-user-circle"></i> '+b.nama+'</a>');
@@ -1078,6 +1108,15 @@ $js = <<< JS
     			});
     		}
 
+    		// ukuran terstruktur: nama inputnya baru bisa dibuat sekarang karena
+    		// kunci barisnya (j) baru ketemu di sini
+    		var uku = UKURAN.nilai('#ukuranModal');
+    		$.each(uku, function (i, u) {
+    			p.append($('<input/>', {'type':'hidden','name':'produk['+j+'][nilai_ukuran]['+u.key+']','value':u.nilai}));
+    		});
+    		if (uku.length) {
+    			t.append($('<div/>', {'class':'small text-muted'}).text(UKURAN.ringkas('#ukuranModal')));
+    		}
     		newRow(tb,[t,f,b,p]);
     		subtotal();
 
@@ -1103,6 +1142,7 @@ $js = <<< JS
     		var a=$('#nambahProduk');
     		a.removeClass('was-validated')[0].reset();
     		$('#customDetail').addClass('d-none');
+    		UKURAN.kosongkan('#ukuranModal');
     	});
 
     	function subtotal(){
