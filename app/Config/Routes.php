@@ -96,6 +96,9 @@ $routes->group('admin', static function ($routes) {
     $routes->group('settings', ['filter' => 'auth:superadmin'], static function ($routes) {
         $routes->get('/', 'Admin\Settings::index');
 
+        // form "Tambah Juragan" memposting ke alamat ini sejak lama, rutenya yang belum dipasang
+        $routes->post('save_juragan', 'Admin\Settings\Juragan::save_juragan');
+
         $routes->group('bank', static function ($routes) {
             $routes->get('/', 'Admin\Settings\Bank::index');
             $routes->post('save', 'Admin\Settings\Bank::simpan');
@@ -105,6 +108,8 @@ $routes->group('admin', static function ($routes) {
         $routes->group('juragan', static function ($routes) {
             $routes->get('/', 'Admin\Settings\Juragan::index');
             $routes->post('update', 'Admin\Settings\Juragan::update');
+            // satu toko dipegang satu Admin dan satu CS
+            $routes->post('pengelola', 'Admin\Settings\Juragan::pengelola');
         });
 
         $routes->get('pengguna', 'Admin\Settings\Pengguna::pengguna');
@@ -165,6 +170,9 @@ $routes->get('rajaongkir/kecamatan', 'Rajaongkir::kecamatan', ['filter' => 'auth
 $routes->get('rajaongkir/kota', 'Rajaongkir::kota', ['filter' => 'auth:admin,superadmin,user']);
 $routes->get('rajaongkir/provinsi', 'Rajaongkir::provinsi', ['filter' => 'auth:admin,superadmin,user']);
 $routes->get('download/invoice/(:any)', 'Download::invoice/$1', ['filter' => 'auth:admin,superadmin,user']);
+// satu nota yang sama dicetak jadi dua dokumen: invoice untuk pelanggan (memuat uang),
+// lembar kerja untuk penjahit (hanya spesifikasi jahit, tanpa harga)
+$routes->get('download/penjahit/(:any)', 'Download::penjahit/$1', ['filter' => 'auth:admin,superadmin,user']);
 $routes->get('pelanggan/cari', 'Pelanggan::cari', ['filter' => 'auth:admin,superadmin,user']);
 $routes->post('pelanggan/baru', 'Pelanggan::baru', ['filter' => 'auth:admin,superadmin,user']);
 

@@ -10,7 +10,7 @@ use CodeIgniter\Model;
 class StokModel extends Model
 {
     /** Stok sebanyak ini atau kurang dianggap menipis (masih ada, tapi hampir habis). */
-    public const AMBANG_MENIPIS = 3;
+    public const AMBANG_MENIPIS = 1;
 
     protected $table          = 'stok';
     protected $primaryKey     = 'id_stok';

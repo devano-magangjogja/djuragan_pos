@@ -53,8 +53,21 @@ class Juragan extends \CodeIgniter\Controller
 
     public function by_user()
     {
-        $user_id = $this->request->getGet('id'); // numeric
+        $user_id = (int) $this->request->getGet('id'); // numeric
         $bank    = $this->request->getGet('bank'); // yes = true
+
+        // dulu ?id= dipakai apa adanya: tanpa id nilainya null sehingga semua pemanggil
+        // berbagi satu kunci cache `juragan_by_user_`, dan cukup ganti angka di query string
+        // untuk membaca peta juragan milik akun lain
+        if (session()->get('level') !== 'superadmin') {
+            // halaman Pengaturan > Pengguna memang butuh relasi akun lain dan route-nya
+            // sudah khusus superadmin; level lain dipaksa ke akunnya sendiri
+            $user_id = (int) session()->get('id');
+        }
+
+        if ($user_id <= 0) {
+            return $this->response->setStatusCode(400)->setJSON(['error' => 'ID pengguna tidak valid']);
+        }
 
         $json = Jrgn::by_user($user_id, $bank);
 
