@@ -166,6 +166,19 @@ class Invoices extends BaseController
         if ($juragan === '') {
             $juragan = $this->juraganBy($user_id);
 
+            // akun warisan ada yang belum punya relasi juragan, jadi tidak ada slug untuk
+            // dituju; tanpa pagar ini halaman hanya melempar property tak dikenal (HTTP 500).
+            // Pesannya dikirim lewat view 404 milik app, bukan PageNotFoundException, karena
+            // override 404 di Config/Routes.php membuang semua pesan supaya detail internal
+            // router tidak terbaca tamu.
+            if (empty($juragan->juragan)) {
+                return response()->setStatusCode(404)->setBody(
+                    view('errors/html/error_page', [
+                        'message' => 'Akun ini belum ditautkan ke juragan mana pun, jadi belum ada orderan yang bisa dibuka. Hubungi admin untuk menautkan akun ke juragan.',
+                    ]),
+                );
+            }
+
             return redirect()->to('/user/invoices/lihat/' . $juragan->juragan);
         }
 
