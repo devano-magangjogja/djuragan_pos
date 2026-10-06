@@ -228,10 +228,11 @@ class ModulCrm extends Migration
     {
         $now = time();
 
-        // Default settings
+        // Default settings. API key sengaja kosong: kredensial hanya boleh masuk
+        // lewat Pengaturan CRM, jangan pernah di-seed ke source code.
         $settings = [
             ['setting_key' => 'wa_provider', 'setting_value' => 'kapso', 'created_at' => $now, 'updated_at' => $now],
-            ['setting_key' => 'kapso_api_key', 'setting_value' => '5959a150cd1169959431fba68ef22b94e43ee4096ea91b7c11d38092fa99ae5c', 'created_at' => $now, 'updated_at' => $now],
+            ['setting_key' => 'kapso_api_key', 'setting_value' => '', 'created_at' => $now, 'updated_at' => $now],
             ['setting_key' => 'kapso_phone_number_id', 'setting_value' => '597907523413541', 'created_at' => $now, 'updated_at' => $now],
             ['setting_key' => 'kapso_base_url', 'setting_value' => 'https://api.kapso.ai', 'created_at' => $now, 'updated_at' => $now],
             ['setting_key' => 'kapso_sandbox_mode', 'setting_value' => '1', 'created_at' => $now, 'updated_at' => $now],

@@ -7,28 +7,28 @@
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
         <div>
             <h4 class="mb-0 fw-bold">
-                <i class="fal fa-chart-pie text-primary me-2"></i> Dashboard CRM & WhatsApp Center
+                <i class="fal fa-chart-pie text-primary me-2"></i> Dashboard CRM &amp; WhatsApp Center
             </h4>
-            <p class="text-muted small mb-0">Pusat kendali hubungan pelanggan, segmentasi perilaku, dan tindakan follow-up staff.</p>
         </div>
-        <div class="d-flex align-items-center gap-2 mt-2 mt-md-0">
-            <span class="badge bg-secondary p-2">
-                <i class="fab fa-whatsapp me-1"></i> Provider: <?= strtoupper(esc($provider)) ?>
-            </span>
+        <div class="d-flex align-items-center gap-2 flex-nowrap">
+            <a href="<?= site_url('admin/crm/chat') ?>" class="btn btn-success btn-sm fw-semibold">
+                <i class="fab fa-whatsapp me-1"></i> Live Chat WA
+            </a>
             <?php if ($isSandbox) : ?>
-                <span class="badge bg-warning text-dark p-2" title="Mode sandbox Kapso aktif: pesan pengujian dibatasi ke nomor tester">
-                    <i class="fal fa-flask me-1"></i> Sandbox Mode
+                <span class="badge bg-warning text-dark" title="Mode sandbox Kapso aktif">
+                    <i class="fal fa-flask me-1"></i> Sandbox
                 </span>
             <?php else : ?>
-                <span class="badge bg-success p-2">
-                    <i class="fal fa-check-circle me-1"></i> Production Mode
+                <span class="badge bg-success" title="Production mode">
+                    <i class="fal fa-check-circle me-1"></i> Production
                 </span>
             <?php endif; ?>
-            <a href="<?= site_url('admin/crm/pengaturan') ?>" class="btn btn-outline-dark btn-sm">
-                <i class="fal fa-cog me-1"></i> Pengaturan Gateway
+            <a href="<?= site_url('admin/crm/pengaturan') ?>" class="btn btn-outline-secondary btn-sm">
+                <i class="fal fa-cog"></i>
             </a>
         </div>
     </div>
+
 
     <?= $this->include('admin/crm/nav_crm') ?>
 

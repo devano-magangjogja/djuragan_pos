@@ -71,7 +71,7 @@
                                     Gunakan mode ini untuk menghindari risiko banned pada nomor biasa. Di mode sandbox Kapso, pesan pengujian diarahkan ke nomor tester yang sudah terdaftar.
                                 </div>
                                 <label class="form-label small fw-bold">Nomor Tester Sandbox</label>
-                                <input type="text" name="kapso_sandbox_test_number" class="form-control font-monospace" value="<?= esc($settings['kapso_sandbox_test_number'] ?? '6285161384750') ?>" placeholder="6285161384750">
+                                <input type="text" name="kapso_sandbox_test_number" class="form-control font-monospace" value="<?= esc($settings['kapso_sandbox_test_number'] ?? '6289674577831') ?>" placeholder="6289674577831">
                             </div>
                         </div>
 
