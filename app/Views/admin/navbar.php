@@ -17,12 +17,17 @@
 
                 // menu utama; yang sedang dibuka ditandai .active
                 // Tulis Orderan tidak lagi di sini, tombolnya ada di halaman Transaksi
+                $levelSesi = $_SESSION['level'] ?? '';
                 $menu = [
                     ['admin/dasbor', 'Dasbor', 'fa-home', url_is('admin/dasbor*') || $di_halaman === 'admin'],
                     ['admin/invoices/lihat/semua/semua', 'Transaksi', 'fa-receipt', url_is('admin/invoices*')],
                     ['admin/produk', 'Produk', 'fa-tshirt', url_is('admin/produk*')],
                     ['admin/laporan', 'Laporan', 'fa-file-alt', url_is('admin/laporan*')],
                 ];
+                // Menu CRM hanya untuk admin dan superadmin
+                if (in_array($levelSesi, ['admin', 'superadmin'], true)) {
+                    array_splice($menu, 3, 0, [['admin/crm', 'CRM', 'fa-comments-alt', url_is('admin/crm*')]]);
+                }
 
                 foreach ($menu as [$alamat, $label, $ikon, $aktif]) {
                     echo '<li class="nav-item"><a class="nav-link' . ($aktif ? ' active' : '') . '" href="' . site_url($alamat) . '">'
