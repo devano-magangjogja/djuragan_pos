@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use CodeIgniter\Model;
+use DateTimeImmutable;
 
 /**
  * Angka-angka halaman Laporan.
@@ -25,20 +26,54 @@ class LaporanModel extends Model
     /** Baris terbanyak yang ditampilkan satu tabel laporan. */
     public const KAPASITAS = 120;
 
-    /** Rentang sepanjang ini masih enak dibaca per hari. */
-    private const BATAS_HARIAN = 62;
+    /** Baris lampiran detail nota pada berkas ekspor. */
+    public const KAPASITAS_DETAIL = 2000;
 
     /**
-     * Orderan masuk per hari (rentang pendek) atau per bulan (rentang panjang).
+     * Sumbu waktu laporan, format DATE_FORMAT MySQL. Nilainya diambil dari daftar
+     * ini saja, jadi tidak ada input yang masuk ke SQL.
+     */
+    public const GRUP = [
+        'mingguan' => '%x-%v',
+        'bulanan'  => '%Y-%m',
+        'tahunan'  => '%Y',
+    ];
+
+    /** Kata yang dipakai caption tabel untuk menyebut satu baris periode. */
+    public const LABEL_GRUP = [
+        'mingguan' => 'minggu',
+        'bulanan'  => 'bulan',
+        'tahunan'  => 'tahun',
+    ];
+
+    /**
+     * Cara mengelompokkan baris ringkasan, dibaca dari panjang rentang tanggal.
+     *
+     * Halaman Laporan tidak punya pilihan periode lagi: yang diisi orang adalah
+     * tanggal awal dan akhir, jadi sumbunya mengikuti rentang itu.
+     */
+    public static function grup(string $awal, string $akhir): string
+    {
+        $mulai = new DateTimeImmutable($awal ?: 'today');
+        $batas = new DateTimeImmutable($akhir ?: 'today');
+        $hari  = (int) $mulai->diff($batas)->format('%r%a');
+
+        return match (true) {
+            $hari <= 62  => 'mingguan',
+            $hari <= 730 => 'bulanan',
+            default      => 'tahunan',
+        };
+    }
+
+    /**
+     * Orderan masuk per minggu/bulan/tahun.
      *
      * @return array{periode:string, baris:array, ringkas:array}
      */
     public function pesanan(array $juragan_ids, array $f): array
     {
         [$dasar, $bind] = $this->basis($juragan_ids, $f);
-
-        $harian = $this->selisih($f) <= self::BATAS_HARIAN;
-        $sumbu  = $harian ? 't.tanggal_pesan' : "DATE_FORMAT(t.tanggal_pesan, '%Y-%m')";
+        [$sumbu, $label] = $this->sumbu($f);
 
         $baris = $this->db->query('SELECT ' . $sumbu . ' AS periode, COUNT(*) AS orderan,'
             . ' COUNT(DISTINCT t.pemesan_id) AS pelanggan, SUM(t.tagihan) AS tagihan,'
@@ -50,29 +85,31 @@ class LaporanModel extends Model
             . ' ORDER BY periode DESC LIMIT ' . self::KAPASITAS, $bind)->getResultArray();
 
         return [
-            'periode' => $harian ? 'hari' : 'bulan',
+            'periode' => $label,
             'baris'   => $this->bilatkan($baris, ['orderan', 'pelanggan', 'tagihan', 'masuk', 'tercatat', 'sisa', 'lunas', 'terkirim']),
             'ringkas' => $this->ringkas($juragan_ids, $f),
         ];
     }
 
     /**
-     * Nilai orderan dibanding dana yang masuk, per bulan.
+     * Nilai orderan dibanding dana yang masuk, per periode.
      *
-     * @return array{baris:array, ringkas:array}
+     * @return array{periode:string, baris:array, ringkas:array}
      */
     public function pendapatan(array $juragan_ids, array $f): array
     {
         [$dasar, $bind] = $this->basis($juragan_ids, $f);
+        [$sumbu, $label] = $this->sumbu($f);
 
-        $baris = $this->db->query("SELECT DATE_FORMAT(t.tanggal_pesan, '%Y-%m') AS periode, COUNT(*) AS orderan,"
+        $baris = $this->db->query('SELECT ' . $sumbu . ' AS periode, COUNT(*) AS orderan,'
             . ' SUM(t.tagihan) AS tagihan, SUM(t.masuk) AS masuk, SUM(t.tercatat) AS tercatat,'
             . ' SUM(GREATEST(t.tagihan - t.masuk, 0)) AS sisa,'
             . " SUM(t.status_pembayaran IN ('5', '6')) AS lunas,"
             . " SUM(t.status_pembayaran NOT IN ('5', '6')) AS belum_lunas"
-            . ' FROM (' . $dasar . ') t GROUP BY periode ORDER BY periode DESC LIMIT ' . self::KAPASITAS, $bind)->getResultArray();
+            . ' FROM (' . $dasar . ') t GROUP BY ' . $sumbu . ' ORDER BY periode DESC LIMIT ' . self::KAPASITAS, $bind)->getResultArray();
 
         return [
+            'periode' => $label,
             'baris'   => $this->bilatkan($baris, ['orderan', 'tagihan', 'masuk', 'tercatat', 'sisa', 'lunas', 'belum_lunas']),
             'ringkas' => $this->ringkas($juragan_ids, $f),
         ];
@@ -275,6 +312,81 @@ class LaporanModel extends Model
     }
 
     /**
+     * Daftar nota pada rentang tersaring, untuk lampiran berkas ekspor.
+     *
+     * Dipakai semua jenis laporan: ringkasannya berbeda-beda, tapi orang yang
+     * mengecek angka selalu butuh tahu nota mana saja yang ikut dihitung.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function detail(array $juragan_ids, array $f): array
+    {
+        [$dasar, $bind] = $this->basis($juragan_ids, $f);
+
+        $baris = $this->db->query('SELECT t.seri, t.slug, t.nama_juragan, t.nama_pelanggan, t.tanggal_pesan,'
+            . ' t.deadline, t.status_pembayaran, t.status_pengiriman, t.tagihan, t.masuk,'
+            . ' GREATEST(t.tagihan - t.masuk, 0) AS sisa'
+            . ' FROM (' . $dasar . ') t'
+            . ' ORDER BY t.tanggal_pesan DESC, t.seri DESC LIMIT ' . self::KAPASITAS_DETAIL, $bind)->getResultArray();
+
+        return $this->bilatkan($baris, ['tagihan', 'masuk', 'sisa', 'status_pembayaran', 'status_pengiriman']);
+    }
+
+    /**
+     * Kartu ringkasan sebuah laporan. Dipakai layar dan berkas ekspor supaya
+     * keduanya menyebut angka yang sama.
+     *
+     * @return list<array{0:string,1:string,2:string}> [label, nilai, ikon]
+     */
+    public static function kartu(string $jenis, array $r): array
+    {
+        $rp = static fn ($n): string => 'Rp ' . number_format((int) $n, 0, ',', '.');
+
+        switch ($jenis) {
+            case 'pembayaran':
+                return [
+                    ['Catatan pembayaran', (string) $r['baris'], 'fa-file-alt'],
+                    ['Dana masuk', $rp($r['masuk']), 'fa-wallet'],
+                    ['Tercatat', $rp($r['tercatat']), 'fa-money-check-edit'],
+                    ['Menunggu dicek', (string) $r['menunggu'], 'fa-inbox-in'],
+                    ['Dana tidak ada', (string) $r['salah'], 'fa-bell-slash'],
+                ];
+
+            case 'piutang':
+                return [
+                    ['Orderan belum lunas', (string) $r['orderan'], 'fa-file-alt'],
+                    ['Total sisa', $rp($r['sisa']), 'fa-inbox-in'],
+                    ['Tunggakan tertua', (string) $r['tertua'] . ' hari', 'fa-shipping-fast'],
+                ];
+
+            case 'produk':
+                return [
+                    ['Baris penjualan', (string) $r['baris'], 'fa-file-alt'],
+                    ['Unit terjual', (string) $r['qty'], 'fa-box-alt'],
+                    ['Nilai penjualan', $rp($r['nilai']), 'fa-wallet'],
+                ];
+
+            case 'pelanggan':
+                return [
+                    ['Pelanggan', (string) $r['pelanggan'], 'fa-users'],
+                    ['Orderan', (string) $r['orderan'], 'fa-file-alt'],
+                    ['Nilai orderan', $rp($r['tagihan']), 'fa-wallet'],
+                    ['Total sisa', $rp($r['sisa']), 'fa-inbox-in'],
+                ];
+
+            default: // pesanan, pendapatan, produksi
+                return [
+                    ['Orderan', (string) $r['orderan'], 'fa-file-alt'],
+                    ['Nilai orderan', $rp($r['tagihan']), 'fa-layer-group'],
+                    ['Dana masuk', $rp($r['masuk']), 'fa-wallet'],
+                    ['Tercatat', $rp($r['tercatat']), 'fa-money-check-edit'],
+                    ['Sisa', $rp($r['sisa']), 'fa-inbox-in'],
+                    ['Lunas', (string) $r['lunas'], 'fa-ballot-check'],
+                ];
+        }
+    }
+
+    /**
      * Total satu set orderan tersaring: jumlah, nilai, dan dua cara hitung uang.
      *
      * Dipakai kartu ringkasan di atas tiap laporan uang, jadi tidak ada laporan
@@ -443,13 +555,19 @@ class LaporanModel extends Model
         return [$sql, $bind];
     }
 
-    /** Banyak hari dalam rentang tersaring, untuk memutuskan per hari atau per bulan. */
-    private function selisih(array $f): int
+    /**
+     * Ekspresi SQL pengelompok waktu dan kata labelnya.
+     *
+     * Format DATE_FORMAT dibaca dari konstanta GRUP, jadi nilai `grup` dari query
+     * string tidak pernah masuk ke SQL apa adanya.
+     *
+     * @return array{0:string,1:string}
+     */
+    private function sumbu(array $f): array
     {
-        $awal  = \DateTimeImmutable::createFromFormat('Y-m-d', $f['awal']) ?: new \DateTimeImmutable('today');
-        $akhir = \DateTimeImmutable::createFromFormat('Y-m-d', $f['akhir']) ?: new \DateTimeImmutable('today');
+        $grup = array_key_exists($f['grup'] ?? '', self::GRUP) ? $f['grup'] : 'mingguan';
 
-        return max(0, (int) $awal->diff($akhir)->format('%r%a'));
+        return ["DATE_FORMAT(t.tanggal_pesan, '" . self::GRUP[$grup] . "')", self::LABEL_GRUP[$grup]];
     }
 
     /** wildcard LIKE dipakai sebagai teks biasa. */

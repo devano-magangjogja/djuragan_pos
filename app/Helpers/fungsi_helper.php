@@ -479,7 +479,9 @@ if (! function_exists('laporan_jenis')) {
      * laporan tidak bisa bercabang.
      *
      * 'uang' menandai laporan yang menampilkan angka uang; view pakai penanda itu
-     * untuk memutuskan perlu menulis dua kolom uang atau tidak.
+     * untuk memutuskan perlu menulis dua kolom uang atau tidak. 'sumbu' menandai
+     * laporan yang barisnya dikelompokkan menurut waktu, jadi pilihan periode hanya
+     * muncul di laporan yang memang memakainya.
      */
     function laporan_jenis(): array
     {
@@ -487,14 +489,16 @@ if (! function_exists('laporan_jenis')) {
             'pesanan' => [
                 'label'   => 'Laporan Pesanan',
                 'ikon'    => 'fa-file-alt',
-                'catatan' => 'Orderan masuk dan nilainya, per hari atau per bulan.',
+                'catatan' => 'Orderan masuk dan nilainya; barisnya dikelompokkan sendiri mengikuti panjang rentang tanggal.',
                 'uang'    => true,
+                'sumbu'   => true,
             ],
             'pendapatan' => [
                 'label'   => 'Laporan Pendapatan',
                 'ikon'    => 'fa-wallet',
-                'catatan' => 'Nilai orderan dibanding dana yang benar-benar sudah masuk, per bulan.',
+                'catatan' => 'Nilai orderan dibanding dana yang benar-benar sudah masuk; barisnya ikut panjang rentang tanggal.',
                 'uang'    => true,
+                'sumbu'   => true,
             ],
             'pembayaran' => [
                 'label'   => 'Laporan Pembayaran',
