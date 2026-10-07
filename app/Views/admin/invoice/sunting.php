@@ -75,8 +75,8 @@ $rincian_pesanan = baca_rincian($orderan->rincian);
                             <?= form_dropdown('asal_orderan', $options_label, '', ['class' => 'form-select', 'id' => 'asal_orderan', 'required' => '']); ?>
                         </div>
                         <div class="col">
-                            <?= form_label('Label', 'label', ['class' => 'form-label']); ?>
-                            <?= form_input('label', '', ['class' => 'form-control', 'id' => 'label', 'placeholder' => 'label - opsional, max: 50 karakter']); ?>
+                            <?= form_label('Penanggung Jawab', 'label', ['class' => 'form-label']); ?>
+                            <?= form_input('label', '', ['class' => 'form-control', 'id' => 'label', 'placeholder' => 'penanggung jawab - opsional, max: 50 karakter']); ?>
                         </div>
                     </div>
                 </div>
@@ -103,11 +103,14 @@ $rincian_pesanan = baca_rincian($orderan->rincian);
                         <?= form_hidden('id_kirimKe', $kirimKe->id) ?>
                     </div>
 
-                    <div class="input-group mb-3 mycustom form_pemesan" style="display: none;">
+                    <!-- pemesan -->
+                    <div class="mb-3">
+                        <?= form_label('Pemesan', 'cari_pelanggan', ['class' => 'form-label small text-muted mb-1']); ?>
+                        <div class="input-group mycustom form_pemesan" style="display: none;">
                         <?= form_input([
-                            'class'       => 'form-control cari_pelanggan pemesan',
-                            'id'          => 'cari_pemesan',
-                            'placeholder' => 'cari data pelanggan',
+                            'class'       => 'form-control cari_pelanggan',
+                            'id'          => 'cari_pelanggan',
+                            'placeholder' => 'cari data pemesan',
                             'type'        => 'search',
                         ]) ?>
                         <?= form_button([
@@ -115,7 +118,8 @@ $rincian_pesanan = baca_rincian($orderan->rincian);
                             'content'        => '<i class="fal fa-plus"></i> Tambah',
                             'data-bs-target' => '#modalTambahPelanggan',
                             'data-bs-toggle' => 'modal',
-                            'id'             => 'tambah_pemesan_kirimKe',
+                            'data-mode'      => 'tambah_pemesan',
+                            'id'             => 'tambah_pelanggan',
                             'title'          => 'Tambah Data Pemesan',
                         ]) ?>
                     </div>
@@ -135,11 +139,18 @@ $rincian_pesanan = baca_rincian($orderan->rincian);
                     }
                     ?>
 
-                    <div class="mb-3 info-data-pemesan">
+                    <div class="mt-2 info-data-pemesan">
                         <?= form_button([
                             'class'   => 'btn btn-link text-danger text-decoration-none btn-sm float-end btn-hapus-alamat pemesan',
                             'content' => '<i class="fal fa-trash"></i> <span class="visually-hidden">Hapus</span>',
                             'title'   => 'Hapus Pemesan',
+                            'type'    => 'button',
+                        ]); ?>
+                        <?= form_button([
+                            'class'   => 'btn btn-link text-muted text-decoration-none btn-sm float-end btn-edit-alamat pemesan',
+                            'content' => '<i class="fal fa-pen"></i> <span class="visually-hidden">Ubah</span>',
+                            'title'   => 'Ubah Data Pemesan',
+                            'type'    => 'button',
                         ]); ?>
                         <span id="alamat_pemesan" class="d-block border rounded-[0.7rem] border-ink-200 bg-ink-50 p-3">
                             <h6 class="text-muted fw-normal">Pemesan</h6>
@@ -160,23 +171,38 @@ $rincian_pesanan = baca_rincian($orderan->rincian);
                             <span class="d-block"><?= $alamat_pemesan_full ?></span>
                         </span>
                     </div>
-
-                    <div class="input-group mb-3 mycustom form_kirimKe" style="display: none">
-                        <?= form_input([
-                            'class'       => 'form-control cari_pelanggan kirimKe',
-                            'id'          => 'cari_kirimKe',
-                            'placeholder' => 'cari data pelanggan',
-                            'type'        => 'search',
-                        ]); ?>
-                        <?= form_button([
-                            'class'          => 'btn btn-dark',
-                            'content'        => '<i class="fal fa-plus"></i> Tambah',
-                            'data-bs-target' => '#modalTambahPelanggan',
-                            'data-bs-toggle' => 'modal',
-                            'id'             => 'tambah_kirimKe',
-                            'title'          => 'Tambah Data Kirim Kepada',
-                        ]); ?>
                     </div>
+
+                    <!-- penerima -->
+                    <div>
+                        <div class="d-flex align-items-center justify-content-between">
+                            <?= form_label('Penerima', 'cari_kirimKe', ['class' => 'form-label small text-muted mb-1']); ?>
+                            <?= form_button([
+                                'class'    => 'btn btn-link btn-sm p-0 text-decoration-none',
+                                'content'  => '<i class="fal fa-copy"></i> Sama dengan Pemesan',
+                                'disabled' => '',
+                                'id'       => 'salinPemesan',
+                                'title'    => 'Ambil data penerima dari pemesan',
+                                'type'     => 'button',
+                            ]); ?>
+                        </div>
+                        <div class="input-group mycustom form_kirimKe" style="display: none;">
+                            <?= form_input([
+                                'class'       => 'form-control cari_pelanggan kirimKe',
+                                'id'          => 'cari_kirimKe',
+                                'placeholder' => 'cari data penerima',
+                                'type'        => 'search',
+                            ]) ?>
+                            <?= form_button([
+                                'class'          => 'btn btn-dark',
+                                'content'        => '<i class="fal fa-plus"></i> Tambah',
+                                'data-bs-target' => '#modalTambahPelanggan',
+                                'data-bs-toggle' => 'modal',
+                                'data-mode'      => 'tambah_kirimKe',
+                                'id'             => 'tambah_kirimKe',
+                                'title'          => 'Tambah Data Penerima',
+                            ]) ?>
+                        </div>
 
                     <?php
                     $alamat_kirim_full = 'C.O.D';
@@ -193,14 +219,21 @@ $rincian_pesanan = baca_rincian($orderan->rincian);
                     }
                     ?>
 
-                    <div class="mb-3 info-data-kirimKe">
+                    <div class="mt-2 info-data-kirimKe">
                         <?= form_button([
                             'class'   => 'btn btn-link text-danger text-decoration-none btn-sm float-end btn-hapus-alamat kirimKe',
                             'content' => '<i class="fal fa-trash"></i> <span class="visually-hidden">Hapus</span>',
-                            'title'   => 'Hapus Kirim',
+                            'title'   => 'Hapus Penerima',
+                            'type'    => 'button',
+                        ]); ?>
+                        <?= form_button([
+                            'class'   => 'btn btn-link text-muted text-decoration-none btn-sm float-end btn-edit-alamat kirimKe',
+                            'content' => '<i class="fal fa-pen"></i> <span class="visually-hidden">Ubah</span>',
+                            'title'   => 'Ubah Data Penerima',
+                            'type'    => 'button',
                         ]); ?>
                         <span id="alamat_kirimKe" class="d-block border rounded-[0.7rem] border-ink-200 bg-ink-50 p-3">
-                            <h6 class="text-muted fw-normal">Kirim Kepada</h6>
+                            <h6 class="text-muted fw-normal">Penerima</h6>
                             <span class="d-block fw-bold"><?= esc($kirimKe->nama) ?></span>
                             <span class="d-block">
                                 <?php
@@ -218,38 +251,56 @@ $rincian_pesanan = baca_rincian($orderan->rincian);
                             <span class="d-block"><?= $alamat_kirim_full ?></span>
                         </span>
                     </div>
+                    </div>
                 </div>
             </div>
         </div>
 
     </div>
-    <div class="col-12 mb-3">
-        <div class="rounded-kartu border border-ink-200 bg-white shadow-kartu">
+    <div class="col-12 col-lg-6 mb-3">
+        <div class="h-full rounded-kartu border border-ink-200 bg-white shadow-kartu">
             <div class="flex items-center gap-2.5 rounded-t-kartu border-b border-ink-100 bg-ink-50/60 px-4 py-2.5 sm:px-5">
                 <span class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-[0.65rem] border border-brand-100 bg-white text-brand-500"><i class="fal fa-tag text-xs"></i></span>
-                <h6 class="mb-0 text-[0.78rem] font-bold uppercase tracking-[0.06em] text-ink-700">Tipe &amp; Jadwal</h6>
+                <h6 class="mb-0 text-[0.78rem] font-bold uppercase tracking-[0.06em] text-ink-700">Jenis Layanan</h6>
             </div>
             <div class="form-kartu px-4 py-4 sm:px-5">
                 <div class="row gx-3 gy-3">
-                    <div class="col-12 col-sm-6 col-lg-3">
-                        <?= form_label('Tipe Pesanan', 'tipe_pesanan', ['class' => 'form-label']); ?>
-                        <?= form_dropdown('rincian[tipe]', ['' => 'Pilih tipe'] + tipe_pesanan(), $rincian_pesanan['tipe'] ?? '', ['class' => 'form-select', 'id' => 'tipe_pesanan']); ?>
+                    <div class="col-12 col-sm-6">
+                        <?= form_label('Jenis Layanan', 'tipe_pesanan', ['class' => 'form-label']); ?>
+                        <?= form_dropdown('rincian[tipe]', ['' => 'Pilih jenis layanan'] + tipe_pesanan(), $rincian_pesanan['tipe'] ?? '', ['class' => 'form-select', 'id' => 'tipe_pesanan']); ?>
                     </div>
-                    <div class="col-12 col-sm-6 col-lg-3 d-none tipe-buat">
+                    <div class="col-12 col-sm-6 d-none tipe-buat">
                         <?= form_label('Deadline', 'rincian_deadline', ['class' => 'form-label']); ?>
                         <?= form_input('rincian[deadline]', $rincian_pesanan['deadline'] ?? '', ['class' => 'form-control', 'id' => 'rincian_deadline'], 'date'); ?>
                     </div>
-                    <div class="col-12 col-sm-6 col-lg-3 d-none tipe-sewa">
+                    <div class="col-12 col-sm-6 d-none tipe-sewa">
+                        <?= form_label('Jaminan', 'rincian_jaminan', ['class' => 'form-label']); ?>
+                        <?= form_input('rincian[jaminan]', $rincian_pesanan['jaminan'] ?? '', ['class' => 'form-control', 'id' => 'rincian_jaminan', 'placeholder' => 'cth: SIM C / KTP']); ?>
+                    </div>
+                    <div class="col-12 col-sm-6 d-none tipe-sewa">
                         <?= form_label('Tanggal Diambil', 'rincian_ambil', ['class' => 'form-label']); ?>
                         <?= form_input('rincian[ambil]', $rincian_pesanan['ambil'] ?? '', ['class' => 'form-control', 'id' => 'rincian_ambil'], 'date'); ?>
                     </div>
-                    <div class="col-12 col-sm-6 col-lg-3 d-none tipe-sewa">
+                    <div class="col-12 col-sm-6 d-none tipe-sewa">
                         <?= form_label('Tanggal Kembali', 'rincian_kembali', ['class' => 'form-label']); ?>
                         <?= form_input('rincian[kembali]', $rincian_pesanan['kembali'] ?? '', ['class' => 'form-control', 'id' => 'rincian_kembali'], 'date'); ?>
                     </div>
-                    <div class="col-12 col-sm-6 col-lg-3 d-none tipe-sewa">
-                        <?= form_label('Jaminan', 'rincian_jaminan', ['class' => 'form-label']); ?>
-                        <?= form_input('rincian[jaminan]', $rincian_pesanan['jaminan'] ?? '', ['class' => 'form-control', 'id' => 'rincian_jaminan', 'placeholder' => 'cth: SIM C / KTP']); ?>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-6 mb-3">
+        <div class="h-full rounded-kartu border border-ink-200 bg-white shadow-kartu">
+            <div class="flex items-center gap-2.5 rounded-t-kartu border-b border-ink-100 bg-ink-50/60 px-4 py-2.5 sm:px-5">
+                <span class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-[0.65rem] border border-brand-100 bg-white text-brand-500"><i class="fal fa-users text-xs"></i></span>
+                <h6 class="mb-0 text-[0.78rem] font-bold uppercase tracking-[0.06em] text-ink-700">Kategori Pesanan</h6>
+            </div>
+            <div class="form-kartu px-4 py-4 sm:px-5">
+                <div class="row gx-3">
+                    <div class="col-12 col-sm-6">
+                        <?= form_label('Kategori Pesanan', 'tipe_orderan', ['class' => 'form-label']); ?>
+                        <?= form_dropdown('rincian[orderan]', ['satuan' => 'Satuan', 'rombongan' => 'Rombongan'], ($rincian_pesanan['orderan'] ?? '') ?: 'satuan', ['class' => 'form-select', 'id' => 'tipe_orderan']); ?>
                     </div>
                 </div>
             </div>
@@ -279,11 +330,12 @@ $rincian_pesanan = baca_rincian($orderan->rincian);
                                 <th scope="col">Harga</th>
                                 <th scope="col">QTY</th>
                                 <th scope="col" class="text-end">Subtotal</th>
+                                <th scope="col" class="text-end">Aksi</th>
                             </tr>
                         </thead>
                         <tbody class="list-orderan" data-length="<?= count($dibeli) + 1; ?>">
                             <tr class="orderan-kosong">
-                                <td class="text-center" colspan="4">
+                                <td class="text-center" colspan="5">
                                     <div class="py-5"><i class="fad text-warning fa-<?= random_element(['shopping-cart', 'shopping-bag', 'shopping-basket', 'bags-shopping', 'dolly-flatbed-empty', 'dolly-empty']) ?> fa-4x"></i>
                                         <p class="mb-0"><?= random_element(['orderan kosong?', 'isi dulu orderannya ya?', 'jangan lupa isi orderannya ya?']) ?></p>
                                     </div>
@@ -299,21 +351,15 @@ $rincian_pesanan = baca_rincian($orderan->rincian);
                                 $n_ukuran = count($n_nilai);
                                 $j_ukuran = $jenis_item[$produk->id] ?? null;
                                 $subtotal += $produk_total; ?>
-                                <tr>
+                                <tr data-kunci="<?= $produk->id; ?>">
                                     <td>
-                                        <div>
-                                            <button class="bg-transparent border-0 hapus_row orderan me-1">
-                                                <span aria-hidden="true"><i class="fal fa-trash-alt h6"></i></span>
-                                            </button>
-                                            <?= $produk->kode; ?> ( <?= strtoupper($produk->ukuran); ?> )
-                                        </div>
-                                            <div class="ukuran-wrapper ps-4">
-                                                <button type="button" class="bg-transparent border-0 buka-ukuran small p-0 text-primary" aria-expanded="false">
-                                                    <i class="fal fa-ruler-combined"></i> ukuran<?= $n_ukuran ? ' (' . $n_ukuran . ')' : '' ?>
-                                                </button>
-                                                <span class="uk-ringkas small text-muted d-none"></span>
+                                        <div class="d-flex align-items-start">
+                                            <div class="flex-grow-1">
+                                                <div class="fw-semibold text-truncate" title="<?= esc($produk->kode . ' ( ' . strtoupper($produk->ukuran) . ' )', 'attr'); ?>"><?= $produk->kode; ?> ( <?= strtoupper($produk->ukuran); ?> )</div>
+                                                <div class="small text-muted text-truncate ukuran-ringkas d-none"></div>
                                                 <?= ukuran_form_panel(['nama' => 'produk[' . $produk->id . ']', 'jenis' => $j_ukuran, 'nilai' => $n_nilai]) ?>
                                             </div>
+                                        </div>
                                     </td>
                                     <td><?= number_to_currency($produk->harga, 'IDR'); ?></td>
                                     <td><?= $produk->qty; ?></td>
@@ -327,6 +373,13 @@ $rincian_pesanan = baca_rincian($orderan->rincian);
                                                 <?= form_hidden('produk[' . $produk->id . '][rincian][' . $key_rincian . ']', $nilai_rincian); ?>
                                             <?php } ?>
                                         </div>
+                                    </td>
+                                    <td class="text-end">
+                                        <span class="d-inline-flex align-items-center gap-1">
+                                            <button type="button" class="bg-transparent border-0 detail_row px-1" title="Detail"><i class="fal fa-eye h6 text-secondary"></i></button>
+                                            <button type="button" class="bg-transparent border-0 edit_row px-1" title="Ubah"><i class="fal fa-pen h6 text-primary"></i></button>
+                                            <button type="button" class="bg-transparent border-0 hapus_row orderan px-1" title="Hapus"><i class="fal fa-trash-alt h6 text-danger"></i></button>
+                                        </span>
                                     </td>
                                 </tr>
 
@@ -346,6 +399,7 @@ $rincian_pesanan = baca_rincian($orderan->rincian);
                             <tr>
                                 <td colspan="3" class="text-end">Subtotal</td>
                                 <td class="text-end" data-totalbiaya="<?= $totalbiaya; ?>" data-subtotal="<?= $subtotal; ?>" id="subTotal"><?= number_to_currency($subtotal, 'IDR'); ?></td>
+                                <td></td>
                             </tr>
 
                             <?php
@@ -364,6 +418,7 @@ $rincian_pesanan = baca_rincian($orderan->rincian);
                                             <?php // order lama boleh punya label biaya NULL; form_hidden() menolak null, jadi dikosongkan saja ?>
                                             <?= form_hidden('biaya[' . $o->id . '][label]', (string) $o->label); ?>
                                         </td>
+                                        <td></td>
                                     </tr>
                             <?php }
                             } ?>
@@ -412,37 +467,79 @@ $rincian_pesanan = baca_rincian($orderan->rincian);
             <button type="button" data-reset="false" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-            <div class="mb-3">
+            <?= form_hidden('id_pelanggan', ''); ?>
+            <!-- ===== DATA PEMESAN ===== -->
+            <div class="mb-3 blk-pemesan">
                 <?= form_label('Nama Pelanggan', 'nama_pelanggan', ['class' => 'form-label']); ?>
                 <?= form_input('nama_pelanggan', '', ['class' => 'form-control input', 'id' => 'nama_pelanggan', 'required' => '', 'placeholder' => 'nama pelanggan', 'autocomplete' => 'off']); ?>
 
                 <div id="auto-results"></div>
             </div>
-            <div class="row gx-2 mb-3">
+            <div class="row gx-2 mb-3 blk-pemesan">
                 <div class="col-6">
                     <?= form_label('HP 1', 'hp1', ['class' => 'form-label']); ?>
                     <?= form_input([
                         'autocomplete' => 'off',
-                        'class'        => 'form-control input',
+                        'class'        => 'form-control input hp-num',
                         'id'           => 'hp1',
                         'name'         => 'hp[0]',
-                        'pattern'      => '^(0|\+62|62)(?:\d{8,})$',
                         'placeholder'  => 'HP',
                         'required'     => true,
+                        'inputmode'    => 'numeric',
+                        'maxlength'    => '13',
                     ]) ?>
                 </div>
                 <div class="col-6">
                     <?= form_label('HP 2', 'hp2', ['class' => 'form-label']); ?>
                     <?= form_input([
                         'autocomplete' => 'off',
-                        'class'        => 'form-control input',
+                        'class'        => 'form-control input hp-num',
                         'id'           => 'hp2',
                         'name'         => 'hp[1]',
-                        'pattern'      => '^(0|\+62|62)(?:\d{8,})$',
                         'placeholder'  => 'HP 2 - opsional',
+                        'inputmode'    => 'numeric',
+                        'maxlength'    => '13',
                     ]) ?>
                 </div>
             </div>
+
+            <!-- ===== DATA PENERIMA ===== -->
+            <div class="mb-3 blk-penerima border-top pt-3">
+                <h6 class="text-muted small fw-bold text-uppercase mb-2">Data Penerima</h6>
+
+                <?= form_label('Nama Penerima', 'nama_penerima', ['class' => 'form-label']); ?>
+                <?= form_input('nama_penerima', '', ['class' => 'form-control input', 'id' => 'nama_penerima', 'required' => '', 'placeholder' => 'nama penerima', 'autocomplete' => 'off']); ?>
+            </div>
+            <div class="row gx-2 mb-3 blk-penerima">
+                <div class="col-6">
+                    <?= form_label('HP 1', 'hp_penerima1', ['class' => 'form-label']); ?>
+                    <?= form_input([
+                        'autocomplete' => 'off',
+                        'class'        => 'form-control input hp-num',
+                        'id'           => 'hp_penerima1',
+                        'name'         => 'hp_penerima[0]',
+                        'placeholder'  => 'HP',
+                        'required'     => true,
+                        'inputmode'    => 'numeric',
+                        'maxlength'    => '13',
+                    ]) ?>
+                </div>
+                <div class="col-6">
+                    <?= form_label('HP 2', 'hp_penerima2', ['class' => 'form-label']); ?>
+                    <?= form_input([
+                        'autocomplete' => 'off',
+                        'class'        => 'form-control input hp-num',
+                        'id'           => 'hp_penerima2',
+                        'name'         => 'hp_penerima[1]',
+                        'placeholder'  => 'HP 2 - opsional',
+                        'inputmode'    => 'numeric',
+                        'maxlength'    => '13',
+                    ]) ?>
+                </div>
+            </div>
+
+            <!-- COD + alamat: hanya ditanya waktu menambah penerima -->
+            <div class="blk-alamat">
             <div class="mb-3">
                 <div class="form-check form-switch">
                     <?= form_label('COD', 'cod', ['class' => 'form-check-label']); ?>
@@ -450,7 +547,7 @@ $rincian_pesanan = baca_rincian($orderan->rincian);
                 </div>
             </div>
 
-            <div class="collapse" id="nonCOD">
+            <div id="nonCOD" style="display:none">
                 <div class="mb-3">
                     <?= form_label('Alamat', 'alamat', ['class' => 'form-label']); ?>
                     <?= form_textarea(['name' => 'alamat', 'class' => 'form-control input',  'id' => 'alamat', 'required' => '', 'placeholder' => 'RT/RW, Nama Kampung/Perumahan, No Rumah, Desa/Kelurahan', 'rows' => '3', 'disabled' => '']); ?>
@@ -475,9 +572,10 @@ $rincian_pesanan = baca_rincian($orderan->rincian);
                 <div class="row gx-2 mb-3">
                     <div class="col-4">
                         <?= form_label('Kode Pos', 'kodepos', ['class' => 'form-label']); ?>
-                        <?= form_input('kodepos', '', ['class' => 'form-control input', 'id' => 'kodepos', 'placeholder' => 'xxxxx', 'autocomplete' => 'off', 'disabled' => '']); ?>
+                        <?= form_input('kodepos', '', ['class' => 'form-control input', 'id' => 'kodepos', 'placeholder' => 'xxxxx', 'autocomplete' => 'off', 'inputmode' => 'numeric', 'maxlength' => '5', 'disabled' => '']); ?>
                     </div>
                 </div>
+            </div>
             </div>
         </div>
         <div class="modal-footer">
@@ -616,6 +714,24 @@ $rincian_pesanan = baca_rincian($orderan->rincian);
         </div>
     </div>
 </div>
+
+<!-- Modal detail orderan -->
+<div class="modal fade" id="detailOrderan" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detail Orderan</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <dl id="detailIsi" class="mb-0"></dl>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-link text-decoration-none" data-bs-dismiss="modal">Tutup</button>
+            </div>
+        </div>
+    </div>
+</div>
 <?= $this->endSection() ?>
 
 <?= $this->section('js') ?>
@@ -633,6 +749,7 @@ $link_api_provinsi       = site_url('rajaongkir/provinsi');
 $link_cari_pelanggan     = site_url('pelanggan/cari');
 $link_invoice            = site_url('admin/invoices/lihat/');
 $link_post_pelanggan     = site_url('pelanggan/baru');
+$link_data_pelanggan     = rtrim(site_url('pelanggan/data'), '/') . '/';
 $link_api_notif          = site_url('api/notifikasi/');
 
 ?>
@@ -770,41 +887,46 @@ $js = <<< JS
     		});
     	});
 
-    	// hapus data pemesan / kirim kepada
+    	// salin data cuma bisa dipakai setelah ada pemesan
+    	function sinkronSalin() {
+    		$('#salinPemesan').prop('disabled', $('.hidden_id [name="id_pemesan"]').val() === '');
+    	}
+
+    	// hapus kartu pemesan / penerima, kotak pencariannya muncul lagi
     	$('.btn-hapus-alamat').on('click', function(){
-    		if($(this).hasClass("pemesan")) {
-    			$('#alamat_pemesan').empty(); // hapus alamat pemesan
-    			$('.form_pemesan').show();
-    			$('#cari_pemesan').show().addClass('ganti-data-pemesan');
-    			$('.info-data-pemesan').hide();
+    		var nama = $(this).hasClass("kirimKe") ? 'kirimKe' : 'pemesan';
 
-    			$('.hidden_id [name="id_pemesan"]').val('');
+    		$('#alamat_' + nama).empty();
+    		$('.hidden_id [name="id_' + nama + '"]').val('');
+    		$('.info-data-' + nama).hide();
+    		$('.form_' + nama).show().find('.cari_pelanggan').val('');
 
-    			if ($('.hidden_id [name="id_kirimKe"]').val() == '') {
-    				$('.form_kirimKe').hide();
-    				$('.info-data-kirimKe').hide();
-
-    				$(".cari_pelanggan").removeClass('ganti-data-pemesan');
-    				$('#tambah_pemesan').attr("id","tambah_pemesan_kirimKe");
-    			}
-    		}
-    		else if($(this).hasClass("kirimKe")) {
-    			$('#alamat_kirimKe').empty(); // hapus alamat pemesan
-    			$('.form_kirimKe').show();
-    			$('#cari_kirimKe').show().addClass('ganti-data-kirimKe');
-    			$('.info-data-kirimKe').hide();
-
-    			$('.hidden_id [name="id_kirimKe"]').val('');
-
-    			if ($('.hidden_id [name="id_pemesan"]').val() == '') {
-    				// $('.form_pemesan').hide();
-    				$('.form_kirimKe').hide();
-
-    				$(".cari_pelanggan").removeClass('ganti-data-kirimKe');
-    				$('#tambah_pemesan').attr("id","tambah_pemesan_kirimKe");
-    			}
-    		}
+    		sinkronSalin();
     	});
+
+    	// penerima boleh orang yang sama dengan pemesan
+    	$('#salinPemesan').on('click', function(){
+    		var kartu = $('#alamat_pemesan').clone();
+    		kartu.children('h6').text('Penerima');
+
+    		$('#alamat_kirimKe').html(kartu.contents());
+    		$('.hidden_id [name="id_kirimKe"]').val($('.hidden_id [name="id_pemesan"]').val());
+    		$('.form_kirimKe').hide();
+    		$('.info-data-kirimKe').show();
+    	});
+
+    	// satu nama dipilih dari daftar pencarian
+    	$(document).on('pelanggan:terisi', sinkronSalin);
+
+    	// Enter pada nama yang belum ada di daftar: modal diisi nama itu, tinggal lengkapi
+    	$(document).on('pelanggan:buat', function(e, targetNama, nama){
+    		var kirim = targetNama === 'kirimKe';
+
+    		$('#nama_' + (kirim ? 'penerima' : 'pelanggan')).val(nama);
+    		$('#tambah_' + (kirim ? 'kirimKe' : 'pelanggan')).trigger('click');
+    	});
+
+    	sinkronSalin();
 
 
     	// load juragan
@@ -833,40 +955,188 @@ $js = <<< JS
     	// modal tambah pelanggan
 
     	var mpel=document.getElementById('modalTambahPelanggan');
+
+    	// Mode modal: tambah_pemesan / tambah_kirimKe. Judul dan blok yang tampil
+    	// datang dari tombol pemicunya, kecuali waktu edit yang membuka modal langsung.
+    	// Waktu edit, pertanyaan COD/alamat selalu ikut dibuka: kalau tidak, field
+    	// alamat tidak terkirim dan data pelanggan lama tertimpa jadi COD.
+    	function terapkanMode(mode, judul, edit) {
+    		var penerima = mode === 'tambah_kirimKe',
+    			tanyaAlamat = penerima || edit === true;
+
+    		mpel.querySelector('.modal-title').textContent = judul;
+    		$('#tambahPelanggan').removeClass('tambah_pemesan tambah_kirimKe').addClass(mode);
+
+    		$('#tambahPelanggan .blk-pemesan').toggle(!penerima);
+    		$('#tambahPelanggan .blk-penerima').toggle(penerima);
+    		$('#tambahPelanggan .blk-alamat').toggle(tanyaAlamat);
+    		$('#nama_pelanggan, #hp1').prop('required', !penerima);
+    		$('#nama_penerima, #hp_penerima1').prop('required', penerima);
+
+    		$('#nonCOD .input').prop('disabled', !tanyaAlamat || $('#cod').prop('checked'));
+    	}
+
     	mpel.addEventListener('show.bs.modal',function(g){
-    		var a=g.relatedTarget,
-    			c=a.getAttribute('title'),
-    			d=a.getAttribute('id'),
-    			e=mpel.querySelector('.modal-title');
-    		e.textContent=c;
-    		$('#tambahPelanggan').addClass(d);
+    		var a = g.relatedTarget;
+
+    		// dibuka lewat tombol edit: mode dan isian sudah disiapkan handler edit
+    		if (! a) {
+    			return;
+    		}
+
+    		$('#tambahPelanggan [name="id_pelanggan"]').val('');
+    		terapkanMode(a.getAttribute('data-mode'), a.getAttribute('title'));
     	});
 
-    	var CoN = document.getElementById('nonCOD');
-    	CoN.addEventListener('show.bs.collapse', function () {
-    		var b=mpel.querySelector('[name="provinsi"]');
+    	// daftar provinsi cuma perlu satu kali; dipakai juga waktu mengisi form edit
+    	var janjiProvinsi = null;
 
-    		$.ajax({
-    			method:'GET',
-    			url:'{$link_api_provinsi}'
-    		}).done(function(a){
-    			$.each(a,function(c,a){
-    				$('<option />',{value:a.province_id,text:a.province}).appendTo(b);
+    	function isiProvinsi() {
+    		var selProv = mpel.querySelector('[name="provinsi"]');
+
+    		if (selProv.options.length > 1) {
+    			return $.Deferred().resolve().promise();
+    		}
+
+    		if (janjiProvinsi) {
+    			return janjiProvinsi;
+    		}
+
+    		janjiProvinsi = $.getJSON('{$link_api_provinsi}').done(function(a){
+    			$.each(a, function(c, v){
+    				$('<option />',{value:v.province_id, text:v.province_name}).appendTo(selProv);
     			});
+    		});
+
+    		return janjiProvinsi;
+    	}
+
+    	function isiKabupaten(provinsi) {
+    		return $.getJSON('{$link_api_kota}', { prov: provinsi }).done(function(a){
+    			$(kab).empty();
+    			$('<option />',{value:'',text:'Pilih Kab/Kota'}).appendTo(kab);
+    			$(kec).empty();
+    			$('<option />',{value:'',text:'Pilih Kecamatan'}).appendTo(kec);
+    			$.each(a,function(c,v){
+    				var b = v.city_name;
+    				v.type == 'Kota' && (b = v.type + ' ' + v.city_name);
+    				$('<option />',{value:v.city_id,text:b}).attr('data-kodepos', v.postal_code).appendTo(kab);
+    			});
+    		});
+    	}
+
+    	function isiKecamatan(kota) {
+    		return $.getJSON('{$link_api_kecamatan}', { kota: kota }).done(function(a){
+    			$(kec).empty();
+    			$('<option />',{value:'',text:'Pilih Kecamatan'}).appendTo(kec);
+    			$.each(a,function(c,v){
+    				$('<option />',{value:v.subdistrict_id,text:v.subdistrict_name}).appendTo(kec);
+    			});
+    		});
+    	}
+
+    	// pensil di kartu: tarik datanya lalu buka modal dalam mode yang sama, terisi
+    	$('.btn-edit-alamat').on('click', function(){
+    		var tombol = this,
+    			kirim  = $(tombol).hasClass('kirimKe'),
+    			nama   = kirim ? 'kirimKe' : 'pemesan',
+    			id     = $('.hidden_id [name="id_' + nama + '"]').val(),
+    			juragan = parseInt($('select[name="juragan"]').val(), 10) || 0;
+
+    		if (id === '' || ! juragan) {
+    			return;
+    		}
+
+    		tombol.disabled = true;
+
+    		$.getJSON('{$link_data_pelanggan}' + id, { juragan_id: juragan }).done(function (b) {
+    			isiModalEdit(nama, b && b.data);
+    		}).always(function () {
+    			tombol.disabled = false;
     		});
     	});
 
-    	$(document).on("keyup change", '.swictCOD',function(){
-            if(this.checked) {
-                // disable "semua" form alamat
-                $('#nonCOD .input').prop('disabled', true);
-                $('#nonCOD').collapse('hide');
-            }
-            else {
-                $('#nonCOD .input').prop('disabled', false);
-                $('#nonCOD').collapse('show');
-            }
-        });
+    	function isiModalEdit(nama, d) {
+    		if (! d) {
+    			return;
+    		}
+
+    		var kirim = nama === 'kirimKe',
+    			cod   = Number(d.cod) === 1,
+    			hp    = d.hp || [];
+
+    		terapkanMode(kirim ? 'tambah_kirimKe' : 'tambah_pemesan', kirim ? 'Ubah Data Penerima' : 'Ubah Data Pemesan', true);
+
+    		$('#nama_' + (kirim ? 'penerima' : 'pelanggan')).val(d.nama);
+    		$(kirim ? '#hp_penerima1' : '#hp1').val(hp[0] || '');
+    		$(kirim ? '#hp_penerima2' : '#hp2').val(hp[1] || '');
+    		$('#tambahPelanggan [name="id_pelanggan"]').val(d.id);
+
+    		// switch COD sekaligus menentukan form alamat tampil atau tidak
+    		$('#cod').prop('checked', cod).trigger('change');
+
+    		$('#alamat').val(cod ? '' : d.alamat);
+    		$('#kodepos').val(cod ? '' : d.kodepos);
+
+    		if (! cod) {
+    			isiProvinsi().done(function () {
+    				$('#provinsi').val(String(d.provinsi));
+    				isiKabupaten(d.provinsi).done(function () {
+    					$('#kabupaten').val(String(d.kabupaten));
+    					isiKecamatan(d.kabupaten).done(function () {
+    						$('#kecamatan').val(String(d.kecamatan));
+    					});
+    				});
+    			});
+    		}
+
+    		$(mpel).modal('show');
+    	}
+
+    	$(document).on("keyup change", '.swictCOD', function(){
+    		var nonCOD = $('#nonCOD');
+    		if (this.checked) {
+    			// COD aktif - sembunyikan form alamat
+    			$('#nonCOD .input').prop('disabled', true);
+    			nonCOD.hide();
+    		} else {
+    			// COD nonaktif - tampilkan form alamat
+    			$('#nonCOD .input').prop('disabled', false);
+    			nonCOD.show();
+    			isiProvinsi();
+    		}
+    	});
+
+    	// nama penerima: huruf saja, spasi dan titik (cth: H. AGUS) boleh
+    	$(document).on('input', '#nama_penerima', function() {
+    		var v = this.value.replace(/[^A-Za-zÀ-ÿ.'\s]/g, '');
+
+    		if (v !== this.value) {
+    			this.value = v;
+    		}
+    	});
+
+    	// nomor HP & kode pos: angka saja; HP maksimal 13 digit, kode pos 5
+    	$(document).on('input', '.hp-num, #kodepos', function() {
+    		var maks = this.id === 'kodepos' ? 5 : 13,
+    			v = this.value.replace(/\D/g, '');
+
+    		if (v !== this.value || v.length > maks) {
+    			this.value = v.slice(0, maks);
+    		}
+    	});
+
+    	// setelah berhasil disimpan, menutup modal membersihkan form; kalau
+    	// belum disimpan isian dibiarkan supaya tidak hilang saat kepepet close
+    	$(mpel).on('hidden.bs.modal', function() {
+    		if (fpel.data('tersimpan')) {
+    			fpel[0].reset();
+    			fpel.removeData('tersimpan');
+    			$('#auto-results').empty();
+    			$('#nonCOD').hide();
+    			$('#nonCOD .input').prop('disabled', true);
+    		}
+    	});
 
     	var kab=mpel.querySelector('#modalTambahPelanggan [name="kabupaten"]'),
     		kec=mpel.querySelector('#modalTambahPelanggan [name="kecamatan"]'),
@@ -887,8 +1157,26 @@ $js = <<< JS
     		// Let's select and cache all the fields
     		var inputs = form.find("input, select, button, textarea");
 
-    		// Serialize the data in the form
-    		var serializedData = form.serialize();
+    		// disalin sebelum input dinonaktifkan
+    		var formFields = form.serializeArray();
+
+    		// endpoint pelanggan/baru cuma membaca nama_pelanggan + hp[], jadi
+    		// data penerima dikirim memakai nama field pemesan
+    		if (form.hasClass('tambah_kirimKe')) {
+    			var ganti = {
+    				'nama_pelanggan': form.find('[name="nama_penerima"]').val(),
+    				'hp[0]': form.find('[name="hp_penerima[0]"]').val(),
+    				'hp[1]': form.find('[name="hp_penerima[1]"]').val()
+    			};
+
+    			formFields = $.map(formFields, function (f) {
+    				return Object.prototype.hasOwnProperty.call(ganti, f.name)
+    					? { name: f.name, value: ganti[f.name] }
+    					: f;
+    			});
+    		}
+
+    		var serializedData = $.param(formFields);
 
     		// Let's disable the inputs for the duration of the Ajax request.
     		// Note: we disable elements AFTER the form data has been serialized.
@@ -904,6 +1192,8 @@ $js = <<< JS
 
     		// Callback handler that will be called on success
     		request_pelanggan.done(function (response, textStatus, jqXHR){
+    			fpel.data('tersimpan', true);
+
     			var c='';
     			c+='<span class="d-block fw-bold">'+response.nama_pelanggan+'</span>',
     			c+='<span class="d-block">';
@@ -923,38 +1213,21 @@ $js = <<< JS
     			}
     			c+='</span>';
 
-    			if (form.hasClass('tambah_pemesan_kirimKe')) {
-    				// sisipkan dikedua
-    				$('#alamat_pemesan').empty().append('<h6 class="text-muted fw-normal">Pemesan</h6>' + c);
-    				$('#alamat_kirimKe').empty().append('<h6 class="text-muted fw-normal">Kirim Kepada</h6>' + c);
+    			var kirim = form.hasClass('tambah_kirimKe'),
+    				nama = kirim ? 'kirimKe' : 'pemesan',
+    				lain = kirim ? 'pemesan' : 'kirimKe';
 
-    				$('.hidden_id [name="id_pemesan"]').val(response.id_pelanggan);
-    				$('.hidden_id [name="id_kirimKe"]').val(response.id_pelanggan);
+    			$('#alamat_' + nama).empty().append('<h6 class="text-muted fw-normal">' + (kirim ? 'Penerima' : 'Pemesan') + '</h6>' + c);
+    			$('.hidden_id [name="id_' + nama + '"]').val(response.id_pelanggan);
+    			$('.form_' + nama).hide();
+    			$('.info-data-' + nama).show();
 
-    				$('.form_pemesan').hide();
-
-    				$('.info-data-pemesan').show();
-    				$('.info-data-kirimKe').show();
-
-    				form.removeClass('tambah_pemesan_kirimKe'),
-    				$('#tambah_pemesan_kirimKe').attr("id","tambah_pemesan");
+    			// pemesan dan penerima boleh orang yang sama: kartunya ikut diperbarui
+    			if ($('.hidden_id [name="id_' + lain + '"]').val() === String(response.id_pelanggan)) {
+    				$('#alamat_' + lain).empty().append('<h6 class="text-muted fw-normal">' + (lain === 'kirimKe' ? 'Penerima' : 'Pemesan') + '</h6>' + c);
     			}
-    			else if (form.hasClass('tambah_pemesan')) {
-    				// sisipkan hanya untuk pemesan
-    				$('#alamat_pemesan').empty().append('<h6 class="text-muted fw-normal">Pemesan</h6>' + c);
-    				$('.hidden_id [name="id_pemesan"]').val(response.id_pelanggan);
 
-    				$('.form_pemesan').hide();
-    				$('.info-data-pemesan').show();
-    			}
-    			else if (form.hasClass('tambah_kirimKe')) {
-    				// sisipkan hanya untuk kirim kepada
-    				$('#alamat_kirimKe').empty().append('<h6 class="text-muted fw-normal">Kirim Kepada</h6>' + c);
-    				$('.hidden_id [name="id_kirimKe"]').val(response.id_pelanggan);
-
-    				$('.form_kirimKe').hide();
-    				$('.info-data-kirimKe').show();
-    			}
+    			sinkronSalin();
     			$(mpel).modal('hide');
     		});
 
@@ -976,34 +1249,10 @@ $js = <<< JS
     		});
     	}),
     	$('select[name="provinsi"]').on('change',function(){
-    		$.ajax({
-    			method:'GET',
-    			url:'{$link_api_kota}',
-    			data:{prov:this.value}
-    		}).done(function(a){
-    			$('[name="kabupaten"]').empty(),
-    			$('[name="kecamatan"]').empty(),
-    			$('<option />',{value:'',text:'Pilih Kab/Kota'}).appendTo(kab),
-    			$('<option />',{value:'',text:'Pilih Kecamatan'}).appendTo(kec),
-    			$.each(a,function(c,a){
-    				var b=a.city_name;
-    				a.type=='Kota'&&(b=a.type+' '+a.city_name),
-    				$('<option />',{value:a.city_id,text:b}).attr('data-kodepos',a.postal_code).appendTo(kab);
-    			});
-    		});
+    		isiKabupaten(this.value);
     	}),
     	$('select[name="kabupaten"]').on('change',function(){
-    		$.ajax({
-    			method:'GET',
-    			url:'{$link_api_kecamatan}',
-    			data:{kota:this.value}
-    		}).done(function(a){
-    			$('[name="kecamatan"]').empty(),
-    			$('<option />',{value:'',text:'Pilih Kecamatan'}).appendTo(kec),
-    			$.each(a,function(b,a){
-    				$('<option />',{value:a.subdistrict_id,text:a.subdistrict_name}).appendTo(kec);
-    			});
-    		});
+    		isiKecamatan(this.value);
     	});
 
     	// modal tambah produk
@@ -1068,6 +1317,62 @@ $js = <<< JS
     		tampilJadwal(true);
     	});
 
+    	// tipe orderan: rombongan membuka tabel Anggota Rombongan, satuan menutupnya.
+    	// Data lama bisa punya anggota tanpa tipe orderan, jadi panel tetap dibuka
+    	// saat baris anggotanya sudah ada.
+    	function tampilAnggota(buka) {
+    		var pnl = $('.anggota-isi').first(),
+    			btn = $('.buka-anggota').first();
+
+    		pnl.toggleClass('d-none', !buka);
+    		btn.attr('aria-expanded', buka ? 'true' : 'false');
+    		btn.find('.ikon-panah-anggota').toggleClass('rotate-180', buka);
+
+    		if (!buka) {
+    			pnl.find('.anggota-daftar').empty();
+    			$('.jumlah-anggota').text(0);
+    		} else {
+    			var df = pnl.find('.anggota-daftar').first();
+    			if (df.children('.anggota-baris').length === 0) {
+    				$('.tambah-anggota').first().trigger('click');
+    			}
+    		}
+    	}
+
+    	// kategori menentukan panel yang tampil, dua arah:
+    	// satuan -> tabel rombongan hilang, rombongan -> card orderan hilang
+    	function tampilKategori(v) {
+    		$('.anggota-isi').first().closest('.card').toggleClass('d-none', v !== 'rombongan');
+    		$('.list-orderan').first().closest('.card').toggleClass('d-none', v === 'rombongan');
+    	}
+
+    	if ($('#tipe_orderan').val() === 'rombongan') {
+    		tampilAnggota(true);
+    	}
+
+    	tampilKategori($('#tipe_orderan').val());
+
+    	$('#tipe_orderan').on('change', function() {
+    		var v = $(this).val();
+
+    		if (v === 'rombongan') {
+    			tampilAnggota(true);
+    			tampilKategori(v);
+    		}
+    		else if (v === 'satuan') {
+    			if ($('.anggota-daftar .anggota-baris').length === 0 || confirm('Kosongkan daftar anggota rombongan?')) {
+    				tampilAnggota(false);
+    				tampilKategori(v);
+    			}
+    			else {
+    				$(this).val('rombongan');
+    			}
+    		}
+    		else {
+    			tampilKategori('');
+    		}
+    	});
+
     	// spesifikasi custom hanya muncul saat ukuran = Custom
     	$('#ukuran').on('change', function() {
     		var custom = $(this).val() === 'custom';
@@ -1077,54 +1382,134 @@ $js = <<< JS
     		}
     	});
 
-    	var fpro=$('#nambahProduk');
+    	var fpro=$('#nambahProduk'),
+    		rowEdit = null;
+
+    	// panel ukuran disembunyikan di dalam baris: nilainya tetap terkirim dan
+    	// hanya bisa diubah lewat tombol Ubah, yang tampil cuma ringkasannya
+    	function panelRow(jenis, nilai, k) {
+    		var src = $('#ukuranModal').clone(false);
+
+    		src.removeAttr('id')
+    			.attr('data-nama', 'produk[' + k + ']')
+    			.attr('data-jenis', jenis || '')
+    			.attr('data-nilai', JSON.stringify(nilai || {}))
+    			.attr('data-lebih', '[]')
+    			.addClass('d-none');
+
+    		UKURAN.tempel(src);
+
+    		return src;
+    	}
+
+    	// satu baris orderan; dipakai lagi waktu edit supaya kuncinya (k) tetap sama
+    	function bikinBaris(k, d, a, e, b, rincian, jenis, nilai) {
+    		var label = d + ' ( ' + String(e).toUpperCase() + ' )',
+    			bd = $('<button type="button" class="bg-transparent border-0 detail_row px-1" title="Detail"><i class="fal fa-eye h6 text-secondary"></i></button>'),
+    			be = $('<button type="button" class="bg-transparent border-0 edit_row px-1" title="Ubah"><i class="fal fa-pen h6 text-primary"></i></button>'),
+    			bt = $('<button type="button" class="bg-transparent border-0 hapus_row orderan px-1" title="Hapus"><i class="fal fa-trash-alt h6 text-danger"></i></button>'),
+    			nama = $('<div class="fw-semibold text-truncate"></div>').text(label).attr('title', label),
+    			ring = $('<div class="small text-muted text-truncate ukuran-ringkas d-none"></div>'),
+    			isi = $('<div class="flex-grow-1"></div>').append(nama).append(ring),
+    			t = $('<div class="d-flex align-items-start"></div>').append(isi),
+    			f = price(a),
+    			aksi = $('<td class="text-end"></td>').append($('<span class="d-inline-flex align-items-center gap-1"></span>').append(bd).append(be).append(bt)),
+    			p = $('<div/>', {'class' : 'text-end', 'data-uang1': a * b})
+    				.append(price(a * b))
+    				.append($('<input/>', {'type':'hidden','name':'produk['+k+'][kode]','value':d}))
+    				.append($('<input/>', {'type':'hidden','name':'produk['+k+'][harga]','value':a}))
+    				.append($('<input/>', {'type':'hidden','name':'produk['+k+'][ukuran]','value':e}))
+    				.append($('<input/>', {'type':'hidden','name':'produk['+k+'][qty]','value':b})),
+    			tr = $('<tr/>', {'data-kunci': k})
+    				.append($('<td/>').append(t))
+    				.append($('<td/>').append(f))
+    				.append($('<td/>').append(b))
+    				.append($('<td/>').append(p))
+    				.append(aksi);
+
+    		if (e === 'custom') {
+    			$.each(rincian, function (key, v) {
+    				p.append($('<input/>', {'type':'hidden','name':'produk['+k+'][rincian]['+key+']','value':v}));
+    			});
+    		}
+
+    		if (jenis !== '' || ! $.isEmptyObject(nilai)) {
+    			isi.append(panelRow(jenis, nilai, k));
+    		}
+
+    		return tr;
+    	}
+
+    	// ringkasan ukuran satu baris, dibaca dari panel tersembunyinya
+    	function ringkasRow(tr) {
+    		var bag = [];
+
+    		tr.find('.uk-field').each(function() {
+    			var v = $.trim($(this).val() || ''),
+    				s = $(this).data('satuan');
+
+    			if (v !== '') {
+    				bag.push($(this).data('label') + ' ' + String(v).replace('.', ',') + (s ? ' ' + s : ''));
+    			}
+    		});
+
+    		var teks = bag.join(' · ');
+    		tr.find('.ukuran-ringkas').first().text(teks).attr('title', teks).toggleClass('d-none', teks === '');
+    	}
+
+    	// baris warisan server: ringkasan ukurannya baru bisa dihitung di sini
+    	$('.list-orderan tr[data-kunci]').each(function(){
+    		ringkasRow($(this));
+    	});
+
     	fpro.on('submit',function(c){
     		c.preventDefault(),
     		c.stopPropagation();
+
     		var d=fpro.find('[name="kode_produk"]').val(),
     			a=fpro.find('[name="harga_satuan"]').val(),
     			e=fpro.find('[name="ukuran"]').val(),
     			b=fpro.find('[name="QTY"]').val(),
-    			f=price(a),
-    			g=price(a*b),
-    			j = uniqId(),
-    			ik = $('<input/>',{'type':'hidden','name': 'produk['+j+'][kode]', 'value': d}),
-    			ip = $('<input/>',{'type':'hidden','name': 'produk['+j+'][harga]', 'value': a}),
-    			iz = $('<input/>',{'type':'hidden','name': 'produk['+j+'][ukuran]', 'value': e}),
-    			iq = $('<input/>',{'type':'hidden','name': 'produk['+j+'][qty]', 'value': b}),
-    			bt = $('<button />', {'class' : 'bg-transparent border-0 hapus_row orderan me-1', html:'<span aria-hidden="true"><i class="fal fa-trash-alt h6"></i></span>'}),
-    			t = $('<div/>').append(bt).append(d+' ( '+e+' )'),
-    			tb = $('.list-orderan'),
-    			p = $('<div/>', {'class' : 'text-end', 'data-uang1': a*b}).append(g).append(ik).append(ip).append(iz).append(iq);
+    			rincian={},
+    			nilai={},
+    			jenis=$('#ukuranModal .uk-jenis').val() || '',
+    			k = rowEdit ? rowEdit.attr('data-kunci') : uniqId(),
+    			tb = $('.list-orderan');
 
-    		// simpan spesifikasi custom (kalau ukuran = custom) sebagai hidden input
-    		if (e === 'custom') {
-    			fpro.find('#customDetail .ri-field').each(function(){
-    				var k = $(this).data('key'),
-    					v = $.trim($(this).val() || '');
-    				if (k && v !== '') {
-    					p.append($('<input/>', {'type':'hidden','name':'produk['+j+'][rincian]['+k+']','value':v}));
-    				}
-    			});
-    		}
-
-    		// ukuran terstruktur: nama inputnya baru bisa dibuat sekarang karena
-    		// kunci barisnya (j) baru ketemu di sini
-    		var uku = UKURAN.nilai('#ukuranModal');
-    		$.each(uku, function (i, u) {
-    			p.append($('<input/>', {'type':'hidden','name':'produk['+j+'][nilai_ukuran]['+u.key+']','value':u.nilai}));
+    		fpro.find('#customDetail .ri-field').each(function(){
+    			var key = $(this).data('key'),
+    				v = $.trim($(this).val() || '');
+    			if (key && v !== '') {
+    				rincian[key] = v;
+    			}
     		});
-    		if (uku.length) {
-    			t.append($('<div/>', {'class':'small text-muted'}).text(UKURAN.ringkas('#ukuranModal')));
-    		}
-    		newRow(tb,[t,f,b,p]);
-    		subtotal();
+    		$('#ukuranModal .uk-field').each(function(){
+    			var v = $.trim($(this).val() || '');
+    			if (v !== '') {
+    				nilai[$(this).data('key')] = v;
+    			}
+    		});
 
-    		pl=$('.list-orderan').data('length'),
-    		$('.list-orderan').data('length',pl+1),
-    		listOrder(),
+    		var tr = bikinBaris(k, d, a, e, b, rincian, jenis, nilai);
+
+    		if (rowEdit) {
+    			rowEdit.replaceWith(tr);
+    			rowEdit = null;
+    		}
+    		else {
+    			tb.append(tr);
+    			pl=tb.data('length'),
+    			tb.data('length',pl+1),
+    			listOrder();
+    		}
+
+    		// ringkasan ukuran dihitung ulang setelah baris masuk DOM
+    		ringkasRow(tr);
+
+    		subtotal();
     		$('#tambahProduk').modal('hide');
-    	}),
+    	});
+
     	$(document).on('click','.hapus_row',function(){
     		this.closest('tr').remove(),
     		$(this).hasClass('orderan')&&(
@@ -1137,12 +1522,121 @@ $js = <<< JS
     		totalbiaya();
     	});
 
+    	// klik ubah: isi ulang modal dengan data baris, kunci baris dipertahankan
+    	$(document).on('click','.edit_row',function(){
+    		var tr = $(this).closest('tr'),
+    			d = {},
+    			rincian = {},
+    			nilai = {},
+    			pnl = $('#ukuranModal');
+
+    		tr.find('[name^="produk["]').each(function(){
+    			var m = this.name.match(/^produk\[[^\]]+\]\[rincian\]\[([^\]]+)\]$/),
+    				m2 = this.name.match(/^produk\[[^\]]+\]\[([^\]]+)\]$/);
+
+    			if (m) {
+    				rincian[m[1]] = this.value;
+    			}
+    			else if (m2) {
+    				d[m2[1]] = this.value;
+    			}
+    		});
+    		tr.find('.uk-field').each(function(){
+    			var v = $.trim($(this).val() || '');
+    			if (v !== '') {
+    				nilai[$(this).data('key')] = v;
+    			}
+    		});
+
+    		fpro.find('[name="kode_produk"]').val(d.kode),
+    		fpro.find('[name="harga_satuan"]').val(d.harga),
+    		fpro.find('[name="QTY"]').val(d.qty),
+    		fpro.find('[name="ukuran"]').val(d.ukuran).trigger('change'),
+    		$('#customDetail .ri-field').each(function(){
+    			$(this).val(rincian[$(this).data('key')] || '');
+    		});
+
+    		pnl.find('.uk-jenis').val(tr.find('.uk-jenis').val() || '').trigger('change');
+    		pnl.find('.uk-field').each(function(){
+    			var key = $(this).data('key');
+    			if (nilai[key] !== undefined) {
+    				$(this).val(nilai[key]);
+    			}
+    		});
+
+    		rowEdit = tr;
+    		$('#tambahProdukLabel').text('Edit Orderan');
+    		fpro.find('button[type="submit"]').text('Simpan');
+    		$('#tambahProduk').modal('show');
+    	});
+
+    	// klik detail: tampilkan isi baris tanpa membuka modal edit
+    	function barisDetail(judul, teks) {
+    		return $('<div class="d-flex justify-content-between gap-3 border-bottom py-2"></div>')
+    			.append($('<dt class="fw-semibold text-muted mb-0"></dt>').text(judul))
+    			.append($('<dd class="mb-0 text-end"></dd>').text(teks));
+    	}
+
+    	$(document).on('click','.detail_row',function(){
+    		var tr = $(this).closest('tr'),
+    			d = {},
+    			rincian = {},
+    			ukuran = [],
+    			dl = $('#detailIsi').empty();
+
+    		tr.find('[name^="produk["]').each(function(){
+    			var m = this.name.match(/^produk\[[^\]]+\]\[rincian\]\[([^\]]+)\]$/),
+    				m2 = this.name.match(/^produk\[[^\]]+\]\[([^\]]+)\]$/);
+
+    			if (m) {
+    				rincian[m[1]] = this.value;
+    			}
+    			else if (m2) {
+    				d[m2[1]] = this.value;
+    			}
+    		});
+    		tr.find('.uk-field').each(function(){
+    			var v = $.trim($(this).val() || ''),
+    				s = $(this).data('satuan');
+
+    			if (v !== '') {
+    				ukuran.push($(this).data('label') + ' ' + v + (s ? ' ' + s : ''));
+    			}
+    		});
+
+    		dl.append(barisDetail('Produk', (d.kode || '') + ' ( ' + String(d.ukuran || '').toUpperCase() + ' )'));
+    		dl.append(barisDetail('Harga', price(Number(d.harga) || 0)));
+    		dl.append(barisDetail('QTY', d.qty || ''));
+    		dl.append(barisDetail('Subtotal', price((Number(d.harga) || 0) * (Number(d.qty) || 0))));
+
+    		var labelRi = {
+    			ukuran_jadi: 'Ukuran jadi',
+    			pemilik: 'Pemilik ukuran',
+    			bahan: 'Bahan',
+    			spesifikasi: 'Model & jahitan',
+    			ukuran_detail: 'Detail ukuran'
+    		};
+
+    		$.each(rincian, function (key, v) {
+    			dl.append(barisDetail(labelRi[key] || key, v));
+    		});
+
+    		if (ukuran.length) {
+    			dl.append(barisDetail('Ukuran', ukuran.join(' · ')));
+    		}
+
+    		$('#detailOrderan').modal('show');
+    	});
+
     	var mPro=document.getElementById('tambahProduk');
     	mPro.addEventListener('hidden.bs.modal',function(){
     		var a=$('#nambahProduk');
     		a.removeClass('was-validated')[0].reset();
     		$('#customDetail').addClass('d-none');
     		UKURAN.kosongkan('#ukuranModal');
+    		$('#tambahProdukLabel').text('Tambah Orderan');
+    		a.find('button[type="submit"]').text('Tambahkan');
+    		rowEdit = null;
     	});
 
     	function subtotal(){
@@ -1230,7 +1724,7 @@ $js = <<< JS
     				r=$('<tr/>'),
     				c1=$('<td/>', {'colspan': '3', 'class': 'text-end'}).append('<button type="button" class="bg-transparent border-0 hapus_row me-1" aria-label="Close"><span aria-hidden="true"><i class="fal fa-trash-alt h6"></i></span></button>'+b+d),
     				c2=$('<td/>').append('<div data-biaya="'+u+'" class="text-end '+e+'">'+h+'</div>').append(id).append(no).append(la),
-    				q = r.append(c1).append(c2);
+    				q = r.append(c1).append(c2).append('<td></td>');
     			$(q).appendTo('.listBiaya');
     			totalbiaya();
     		}

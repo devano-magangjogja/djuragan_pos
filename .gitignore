@@ -1,10 +1,19 @@
 # Environment
 .env
-.env.production
-.env.testing
+.env.*
+/.env
 
-# Writable directory (berisi file cache, log, debugbar, dll.)
-/writable
+# Node
+/node_modules
+
+# Writable directory
+/writable/cache/*
+/writable/logs/*
+/writable/session/*
+/writable/debugbar/*
+/writable/*
+!/writable/index.html
+!/writable/uploads/
 
 # IDE
 .vscode/
@@ -17,3 +26,4 @@
 composer.lock
 vendor/
 /storage
+

@@ -17,9 +17,14 @@
     }
 
     function hitung($daftar) {
-        var n = $daftar.children('.anggota-baris').length;
+        var $baris = $daftar.children('.anggota-baris');
 
-        $daftar.closest('.card').find('.jumlah-anggota').text(n);
+        // nomor kartu selalu ulang 1..n tiap ada tambah/hapus baris
+        $baris.each(function (i) {
+            $(this).find('.anggota-nomor').first().text(i + 1);
+        });
+
+        $daftar.closest('.card').find('.jumlah-anggota').text($baris.length);
     }
 
     /** Satu baris anggota baru; nama boleh langsung diisi lewat $isi. */
@@ -31,6 +36,12 @@
         }
 
         var $row = $($cadang.html().split(GANTIAN).join(kunci()));
+
+        // Wariskan jenis busana dari anggota pertama jika sudah pernah dipilih
+        var jenisPertama = $daftar.find('.uk-jenis').first().val();
+        if (jenisPertama) {
+            $row.find('.ukuran-panel').attr('data-jenis', jenisPertama);
+        }
 
         $daftar.append($row);
 
@@ -61,9 +72,22 @@
         .on('click', '.buka-anggota', function (e) {
             e.preventDefault();
 
-            var $isi = $(this).closest('.card').find('.anggota-isi').first().toggleClass('d-none');
+            var $card = $(this).closest('.card'),
+                $isi = $card.find('.anggota-isi').first(),
+                $panah = $(this).find('.ikon-panah-anggota'),
+                buka = $isi.hasClass('d-none');
 
-            $(this).attr('aria-expanded', $isi.hasClass('d-none') ? 'false' : 'true');
+            $isi.toggleClass('d-none', !buka);
+            $(this).attr('aria-expanded', buka ? 'true' : 'false');
+            $panah.toggleClass('rotate-180', buka);
+
+            // Jika dibuka dan belum ada baris sama sekali, otomatis munculkan 1 anggota
+            if (buka) {
+                var $daftar = $isi.find('.anggota-daftar').first();
+                if ($daftar.children('.anggota-baris').length === 0) {
+                    baris($daftar);
+                }
+            }
         })
         .on('click', '.tambah-anggota', function () {
             baris($(this).closest('.anggota-isi').find('.anggota-daftar').first());
@@ -94,4 +118,11 @@
 
             $kotak.val('');
         });
+
+    // baris warisan server di form Sunting: nomornya baru bisa diisi di sini
+    $(function () {
+        $('.anggota-daftar').each(function () {
+            hitung($(this));
+        });
+    });
 }(jQuery));

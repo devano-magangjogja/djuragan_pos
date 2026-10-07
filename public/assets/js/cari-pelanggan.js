@@ -4,6 +4,8 @@
  * Yang dicari hanya pelanggan yang pernah bertransaksi pada juragan yang sedang
  * dipilih (filter-nya ada di PelangganModel::cari). Setelah satu nama dipilih,
  * hidden id + kartu alamat diisi persis seperti hasil modal "Tambah".
+ * Enter pada nama yang tidak ada di daftar memicu 'pelanggan:buat' supaya halaman
+ * bisa membuka form isian dengan nama sudah terisi.
  * Dipasang lewat window.CARI_PELANGGAN di view masing-masing.
  */
 (function ($) {
@@ -59,7 +61,7 @@
     function isiKartu(targetNama, a) {
         var $kartu = $('#alamat_' + targetNama).empty();
 
-        $kartu.append($('<h6 class="text-muted fw-normal"></h6>').text(targetNama === 'kirimKe' ? 'Kirim Kepada' : 'Pemesan'));
+        $kartu.append($('<h6 class="text-muted fw-normal"></h6>').text(targetNama === 'kirimKe' ? 'Penerima' : 'Pemesan'));
         baris($kartu, 'd-block fw-bold', a.nama);
 
         var $hp = $('<span class="d-block"></span>');
@@ -75,17 +77,6 @@
         $('.hidden_id [name="id_' + targetNama + '"]').val(a.id);
         $('.form_' + targetNama).hide();
         $('.info-data-' + targetNama).show();
-    }
-
-    function pakai(targetNama, a) {
-        isiKartu(targetNama, a);
-
-        // Persis seperti modal "Tambah": pemesan yang baru dipilih ikut dipakai
-        // sebagai alamat kirim, kecuali alamat kirim sudah diisi orang lain.
-        if (targetNama === 'pemesan' && $('.hidden_id [name="id_kirimKe"]').val() === '') {
-            isiKartu('kirimKe', a);
-            $('#tambah_pemesan_kirimKe').attr('id', 'tambah_pemesan');
-        }
     }
 
     function cari($input) {
@@ -141,15 +132,29 @@
             e.preventDefault();
 
             var a = $(this).data('pelanggan'),
-                $input = $(this).closest('.input-group').find('.cari_pelanggan');
+                $input = $(this).closest('.input-group').find('.cari_pelanggan'),
+                targetNama;
 
             if (! a) {
                 return;
             }
 
-            pakai(target($input), a);
+            targetNama = target($input);
+            isiKartu(targetNama, a);
+
+            // Halaman orderan pengguna: pemesan yang baru dipilih langsung ikut jadi
+            // alamat kirim. Halaman admin tidak - di sana ada tombol
+            // "Sama dengan Pemesan" sendiri.
+            if (targetNama === 'pemesan' && $('#salinPemesan').length === 0 && $('.hidden_id [name="id_kirimKe"]').val() === '') {
+                isiKartu('kirimKe', a);
+                $('#tambah_pemesan_kirimKe').attr('id', 'tambah_pemesan');
+            }
+
             $input.val('');
             daftar($input).hide();
+
+            // halaman yang pakai satu kotak berganti mode (admin) menyahut ini
+            $(document).trigger('pelanggan:terisi', [targetNama]);
         })
         .on('mousedown', function (e) {
             if ($(e.target).closest('.cari_pelanggan, .saran-pelanggan').length === 0) {
@@ -168,7 +173,33 @@
                 }
             })
             .on('keydown', function (e) {
-                var $saran = daftar(this), $item, $aktif, i;
+                var $input = $(this),
+                    $saran = daftar(this),
+                    $aktif, $item, nama, i;
+
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    $aktif = $saran.children('.active');
+
+                    if ($aktif.length > 0) {
+                        $aktif.trigger('click');
+
+                        return;
+                    }
+
+                    nama = $.trim($input.val());
+
+                    if (nama.length >= 2) {
+                        $saran.hide();
+
+                        // nama belum pernah order di sini: buka form isian, nama sudah terisi
+                        $(document).trigger('pelanggan:buat', [target($input), nama]);
+                    }
+
+                    return;
+                }
 
                 if (! $saran.is(':visible')) {
                     return;
@@ -181,7 +212,6 @@
                 }
 
                 $item = $saran.children('button');
-                $aktif = $saran.children('.active');
 
                 if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
                     e.preventDefault();
@@ -190,16 +220,9 @@
                         return;
                     }
 
-                    i = $item.index($aktif);
+                    i = $item.index($saran.children('.active'));
                     i = e.key === 'ArrowDown' ? (i + 1) % $item.length : (i < 1 ? $item.length - 1 : i - 1);
                     $item.removeClass('active').eq(i).addClass('active');
-
-                    return;
-                }
-
-                if (e.key === 'Enter' && $aktif.length > 0) {
-                    e.preventDefault();
-                    $aktif.trigger('click');
                 }
             });
     });
