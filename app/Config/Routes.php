@@ -41,9 +41,9 @@ $routes->addPlaceholder('tab', 'semua|pembayaran|cek-bayar|dalam-proses|belum-pr
 // We get a performance increase by specifying the default
 // route since we don't have to scan directories.
 $routes->group('auth', ['filter' => 'auth'], static function ($routes) {
-    $routes->match(['get', 'post'], 'index', 'Auth::index', ['as' => 'hal.index']);
-    $routes->match(['get', 'post'], 'daftar', 'Auth::daftar');
-    $routes->match(['get', 'post'], 'lupa', 'Auth::lupa');
+    $routes->match(['GET', 'POST'], 'index', 'Auth::index', ['as' => 'hal.index']);
+    $routes->match(['GET', 'POST'], 'daftar', 'Auth::daftar');
+    $routes->match(['GET', 'POST'], 'lupa', 'Auth::lupa');
     $routes->addRedirect('/', 'hal.index');
     $routes->get('reset', 'Auth::reset');
     $routes->post('simpan-sandi-baru', 'Auth::simpanSandiBaru');
@@ -91,6 +91,42 @@ $routes->group('admin', static function ($routes) {
     $routes->group('laporan', ['filter' => 'auth:admin,superadmin'], static function ($routes) {
         $routes->get('/', 'Admin\Laporan::index', ['as' => 'hal.laporan']);
         $routes->get('(:segment)', 'Admin\Laporan::index/$1');
+    });
+
+    // crm: manajemen pelanggan, live chat WA, follow-up tagihan, notif resi, broadcast, pengaturan gateway WA
+    $routes->group('crm', ['filter' => 'auth:admin,superadmin'], static function ($routes) {
+        $routes->get('/', 'Admin\Crm::index', ['as' => 'hal.crm']);
+        $routes->get('chat', 'Admin\Crm::chat');
+        $routes->get('chat/percakapan', 'Admin\Crm::chat_percakapan');
+        $routes->get('chat/pesan/(:num)', 'Admin\Crm::chat_pesan/$1');
+        $routes->get('chat/polling/(:num)', 'Admin\Crm::chat_polling/$1');
+        $routes->post('chat/kirim', 'Admin\Crm::chat_kirim');
+        $routes->get('pelanggan', 'Admin\Crm::pelanggan');
+        $routes->get('pelanggan/(:num)', 'Admin\Crm::pelanggan_detail/$1');
+        $routes->post('pelanggan/simpan_profil/(:num)', 'Admin\Crm::simpan_profil/$1');
+        $routes->post('pelanggan/simpan_ukuran/(:num)', 'Admin\Crm::simpan_ukuran/$1');
+        $routes->post('pelanggan/tambah_aktivitas/(:num)', 'Admin\Crm::tambah_aktivitas/$1');
+        $routes->post('pelanggan/tambah_tag/(:num)', 'Admin\Crm::tambah_tag/$1');
+        $routes->post('pelanggan/hapus_tag/(:num)/(:num)', 'Admin\Crm::hapus_tag/$1/$2');
+        $routes->post('pelanggan/kirim_pesan/(:num)', 'Admin\Crm::kirim_pesan_pelanggan/$1');
+        $routes->get('followup', 'Admin\Crm::followup');
+        $routes->post('followup/simpan', 'Admin\Crm::simpan_followup');
+        $routes->post('followup/selesai/(:num)', 'Admin\Crm::selesaikan_followup/$1');
+        $routes->get('duplikat', 'Admin\Crm::duplikat');
+        $routes->post('duplikat/merge', 'Admin\Crm::proses_merge');
+        $routes->get('chat/cek_kontak', 'Admin\Crm::cek_kontak_wa');
+        $routes->post('chat/buat_customer', 'Admin\Crm::buat_customer_wa');
+        $routes->get('tagihan', 'Admin\Crm::tagihan');
+        $routes->get('pengiriman', 'Admin\Crm::pengiriman');
+        $routes->get('broadcast', 'Admin\Crm::broadcast');
+        $routes->get('template', 'Admin\Crm::template');
+        $routes->get('log', 'Admin\Crm::log');
+        $routes->get('pengaturan', 'Admin\Crm::pengaturan');
+        $routes->post('kirim_wa', 'Admin\Crm::kirim_wa');
+        $routes->post('kirim_broadcast', 'Admin\Crm::kirim_broadcast');
+        $routes->post('simpan_template', 'Admin\Crm::simpan_template');
+        $routes->post('simpan_pengaturan', 'Admin\Crm::simpan_pengaturan');
+        $routes->post('tes_koneksi', 'Admin\Crm::tes_koneksi');
     });
 
     $routes->group('settings', ['filter' => 'auth:superadmin'], static function ($routes) {
@@ -178,6 +214,11 @@ $routes->get('pelanggan/data/(:num)', 'Pelanggan::data/$1', ['filter' => 'auth:a
 $routes->post('pelanggan/baru', 'Pelanggan::baru', ['filter' => 'auth:admin,superadmin,user']);
 
 $routes->post('kirim-masukan', 'Masukan::kirim', ['filter' => 'auth:admin,superadmin,user']);
+
+// Webhook WhatsApp (Kapso / Fonnte) untuk menerima pesan masuk pelanggan secara real-time
+$routes->match(['GET', 'POST'], 'webhook', 'Webhook::index');
+$routes->match(['GET', 'POST'], 'webhook/whatsapp', 'Webhook::index');
+$routes->match(['GET', 'POST'], 'webhook/kapso', 'Webhook::index');
 
 /*
  * --------------------------------------------------------------------

@@ -199,4 +199,32 @@ class App extends BaseConfig
      * @see http://www.w3.org/TR/CSP/
      */
     public bool $CSPEnabled = false;
+
+    /**
+     * Host yang boleh menentukan baseURL selama .env sedang menunjuk localhost:
+     * mesin ini (dev) dan domain ngrok (demo lewat tunnel). Host di luar daftar ini
+     * tetap memakai nilai .env, jadi header Host kiriman orang lain tidak ikut
+     * membentuk URL absolut aplikasi.
+     */
+    private const HOST_DIIZINKAN = '#^(localhost|127\.0\.0\.1|\[::1\])(:\d{1,5})?$|^[a-z0-9][a-z0-9-]*\.ngrok(-free)?\.(dev|app|io)$#';
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        // .env diisi domain publik (mis. ngrok untuk CRM/webhook): dipakai apa
+        // adanya supaya URL absolut sama untuk CLI, localhost, dan pengunjung tunnel
+        if (! in_array(strtolower((string) parse_url($this->baseURL, PHP_URL_HOST)), ['localhost', '127.0.0.1', '::1'], true)) {
+            return;
+        }
+
+        // .env menunjuk localhost: host yang sedang diakses boleh menentukan, asal
+        // ada di daftar putih, supaya 127.0.0.1/[::1]/lewat tunnel tidak saling lempar
+        $diakses = $_SERVER['HTTP_HOST'] ?? '';
+
+        if ($diakses !== '' && preg_match(self::HOST_DIIZINKAN, $diakses) === 1) {
+            // tunnel ngrok selalu memakai https, php -S lokal memakai http
+            $this->baseURL = (str_contains($diakses, 'ngrok') ? 'https' : 'http') . '://' . $diakses . '/';
+        }
+    }
 }
