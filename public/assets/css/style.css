@@ -70,6 +70,8 @@
 .fal.fa-chevron-down::before    { content: "\f078"; } /* chevron-down (free)   */
 .fal.fa-eye::before             { content: "\f06e"; } /* eye (free)            */
 .fal.fa-eye-slash::before       { content: "\f070"; } /* eye-slash (free)      */
+.fal.fa-tshirt::before,
+.fal.fa-shirt::before           { content: "\f553"; } /* shirt (free)          */
 
 /* ------------------------------------------------------------------
    Wadah pilihan bergulir — pemilih juragan di Pengaturan > Pengguna.
@@ -311,3 +313,71 @@
     .auth-hero { min-height: 15rem; padding: 1.75rem; gap: 1.25rem; }
     .auth-panel { padding: 2rem 1.5rem 2.25rem; }
 }
+
+/* Input nomor (HP): angka integer tanpa panah naik-turun */
+.hp-num::-webkit-outer-spin-button,
+.hp-num::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+.hp-num {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+/* Baris tabel Orderan: ikon sejajar nama, sampah redup sampai dihover */
+.list-orderan td { vertical-align: middle; }
+.list-orderan .hapus_row { color: #dc2626; opacity: .5; transition: opacity .15s ease; }
+.list-orderan .hapus_row:hover { opacity: 1; }
+
+/* Baris orderan: teks kepanjangan dipotong ellipsis, bukan melebar */
+.list-orderan .flex-grow-1 { min-width: 0; }
+.list-orderan .uk-ringkas { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Kartu anggota rombongan: kolom isian boleh menyusut biar tidak meluber */
+.anggota-baris .min-w-0 { min-width: 0; }
+
+/* Utilitas & animasi tombol/ikon */
+.btn-xs {
+    padding: 0.25rem 0.65rem;
+    font-size: 0.75rem;
+    line-height: 1.25;
+}
+.rotate-180 {
+    transform: rotate(180deg);
+}
+.transition-transform {
+    transition: transform 0.2s ease-in-out;
+}
+
+/* Kartu & panel anggota rombongan */
+.anggota-baris {
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.anggota-baris:hover {
+    border-color: #cbd5e1;
+}
+.anggota-baris .hapus-anggota {
+    color: #94a3b8;
+    transition: color 0.15s ease;
+}
+.anggota-baris .hapus-anggota:hover {
+    color: #ef4444;
+}
+.anggota-baris .ukuran-subcard {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.85rem;
+    padding: 0.85rem;
+    margin-top: 0.5rem;
+}
+.anggota-baris .uk-field:focus {
+    background-color: #fff !important;
+}
+.anggota-baris .uk-ringkas {
+    max-width: 480px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+

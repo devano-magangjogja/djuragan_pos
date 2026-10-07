@@ -35,9 +35,8 @@ class StokModel extends Model
     public function daftar(array $juragan_ids, int $juragan_id = 0, string $cari = '', string $keadaan = '', int $limit = 20, int $offset = 0): array
     {
         $baris = $this->saring($juragan_ids, $juragan_id, $cari, $keadaan)
-            ->orderBy('nama_juragan', 'ASC')
-            ->orderBy('kode', 'ASC')
-            ->orderBy('urutan', 'ASC')
+            // varian terbaru di atas supaya barang yang barusan ditambah langsung kelihatan
+            ->orderBy('stok.id_stok', 'DESC')
             ->limit($limit, $offset)
             ->get()
             ->getResultArray();
@@ -113,7 +112,10 @@ class StokModel extends Model
         // prefix tabel oleh query builder, jadi nama aslinya (order_ukuran) tidak dikenal.
         $builder = $this->select('stok.*, juragan.nama_juragan, COALESCE(u.urutan, 255) AS urutan')
             ->join('juragan', 'juragan.id_juragan = stok.juragan_id')
-            ->join('ukuran u', 'u.kode = stok.ukuran', 'left');
+            ->join('ukuran u', 'u.kode = stok.ukuran', 'left')
+            // hasilnya diambil lewat get(), yang menembus query builder tanpa
+            // scope soft delete yang biasa dipakai find()/findAll()
+            ->where('stok.deleted_at', null);
 
         if ($juragan_id > 0) {
             $builder->where('stok.juragan_id', $juragan_id);

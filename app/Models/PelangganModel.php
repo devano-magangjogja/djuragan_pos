@@ -41,12 +41,21 @@ class PelangganModel extends Model
     }
 
     /**
-     * Cari pelanggan yang pernah bertransaksi pada satu juragan.
+     * Kondisi "pelanggan ini pernah dilayani di toko $juragan_id" sebagai
+     * subquery EXISTS. Versi lama memakai JOIN + GROUP BY + HAVING yang
+     * ditolak MySQL 8 (only_full_group_by).
      *
-     * Versi lama menggabungkannya lewat JOIN + GROUP BY p.id_pelanggan +
-     * HAVING i.juragan_id, dan MySQL 8 menolaknya (only_full_group_by) karena
-     * SELECT i.* tidak bergantung pada kolom yang di-group. EXISTS memberi
-     * hasil yang sama tanpa perlu GROUP BY.
+     * @param int|string $juragan_id
+     */
+    private function punyaJuragan($juragan_id): string
+    {
+        return 'EXISTS (SELECT 1 FROM order_invoice i WHERE i.deleted_at IS NULL AND i.juragan_id = '
+            . (int) $juragan_id
+            . ' AND (i.pemesan_id = p.id_pelanggan OR i.kirimKepada_id = p.id_pelanggan))';
+    }
+
+    /**
+     * Cari pelanggan yang pernah bertransaksi pada satu juragan.
      *
      * @param int|string $juragan_id
      * @param string     $cari      nama atau nomor HP
@@ -73,10 +82,27 @@ class PelangganModel extends Model
             $builder->groupEnd();
         }
 
-        $builder->where('EXISTS (SELECT 1 FROM order_invoice i WHERE i.deleted_at IS NULL AND i.juragan_id = ' . (int) $juragan_id . ' AND (i.pemesan_id = p.id_pelanggan OR i.kirimKepada_id = p.id_pelanggan))', null, false);
+        $builder->where($this->punyaJuragan($juragan_id), null, false);
         $builder->orderBy('p.nama_pelanggan');
         $builder->limit(10);
 
         return $builder->get();
+    }
+
+    /**
+     * Satu pelanggan, tetap dibatasi pada toko yang sedang dipakai, supaya
+     * form edit tidak bisa menarik data pelanggan toko lain.
+     *
+     * @param int|string $juragan_id
+     */
+    public function satu($juragan_id, int $id_pelanggan)
+    {
+        return $this->db->table($this->table . ' p')
+            ->select('p.*')
+            ->where('p.deleted_at', null)
+            ->where('p.id_pelanggan', $id_pelanggan)
+            ->where($this->punyaJuragan($juragan_id), null, false)
+            ->get()
+            ->getRow();
     }
 }

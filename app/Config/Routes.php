@@ -174,6 +174,7 @@ $routes->get('download/invoice/(:any)', 'Download::invoice/$1', ['filter' => 'au
 // lembar kerja untuk penjahit (hanya spesifikasi jahit, tanpa harga)
 $routes->get('download/penjahit/(:any)', 'Download::penjahit/$1', ['filter' => 'auth:admin,superadmin,user']);
 $routes->get('pelanggan/cari', 'Pelanggan::cari', ['filter' => 'auth:admin,superadmin,user']);
+$routes->get('pelanggan/data/(:num)', 'Pelanggan::data/$1', ['filter' => 'auth:admin,superadmin,user']);
 $routes->post('pelanggan/baru', 'Pelanggan::baru', ['filter' => 'auth:admin,superadmin,user']);
 
 $routes->post('kirim-masukan', 'Masukan::kirim', ['filter' => 'auth:admin,superadmin,user']);
