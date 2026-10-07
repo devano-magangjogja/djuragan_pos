@@ -1273,6 +1273,146 @@ if (! function_exists('anggota_panel_form')) {
     }
 }
 
+if (! function_exists('foto_panel_form')) {
+    /**
+     * Panel "Foto Orderan" di bawah panel anggota, form Tulis dan form Sunting.
+     *
+     * Foto sengaja tidak dikirim lewat formulir ini. Berkasnya naik sendiri ke
+     * api/foto/unggah setelah orderan tersimpan (lihat public/assets/js/foto-form.js),
+     * jadi tidak ada penanda tersembunyi seperti anggota_dikirim: kalau JavaScript
+     * gagal dimuat, orderan tetap tersimpan apa adanya dan fotonya memang tidak ikut.
+     *
+     * @param array $sudah     baris foto tersimpan: id_foto, nama_asli
+     * @param int   $invoice_id 0 berarti orderannya belum tersimpan
+     */
+    function foto_panel_form(array $sudah = [], int $invoice_id = 0): string
+    {
+        $ada     = $sudah !== [];
+        $petunjuk = $invoice_id > 0
+            ? 'Foto langsung tersimpan begitu dipilih.'
+            : 'Fotonya ikut dikirim setelah orderan disimpan.';
+        $kartu = '';
+
+        foreach ($sudah as $f) {
+            $alamat = \App\Models\FotoModel::alamat((int) $f['id_foto']);
+            $kecil  = \App\Models\FotoModel::alamat((int) $f['id_foto'], 480);
+            $nama   = (string) ($f['nama_asli'] ?? '');
+
+            $kartu .= '<div class="col-4 col-sm-3 col-md-2 foto-kartu" data-id="' . (int) $f['id_foto'] . '">'
+                . '<div class="foto-kotak">'
+                . '<a class="foto-buka" href="' . esc($alamat, 'attr') . '" target="_blank" rel="noopener">'
+                . '<img class="foto-gambar" src="' . esc($kecil, 'attr') . '" alt="' . esc($nama, 'attr') . '" loading="lazy">'
+                . '</a>'
+                . '<button type="button" class="foto-buang" aria-label="Hapus foto" title="Hapus foto"><i class="fal fa-trash-alt"></i></button>'
+                . '<span class="foto-tunggu" aria-hidden="true"><i class="fal fa-spinner"></i></span>'
+                . '</div>'
+                . '<div class="foto-nama small" title="' . esc($nama, 'attr') . '">' . esc($nama) . '</div>'
+                . '</div>';
+        }
+
+        return '<div class="card mb-3 overflow-hidden rounded-kartu border-ink-200 shadow-kartu foto-panel"'
+            . ' data-invoice="' . (int) $invoice_id . '"'
+            . ' data-maks="' . (int) \App\Models\FotoModel::MAKS_FOTO . '"'
+            . ' data-unggah="' . esc(site_url('api/foto/unggah'), 'attr') . '"'
+            . ' data-hapus="' . esc(site_url('api/foto/hapus'), 'attr') . '">'
+            . '<div class="card-header border-ink-100 bg-ink-50/60 py-2.5 px-3 px-sm-4">'
+            . '<button type="button" class="buka-foto flex w-full cursor-pointer items-center gap-2 border-0 bg-transparent p-0 text-[0.78rem] font-bold uppercase tracking-[0.08em] text-ink-700" aria-expanded="' . ($ada ? 'true' : 'false') . '">'
+            . '<span class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-[0.65rem] border border-brand-100 bg-white text-brand-500"><i class="fal fa-camera text-xs"></i></span>'
+            . '<span>Foto Orderan</span>'
+            . '<span class="inline-block rounded-full bg-ink-900 px-2 py-0.5 text-xs font-semibold text-white jumlah-foto">' . count($sudah) . '</span>'
+            . '<i class="fal fa-chevron-down ms-auto text-ink-400 ikon-panah-foto transition-transform' . ($ada ? ' rotate-180' : '') . '"></i>'
+            . '</button>'
+            . '</div>'
+            . '<div class="card-body foto-isi' . ($ada ? '' : ' d-none') . ' p-3 p-sm-4">'
+            . '<p class="small text-muted mb-2"><i class="fal fa-info-circle me-1 text-primary"></i>Acuan bentuk dari pelanggan. ' . $petunjuk . ' Maksimum ' . (int) \App\Models\FotoModel::MAKS_FOTO . ' foto JPG, PNG, atau WebP.</p>'
+            . '<div class="row g-2 foto-daftar">' . $kartu . '</div>'
+            . '<label class="foto-pilih mt-2">'
+            . '<input type="file" class="foto-input d-none" multiple accept="image/jpeg,image/png,image/webp">'
+            . '<span class="foto-pilih-ikon"><i class="fal fa-image"></i></span>'
+            . '<span class="d-block small fw-semibold">Pilih foto atau taruh di sini</span>'
+            . '<span class="d-block" style="font-size:0.72rem">Yang besar diperkecil dulu oleh peramban sebelum dikirim.</span>'
+            . '</label>'
+            . '<div class="foto-galat small text-danger mt-2 d-none"></div>'
+            . '</div>'
+            . '</div>';
+    }
+}
+
+if (! function_exists('foto_kisi')) {
+    /**
+     * Kisi thumbnail foto orderan untuk kartu daftar transaksi.
+     *
+     * Bloknya mengikuti pola lipatan Produk/Anggota Rombongan: tertutup dulu,
+     * dibuka lewat tombolnya, supaya kartu daftar tetap ringkas walau fotonya
+     * banyak. Kotaknya minta versi kecil ke server (240 px, 480 px untuk layar
+     * rapat) sementara kliknya membuka foto utuh di tab baru. Orderan tanpa
+     * foto mengembalikan string kosong, jadi kartunya persis seperti sebelum
+     * fitur ini ada.
+     *
+     * @param array<int, mixed> $foto baris foto dari FotoModel::banyak()
+     */
+    function foto_kisi(array $foto, int $invoice_id = 0): string
+    {
+        if ($foto === []) {
+            return '';
+        }
+
+        // id invoice dipakai sebagai target lipatan; kalau pemanggilnya tidak
+        // mengirim id, nomor urut cukup untuk menjaga targetnya tetap unik
+        static $urut = 0;
+        $target = $invoice_id > 0 ? 'foto-' . $invoice_id : 'foto-x' . (++$urut);
+
+        $kotak  = '';
+        $jumlah = 0;
+
+        foreach ($foto as $f) {
+            $satu = (object) $f;
+            $id   = (int) $satu->id_foto;
+
+            if ($id <= 0) {
+                continue;
+            }
+
+            $nama = (string) ($satu->nama_asli ?? '');
+            $jumlah++;
+
+            // di HP tiga foto sebaris masih lega untuk disentuh, di layar besar
+            // enam sebaris supaya kartunya tidak memanjang
+            $kotak .= '<div class="col-4 col-sm-3 col-md-3 col-lg-2">'
+                . '<a class="d-block text-decoration-none" href="' . esc(\App\Models\FotoModel::alamat($id), 'attr') . '" target="_blank" rel="noopener" title="' . esc($nama, 'attr') . '">'
+                . '<span class="foto-kotak">'
+                . '<img class="foto-gambar" src="' . esc(\App\Models\FotoModel::alamat($id, 240), 'attr') . '"'
+                . ' srcset="' . esc(\App\Models\FotoModel::alamat($id, 240), 'attr') . ' 1x,'
+                . ' ' . esc(\App\Models\FotoModel::alamat($id, 480), 'attr') . ' 2x"'
+                . ' alt="' . esc($nama, 'attr') . '" loading="lazy">'
+                . '</span>'
+                . '</a>'
+                . '</div>';
+        }
+
+        if ($jumlah === 0) {
+            return '';
+        }
+
+        return '<div class="blok blok-lipat mt-4 overflow-hidden rounded-2xl border border-ink-200 bg-[#fcfdfe]">'
+            . '<h6 class="mb-0">'
+            . '<button class="flex w-full cursor-pointer items-center gap-1.5 border-0 bg-transparent px-[1.15rem] py-4 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500 [&_.fal]:text-[0.95rem] [&_.fal]:text-ink-400" type="button"'
+            . ' data-bs-toggle="collapse" data-bs-target="#' . $target . '" aria-expanded="false" aria-controls="' . $target . '">'
+            . '<i class="fal fa-camera"></i> Foto Orderan'
+            . '<span class="inline-block rounded-full bg-ink-900 px-2 py-0.5 text-xs font-semibold text-white">' . $jumlah . '</span>'
+            . '<span class="text-[0.8rem] font-semibold normal-case tracking-normal">foto</span>'
+            . '<i class="fal fa-chevron-down ms-auto transition rotate-[-90deg] aria-expanded:rotate-0"></i>'
+            . '</button>'
+            . '</h6>'
+            . '<div class="collapse" id="' . $target . '">'
+            . '<div class="border-t border-ink-200 px-[1.15rem] py-3">'
+            . '<div class="row g-2">' . $kotak . '</div>'
+            . '</div>'
+            . '</div>'
+            . '</div>';
+    }
+}
+
 if (! function_exists('sinkron_kontak')) {
     /**
      * Pecah kolom JSON order_pelanggan.hp menjadi satu baris per nomor di
@@ -1429,8 +1569,19 @@ if (! function_exists('produk_dibeli')) {
             }
 
             $siap['invoice_id'] = $invoice_id;
-            $siap['rincian']    = rincian_json($v['rincian'] ?? [], array_keys(meta_rincian('produk')));
-            $baris[$k]          = $siap;
+
+            // rincian item lama jangan ikut hilang kalau kiriman tidak membawa
+            // key-nya sama sekali (klien lama / request sebagian), sama seperti
+            // aturan rincian invoice di controller. Form cuma mengirim rincian
+            // untuk item custom, jadi item yang dipindah ke ukuran standar
+            // memang sudah tidak punya rincian.
+            if (array_key_exists('rincian', $v)) {
+                $siap['rincian'] = rincian_json($v['rincian'], array_keys(meta_rincian('produk')));
+            } elseif (($siap['ukuran'] ?? '') !== 'custom') {
+                $siap['rincian'] = null;
+            }
+
+            $baris[$k] = $siap;
         }
 
         return ['baris' => $baris, 'ukuran' => $ukuran];

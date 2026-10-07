@@ -4,6 +4,7 @@ namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
 use App\Models\AnggotaModel;
+use App\Models\FotoModel;
 use App\Models\InvoiceModel;
 use App\Models\JuraganModel;
 use App\Models\NilaiUkuranModel;
@@ -164,6 +165,7 @@ class Invoices extends BaseController
             'ukuran_item'     => $nilai->perItemForm($id),
             'jenis_item'      => $nilai->petaJenis($id),
             'anggota_item'    => $anggota_item,
+            'foto_sudah'      => (new FotoModel())->untukInvoice($id),
         ];
 
         return view('admin/invoice/sunting', $data);
@@ -301,6 +303,8 @@ class Invoices extends BaseController
 
             $ret = [
                 'status' => 'data tersimpan',
+                // id dibutuhkan halaman untuk mengirim foto setelah orderan ada
+                'id'     => $invoice_id,
                 'url'    => site_url('admin/invoices/lihat/semua/semua?cari[kolom]=faktur&cari[q]=' . $seri),
             ];
 

@@ -131,6 +131,8 @@ class Invoices extends BaseController
             $juragan = $juraganModel->byInvoiceId($invoice_id)->getResult()[0]->juragan;
             $ret     = [
                 'status' => 'data tersimpan',
+                // sama seperti panel admin: foto naik setelah orderan punya id
+                'id'     => $invoice_id,
                 'url'    => site_url('user/invoices/lihat/' . $juragan . '/semua?cari[kolom]=faktur&cari[q]=' . $seri),
             ];
 

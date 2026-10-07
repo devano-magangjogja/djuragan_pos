@@ -200,6 +200,14 @@ $routes->group('api', ['filter' => 'auth:admin,superadmin,user'], static functio
         $routes->add('(:segment)', 'Api\Pengiriman::$1');
         $routes->post('photos', 'Api\Pengiriman::create');
     });
+
+    // foto orderan disimpan di writable/uploads, jadi satu-satunya jalan membacanya
+    // lewat saji(); unggah dan hapus hanya boleh untuk nota milik toko sendiri
+    $routes->group('foto', static function ($routes) {
+        $routes->post('unggah/(:num)', 'Api\Foto::unggah/$1');
+        $routes->get('saji/(:num)', 'Api\Foto::saji/$1');
+        $routes->post('hapus/(:num)', 'Api\Foto::hapus/$1');
+    });
 });
 
 $routes->addRedirect('/', 'hal.index');

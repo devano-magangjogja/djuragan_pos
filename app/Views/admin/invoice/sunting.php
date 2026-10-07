@@ -441,6 +441,8 @@ $rincian_pesanan = baca_rincian($orderan->rincian);
 
         <?= anggota_panel_form($anggota_item) ?>
 
+        <?= foto_panel_form($foto_sudah, (int) $orderan->id_invoice) ?>
+
         <div class="form-kartu mb-3">
             <?= form_label('Note / Keterangan', 'keterangan', ['class' => 'form-label']) ?>
             <?= form_textarea(['name' => 'keterangan', 'value' => set_value('keterangan', ($orderan->keterangan !== null ? $orderan->keterangan : '')), 'id' => 'keterangan', 'class' => 'form-control', 'rows' => '3', 'placeholder' => 'opsional']) ?>
@@ -760,6 +762,7 @@ $link_api_notif          = site_url('api/notifikasi/');
 <script defer src="<?= base_url('assets/js/ukuran-form.js') ?>?v=<?= (int) @filemtime(FCPATH . 'assets/js/ukuran-form.js') ?>"></script>
 <script defer src="<?= base_url('assets/js/anggota-form.js') ?>?v=<?= (int) @filemtime(FCPATH . 'assets/js/anggota-form.js') ?>"></script>
 <script defer src="<?= base_url('assets/js/cari-pelanggan.js') ?>?v=<?= (int) @filemtime(FCPATH . 'assets/js/cari-pelanggan.js') ?>"></script>
+<script defer src="<?= base_url('assets/js/foto-form.js') ?>?v=<?= (int) @filemtime(FCPATH . 'assets/js/foto-form.js') ?>"></script>
 
 <?php
 

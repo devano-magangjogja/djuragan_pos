@@ -37,6 +37,7 @@ class InvoiceModel extends Model
         $biayaModel      = new BiayaModel();
         $anggotaModel    = new AnggotaModel();
         $dibeliModel     = new BarangDibeli();
+        $fotoModel       = new FotoModel();
         $invStatusModel  = new StatusModel();
         $juraganModel    = new JuraganModel();
         $labelInvModel   = new LabelInvoice();
@@ -105,6 +106,14 @@ class InvoiceModel extends Model
 
         foreach (array_keys($return) as $i) {
             $return[$i]['anggota'] = $rombongan[$i] ?? [];
+        }
+
+        // sekali query untuk semua kartu; order lama tidak punya baris foto sama
+        // sekali, jadi blok fotonya tidak dirender dan kartunya seperti dulu
+        $foto = $fotoModel->banyak(array_keys($return));
+
+        foreach (array_keys($return) as $i) {
+            $return[$i]['foto'] = $foto[$i] ?? [];
         }
 
         return [

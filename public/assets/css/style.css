@@ -72,6 +72,9 @@
 .fal.fa-eye-slash::before       { content: "\f070"; } /* eye-slash (free)      */
 .fal.fa-tshirt::before,
 .fal.fa-shirt::before           { content: "\f553"; } /* shirt (free)          */
+.fal.fa-camera::before          { content: "\f030"; } /* camera (free)         */
+.fal.fa-image::before           { content: "\f03e"; } /* image (free)          */
+.fal.fa-spinner::before         { content: "\f110"; } /* spinner (free)        */
 
 /* ------------------------------------------------------------------
    Wadah pilihan bergulir — pemilih juragan di Pengaturan > Pengguna.
@@ -381,3 +384,117 @@
     white-space: nowrap;
 }
 
+
+/* Panel foto orderan: kotak pilih + kisi thumbnail persegi.
+   Sengaja pakai CSS tulisan tangan, bukan class Tailwind, supaya tidak perlu
+   build ulang; potongan perseginya memakai padding-top ala Bootstrap ratio. */
+.foto-pilih {
+    display: block;
+    border: 1px dashed #cbd5e1;
+    border-radius: 0.95rem;
+    background: #f8fafc;
+    padding: 0.95rem 1rem;
+    text-align: center;
+    color: #64748b;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+}
+.foto-pilih:hover,
+.foto-pilih.foto-seret {
+    border-color: #0d6efd;
+    background: #eef4ff;
+    color: #0d6efd;
+}
+.foto-pilih-ikon {
+    display: block;
+    font-size: 1.35rem;
+    line-height: 1;
+    margin-bottom: 0.35rem;
+    color: #94a3b8;
+}
+.foto-pilih:hover .foto-pilih-ikon,
+.foto-pilih.foto-seret .foto-pilih-ikon { color: inherit; }
+
+.foto-kotak {
+    position: relative;
+    display: block;
+    padding-top: 100%;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.75rem;
+    background: #f1f5f9;
+    transition: border-color 0.15s ease;
+}
+.foto-kotak:hover { border-color: #0d6efd; }
+.foto-buka,
+.foto-gambar {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+.foto-gambar { object-fit: cover; }
+.foto-nama {
+    margin-top: 0.25rem;
+    font-size: 0.72rem;
+    color: #64748b;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.foto-buang {
+    position: absolute;
+    top: 0.25rem;
+    right: 0.25rem;
+    z-index: 2;
+    width: 1.6rem;
+    height: 1.6rem;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.92);
+    color: #dc2626;
+    font-size: 0.7rem;
+    line-height: 1.6rem;
+    padding: 0;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+.foto-kotak:hover .foto-buang,
+.foto-buang:focus { opacity: 1; }
+/* layar sentuh tidak punya hover, jadi tombolnya memang selalu kelihatan */
+@media (hover: none) {
+    .foto-buang { opacity: 1; }
+}
+
+.foto-tunggu {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(248, 250, 252, 0.85);
+    color: #0d6efd;
+    font-size: 1.1rem;
+}
+.foto-kartu.proses .foto-tunggu { display: flex; }
+.foto-kartu.proses .foto-buang { display: none; }
+.foto-kartu.proses .foto-nama { color: #94a3b8; }
+@keyframes foto-putar { to { transform: rotate(360deg); } }
+.foto-tunggu i { display: inline-block; animation: foto-putar 0.9s linear infinite; }
+
+/* ---- Kartu invoice di daftar: penanda .kartu-invoice/.blok/.aksi ----
+   Angka di layar besar tetap dari Tailwind; CSS ini cuma memadatkan ritme
+   antar blok dan memperkecil padding saat layar sempit supaya satu kartu
+   tidak makan beberapa layar di HP. !important-nya wajib: utilitas spasi
+   Bootstrap (py-4, mt-4, my-1) juga pakai !important dan dimuat lebih dulu. */
+@media (max-width: 575.98px) {
+    .kartu-invoice > div > .mt-4 { margin-top: 0.55rem !important; }
+    .kartu-invoice .blok { padding: 0.85rem 0.9rem !important; }
+    .kartu-invoice .blok.blok-lipat { padding: 0 !important; }
+    .kartu-invoice .blok-lipat > h6 > button { padding: 0.8rem 0.95rem !important; }
+    .kartu-invoice .blok-lipat .collapse > div { padding: 0.6rem 0.95rem 0.85rem !important; }
+    .kartu-invoice hr { margin: 0.45rem 0 !important; }
+    .kartu-invoice .aksi .btn { padding: 0.45rem 0.7rem; font-size: 0.82rem; }
+}

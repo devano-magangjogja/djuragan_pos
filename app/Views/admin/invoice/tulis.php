@@ -289,6 +289,8 @@ $session  = \Config\Services::session();
 
         <?= anggota_panel_form() ?>
 
+        <?= foto_panel_form() ?>
+
         <div class="form-kartu mb-3">
             <?= form_label('Note / Keterangan', 'keterangan', ['class' => 'form-label']); ?>
             <?= form_textarea(['name' => 'keterangan', 'id' => 'keterangan', 'class' => 'form-control', 'rows' => '3', 'placeholder' => 'opsional']); ?>
@@ -651,6 +653,7 @@ $link_api_notif      = site_url('api/notifikasi/');
 <script defer src="<?= base_url('assets/js/ukuran-form.js') ?>?v=<?= (int) @filemtime(FCPATH . 'assets/js/ukuran-form.js') ?>"></script>
 <script defer src="<?= base_url('assets/js/anggota-form.js') ?>?v=<?= (int) @filemtime(FCPATH . 'assets/js/anggota-form.js') ?>"></script>
 <script defer src="<?= base_url('assets/js/cari-pelanggan.js') ?>?v=<?= (int) @filemtime(FCPATH . 'assets/js/cari-pelanggan.js') ?>"></script>
+<script defer src="<?= base_url('assets/js/foto-form.js') ?>?v=<?= (int) @filemtime(FCPATH . 'assets/js/foto-form.js') ?>"></script>
 
 <?php
 
@@ -1644,7 +1647,15 @@ $js = <<< JS
 
     		// Callback handler that will be called on success
     		request.done(function (response, textStatus, jqXHR){
-    			// Log a message to the console
+    			// foto sengaja ditahan peramban sampai orderan ini punya id
+    			var id = parseInt(response.id || 0, 10);
+
+    			if (id > 0 && window.FOTO && window.FOTO.ada()) {
+    				window.FOTO.kirim(id, response.url);
+
+    				return;
+    			}
+
     			document.location.href = response.url;
     		});
 
