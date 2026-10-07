@@ -90,6 +90,8 @@ $routes->group('admin', static function ($routes) {
     // laporan per jenis: pesanan, pendapatan, pembayaran, piutang, produksi, produk, pelanggan
     $routes->group('laporan', ['filter' => 'auth:admin,superadmin'], static function ($routes) {
         $routes->get('/', 'Admin\Laporan::index', ['as' => 'hal.laporan']);
+        // unduh diletakkan sebelum (:segment) supaya tidak dikira nama laporan
+        $routes->get('(:segment)/unduh/(:alpha)', 'Admin\Laporan::unduh/$1/$2');
         $routes->get('(:segment)', 'Admin\Laporan::index/$1');
     });
 
@@ -146,6 +148,8 @@ $routes->group('admin', static function ($routes) {
             $routes->post('update', 'Admin\Settings\Juragan::update');
             // satu toko dipegang satu Admin dan satu CS
             $routes->post('pengelola', 'Admin\Settings\Juragan::pengelola');
+            // hapus lunak: baris tetap ada di tabel, hanya hilang dari daftar
+            $routes->post('hapus', 'Admin\Settings\Juragan::hapus');
         });
 
         $routes->get('pengguna', 'Admin\Settings\Pengguna::pengguna');

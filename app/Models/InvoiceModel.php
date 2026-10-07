@@ -720,6 +720,9 @@ class InvoiceModel extends Model
         $counter->join('dibeli b', 'b.invoice_id = i.id_invoice', 'left outer');
         $counter->join('pengiriman s', 's.invoice_id = i.id_invoice', 'left outer');
 
+        // toko yang sudah dihapus tidak boleh ikut muncul di chart
+        $counter->where('j.deleted_at', null);
+
         $counter->groupBy('j.id_juragan');
 
         return $counter->get();

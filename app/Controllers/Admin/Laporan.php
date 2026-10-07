@@ -3,7 +3,9 @@
 namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
+use App\Libraries\LaporanEkspor;
 use App\Models\LaporanModel;
+use CodeIgniter\HTTP\DownloadResponse;
 
 /**
  * Laporan untuk admin dan superadmin: pesanan, pendapatan, pembayaran, piutang,
@@ -53,6 +55,100 @@ class Laporan extends BaseController
     }
 
     /**
+     * Berkas ekspor satu laporan: ringkasan yang sama dengan layar, ditambah
+     * lampiran daftar nota yang ikut dihitung.
+     *
+     * Query string-nya sama dengan halaman laporan, jadi tombol unduh cukup
+     * memakai filter yang sedang terbaca.
+     *
+     * @return \CodeIgniter\HTTP\DownloadResponse
+     */
+    public function unduh(string $jenis, string $format)
+    {
+        helper('fungsi');
+
+        $daftar = laporan_jenis();
+
+        if (! array_key_exists($jenis, $daftar) || ! in_array($format, ['xlsx', 'pdf'], true)) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+
+        $ids    = $this->juraganIds();
+        $model  = new LaporanModel();
+        $f      = $this->filter($ids);
+        $hasil  = $model->{$jenis}($ids, $f);
+        $detail = $model->detail($ids, $f);
+
+        $ekspor  = new LaporanEkspor();
+        $keteran = $this->keteran($jenis, $f);
+
+        // PDF dipotong karena Dompdf kehabisan memori pada ribuan baris; Excel utuh
+        $potong  = count($detail) > LaporanEkspor::BATAS_PDF;
+        $catatan = $potong
+            ? 'Detail nota pada berkas ini ' . LaporanEkspor::BATAS_PDF . ' baris terbaru saja. Unduh Excel untuk daftar lengkap (' . count($detail) . ' nota).'
+            : '';
+
+        $isi = $format === 'xlsx'
+            ? $ekspor->xlsx($daftar[$jenis]['label'], $ekspor->blok($jenis, $hasil, $detail), $keteran)
+            : $ekspor->pdf(
+                $daftar[$jenis]['label'],
+                $ekspor->blok($jenis, $hasil, array_slice($detail, 0, LaporanEkspor::BATAS_PDF)),
+                $keteran,
+                $catatan
+            );
+
+        // setBinary() tidak mengembalikan $this, jadi jangan dicantai
+        $respons = (new DownloadResponse($ekspor->nama($jenis, $f, $format), false))
+            ->setContentType($format === 'xlsx'
+                ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                : 'application/pdf');
+
+        $respons->setBinary($isi);
+
+        return $respons;
+    }
+
+    /** Baris keterangan di kepala berkas: periode, sumbu, toko, dan filter lain. */
+    private function keteran(string $jenis, array $f): array
+    {
+        helper('fungsi');
+
+        $pil   = laporan_jenis()[$jenis];
+        $grup  = ['mingguan' => 'per minggu', 'bulanan' => 'per bulan', 'tahunan' => 'per tahun'];
+
+        $keteran = [
+            'Laporan' => $pil['label'],
+            'Periode' => $f['awal'] . ' s/d ' . $f['akhir'],
+        ];
+
+        if (! empty($pil['sumbu'])) {
+            $keteran['Sumbu'] = ($grup[$f['grup']] ?? '-') . ' (mengikuti rentang tanggal)';
+        }
+
+        $keteran['Toko']    = $f['juragan'] > 0 ? ($this->juraganPilihan()[$f['juragan']] ?? '-') : 'semua toko milik akun ini';
+        $keteran['Dicetak'] = date('d/m/Y H:i') . ' oleh ' . (session()->get('name') ?: '-');
+
+        if ($f['kode'] !== '') {
+            $keteran['Produk'] = $f['kode'];
+        }
+
+        if ($f['nama'] !== '') {
+            $keteran['Customer'] = $f['nama'];
+        }
+
+        if ($f['tahap'] >= 0) {
+            $tahap             = tahap_produksi();
+            $keteran['Tahap']  = $f['tahap'] > 0 ? ($tahap[$f['tahap']][1] ?? '-') : 'belum mulai';
+        }
+
+        if ($f['bayar'] !== '' && $f['bayar'] !== 'semua') {
+            $keteran['Status pembayaran'] = kategori_pembayaran()[$f['bayar']]['label'] ?? $f['bayar'];
+        }
+
+        return $keteran;
+    }
+
+    /**
      * Filter dari query string, sudah dibersihkan.
      *
      * Nilai yang tidak dikenal dibuang dan diganti nilai aman, bukan diteruskan apa
@@ -98,9 +194,13 @@ class Laporan extends BaseController
             $bayar = '';
         }
 
+        // sumbu waktu tidak dipilih orang: panjang rentang tanggal yang menentukannya
+        $grup = LaporanModel::grup($awal, $akhir);
+
         return [
             'awal'    => $awal,
             'akhir'   => $akhir,
+            'grup'    => $grup,
             'juragan' => $juragan,
             'kode'    => $this->teks((string) $this->request->getGet('kode')),
             'tahap'   => $tahap,

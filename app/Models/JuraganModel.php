@@ -32,6 +32,30 @@ class JuraganModel extends Model
             ->first();
     }
 
+    /**
+     * Jumlah nota aktif per juragan. Dipakai sebagai peringatan sebelum
+     * menghapus: nota lama tidak bisa dibuka lagi lewat slug tokonya.
+     *
+     * @return array<int, int> id_juragan => jumlah nota
+     */
+    public function jumlahOrderan(): array
+    {
+        $petakan = [];
+
+        $hasil = $this->db->table('invoice')
+            ->select('juragan_id, COUNT(*) AS jumlah')
+            ->where('deleted_at', null)
+            ->groupBy('juragan_id')
+            ->get()
+            ->getResultArray();
+
+        foreach ($hasil as $h) {
+            $petakan[(int) $h['juragan_id']] = (int) $h['jumlah'];
+        }
+
+        return $petakan;
+    }
+
     public function byUserId($user_id)
     {
         $builder = $this->db->table($this->table . ' j');
@@ -39,6 +63,10 @@ class JuraganModel extends Model
 
         $builder->join('relasi r', 'r.juragan_id = j.id_juragan');
         $builder->join('user u', 'u.id = r.val_id');
+
+        // hasil diambil lewat get() yang menembus query builder, jadi scope soft
+        // delete harus dipasang sendiri supaya toko yang dihapus tidak ikut muncul
+        $builder->where('j.deleted_at', null);
 
         $builder->where('r.table', 1); // juragan-user
         $builder->having('u.id', $user_id);
