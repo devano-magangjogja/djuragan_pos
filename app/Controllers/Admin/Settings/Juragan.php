@@ -31,6 +31,7 @@ class Juragan extends BaseController
             'juragan'   => $juraganModel->orderBy('nama_juragan asc')->findAll(),
             'banks'     => $bankModel->orderBy('atas_nama ASC, nama_bank ASC')->findAll(),
             'pengelola' => $juraganModel->pengelola(),
+            'orderan'   => $juraganModel->jumlahOrderan(),
             'admins'    => array_values(array_filter($calon, static fn (array $u): bool => $u['level'] === 'admin')),
             'cs_list'   => array_values(array_filter($calon, static fn (array $u): bool => $u['level'] === 'cs')),
         ];
@@ -47,37 +48,36 @@ class Juragan extends BaseController
         }
 
         if (! $validation->withRequest($this->request)->run()) {
-            $errors = $validation->getErrors();
+            return redirect()->to('/admin/settings/juragan')
+                ->withInput()->with('gagal', implode(' ', $validation->getErrors()));
+        }
 
-        // var_dump($errors);
-        } else {
-            $db           = \Config\Database::connect();
-            $juraganModel = new JuraganModel();
-            $relasiModel  = new RelasiModel();
-            $nama_juragan = $this->request->getPost('nama_juragan');
-            $banks        = $this->request->getPost('bank');
+        $db           = \Config\Database::connect();
+        $juraganModel = new JuraganModel();
+        $relasiModel  = new RelasiModel();
+        $nama_juragan = $this->request->getPost('nama_juragan');
+        $banks        = $this->request->getPost('bank');
 
-            $juraganModel->save([
-                // random_string() sudah tidak mengenal tipe "sha1" sejak CI 4.7; bentuk
-                // slug yang sama (40 karakter hex) dibuat langsung dari random_bytes
-                'juragan'      => bin2hex(random_bytes(20)),
-                'nama_juragan' => $nama_juragan,
-            ]);
-            $id = $db->insertID();
+        $juraganModel->save([
+            // random_string() sudah tidak mengenal tipe "sha1" sejak CI 4.7; bentuk
+            // slug yang sama (40 karakter hex) dibuat langsung dari random_bytes
+            'juragan'      => bin2hex(random_bytes(20)),
+            'nama_juragan' => $nama_juragan,
+        ]);
+        $id = $db->insertID();
 
-            // simpan ke tabel relasi (juragan-bank)
-            if ($db->affectedRows() > 0) {
-                foreach ($banks as $bank) {
-                    $relasiModel->insert([
-                        'table'      => 2, // juragan-bank
-                        'juragan_id' => $id,
-                        'val_id'     => $bank,
-                    ]);
-                }
+        // simpan ke tabel relasi (juragan-bank)
+        if ($db->affectedRows() > 0) {
+            foreach ($banks as $bank) {
+                $relasiModel->insert([
+                    'table'      => 2, // juragan-bank
+                    'juragan_id' => $id,
+                    'val_id'     => $bank,
+                ]);
             }
         }
 
-        return redirect()->to('/admin/settings/juragan');
+        return redirect()->to('/admin/settings/juragan')->with('sukses', 'Juragan ' . $nama_juragan . ' berhasil ditambahkan.');
     }
 
     /**
@@ -202,6 +202,36 @@ class Juragan extends BaseController
 
         return redirect()->to('/admin/settings/juragan')
             ->with('sukses', 'Penanggung jawab toko tersimpan.');
+    }
+
+    /**
+     * Hapus lunak satu juragan. Relasi bank dan penanggung jawab dibiarkan utuh
+     * supaya datanya masih bisa dipulihkan; tokonya hanya hilang dari daftar dan
+     * slug-nya tidak lagi membuka nota lama.
+     *
+     * @return \CodeIgniter\HTTP\RedirectResponse
+     */
+    public function hapus()
+    {
+        $juraganModel = new JuraganModel();
+        $id           = (int) $this->request->getPost('id_juragan');
+        $juragan      = $juraganModel->find($id);
+
+        if ($juragan === null) {
+            return redirect()->to('/admin/settings/juragan')->with('gagal', 'Juragan tidak ditemukan.');
+        }
+
+        $tertaut = [];
+
+        foreach ($juraganModel->pengelola([$id])[$id] ?? [] as $daftar) {
+            $tertaut = array_merge($tertaut, array_column($daftar, 'id'));
+        }
+
+        $juraganModel->delete($id);
+        $this->buangCache(array_unique(array_map('intval', $tertaut)));
+
+        return redirect()->to('/admin/settings/juragan')
+            ->with('sukses', 'Juragan ' . $juragan->nama_juragan . ' berhasil dihapus.');
     }
 
     /**

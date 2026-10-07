@@ -90,6 +90,8 @@ $routes->group('admin', static function ($routes) {
     // laporan per jenis: pesanan, pendapatan, pembayaran, piutang, produksi, produk, pelanggan
     $routes->group('laporan', ['filter' => 'auth:admin,superadmin'], static function ($routes) {
         $routes->get('/', 'Admin\Laporan::index', ['as' => 'hal.laporan']);
+        // unduh diletakkan sebelum (:segment) supaya tidak dikira nama laporan
+        $routes->get('(:segment)/unduh/(:alpha)', 'Admin\Laporan::unduh/$1/$2');
         $routes->get('(:segment)', 'Admin\Laporan::index/$1');
     });
 
@@ -146,6 +148,8 @@ $routes->group('admin', static function ($routes) {
             $routes->post('update', 'Admin\Settings\Juragan::update');
             // satu toko dipegang satu Admin dan satu CS
             $routes->post('pengelola', 'Admin\Settings\Juragan::pengelola');
+            // hapus lunak: baris tetap ada di tabel, hanya hilang dari daftar
+            $routes->post('hapus', 'Admin\Settings\Juragan::hapus');
         });
 
         $routes->get('pengguna', 'Admin\Settings\Pengguna::pengguna');
@@ -196,6 +200,14 @@ $routes->group('api', ['filter' => 'auth:admin,superadmin,user'], static functio
         $routes->add('(:segment)', 'Api\Pengiriman::$1');
         $routes->post('photos', 'Api\Pengiriman::create');
     });
+
+    // foto orderan disimpan di writable/uploads, jadi satu-satunya jalan membacanya
+    // lewat saji(); unggah dan hapus hanya boleh untuk nota milik toko sendiri
+    $routes->group('foto', static function ($routes) {
+        $routes->post('unggah/(:num)', 'Api\Foto::unggah/$1');
+        $routes->get('saji/(:num)', 'Api\Foto::saji/$1');
+        $routes->post('hapus/(:num)', 'Api\Foto::hapus/$1');
+    });
 });
 
 $routes->addRedirect('/', 'hal.index');
@@ -210,6 +222,7 @@ $routes->get('download/invoice/(:any)', 'Download::invoice/$1', ['filter' => 'au
 // lembar kerja untuk penjahit (hanya spesifikasi jahit, tanpa harga)
 $routes->get('download/penjahit/(:any)', 'Download::penjahit/$1', ['filter' => 'auth:admin,superadmin,user']);
 $routes->get('pelanggan/cari', 'Pelanggan::cari', ['filter' => 'auth:admin,superadmin,user']);
+$routes->get('pelanggan/data/(:num)', 'Pelanggan::data/$1', ['filter' => 'auth:admin,superadmin,user']);
 $routes->post('pelanggan/baru', 'Pelanggan::baru', ['filter' => 'auth:admin,superadmin,user']);
 
 $routes->post('kirim-masukan', 'Masukan::kirim', ['filter' => 'auth:admin,superadmin,user']);

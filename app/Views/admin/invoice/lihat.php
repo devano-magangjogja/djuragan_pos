@@ -148,7 +148,7 @@ $session  = \Config\Services::session();
 
         $wajib_bayar = $harga_barang;
         ?>
-        <div class="mb-4 rounded-[1.5rem] border border-ink-200 bg-white shadow-sm">
+        <div class="kartu-invoice mb-4 rounded-[1.5rem] border border-ink-200 bg-white shadow-sm">
             <div class="p-3 lg:p-4">
                 <div class="flex flex-col sm:flex-row justify-between items-start gap-4">
                     <div class="min-w-0">
@@ -253,7 +253,7 @@ $session  = \Config\Services::session();
 
                 <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-12 lg:gap-6">
                     <section class="col-span-full lg:col-span-6">
-                        <div class="h-full rounded-2xl border border-ink-200 bg-[#fcfdfe] px-[1.15rem] py-4">
+                        <div class="blok h-full rounded-2xl border border-ink-200 bg-[#fcfdfe] px-[1.15rem] py-4">
                             <h6 class="mb-2 flex items-center gap-1.5 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500 [&_.fal]:text-[0.95rem] [&_.fal]:text-ink-400">
                                 <i class="fal fa-user-circle"></i>
                                 <?= ($pesanan->kirimKepada_id === $pesanan->pemesan_id ? 'Pemesan / Kirim Kepada' : 'Pemesan') ?>
@@ -333,7 +333,7 @@ $session  = \Config\Services::session();
                     </section>
 
                     <section class="col-span-full md:col-span-1 lg:col-span-6">
-                        <div class="h-full rounded-2xl border border-ink-200 bg-[#fcfdfe] px-[1.15rem] py-4">
+                        <div class="blok h-full rounded-2xl border border-ink-200 bg-[#fcfdfe] px-[1.15rem] py-4">
                             <h6 class="mb-2 flex items-center gap-1.5 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500 [&_.fal]:text-[0.95rem] [&_.fal]:text-ink-400"><i class="fal fa-receipt"></i> Info Biaya</h6>
 
                             <?php
@@ -430,7 +430,7 @@ $session  = \Config\Services::session();
 
                 </div>
 
-                <div class="mt-4 overflow-hidden rounded-2xl border border-ink-200 bg-[#fcfdfe]">
+                <div class="blok blok-lipat mt-4 overflow-hidden rounded-2xl border border-ink-200 bg-[#fcfdfe]">
                     <h6 class="mb-0">
                         <button class="flex w-full cursor-pointer items-center gap-1.5 border-0 bg-transparent px-[1.15rem] py-4 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500 [&_.fal]:text-[0.95rem] [&_.fal]:text-ink-400" type="button" data-bs-toggle="collapse" data-bs-target="#produk-<?= esc($pesanan->id_invoice) ?>" aria-expanded="false" aria-controls="produk-<?= esc($pesanan->id_invoice) ?>">
                             <i class="fal fa-tshirt"></i> Produk
@@ -499,7 +499,7 @@ $session  = \Config\Services::session();
                 </div>
 
                 <?php if (! empty($pesanan->anggota)) { ?>
-                    <div class="mt-4 overflow-hidden rounded-2xl border border-ink-200 bg-[#fcfdfe]">
+                    <div class="blok blok-lipat mt-4 overflow-hidden rounded-2xl border border-ink-200 bg-[#fcfdfe]">
                         <h6 class="mb-0">
                             <button class="flex w-full cursor-pointer items-center gap-1.5 border-0 bg-transparent px-[1.15rem] py-4 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500 [&_.fal]:text-[0.95rem] [&_.fal]:text-ink-400" type="button" data-bs-toggle="collapse" data-bs-target="#anggota-<?= esc($pesanan->id_invoice) ?>" aria-expanded="false" aria-controls="anggota-<?= esc($pesanan->id_invoice) ?>">
                                 <i class="fal fa-users"></i> Anggota Rombongan
@@ -556,6 +556,8 @@ $session  = \Config\Services::session();
                     </div>
                 <?php } ?>
 
+                <?= foto_kisi($pesanan->foto ?? [], (int) $pesanan->id_invoice) ?>
+
                 <?php
                 // saat satu orderan dibuka sendiri, field yang belum terisi ikut ditampilkan
                 // dengan "-" supaya jelas bagian mana yang masih kosong
@@ -563,7 +565,7 @@ $session  = \Config\Services::session();
                 $isi_keterangan  = trim((string) $pesanan->keterangan);
                 ?>
                 <?php if ($rincian_pesanan !== []) { ?>
-                    <div class="rounded-2xl border border-ink-200 border-l-[3px] border-l-proses bg-[#fcfdfe] px-[1.15rem] py-4 mt-4">
+                    <div class="blok rounded-2xl border border-ink-200 border-l-[3px] border-l-proses bg-[#fcfdfe] px-[1.15rem] py-4 mt-4">
                         <h6 class="mb-2 flex items-center gap-1.5 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500 [&_.fal]:text-[0.95rem] [&_.fal]:text-ink-400"><i class="fal fa-list-check"></i> Detail Pesanan</h6>
                         <div class="grid grid-cols-[repeat(auto-fit,minmax(12rem,1fr))] gap-x-4 gap-y-2.5">
                             <?php foreach ($rincian_pesanan as $item) { ?>
@@ -577,7 +579,7 @@ $session  = \Config\Services::session();
                 <?php } ?>
 
                 <?php if ($isi_keterangan !== '' || $satu_orderan) { ?>
-                    <div class="rounded-2xl border border-ink-200 border-l-[3px] border-l-brand-500 bg-[#fcfdfe] px-[1.15rem] py-4 mt-4">
+                    <div class="blok rounded-2xl border border-ink-200 border-l-[3px] border-l-brand-500 bg-[#fcfdfe] px-[1.15rem] py-4 mt-4">
                         <h6 class="mb-2 flex items-center gap-1.5 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500 [&_.fal]:text-[0.95rem] [&_.fal]:text-ink-400"><i class="fal fa-clipboard-list"></i> Keterangan</h6>
                         <p class="keterangan mb-0 break-words text-sm leading-[1.65] <?= $isi_keterangan === '' ? 'text-ink-400' : 'text-ink-700' ?>" id="keterangan-<?= esc($pesanan->id_invoice) ?>">
                             <?= $isi_keterangan === '' ? '-' : nl2br(esc($isi_keterangan)) ?>
@@ -618,7 +620,7 @@ $session  = \Config\Services::session();
 
                 <hr class="my-2 border-0 border-t border-ink-200 opacity-100" />
 
-                <div class="flex flex-wrap items-center gap-1">
+                <div class="aksi flex flex-wrap items-center gap-1">
                     <?= anchor('admin/invoices/sunting/' . esc($pesanan->seri), '<i class="fal fa-pencil"></i> Sunting', ['class' => 'btn btn-outline-secondary', 'role' => 'button']) ?>
 
                     <?php if (! $sudah_lunas) : ?>

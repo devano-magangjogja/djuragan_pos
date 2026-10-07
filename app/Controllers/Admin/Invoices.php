@@ -4,6 +4,7 @@ namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
 use App\Models\AnggotaModel;
+use App\Models\FotoModel;
 use App\Models\InvoiceModel;
 use App\Models\JuraganModel;
 use App\Models\NilaiUkuranModel;
@@ -164,6 +165,7 @@ class Invoices extends BaseController
             'ukuran_item'     => $nilai->perItemForm($id),
             'jenis_item'      => $nilai->petaJenis($id),
             'anggota_item'    => $anggota_item,
+            'foto_sudah'      => (new FotoModel())->untukInvoice($id),
         ];
 
         return view('admin/invoice/sunting', $data);
@@ -236,7 +238,7 @@ class Invoices extends BaseController
                 // 'status_pengiriman'=> '',
                 'keterangan' => ($this->request->getPost('keterangan') !== '' ? $this->request->getPost('keterangan') : null),
                 'deadline'   => deadline_iso($rincian),
-                'rincian'    => rincian_json($rincian, array_keys(meta_rincian('pesanan')), ['tipe' => array_keys(tipe_pesanan())]),
+                'rincian'    => rincian_json($rincian, array_keys(meta_rincian('pesanan')), ['tipe' => array_keys(tipe_pesanan()), 'orderan' => ['satuan', 'rombongan']]),
             ];
 
             $invModel = new InvoiceModel();
@@ -301,6 +303,8 @@ class Invoices extends BaseController
 
             $ret = [
                 'status' => 'data tersimpan',
+                // id dibutuhkan halaman untuk mengirim foto setelah orderan ada
+                'id'     => $invoice_id,
                 'url'    => site_url('admin/invoices/lihat/semua/semua?cari[kolom]=faktur&cari[q]=' . $seri),
             ];
 
@@ -357,7 +361,7 @@ class Invoices extends BaseController
             $rincian_invoice = $this->request->getPost('rincian');
 
             if (is_array($rincian_invoice)) {
-                $data_invoice['rincian']  = rincian_json($rincian_invoice, array_keys(meta_rincian('pesanan')), ['tipe' => array_keys(tipe_pesanan())]);
+                $data_invoice['rincian']  = rincian_json($rincian_invoice, array_keys(meta_rincian('pesanan')), ['tipe' => array_keys(tipe_pesanan()), 'orderan' => ['satuan', 'rombongan']]);
                 $data_invoice['deadline'] = deadline_iso($rincian_invoice);
             }
 

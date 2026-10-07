@@ -11,10 +11,10 @@ $rp = static fn ($n): string => 'Rp ' . number_format((int) $n, 0, ',', '.');
 $th_masuk    = '<th scope="col" class="text-end" title="Hanya transfer yang sudah dicek. Angka ini sama dengan kartu Transaksi dan Dasbor.">Masuk</th>';
 $th_tercatat = '<th scope="col" class="text-end" title="Semua catatan pembayaran, cara hitung lama. Bedanya dengan Masuk adalah transfer yang belum dicek atau dinyatakan tidak ada.">Tercatat</th>';
 
-// filter ikut dibawa saat berpindah laporan, jadi membandingkan dua laporan tidak
-// perlu mengisi ulang
-$tautan = static function (string $jenis) use ($f): string {
-    $q = array_filter([
+// filter ikut dibawa saat berpindah laporan dan saat mengunduh, jadi membandingkan
+// dua laporan tidak perlu mengisi ulang
+$param = static function () use ($f): array {
+    return array_filter([
         'awal'    => $f['awal'],
         'akhir'   => $f['akhir'],
         'juragan' => $f['juragan'] > 0 ? $f['juragan'] : null,
@@ -23,8 +23,14 @@ $tautan = static function (string $jenis) use ($f): string {
         'bayar'   => $f['bayar'] !== '' ? $f['bayar'] : null,
         'nama'    => $f['nama'] !== '' ? $f['nama'] : null,
     ], static fn ($v) => $v !== null && $v !== '');
+};
 
-    return site_url('admin/laporan/' . $jenis) . '?' . http_build_query($q);
+$tautan = static function (string $jenis) use ($param): string {
+    return site_url('admin/laporan/' . $jenis) . '?' . http_build_query($param());
+};
+
+$tautan_unduh = static function (string $format) use ($param, $jenis): string {
+    return site_url('admin/laporan/' . $jenis . '/unduh/' . $format) . '?' . http_build_query($param());
 };
 
 $tautan_orderan = static function (string $slug, string $seri): string {
@@ -51,52 +57,7 @@ $r         = $hasil['ringkas'];
 $baris     = $hasil['baris'];
 $terpotong = count($baris) >= LaporanModel::KAPASITAS;
 
-switch ($jenis) {
-    case 'pembayaran':
-        $kartu = [
-            ['Catatan pembayaran', (string) $r['baris'], 'fa-file-alt'],
-            ['Dana masuk', $rp($r['masuk']), 'fa-wallet'],
-            ['Tercatat', $rp($r['tercatat']), 'fa-money-check-edit'],
-            ['Menunggu dicek', (string) $r['menunggu'], 'fa-inbox-in'],
-            ['Dana tidak ada', (string) $r['salah'], 'fa-bell-slash'],
-        ];
-        break;
-
-    case 'piutang':
-        $kartu = [
-            ['Orderan belum lunas', (string) $r['orderan'], 'fa-file-alt'],
-            ['Total sisa', $rp($r['sisa']), 'fa-inbox-in'],
-            ['Tunggakan tertua', (string) $r['tertua'] . ' hari', 'fa-shipping-fast'],
-        ];
-        break;
-
-    case 'produk':
-        $kartu = [
-            ['Baris penjualan', (string) $r['baris'], 'fa-file-alt'],
-            ['Unit terjual', (string) $r['qty'], 'fa-box-alt'],
-            ['Nilai penjualan', $rp($r['nilai']), 'fa-wallet'],
-        ];
-        break;
-
-    case 'pelanggan':
-        $kartu = [
-            ['Pelanggan', (string) $r['pelanggan'], 'fa-users'],
-            ['Orderan', (string) $r['orderan'], 'fa-file-alt'],
-            ['Nilai orderan', $rp($r['tagihan']), 'fa-wallet'],
-            ['Total sisa', $rp($r['sisa']), 'fa-inbox-in'],
-        ];
-        break;
-
-    default: // pesanan, pendapatan, produksi
-        $kartu = [
-            ['Orderan', (string) $r['orderan'], 'fa-file-alt'],
-            ['Nilai orderan', $rp($r['tagihan']), 'fa-layer-group'],
-            ['Dana masuk', $rp($r['masuk']), 'fa-wallet'],
-            ['Tercatat', $rp($r['tercatat']), 'fa-money-check-edit'],
-            ['Sisa', $rp($r['sisa']), 'fa-inbox-in'],
-            ['Lunas', (string) $r['lunas'], 'fa-ballot-check'],
-        ];
-}
+$kartu = LaporanModel::kartu($jenis, $r);
 ?>
 <?= $this->extend('template/main') ?>
 
@@ -123,6 +84,19 @@ switch ($jenis) {
     </ul>
 
     <p class="text-muted small mb-3"><?= esc($pil_jenis[$jenis]['catatan']) ?></p>
+
+    <div class="row gx-2 gy-3 mb-3">
+        <?php foreach ($kartu as [$label, $nilai, $ikon]) { ?>
+            <div class="col-6 col-lg">
+                <div class="h-100 rounded-3 border border-ink-200 bg-white px-3 py-2">
+                    <div class="text-muted small text-uppercase">
+                        <i class="fal <?= $ikon ?>"></i> <?= esc($label) ?>
+                    </div>
+                    <div class="fs-5 fw-bold"><?= esc($nilai) ?></div>
+                </div>
+            </div>
+        <?php } ?>
+    </div>
 
     <div class="card mb-3">
         <div class="card-body py-3">
@@ -193,21 +167,14 @@ switch ($jenis) {
                 <a class="btn btn-sm btn-outline-secondary" href="<?= site_url('admin/laporan/' . $jenis) ?>"
                     title="Bulan ini, tanpa filter lain"><i class="fal fa-undo"></i> Reset</a>
             </div>
+            <div class="col-md-auto ms-md-auto text-nowrap">
+                <a class="btn btn-sm btn-outline-success" href="<?= $tautan_unduh('xlsx') ?>"
+                    title="Unduh ringkasan dan daftar notanya dalam Excel"><i class="fal fa-file-excel"></i> Excel</a>
+                <a class="btn btn-sm btn-outline-danger" href="<?= $tautan_unduh('pdf') ?>"
+                    title="Unduh laporan yang sama dalam PDF"><i class="fal fa-file-pdf"></i> PDF</a>
+            </div>
             <?= form_close() ?>
         </div>
-    </div>
-
-    <div class="row gx-2 gy-3 mb-3">
-        <?php foreach ($kartu as [$label, $nilai, $ikon]) { ?>
-            <div class="col-6 col-lg">
-                <div class="h-100 rounded-3 border border-ink-200 bg-white px-3 py-2">
-                    <div class="text-muted small text-uppercase">
-                        <i class="fal <?= $ikon ?>"></i> <?= esc($label) ?>
-                    </div>
-                    <div class="fs-5 fw-bold"><?= esc($nilai) ?></div>
-                </div>
-            </div>
-        <?php } ?>
     </div>
 
     <?php if ($pil_jenis[$jenis]['uang']) { ?>
@@ -287,7 +254,7 @@ switch ($jenis) {
                 <div class="table-responsive">
                     <table class="table table-sm align-middle mb-0">
                         <caption class="text-muted small">
-                            Per bulan berdasarkan tanggal pesan. Nilai orderan = produk + biaya tambahan.
+                            Per <?= esc($hasil['periode']) ?> berdasarkan tanggal pesan. Nilai orderan = produk + biaya tambahan.
                         </caption>
                         <thead>
                             <tr>

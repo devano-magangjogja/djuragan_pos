@@ -83,12 +83,11 @@ class Pelanggan extends BaseController
         $cari       = $this->request->getGet('q');
         $juragan_id = (int) $this->request->getGet('juragan_id');
 
-        if ($juragan_id < 1) {
+        if ($juragan_id < 1 || ! $this->bolehToko($juragan_id)) {
             return $this->response->setJSON(['query' => $cari, 'results' => []]);
         }
 
         $pelanggan = new PelangganModel();
-        $ongkir    = new Ongkir();
 
         $builder = $pelanggan->cari($juragan_id, $cari);
 
@@ -96,36 +95,7 @@ class Pelanggan extends BaseController
         $i = 0;
 
         foreach ($builder->getResult() as $u) {
-            $s[$i] = [
-                'id'   => (int) $u->id_pelanggan,
-                'nama' => $u->nama_pelanggan,
-                'hp'   => json_decode($u->hp),
-                'cod'  => (int) $u->cod,
-                'full' => 'C.O.D',
-            ];
-
-            if ($u->cod === '0') {
-                $id_kecamatan = (int) $u->kecamatan;
-                $id_kabupaten = (int) $u->kabupaten;
-                $id_provinsi  = (int) $u->provinsi;
-
-                $kota = $ongkir->kota($id_provinsi, $id_kabupaten);
-
-                $nama_kecamatan = strtoupper($ongkir->kecamatan($id_kabupaten, $id_kecamatan)['subdistrict_name'] ?? '');
-                $nama_kabupaten = strtoupper(trim((($kota['type'] ?? '') === 'Kabupaten' ? '' : '(Kota) ') . ($kota['city_name'] ?? '')));
-                $nama_provinsi  = strtoupper($ongkir->provinsi($id_provinsi)['province_name'] ?? '');
-
-                $s[$i]['nama_kecamatan'] = $nama_kecamatan;
-                $s[$i]['kecamatan']      = $id_kecamatan;
-                $s[$i]['nama_kabupaten'] = $nama_kabupaten;
-                $s[$i]['kabupaten']      = $id_kabupaten;
-                $s[$i]['nama_provinsi']  = $nama_provinsi;
-                $s[$i]['provinsi']       = $id_provinsi;
-                $s[$i]['alamat']         = $u->alamat;
-                $s[$i]['kodepos']        = $u->kodepos;
-                $s[$i]['full']           = $u->alamat . ', ' . $nama_kecamatan . ', ' . $nama_kabupaten . ', ' . $nama_provinsi . ' - ' . $u->kodepos;
-            }
-
+            $s[$i] = $this->bentuk($u);
             $i++;
         }
 
@@ -135,5 +105,71 @@ class Pelanggan extends BaseController
         ];
 
         return $this->response->setJSON($return);
+    }
+
+    /**
+     * Satu pelanggan untuk mengisi form edit. Bentuk hasilnya sama dengan
+     * salah satu item hasil cari().
+     */
+    public function data($id_pelanggan)
+    {
+        if (! $this->request->isAJAX()) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+
+        $juragan_id = (int) $this->request->getGet('juragan_id');
+
+        if ($juragan_id < 1 || ! $this->bolehToko($juragan_id)) {
+            return $this->response->setStatusCode(403)->setJSON(['data' => null]);
+        }
+
+        $pelanggan  = new PelangganModel();
+        $u          = $pelanggan->satu($juragan_id, (int) $id_pelanggan);
+
+        if (! $u) {
+            return $this->response->setStatusCode(404)->setJSON(['data' => null]);
+        }
+
+        return $this->response->setJSON(['data' => $this->bentuk($u)]);
+    }
+
+    /**
+     * Baris tabel pelanggan jadi bentuk yang dipakai pencarian dan form edit.
+     */
+    private function bentuk(object $u): array
+    {
+        $ongkir = new Ongkir();
+
+        $s = [
+            'id'   => (int) $u->id_pelanggan,
+            'nama' => $u->nama_pelanggan,
+            'hp'   => json_decode($u->hp),
+            'cod'  => (int) $u->cod,
+            'full' => 'C.O.D',
+        ];
+
+        if ($u->cod === '0') {
+            $id_kecamatan = (int) $u->kecamatan;
+            $id_kabupaten = (int) $u->kabupaten;
+            $id_provinsi  = (int) $u->provinsi;
+
+            $kota = $ongkir->kota($id_provinsi, $id_kabupaten);
+
+            $nama_kecamatan = strtoupper($ongkir->kecamatan($id_kabupaten, $id_kecamatan)['subdistrict_name'] ?? '');
+            $nama_kabupaten = strtoupper(trim((($kota['type'] ?? '') === 'Kabupaten' ? '' : '(Kota) ') . ($kota['city_name'] ?? '')));
+            $nama_provinsi  = strtoupper($ongkir->provinsi($id_provinsi)['province_name'] ?? '');
+
+            $s['nama_kecamatan'] = $nama_kecamatan;
+            $s['kecamatan']      = $id_kecamatan;
+            $s['nama_kabupaten'] = $nama_kabupaten;
+            $s['kabupaten']      = $id_kabupaten;
+            $s['nama_provinsi']  = $nama_provinsi;
+            $s['provinsi']       = $id_provinsi;
+            $s['alamat']         = $u->alamat;
+            $s['kodepos']        = $u->kodepos;
+            $s['full']           = $u->alamat . ', ' . $nama_kecamatan . ', ' . $nama_kabupaten . ', ' . $nama_provinsi . ' - ' . $u->kodepos;
+        }
+
+        return $s;
     }
 }

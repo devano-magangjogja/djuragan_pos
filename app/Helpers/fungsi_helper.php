@@ -479,7 +479,9 @@ if (! function_exists('laporan_jenis')) {
      * laporan tidak bisa bercabang.
      *
      * 'uang' menandai laporan yang menampilkan angka uang; view pakai penanda itu
-     * untuk memutuskan perlu menulis dua kolom uang atau tidak.
+     * untuk memutuskan perlu menulis dua kolom uang atau tidak. 'sumbu' menandai
+     * laporan yang barisnya dikelompokkan menurut waktu, jadi pilihan periode hanya
+     * muncul di laporan yang memang memakainya.
      */
     function laporan_jenis(): array
     {
@@ -487,14 +489,16 @@ if (! function_exists('laporan_jenis')) {
             'pesanan' => [
                 'label'   => 'Laporan Pesanan',
                 'ikon'    => 'fa-file-alt',
-                'catatan' => 'Orderan masuk dan nilainya, per hari atau per bulan.',
+                'catatan' => 'Orderan masuk dan nilainya; barisnya dikelompokkan sendiri mengikuti panjang rentang tanggal.',
                 'uang'    => true,
+                'sumbu'   => true,
             ],
             'pendapatan' => [
                 'label'   => 'Laporan Pendapatan',
                 'ikon'    => 'fa-wallet',
-                'catatan' => 'Nilai orderan dibanding dana yang benar-benar sudah masuk, per bulan.',
+                'catatan' => 'Nilai orderan dibanding dana yang benar-benar sudah masuk; barisnya ikut panjang rentang tanggal.',
                 'uang'    => true,
+                'sumbu'   => true,
             ],
             'pembayaran' => [
                 'label'   => 'Laporan Pembayaran',
@@ -928,7 +932,8 @@ if (! function_exists('meta_rincian')) {
     {
         $meta = [
             'pesanan' => [
-                'tipe'     => ['Tipe Pesanan', 'fa-tag'],
+                'tipe'     => ['Jenis Layanan', 'fa-tag'],
+                'orderan'  => ['Kategori Pesanan', 'fa-users'],
                 'deadline' => ['Deadline', 'fa-calendar-check'],
                 'ambil'    => ['Diambil', 'fa-arrow-down'],
                 'kembali'  => ['Kembali', 'fa-arrow-up'],
@@ -1075,7 +1080,7 @@ if (! function_exists('ukuran_form_panel')) {
             ];
         }
 
-        $isi    += ['nama' => '', 'jenis' => null, 'nilai' => [], 'id' => ''];
+        $isi    += ['nama' => '', 'jenis' => null, 'nilai' => [], 'id' => '', 'kelas' => ''];
         $jenis   = (int) $isi['jenis'];
         $template = $jenis > 0 ? $peta['template'][$jenis] ?? [] : [];
         $daftar  = array_merge($peta['template'][0] ?? [], $template);
@@ -1121,8 +1126,9 @@ if (! function_exists('ukuran_form_panel')) {
 
         // panel baris lama dibuka lewat tombol "ukuran", panel modal selalu tampil
         $sembunyi = $isi['nama'] === '' ? '' : ' d-none';
+        $kelas    = trim('ukuran-panel row gx-2 ' . ($isi['kelas'] ?? '') . $sembunyi);
 
-        return '<div class="col-12"><div class="ukuran-panel row gx-2' . $sembunyi . '"' . $id
+        return '<div class="col-12"><div class="' . esc($kelas, 'attr') . '"' . $id
             . ' ' . implode(' ', $attr) . '></div></div>';
     }
 }
@@ -1171,18 +1177,34 @@ if (! function_exists('anggota_baris_form')) {
                 . ' placeholder="' . esc($ulasan, 'attr') . '" maxlength="' . $maks . '" autocomplete="off">';
         };
 
-        return '<div class="anggota-baris row gx-2 align-items-start mb-1">'
-            . '<div class="col-5 col-sm-4">' . $teks('nama', 'Nama', 60, 'anggota-nama') . '</div>'
-            . '<div class="col-3 col-sm-3">' . $teks('nomor', 'No. / tinggi', 30) . '</div>'
-            . '<div class="col-3 col-sm-4">' . $teks('catatan', 'Catatan', 255) . '</div>'
-            . '<div class="col-1 text-end">'
-            . '<button type="button" class="bg-transparent border-0 hapus-anggota p-0 text-danger" aria-label="Hapus anggota"><i class="fal fa-trash-alt"></i></button>'
+        return '<div class="anggota-baris rounded-kartu mb-2.5 p-2.5 p-sm-3 border border-ink-200 bg-white shadow-sm transition">'
+            . '<div class="d-flex align-items-start gap-2.5">'
+            . '<span class="anggota-nomor badge rounded-pill bg-ink-900 text-white flex-shrink-0 mt-1 px-2 py-1 text-xs">1</span>'
+            . '<div class="flex-grow-1 min-w-0">'
+            . '<div class="row gx-2 gy-2 align-items-center">'
+            . '<div class="col-12 col-md-5">' . $teks('nama', 'Nama anggota (wajib)', 60, 'anggota-nama fw-semibold') . '</div>'
+            . '<div class="col-6 col-md-3">' . $teks('nomor', 'No. / Tinggi (cth: 01 / 170cm)', 30) . '</div>'
+            . '<div class="col-6 col-md-4">' . $teks('catatan', 'Catatan khusus...', 255) . '</div>'
             . '</div>'
-            . '<div class="col-12"><div class="ukuran-wrapper ps-4">'
-            . '<button type="button" class="bg-transparent border-0 buka-ukuran small p-0 text-primary" aria-expanded="false"><i class="fal fa-ruler-combined"></i> ukuran</button>'
-            . '<span class="uk-ringkas small text-muted d-none"></span>'
-            . ukuran_form_panel(['nama' => 'anggota[' . $key . ']', 'jenis' => $isi['jenis'], 'nilai' => $isi['nilai']])
-            . '</div></div>'
+            . '<div class="ukuran-wrapper mt-2 pt-1 border-top border-ink-100/80">'
+            . '<div class="d-flex flex-wrap align-items-center gap-2">'
+            . '<button type="button" class="btn btn-xs btn-outline-secondary buka-ukuran rounded-pill px-2.5 py-0.5 text-xs fw-semibold" aria-expanded="false">'
+            . '<i class="fal fa-ruler-combined text-primary me-1"></i><span class="teks-buka">Atur Ukuran</span> <i class="fal fa-chevron-down ms-1 ikon-panah transition-transform text-[0.7rem]"></i>'
+            . '</button>'
+            . '<span class="uk-ringkas badge bg-ink-100 text-ink-700 border border-ink-200 px-2 py-1 text-xs fw-normal d-none"></span>'
+            . '</div>'
+            . ukuran_form_panel([
+                'nama'  => 'anggota[' . $key . ']',
+                'jenis' => $isi['jenis'],
+                'nilai' => $isi['nilai'],
+                'kelas' => 'ukuran-subcard w-100',
+            ])
+            . '</div>'
+            . '</div>'
+            . '<button type="button" class="bg-transparent border-0 hapus-anggota p-1 text-danger flex-shrink-0 mt-0.5" aria-label="Hapus anggota" title="Hapus anggota">'
+            . '<i class="fal fa-trash-alt"></i>'
+            . '</button>'
+            . '</div>'
             . '</div>';
     }
 }
@@ -1208,28 +1230,184 @@ if (! function_exists('anggota_panel_form')) {
         }
 
         return '<div class="card mb-3 overflow-hidden rounded-kartu border-ink-200 shadow-kartu">'
-            . '<div class="card-header border-ink-100 bg-ink-50/60">'
-            . '<button type="button" class="buka-anggota flex w-full cursor-pointer items-center gap-1.5 border-0 bg-transparent p-0 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500" aria-expanded="' . ($ada ? 'true' : 'false') . '">'
-            . '<i class="fal fa-users"></i> Anggota Rombongan'
+            . '<div class="card-header border-ink-100 bg-ink-50/60 py-2.5 px-3 px-sm-4">'
+            . '<button type="button" class="buka-anggota flex w-full cursor-pointer items-center gap-2 border-0 bg-transparent p-0 text-[0.78rem] font-bold uppercase tracking-[0.08em] text-ink-700" aria-expanded="' . ($ada ? 'true' : 'false') . '">'
+            . '<span class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-[0.65rem] border border-brand-100 bg-white text-brand-500"><i class="fal fa-users text-xs"></i></span>'
+            . '<span>Anggota Rombongan</span>'
             . '<span class="inline-block rounded-full bg-ink-900 px-2 py-0.5 text-xs font-semibold text-white jumlah-anggota">' . count($daftar) . '</span>'
-            . '<i class="fal fa-chevron-down ms-auto transition rotate-[-90deg]"></i>'
+            . '<i class="fal fa-chevron-down ms-auto text-ink-400 ikon-panah-anggota transition-transform' . ($ada ? ' rotate-180' : '') . '"></i>'
             . '</button>'
             . '</div>'
-            . '<div class="card-body anggota-isi' . ($ada ? '' : ' d-none') . '">'
+            . '<div class="card-body anggota-isi' . ($ada ? '' : ' d-none') . ' p-3 p-sm-4">'
             . '<input type="hidden" name="anggota_dikirim" value="1">'
             . '<div class="row gx-2">'
-            . '<div class="col-12"><p class="small text-muted mb-2">Isi satu baris per orang untuk order rombongan. Order satuan boleh dibiarkan kosong.</p></div>'
-            . '<div class="col-12 anggota-daftar">' . $baris . '</div>'
-            . '<div class="col-12 mt-1">'
-            . '<button type="button" class="btn btn-sm btn-outline-primary tambah-anggota"><i class="fal fa-plus"></i> Tambah anggota</button>'
+            . '<div class="col-12 mb-3">'
+            . '<p class="small text-muted mb-0"><i class="fal fa-info-circle me-1 text-primary"></i>Isi nama dan ukuran per orang untuk pesanan rombongan. Order satuan boleh dibiarkan kosong.</p>'
             . '</div>'
-            . '<div class="col-12 mt-3 rounded-[0.85rem] border border-dashed border-[#dbe3ee] bg-ink-50 px-[0.85rem] pb-[0.6rem] pt-[0.4rem]">'
-            . '<label class="form-label text-xs text-ink-500" for="anggota_tempel">Tempel daftar nama dari WhatsApp</label>'
-            . '<textarea class="form-control form-control-sm" id="anggota_tempel" rows="3" placeholder="satu nama per baris, boleh bernomor: 1. A.N DEVI"></textarea>'
-            . '<button type="button" class="btn btn-sm btn-link text-decoration-none p-0 mt-1 tambah-tempelan"><i class="fal fa-plus"></i> Jadikan baris anggota</button>'
+            . '<div class="col-12 anggota-daftar">' . $baris . '</div>'
+            . '<div class="col-12 mt-2">'
+            . '<button type="button" class="tambah-anggota w-100 rounded-kartu bg-white border border-dashed border-ink-200 py-2.5 small fw-semibold text-primary hover:bg-ink-50 transition">'
+            . '<i class="fal fa-plus-circle me-1"></i> Tambah Anggota'
+            . '</button>'
+            . '</div>'
+            . '<div class="col-12 mt-3">'
+            . '<div class="rounded-[0.95rem] border border-dashed border-[#dbe3ee] bg-ink-50/80 p-3">'
+            . '<div class="d-flex align-items-center justify-content-between mb-1.5">'
+            . '<label class="form-label text-xs fw-bold text-ink-600 mb-0" for="anggota_tempel">'
+            . '<i class="fab fa-whatsapp text-success me-1"></i> Tempel Daftar Nama dari WhatsApp'
+            . '</label>'
+            . '<span class="text-[0.7rem] text-ink-400">1 baris = 1 nama</span>'
+            . '</div>'
+            . '<textarea class="form-control form-control-sm bg-white" id="anggota_tempel" rows="2" placeholder="Contoh:&#10;1. A.N DEVI&#10;2. BUDI SANTOSO"></textarea>'
+            . '<div class="mt-2 text-end">'
+            . '<button type="button" class="btn btn-sm btn-outline-primary tambah-tempelan px-3 py-1 text-xs fw-semibold">'
+            . '<i class="fal fa-list-ol me-1"></i> Jadikan Baris Anggota'
+            . '</button>'
+            . '</div>'
+            . '</div>'
             . '</div>'
             . '</div>'
             . '<template class="anggota-cadang">' . anggota_baris_form([], '__K__') . '</template>'
+            . '</div>'
+            . '</div>';
+    }
+}
+
+if (! function_exists('foto_panel_form')) {
+    /**
+     * Panel "Foto Orderan" di bawah panel anggota, form Tulis dan form Sunting.
+     *
+     * Foto sengaja tidak dikirim lewat formulir ini. Berkasnya naik sendiri ke
+     * api/foto/unggah setelah orderan tersimpan (lihat public/assets/js/foto-form.js),
+     * jadi tidak ada penanda tersembunyi seperti anggota_dikirim: kalau JavaScript
+     * gagal dimuat, orderan tetap tersimpan apa adanya dan fotonya memang tidak ikut.
+     *
+     * @param array $sudah     baris foto tersimpan: id_foto, nama_asli
+     * @param int   $invoice_id 0 berarti orderannya belum tersimpan
+     */
+    function foto_panel_form(array $sudah = [], int $invoice_id = 0): string
+    {
+        $ada     = $sudah !== [];
+        $petunjuk = $invoice_id > 0
+            ? 'Foto langsung tersimpan begitu dipilih.'
+            : 'Fotonya ikut dikirim setelah orderan disimpan.';
+        $kartu = '';
+
+        foreach ($sudah as $f) {
+            $alamat = \App\Models\FotoModel::alamat((int) $f['id_foto']);
+            $kecil  = \App\Models\FotoModel::alamat((int) $f['id_foto'], 480);
+            $nama   = (string) ($f['nama_asli'] ?? '');
+
+            $kartu .= '<div class="col-4 col-sm-3 col-md-2 foto-kartu" data-id="' . (int) $f['id_foto'] . '">'
+                . '<div class="foto-kotak">'
+                . '<a class="foto-buka" href="' . esc($alamat, 'attr') . '" target="_blank" rel="noopener">'
+                . '<img class="foto-gambar" src="' . esc($kecil, 'attr') . '" alt="' . esc($nama, 'attr') . '" loading="lazy">'
+                . '</a>'
+                . '<button type="button" class="foto-buang" aria-label="Hapus foto" title="Hapus foto"><i class="fal fa-trash-alt"></i></button>'
+                . '<span class="foto-tunggu" aria-hidden="true"><i class="fal fa-spinner"></i></span>'
+                . '</div>'
+                . '<div class="foto-nama small" title="' . esc($nama, 'attr') . '">' . esc($nama) . '</div>'
+                . '</div>';
+        }
+
+        return '<div class="card mb-3 overflow-hidden rounded-kartu border-ink-200 shadow-kartu foto-panel"'
+            . ' data-invoice="' . (int) $invoice_id . '"'
+            . ' data-maks="' . (int) \App\Models\FotoModel::MAKS_FOTO . '"'
+            . ' data-unggah="' . esc(site_url('api/foto/unggah'), 'attr') . '"'
+            . ' data-hapus="' . esc(site_url('api/foto/hapus'), 'attr') . '">'
+            . '<div class="card-header border-ink-100 bg-ink-50/60 py-2.5 px-3 px-sm-4">'
+            . '<button type="button" class="buka-foto flex w-full cursor-pointer items-center gap-2 border-0 bg-transparent p-0 text-[0.78rem] font-bold uppercase tracking-[0.08em] text-ink-700" aria-expanded="' . ($ada ? 'true' : 'false') . '">'
+            . '<span class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-[0.65rem] border border-brand-100 bg-white text-brand-500"><i class="fal fa-camera text-xs"></i></span>'
+            . '<span>Foto Orderan</span>'
+            . '<span class="inline-block rounded-full bg-ink-900 px-2 py-0.5 text-xs font-semibold text-white jumlah-foto">' . count($sudah) . '</span>'
+            . '<i class="fal fa-chevron-down ms-auto text-ink-400 ikon-panah-foto transition-transform' . ($ada ? ' rotate-180' : '') . '"></i>'
+            . '</button>'
+            . '</div>'
+            . '<div class="card-body foto-isi' . ($ada ? '' : ' d-none') . ' p-3 p-sm-4">'
+            . '<p class="small text-muted mb-2"><i class="fal fa-info-circle me-1 text-primary"></i>Acuan bentuk dari pelanggan. ' . $petunjuk . ' Maksimum ' . (int) \App\Models\FotoModel::MAKS_FOTO . ' foto JPG, PNG, atau WebP.</p>'
+            . '<div class="row g-2 foto-daftar">' . $kartu . '</div>'
+            . '<label class="foto-pilih mt-2">'
+            . '<input type="file" class="foto-input d-none" multiple accept="image/jpeg,image/png,image/webp">'
+            . '<span class="foto-pilih-ikon"><i class="fal fa-image"></i></span>'
+            . '<span class="d-block small fw-semibold">Pilih foto atau taruh di sini</span>'
+            . '<span class="d-block" style="font-size:0.72rem">Yang besar diperkecil dulu oleh peramban sebelum dikirim.</span>'
+            . '</label>'
+            . '<div class="foto-galat small text-danger mt-2 d-none"></div>'
+            . '</div>'
+            . '</div>';
+    }
+}
+
+if (! function_exists('foto_kisi')) {
+    /**
+     * Kisi thumbnail foto orderan untuk kartu daftar transaksi.
+     *
+     * Bloknya mengikuti pola lipatan Produk/Anggota Rombongan: tertutup dulu,
+     * dibuka lewat tombolnya, supaya kartu daftar tetap ringkas walau fotonya
+     * banyak. Kotaknya minta versi kecil ke server (240 px, 480 px untuk layar
+     * rapat) sementara kliknya membuka foto utuh di tab baru. Orderan tanpa
+     * foto mengembalikan string kosong, jadi kartunya persis seperti sebelum
+     * fitur ini ada.
+     *
+     * @param array<int, mixed> $foto baris foto dari FotoModel::banyak()
+     */
+    function foto_kisi(array $foto, int $invoice_id = 0): string
+    {
+        if ($foto === []) {
+            return '';
+        }
+
+        // id invoice dipakai sebagai target lipatan; kalau pemanggilnya tidak
+        // mengirim id, nomor urut cukup untuk menjaga targetnya tetap unik
+        static $urut = 0;
+        $target = $invoice_id > 0 ? 'foto-' . $invoice_id : 'foto-x' . (++$urut);
+
+        $kotak  = '';
+        $jumlah = 0;
+
+        foreach ($foto as $f) {
+            $satu = (object) $f;
+            $id   = (int) $satu->id_foto;
+
+            if ($id <= 0) {
+                continue;
+            }
+
+            $nama = (string) ($satu->nama_asli ?? '');
+            $jumlah++;
+
+            // di HP tiga foto sebaris masih lega untuk disentuh, di layar besar
+            // enam sebaris supaya kartunya tidak memanjang
+            $kotak .= '<div class="col-4 col-sm-3 col-md-3 col-lg-2">'
+                . '<a class="d-block text-decoration-none" href="' . esc(\App\Models\FotoModel::alamat($id), 'attr') . '" target="_blank" rel="noopener" title="' . esc($nama, 'attr') . '">'
+                . '<span class="foto-kotak">'
+                . '<img class="foto-gambar" src="' . esc(\App\Models\FotoModel::alamat($id, 240), 'attr') . '"'
+                . ' srcset="' . esc(\App\Models\FotoModel::alamat($id, 240), 'attr') . ' 1x,'
+                . ' ' . esc(\App\Models\FotoModel::alamat($id, 480), 'attr') . ' 2x"'
+                . ' alt="' . esc($nama, 'attr') . '" loading="lazy">'
+                . '</span>'
+                . '</a>'
+                . '</div>';
+        }
+
+        if ($jumlah === 0) {
+            return '';
+        }
+
+        return '<div class="blok blok-lipat mt-4 overflow-hidden rounded-2xl border border-ink-200 bg-[#fcfdfe]">'
+            . '<h6 class="mb-0">'
+            . '<button class="flex w-full cursor-pointer items-center gap-1.5 border-0 bg-transparent px-[1.15rem] py-4 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500 [&_.fal]:text-[0.95rem] [&_.fal]:text-ink-400" type="button"'
+            . ' data-bs-toggle="collapse" data-bs-target="#' . $target . '" aria-expanded="false" aria-controls="' . $target . '">'
+            . '<i class="fal fa-camera"></i> Foto Orderan'
+            . '<span class="inline-block rounded-full bg-ink-900 px-2 py-0.5 text-xs font-semibold text-white">' . $jumlah . '</span>'
+            . '<span class="text-[0.8rem] font-semibold normal-case tracking-normal">foto</span>'
+            . '<i class="fal fa-chevron-down ms-auto transition rotate-[-90deg] aria-expanded:rotate-0"></i>'
+            . '</button>'
+            . '</h6>'
+            . '<div class="collapse" id="' . $target . '">'
+            . '<div class="border-t border-ink-200 px-[1.15rem] py-3">'
+            . '<div class="row g-2">' . $kotak . '</div>'
+            . '</div>'
             . '</div>'
             . '</div>';
     }
@@ -1391,8 +1569,19 @@ if (! function_exists('produk_dibeli')) {
             }
 
             $siap['invoice_id'] = $invoice_id;
-            $siap['rincian']    = rincian_json($v['rincian'] ?? [], array_keys(meta_rincian('produk')));
-            $baris[$k]          = $siap;
+
+            // rincian item lama jangan ikut hilang kalau kiriman tidak membawa
+            // key-nya sama sekali (klien lama / request sebagian), sama seperti
+            // aturan rincian invoice di controller. Form cuma mengirim rincian
+            // untuk item custom, jadi item yang dipindah ke ukuran standar
+            // memang sudah tidak punya rincian.
+            if (array_key_exists('rincian', $v)) {
+                $siap['rincian'] = rincian_json($v['rincian'], array_keys(meta_rincian('produk')));
+            } elseif (($siap['ukuran'] ?? '') !== 'custom') {
+                $siap['rincian'] = null;
+            }
+
+            $baris[$k] = $siap;
         }
 
         return ['baris' => $baris, 'ukuran' => $ukuran];

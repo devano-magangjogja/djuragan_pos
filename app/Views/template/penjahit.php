@@ -262,7 +262,7 @@ $baris = static function (string $label, ?string $nilai): string {
                 <table class="info">
                     <?= $baris('Status', label_status_orderan($invoice->status_pesanan)) ?>
                     <?php foreach ($pesanan as $p) { ?>
-                        <?php if ($p['label'] === 'Tipe Pesanan') { ?>
+                        <?php if ($p['label'] === 'Jenis Layanan') { ?>
                             <?= $baris($p['label'], $p['nilai']) ?>
                         <?php } ?>
                     <?php } ?>

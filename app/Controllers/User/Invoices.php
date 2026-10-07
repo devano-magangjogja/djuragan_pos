@@ -68,7 +68,7 @@ class Invoices extends BaseController
                 'user_id'        => $user_id,
                 'keterangan'     => ($this->request->getPost('keterangan') !== '' ? trim($this->request->getPost('keterangan')) : null),
                 'deadline'       => deadline_iso($rincian),
-                'rincian'        => rincian_json($rincian, array_keys(meta_rincian('pesanan')), ['tipe' => array_keys(tipe_pesanan())]),
+                'rincian'        => rincian_json($rincian, array_keys(meta_rincian('pesanan')), ['tipe' => array_keys(tipe_pesanan()), 'orderan' => ['satuan', 'rombongan']]),
             ];
 
             // sama seperti di panel admin: satu orderan, satu transaksi
@@ -131,6 +131,8 @@ class Invoices extends BaseController
             $juragan = $juraganModel->byInvoiceId($invoice_id)->getResult()[0]->juragan;
             $ret     = [
                 'status' => 'data tersimpan',
+                // sama seperti panel admin: foto naik setelah orderan punya id
+                'id'     => $invoice_id,
                 'url'    => site_url('user/invoices/lihat/' . $juragan . '/semua?cari[kolom]=faktur&cari[q]=' . $seri),
             ];
 
