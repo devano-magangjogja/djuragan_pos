@@ -19,7 +19,19 @@
 
     <?= $this->include('admin/crm/nav_crm') ?>
 
-    <?php if ($isSandbox) : ?>
+    <?php if (($provider ?? '') === 'fonnte') : ?>
+        <div class="alert alert-success border-0 shadow-sm d-flex align-items-center mb-4">
+            <div class="me-3 fs-3">
+                <i class="fab fa-whatsapp"></i>
+            </div>
+            <div>
+                <h6 class="alert-heading mb-1 fw-bold">Mode Fonnte Gateway Aktif</h6>
+                <div class="small">
+                    Pesan siaran broadcast akan dikirimkan langsung ke seluruh nomor WhatsApp kontak pelanggan yang telah opt-in menerima promo melalui Fonnte Gateway.
+                </div>
+            </div>
+        </div>
+    <?php elseif (!empty($isSandbox)) : ?>
         <div class="alert alert-warning border-0 shadow-sm d-flex align-items-center mb-4">
             <div class="me-3 fs-3">
                 <i class="fal fa-flask"></i>

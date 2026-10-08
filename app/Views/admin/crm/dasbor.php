@@ -14,9 +14,13 @@
             <a href="<?= site_url('admin/crm/chat') ?>" class="btn btn-success btn-sm fw-semibold">
                 <i class="fab fa-whatsapp me-1"></i> Live Chat WA
             </a>
-            <?php if ($isSandbox) : ?>
+            <?php if (($provider ?? '') === 'fonnte') : ?>
+                <span class="badge bg-success" title="Provider aktif: Fonnte WhatsApp Gateway">
+                    <i class="fab fa-whatsapp me-1"></i> Fonnte
+                </span>
+            <?php elseif ($isSandbox) : ?>
                 <span class="badge bg-warning text-dark" title="Mode sandbox Kapso aktif">
-                    <i class="fal fa-flask me-1"></i> Sandbox
+                    <i class="fal fa-flask me-1"></i> Sandbox Kapso
                 </span>
             <?php else : ?>
                 <span class="badge bg-success" title="Production mode">

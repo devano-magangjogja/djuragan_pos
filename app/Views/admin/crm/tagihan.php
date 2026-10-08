@@ -146,16 +146,20 @@
                     <label class="form-label small fw-bold">Isi Pesan WhatsApp</label>
                     <textarea id="targetPesan" class="form-control font-monospace" rows="6"></textarea>
                     <div class="form-text small">
-                        Pesan akan otomatis diformat dan dikirim melalui WhatsApp API (Kapso/Fonnte).
+                        Pesan akan otomatis diformat dan dikirim melalui WhatsApp API (<?= ($provider ?? '') === 'fonnte' ? 'Fonnte Gateway' : 'Kapso' ?>).
                     </div>
                 </div>
 
+                <?php if (!empty($isSandbox)) : ?>
                 <div class="form-check p-3 bg-light rounded border">
                     <input class="form-check-input" type="checkbox" id="checkSandbox" checked>
                     <label class="form-check-label small" for="checkSandbox">
                         <strong>Kirim ke Nomor Sandbox Pengujian</strong> (Rekomendasi saat tahap testing Kapso Sandbox agar tidak error bila nomor pelanggan belum didaftarkan di sandbox).
                     </label>
                 </div>
+                <?php else : ?>
+                <input type="hidden" id="checkSandbox" value="0">
+                <?php endif; ?>
 
                 <input type="hidden" id="targetIdInvoice">
                 <input type="hidden" id="targetPelangganId">

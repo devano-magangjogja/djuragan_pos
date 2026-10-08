@@ -280,7 +280,7 @@
             </div>
             <div class="modal-body">
                 <p class="small text-muted mb-2">
-                    Untuk menerima balasan chat dari pelanggan ke website ini secara real-time, daftarkan URL berikut di dashboard <strong>Kapso &gt; Integrations &gt; Webhooks</strong>:
+                    Untuk menerima balasan chat dari pelanggan ke website ini secara real-time, daftarkan URL berikut di dashboard <strong>Fonnte (Menu Device &gt; Edit Device &gt; Webhook URL)</strong> atau <strong>Kapso &gt; Integrations &gt; Webhooks</strong>:
                 </p>
                 <div class="input-group mb-3">
                     <input type="text" class="form-control font-monospace bg-light" value="<?= site_url('webhook/whatsapp') ?>" readonly id="copyWebhookInput">
@@ -289,7 +289,7 @@
                     </button>
                 </div>
                 <div class="alert alert-info small py-2 mb-0">
-                    <i class="fal fa-check-circle me-1"></i> Endpoint ini sudah dibuka tanpa blokir CSRF sehingga siap menerima event <code>whatsapp.message.received</code>.
+                    <i class="fal fa-check-circle me-1"></i> Endpoint ini sudah dibuka tanpa blokir CSRF sehingga siap menerima pesan masuk dari Fonnte maupun Kapso.
                 </div>
 <!-- Modal Buat Customer Baru dari Chat WA -->
 <div class="modal fade" id="modalBuatCustomerWa" tabindex="-1" aria-hidden="true">

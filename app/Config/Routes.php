@@ -129,6 +129,8 @@ $routes->group('admin', static function ($routes) {
         $routes->post('simpan_template', 'Admin\Crm::simpan_template');
         $routes->post('simpan_pengaturan', 'Admin\Crm::simpan_pengaturan');
         $routes->post('tes_koneksi', 'Admin\Crm::tes_koneksi');
+        $routes->match(['GET', 'POST'], 'cek_status_fonnte', 'Admin\Crm::cek_status_fonnte');
+        $routes->match(['GET', 'POST'], 'ambil_qr_fonnte', 'Admin\Crm::ambil_qr_fonnte');
     });
 
     $routes->group('settings', ['filter' => 'auth:superadmin'], static function ($routes) {

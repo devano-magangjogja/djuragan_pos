@@ -74,7 +74,7 @@ class WhatsAppManager
 
     public function getActiveProviderName(): string
     {
-        return $this->getSetting('wa_provider', 'kapso');
+        return $this->getSetting('wa_provider', 'fonnte');
     }
 
     public function getProvider(?string $name = null): WhatsAppProviderInterface
@@ -104,6 +104,30 @@ class WhatsAppManager
     }
 
     /**
+     * Cek status perangkat Fonnte
+     */
+    public function getFonnteDeviceStatus(): array
+    {
+        $provider = $this->getProvider('fonnte');
+        if ($provider instanceof FonnteProvider) {
+            return $provider->getDeviceStatus();
+        }
+        return ['status' => false, 'message' => 'Provider Fonnte tidak tersedia'];
+    }
+
+    /**
+     * Ambil QR Code Fonnte untuk pairing
+     */
+    public function getFonnteQr(): array
+    {
+        $provider = $this->getProvider('fonnte');
+        if ($provider instanceof FonnteProvider) {
+            return $provider->getQrCode();
+        }
+        return ['status' => false, 'message' => 'Provider Fonnte tidak tersedia'];
+    }
+
+    /**
      * Kirim pesan WhatsApp dan otomatis catat log ke crm_pesan_log
      */
     public function send(string $to, string $message, array $meta = []): array
@@ -116,7 +140,7 @@ class WhatsAppManager
         $tipePesan   = $meta['tipe_pesan'] ?? 'manual';
         $userId      = $meta['user_id'] ?? (is_cli() ? null : (session()->get('id') ?: null));
 
-        // Jika mode sandbox aktif dan sandbox_test_number diatur, kita bisa pastikan pengiriman aman
+        // Jika mode sandbox aktif dan sandbox_test_number diatur (khusus Kapso)
         $sandboxMode = (int) $this->getSetting('kapso_sandbox_mode', '1');
         $sandboxTestNumber = $this->getSetting('kapso_sandbox_test_number', '6285161384750');
 
@@ -133,6 +157,7 @@ class WhatsAppManager
         }
 
         $result = $provider->sendMessage($targetPhone, $message, $meta);
+        $result['provider'] = $providerName;
 
         // Catat log pengiriman & sinkronisasi percakapan chat
         try {

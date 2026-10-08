@@ -27,14 +27,20 @@ class Webhook extends BaseController
         // Log semua payload masuk untuk debugging
         log_message('info', '[Webhook WA] Payload masuk: ' . substr($rawJson ?? '', 0, 1000));
 
-        if (empty($rawJson)) {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Empty payload']);
+        $payload = null;
+        if (!empty($rawJson)) {
+            $payload = json_decode($rawJson, true);
         }
 
-        $payload = json_decode($rawJson, true);
         if (!$payload) {
-            log_message('error', '[Webhook WA] JSON tidak valid: ' . $rawJson);
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Invalid JSON']);
+            $postData = $this->request->getPost();
+            if (!empty($postData)) {
+                $payload = $postData;
+            }
+        }
+
+        if (empty($payload)) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Empty or invalid payload']);
         }
 
         $waManager = WhatsAppManager::getInstance();

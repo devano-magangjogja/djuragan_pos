@@ -27,7 +27,7 @@ class Crm extends BaseController
         $reminders  = $this->crmModel->getReminders();
         $logPesan   = $this->crmModel->getLogPesan(10);
         $provider   = $this->wa->getActiveProviderName();
-        $isSandbox  = (int) $this->wa->getSetting('kapso_sandbox_mode', '1');
+        $isSandbox  = ($provider === 'kapso') ? (int) $this->wa->getSetting('kapso_sandbox_mode', '1') : 0;
 
         // Ambil beberapa follow-up aktif hari ini
         $followupHariIni = $this->crmModel->getFollowupList(['status' => 'menunggu'], 5);
@@ -527,10 +527,12 @@ class Crm extends BaseController
         $template = $db->table('crm_template')->where('kode', 'tagihan_belum_lunas')->get()->getRowArray();
 
         $data = [
-            'title'    => 'Follow-up Tagihan Belum Lunas',
-            'invoices' => $invoices,
-            'cari'     => $cari,
-            'template' => $template['pesan'] ?? '',
+            'title'     => 'Follow-up Tagihan Belum Lunas',
+            'invoices'  => $invoices,
+            'cari'      => $cari,
+            'template'  => $template['pesan'] ?? '',
+            'provider'  => $this->wa->getActiveProviderName(),
+            'isSandbox' => ($this->wa->getActiveProviderName() === 'kapso') ? (int) $this->wa->getSetting('kapso_sandbox_mode', '1') : 0,
         ];
 
         return view('admin/crm/tagihan', $data);
@@ -548,10 +550,12 @@ class Crm extends BaseController
         $template = $db->table('crm_template')->where('kode', 'notifikasi_resi')->get()->getRowArray();
 
         $data = [
-            'title'    => 'Notifikasi Resi Pengiriman',
-            'invoices' => $invoices,
-            'cari'     => $cari,
-            'template' => $template['pesan'] ?? '',
+            'title'     => 'Notifikasi Resi Pengiriman',
+            'invoices'  => $invoices,
+            'cari'      => $cari,
+            'template'  => $template['pesan'] ?? '',
+            'provider'  => $this->wa->getActiveProviderName(),
+            'isSandbox' => ($this->wa->getActiveProviderName() === 'kapso') ? (int) $this->wa->getSetting('kapso_sandbox_mode', '1') : 0,
         ];
 
         return view('admin/crm/pengiriman', $data);
@@ -566,12 +570,16 @@ class Crm extends BaseController
         $template = $db->table('crm_template')->where('kode', 'broadcast_promo')->get()->getRowArray();
         $riwayatBroadcast = $db->table('crm_broadcast')->orderBy('id_broadcast', 'DESC')->get(15)->getResultArray();
 
+        $provider = $this->wa->getActiveProviderName();
+        $isSandbox = ($provider === 'kapso') ? (int) $this->wa->getSetting('kapso_sandbox_mode', '1') : 0;
+
         $data = [
             'title'            => 'Broadcast Promo WhatsApp',
             'template'         => $template['pesan'] ?? '',
             'riwayatBroadcast' => $riwayatBroadcast,
+            'provider'         => $provider,
             'sandboxNumber'    => $this->wa->getSetting('kapso_sandbox_test_number', '6285161384750'),
-            'isSandbox'        => (int) $this->wa->getSetting('kapso_sandbox_mode', '1'),
+            'isSandbox'        => $isSandbox,
         ];
 
         return view('admin/crm/broadcast', $data);
@@ -590,7 +598,8 @@ class Crm extends BaseController
             return $this->response->setJSON(['status' => 'error', 'message' => 'Isi pesan broadcast wajib diisi.']);
         }
 
-        $isSandbox = (int) $this->wa->getSetting('kapso_sandbox_mode', '1');
+        $provider  = $this->wa->getActiveProviderName();
+        $isSandbox = ($provider === 'kapso') ? (int) $this->wa->getSetting('kapso_sandbox_mode', '1') : 0;
         $sandboxNumber = $this->wa->getSetting('kapso_sandbox_test_number', '6285161384750');
 
         $daftarPelanggan = $this->crmModel->getDaftarPelanggan(['segmen' => $segmen], 100, 0);
@@ -775,9 +784,14 @@ class Crm extends BaseController
     {
         $nomor = trim($this->request->getPost('nomor') ?? '');
         $pesan = trim($this->request->getPost('pesan') ?? 'Halo! Ini adalah pesan pengujian koneksi WhatsApp CRM Djuragan POS.');
+        $provider = $this->wa->getActiveProviderName();
 
         if (empty($nomor)) {
-            $nomor = $this->wa->getSetting('kapso_sandbox_test_number', '6285161384750');
+            if ($provider === 'kapso') {
+                $nomor = $this->wa->getSetting('kapso_sandbox_test_number', '6285161384750');
+            } else {
+                return $this->response->setJSON(['status' => 'error', 'message' => 'Nomor WhatsApp tujuan pengetesan wajib diisi.']);
+            }
         }
 
         $res = $this->wa->send($nomor, $pesan, [
@@ -787,17 +801,35 @@ class Crm extends BaseController
         if ($res['success']) {
             return $this->response->setJSON([
                 'status'     => 'success',
-                'message'    => 'Pesan WhatsApp berhasil dikirim!',
+                'message'    => 'Pesan WhatsApp berhasil dikirim via ' . ucfirst($res['provider'] ?? $provider) . '!',
                 'message_id' => $res['message_id'],
-                'provider'   => $res['provider'],
+                'provider'   => $res['provider'] ?? $provider,
                 'notice'     => $res['notice'] ?? null,
             ]);
         }
 
         return $this->response->setJSON([
             'status'  => 'error',
-            'message' => 'Gagal mengirim pesan: ' . ($res['error'] ?? 'Periksa pengaturan API.'),
+            'message' => 'Gagal mengirim pesan: ' . ($res['error'] ?? 'Periksa pengaturan API WhatsApp.'),
         ]);
+    }
+
+    /**
+     * AJAX: Cek Status Koneksi Perangkat Fonnte
+     */
+    public function cek_status_fonnte()
+    {
+        $res = $this->wa->getFonnteDeviceStatus();
+        return $this->response->setJSON($res);
+    }
+
+    /**
+     * AJAX: Ambil QR Code Fonnte untuk Pairing
+     */
+    public function ambil_qr_fonnte()
+    {
+        $res = $this->wa->getFonnteQr();
+        return $this->response->setJSON($res);
     }
 
     /**

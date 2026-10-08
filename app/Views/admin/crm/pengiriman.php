@@ -153,12 +153,16 @@
                     <textarea id="targetPesanResi" class="form-control font-monospace" rows="6"></textarea>
                 </div>
 
+                <?php if (!empty($isSandbox)) : ?>
                 <div class="form-check p-3 bg-light rounded border">
                     <input class="form-check-input" type="checkbox" id="checkSandboxResi" checked>
                     <label class="form-check-label small" for="checkSandboxResi">
                         <strong>Kirim ke Nomor Sandbox Pengujian</strong> (Gunakan opsi ini saat testing Kapso Sandbox).
                     </label>
                 </div>
+                <?php else : ?>
+                <input type="hidden" id="checkSandboxResi" value="0">
+                <?php endif; ?>
 
                 <input type="hidden" id="targetIdInvoiceResi">
                 <input type="hidden" id="targetPelangganIdResi">
