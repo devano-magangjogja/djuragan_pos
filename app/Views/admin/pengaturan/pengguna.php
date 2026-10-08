@@ -542,14 +542,12 @@ $js = <<< JS
     			+ '<div class="text-muted small">' + aman(u.email) + '</div></td>'
     			+ '<td><span class="badge rounded-pill ' + (lokaLevel[u.level] || 'bg-light text-dark border') + '">' + aman(u.level) + '</span></td>'
     			+ '<td><span class="badge rounded-pill ' + (lokaStatus[u.status] || 'bg-light text-dark border') + '">' + aman(u.status) + '</span></td>'
-    			+ '<td class="text-end"><div class="btn-group">'
-    			+ '<button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#modalSuntingPengguna"'
+    			+ '<td class="text-end text-nowrap">'
+    			+ '<button type="button" class="btn btn-sm btn-outline-secondary me-1" title="Sunting ' + aman(u.nama) + '" aria-label="Sunting ' + aman(u.nama) + '" data-bs-toggle="modal" data-bs-target="#modalSuntingPengguna"'
     			+ ' data-id="' + aman(u.id) + '" data-nama="' + aman(u.nama) + '" data-email="' + aman(u.email) + '"'
-    			+ ' data-username="' + aman(u.username) + '" data-level="' + aman(u.level) + '" data-status="' + aman(u.status) + '">Sunting</button>'
-    			+ '<button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">'
-    			+ '<span class="visually-hidden">Toggle Dropdown</span></button>'
-    			+ '<ul class="dropdown-menu"><li><button class="dropdown-item" href="#">Hapus</button></li></ul>'
-    			+ '</div></td></tr>';
+    			+ ' data-username="' + aman(u.username) + '" data-level="' + aman(u.level) + '" data-status="' + aman(u.status) + '"><i class="fal fa-pencil"></i></button>'
+    			+ '<button type="button" class="btn btn-sm btn-outline-danger" title="Hapus ' + aman(u.nama) + '" aria-label="Hapus ' + aman(u.nama) + '"><i class="fal fa-trash"></i></button>'
+    			+ '</td></tr>';
     	}
 
     	function tombolHalaman(n, label, keadaan) {

@@ -141,6 +141,8 @@ $routes->group('admin', static function ($routes) {
             $routes->get('/', 'Admin\Settings\Bank::index');
             $routes->post('save', 'Admin\Settings\Bank::simpan');
             $routes->post('update', 'Admin\Settings\Bank::perbarui');
+            // hapus lunak: nota lama tetap terbaca, hanya pilihan rekeningnya hilang
+            $routes->post('hapus', 'Admin\Settings\Bank::hapus');
         });
 
         $routes->group('juragan', static function ($routes) {

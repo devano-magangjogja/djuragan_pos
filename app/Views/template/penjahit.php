@@ -290,7 +290,7 @@ $baris = static function (string $label, ?string $nilai): string {
             </tr>
             <?php
             // label spesifikasi yang memang dibutuhkan penjahit; ukuran_detail ikut
-            // karena isinya tabel ukuran tulisan tangan dari form
+            // karena isinya catatan tambahan dari form
             foreach (daftar_rincian($b->rincian ?? null, 'produk') as $r) { ?>
                 <tr>
                     <td>

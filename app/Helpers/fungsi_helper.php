@@ -944,7 +944,7 @@ if (! function_exists('meta_rincian')) {
                 'pemilik'       => ['Atas nama', 'fa-user'],
                 'bahan'         => ['Bahan', 'fa-tshirt'],
                 'spesifikasi'   => ['Model & jahitan', 'fa-scissors'],
-                'ukuran_detail' => ['Tabel ukuran', 'fa-ruler-combined'],
+                'ukuran_detail' => ['Catatan', 'fa-sticky-note'],
             ],
         ];
 
