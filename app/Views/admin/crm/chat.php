@@ -146,7 +146,7 @@
                 <i class="fal fa-webhook me-1"></i> Webhook URL
             </button>
             <?php if (!empty($isSandbox)) : ?>
-                <span class="badge bg-warning text-dark py-2 px-3">
+                <span class="btn btn-sm pe-none fw-semibold text-nowrap bg-warning text-dark border-warning">
                     <i class="fal fa-flask me-1"></i> Sandbox Mode
                 </span>
             <?php endif; ?>

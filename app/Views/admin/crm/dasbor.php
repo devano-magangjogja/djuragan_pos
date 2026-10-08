@@ -11,15 +11,13 @@
             </h4>
         </div>
         <div class="d-flex align-items-center gap-2 flex-nowrap">
-            <a href="<?= site_url('admin/crm/chat') ?>" class="btn btn-success btn-sm fw-semibold">
-                <i class="fab fa-whatsapp me-1"></i> Live Chat WA
-            </a>
+            <?= $this->include('admin/crm/tombol_wa') ?>
             <?php if ($isSandbox) : ?>
-                <span class="badge bg-warning text-dark" title="Mode sandbox Kapso aktif">
+                <span class="btn btn-sm pe-none fw-semibold text-nowrap bg-warning text-dark border-warning" title="Mode sandbox Kapso aktif">
                     <i class="fal fa-flask me-1"></i> Sandbox
                 </span>
             <?php else : ?>
-                <span class="badge bg-success" title="Production mode">
+                <span class="btn btn-sm pe-none fw-semibold text-nowrap bg-success text-white border-success" title="Production mode">
                     <i class="fal fa-check-circle me-1"></i> Production
                 </span>
             <?php endif; ?>

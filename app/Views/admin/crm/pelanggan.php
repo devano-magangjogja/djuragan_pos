@@ -15,9 +15,7 @@
             <a href="<?= site_url('admin/crm/duplikat') ?>" class="btn btn-outline-danger btn-sm fw-semibold">
                 <i class="fal fa-clone me-1"></i> Cek Duplikat
             </a>
-            <a href="<?= site_url('admin/crm/chat') ?>" class="btn btn-success btn-sm fw-semibold">
-                <i class="fab fa-whatsapp me-1"></i> Live Chat WA
-            </a>
+            <?= $this->include('admin/crm/tombol_wa') ?>
         </div>
     </div>
 

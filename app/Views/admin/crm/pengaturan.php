@@ -15,6 +15,9 @@
                 </ol>
             </nav>
         </div>
+        <div class="d-flex align-items-center gap-2">
+            <?= $this->include('admin/crm/tombol_wa') ?>
+        </div>
     </div>
 
     <?= $this->include('admin/crm/nav_crm') ?>
