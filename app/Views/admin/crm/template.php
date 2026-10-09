@@ -25,7 +25,9 @@
     <div class="alert alert-info border-0 shadow-sm mb-4">
         <i class="fal fa-info-circle me-1"></i>
         <strong>Variabel Dinamis:</strong> Anda dapat menggunakan tag berikut di dalam teks template:
-        <code>{nama}</code>, <code>{invoice}</code>, <code>{total}</code>, <code>{sisa}</code>, <code>{link_invoice}</code>, <code>{kurir}</code>, <code>{resi}</code>. Tag ini akan diganti dengan data pesanan secara otomatis saat mengirim pesan.
+        <code>{nama}</code>, <code>{invoice}</code>, <code>{total}</code>, <code>{sisa}</code>, <code>{link_invoice}</code>, <code>{kurir}</code>, <code>{resi}</code>, <code>{total_order}</code>. Tag ini akan diganti dengan data pesanan secara otomatis saat mengirim pesan.
+        <br>
+        <small>Di Live Chat dan profil customer, datanya diambil dari nota terakhir yang belum lunas. Tag yang belum ada isinya (misalnya <code>{resi}</code> sebelum pesanan dikirim) sengaja tetap terlihat agar pesannya diedit lebih dulu, bukan terkirim dalam keadaan kosong.</small>
     </div>
 
     <div class="row g-4">

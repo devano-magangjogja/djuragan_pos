@@ -12,9 +12,6 @@
             <p class="text-muted small mb-0">Kelola tindakan follow-up customer, penagihan invoice, dan pengingat jadwal pakaian penting.</p>
         </div>
         <div class="d-flex align-items-center gap-2">
-            <button class="btn btn-primary btn-sm fw-semibold" data-bs-toggle="modal" data-bs-target="#modalTambahFollowupGlobal">
-                <i class="fal fa-plus me-1"></i> Buat Follow-up Customer
-            </button>
             <?= $this->include('admin/crm/tombol_wa') ?>
         </div>
     </div>
@@ -39,15 +36,9 @@
         <div class="card-header bg-white border-bottom p-0">
             <ul class="nav nav-tabs card-header-tabs m-0 px-3">
                 <li class="nav-item">
-                    <a class="nav-link py-3 px-4 fw-semibold <?= $tab === 'customer' ? 'active text-primary' : 'text-muted' ?>" href="<?= site_url('admin/crm/followup?tab=customer') ?>">
-                        <i class="fal fa-user-check me-2"></i> Follow-up Customer
-                        <span class="badge bg-light text-dark border ms-1"><?= count($followupList) ?></span>
-                    </a>
-                </li>
-                <li class="nav-item">
                     <a class="nav-link py-3 px-4 fw-semibold <?= $tab === 'tagihan' ? 'active text-primary' : 'text-muted' ?>" href="<?= site_url('admin/crm/followup?tab=tagihan') ?>">
                         <i class="fal fa-money-bill-wave me-2 text-danger"></i> Follow-up Tagihan Invoice
-                        <span class="badge bg-danger text-white ms-1"><?= count($invoicesTagihan) ?></span>
+                        <span class="badge bg-danger text-white ms-1"><?= number_format($totalInvoicesTagihan ?? count($invoicesTagihan)) ?></span>
                     </a>
                 </li>
                 <li class="nav-item">
@@ -178,7 +169,12 @@
             <!-- ================= SUB TAB 2: FOLLOW-UP TAGIHAN ================= -->
             <?php elseif ($tab === 'tagihan'): ?>
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <p class="text-muted small mb-0">Daftar invoice yang statusnya belum lunas (Kredit, Belum Bayar, atau Menunggu Konfirmasi).</p>
+                    <p class="text-muted small mb-0">
+                        Daftar invoice yang statusnya belum lunas (Kredit, Belum Bayar, atau Menunggu Konfirmasi).
+                        <?php if (!empty($totalInvoicesTagihan) && $totalInvoicesTagihan > count($invoicesTagihan)): ?>
+                            Menampilkan <?= count($invoicesTagihan) ?> dari <strong><?= number_format($totalInvoicesTagihan) ?></strong> total invoice pending.
+                        <?php endif; ?>
+                    </p>
                     <form action="<?= site_url('admin/crm/followup') ?>" method="get" class="d-flex gap-2">
                         <input type="hidden" name="tab" value="tagihan">
                         <div class="input-group input-group-sm" style="width: 250px;">
@@ -255,6 +251,36 @@
                             </tbody>
                         </table>
                     </div>
+
+                    <?php if (!empty($totalPagesTagihan) && $totalPagesTagihan > 1) : ?>
+                        <div class="d-flex flex-wrap justify-content-between align-items-center pt-3 border-top mt-3">
+                            <div class="small text-muted mb-2 mb-md-0">
+                                Halaman <?= $page ?> dari <?= $totalPagesTagihan ?> (Total <?= number_format($totalInvoicesTagihan) ?> invoice pending)
+                            </div>
+                            <ul class="pagination pagination-sm mb-0">
+                                <?php if ($page > 1) : ?>
+                                    <li class="page-item">
+                                        <a class="page-link" href="<?= site_url('admin/crm/followup?tab=tagihan&page=' . ($page - 1) . '&cari=' . urlencode($cari)) ?>">« Sebelumnya</a>
+                                    </li>
+                                <?php endif; ?>
+
+                                <?php
+                                $start = max(1, $page - 2);
+                                $end   = min($totalPagesTagihan, $page + 2);
+                                for ($i = $start; $i <= $end; $i++) : ?>
+                                    <li class="page-item <?= $i === $page ? 'active' : '' ?>">
+                                        <a class="page-link" href="<?= site_url('admin/crm/followup?tab=tagihan&page=' . $i . '&cari=' . urlencode($cari)) ?>"><?= $i ?></a>
+                                    </li>
+                                <?php endfor; ?>
+
+                                <?php if ($page < $totalPagesTagihan) : ?>
+                                    <li class="page-item">
+                                        <a class="page-link" href="<?= site_url('admin/crm/followup?tab=tagihan&page=' . ($page + 1) . '&cari=' . urlencode($cari)) ?>">Berikutnya »</a>
+                                    </li>
+                                <?php endif; ?>
+                            </ul>
+                        </div>
+                    <?php endif; ?>
                 <?php endif; ?>
 
             <!-- ================= SUB TAB 3: REMINDER OTOMATIS ================= -->
@@ -312,56 +338,7 @@
     </div>
 </div>
 
-<!-- Modal Tambah Follow-up Global -->
-<div class="modal fade" id="modalTambahFollowupGlobal" tabindex="-1">
-    <div class="modal-dialog">
-        <form action="<?= site_url('admin/crm/followup/simpan') ?>" method="post">
-            <?= csrf_field() ?>
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h6 class="modal-title fw-bold">Buat Follow-up Customer Baru</h6>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label small fw-semibold">ID / Nama Customer</label>
-                        <input type="number" name="pelanggan_id" class="form-control form-control-sm" placeholder="Masukkan ID Pelanggan" required>
-                        <div class="form-text small">Atau buka profil customer 360 untuk membuat follow-up langsung dari halamannya.</div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label small fw-semibold">Kategori Tindakan</label>
-                        <select name="kategori" class="form-select form-select-sm" required>
-                            <option value="tanya_harga">Follow-up Prospek (Tanya Harga)</option>
-                            <option value="fitting">Pengingat Jadwal Fitting</option>
-                            <option value="pengambilan">Pengingat Pengambilan Pakaian</option>
-                            <option value="pengembalian_sewa">Pengingat Pengembalian Sewa</option>
-                            <option value="konfirmasi_ukuran">Konfirmasi Ukuran Pakaian</option>
-                            <option value="penawaran">Penawaran Promo / Produk Baru</option>
-                            <option value="tagihan">Follow-up Pembayaran</option>
-                            <option value="lainnya">Lainnya</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label small fw-semibold">Judul Follow-up</label>
-                        <input type="text" name="judul" class="form-control form-control-sm" placeholder="Misal: Tanya kelanjutan order jas pengantin" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label small fw-semibold">Tanggal Jatuh Tempo</label>
-                        <input type="date" name="tanggal_jatuh_tempo" class="form-control form-control-sm" value="<?= date('Y-m-d') ?>" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label small fw-semibold">Catatan Petunjuk</label>
-                        <textarea name="catatan" class="form-control form-control-sm" rows="3" placeholder="Informasi detail untuk staff..."></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary btn-sm">Simpan Jadwal</button>
-                </div>
-            </div>
-        </form>
-    </div>
-</div>
+
 
 <!-- Modal Kirim Tagihan WhatsApp -->
 <div class="modal fade" id="modalTagihanWa" tabindex="-1">

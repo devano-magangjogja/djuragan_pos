@@ -683,6 +683,28 @@ if (! function_exists('replacer')) {
     }
 }
 
+if (! function_exists('crm_isi_token')) {
+    /**
+     * Isi token {nama}, {invoice}, {total}, ... pada pesan WhatsApp CRM.
+     *
+     * Beda dengan replacer(): token yang tidak punya data dibiarkan utuh,
+     * supaya penulis pesan melihat bagian mana yang belum terisi alih-alih
+     * mengirim pesan berhiaskan spasi kosong ke pelanggan.
+     */
+    function crm_isi_token($pesan, array $data)
+    {
+        return preg_replace_callback('/\{([a-zA-Z_][a-zA-Z0-9_]*)\}/', function ($m) use ($data) {
+            $kunci = strtolower($m[1]);
+
+            if (! array_key_exists($kunci, $data) || $data[$kunci] === null || $data[$kunci] === '') {
+                return $m[0];
+            }
+
+            return (string) $data[$kunci];
+        }, (string) $pesan);
+    }
+}
+
 if (! function_exists('simpan_notif')) {
     function simpan_notif($type, $juragan_id, $invoice_id)
     {

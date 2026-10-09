@@ -38,88 +38,98 @@
     <div class="row g-3 mb-4">
         <!-- Customer Aktif Bulan Ini -->
         <div class="col-xl-2 col-md-4 col-6">
-            <div class="card border-0 shadow-sm h-100 border-start border-4 border-success">
-                <div class="card-body p-3">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span class="text-muted small fw-semibold">Customer Aktif</span>
-                        <i class="fal fa-user-check text-success fs-5"></i>
+            <a href="<?= site_url('admin/crm/pelanggan?status=aktif') ?>" class="text-decoration-none text-reset">
+                <div class="card border-0 shadow-sm h-100 border-start border-4 border-success">
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted small fw-semibold">Customer Aktif</span>
+                            <i class="fal fa-user-check text-success fs-5"></i>
+                        </div>
+                        <h3 class="fw-bold mb-0 text-success mt-1"><?= number_format($ringkasan['aktif_bulan_ini']) ?></h3>
+                        <div class="text-muted small mt-1" style="font-size: 11px;">transaksi 30 hari terakhir</div>
                     </div>
-                    <h3 class="fw-bold mb-0 text-success mt-1"><?= number_format($ringkasan['aktif_bulan_ini']) ?></h3>
-                    <div class="text-muted small mt-1" style="font-size: 11px;">transaksi 30 hari terakhir</div>
                 </div>
-            </div>
+            </a>
         </div>
 
         <!-- Customer Baru Bulan Ini -->
         <div class="col-xl-2 col-md-4 col-6">
-            <div class="card border-0 shadow-sm h-100 border-start border-4 border-info">
-                <div class="card-body p-3">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span class="text-muted small fw-semibold">Customer Baru</span>
-                        <i class="fal fa-sparkles text-info fs-5"></i>
+            <a href="<?= site_url('admin/crm/pelanggan?status=baru') ?>" class="text-decoration-none text-reset">
+                <div class="card border-0 shadow-sm h-100 border-start border-4 border-info">
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted small fw-semibold">Customer Baru</span>
+                            <i class="fal fa-sparkles text-info fs-5"></i>
+                        </div>
+                        <h3 class="fw-bold mb-0 text-info mt-1"><?= number_format($ringkasan['pelanggan_baru_bulan_ini']) ?></h3>
+                        <div class="text-muted small mt-1" style="font-size: 11px;">order perdana bulan ini</div>
                     </div>
-                    <h3 class="fw-bold mb-0 text-info mt-1"><?= number_format($ringkasan['pelanggan_baru_bulan_ini']) ?></h3>
-                    <div class="text-muted small mt-1" style="font-size: 11px;">order perdana bulan ini</div>
                 </div>
-            </div>
+            </a>
         </div>
 
         <!-- Customer Repeat Order -->
         <div class="col-xl-2 col-md-4 col-6">
-            <div class="card border-0 shadow-sm h-100 border-start border-4 border-primary">
-                <div class="card-body p-3">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span class="text-muted small fw-semibold">Repeat Order</span>
-                        <i class="fal fa-sync text-primary fs-5"></i>
+            <a href="<?= site_url('admin/crm/pelanggan?segmen=repeat') ?>" class="text-decoration-none text-reset">
+                <div class="card border-0 shadow-sm h-100 border-start border-4 border-primary">
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted small fw-semibold">Repeat Order</span>
+                            <i class="fal fa-sync text-primary fs-5"></i>
+                        </div>
+                        <h3 class="fw-bold mb-0 text-primary mt-1"><?= number_format($ringkasan['repeat_order']) ?></h3>
+                        <div class="text-muted small mt-1" style="font-size: 11px;">pelanggan pesan > 1x</div>
                     </div>
-                    <h3 class="fw-bold mb-0 text-primary mt-1"><?= number_format($ringkasan['repeat_order']) ?></h3>
-                    <div class="text-muted small mt-1" style="font-size: 11px;">pelanggan pesan > 1x</div>
                 </div>
-            </div>
+            </a>
         </div>
 
         <!-- Customer Tidak Aktif / Pasif -->
         <div class="col-xl-2 col-md-4 col-6">
-            <div class="card border-0 shadow-sm h-100 border-start border-4 border-secondary">
-                <div class="card-body p-3">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span class="text-muted small fw-semibold">Customer Pasif</span>
-                        <i class="fal fa-user-clock text-secondary fs-5"></i>
+            <a href="<?= site_url('admin/crm/pelanggan?status=tidak_aktif') ?>" class="text-decoration-none text-reset">
+                <div class="card border-0 shadow-sm h-100 border-start border-4 border-secondary">
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted small fw-semibold">Customer Pasif</span>
+                            <i class="fal fa-user-clock text-secondary fs-5"></i>
+                        </div>
+                        <h3 class="fw-bold mb-0 text-secondary mt-1"><?= number_format($ringkasan['pasif_pelanggan']) ?></h3>
+                        <div class="text-muted small mt-1" style="font-size: 11px;">> 60 hari tanpa order</div>
                     </div>
-                    <h3 class="fw-bold mb-0 text-secondary mt-1"><?= number_format($ringkasan['pasif_pelanggan']) ?></h3>
-                    <div class="text-muted small mt-1" style="font-size: 11px;">> 60 hari tanpa order</div>
                 </div>
-            </div>
+            </a>
         </div>
 
         <!-- Prospek Belum Closing -->
         <div class="col-xl-2 col-md-4 col-6">
-            <div class="card border-0 shadow-sm h-100 border-start border-4 border-warning">
-                <div class="card-body p-3">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span class="text-muted small fw-semibold">Belum Closing</span>
-                        <i class="fal fa-comments text-warning fs-5"></i>
+            <a href="<?= site_url('admin/crm/pelanggan?status=prospek') ?>" class="text-decoration-none text-reset">
+                <div class="card border-0 shadow-sm h-100 border-start border-4 border-warning">
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted small fw-semibold">Belum Closing</span>
+                            <i class="fal fa-comments text-warning fs-5"></i>
+                        </div>
+                        <h3 class="fw-bold mb-0 text-warning mt-1"><?= number_format($ringkasan['prospek_belum_closing']) ?></h3>
+                        <div class="text-muted small mt-1" style="font-size: 11px;">prospek/tanya di WA</div>
                     </div>
-                    <h3 class="fw-bold mb-0 text-warning mt-1"><?= number_format($ringkasan['prospek_belum_closing']) ?></h3>
-                    <div class="text-muted small mt-1" style="font-size: 11px;">prospek/tanya di WA</div>
                 </div>
-            </div>
+            </a>
         </div>
 
-        <!-- Follow-up Hari Ini -->
+        <!-- Follow-up Tagihan -->
         <div class="col-xl-2 col-md-4 col-6">
-            <div class="card border-0 shadow-sm h-100 border-start border-4 border-danger">
-                <div class="card-body p-3">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span class="text-muted small fw-semibold">Follow-up Hari Ini</span>
-                        <i class="fal fa-calendar-check text-danger fs-5"></i>
-                    </div>
-                    <h3 class="fw-bold mb-0 text-danger mt-1"><?= number_format($ringkasan['followup_hari_ini']) ?></h3>
-                    <div class="text-muted small mt-1" style="font-size: 11px;">
-                        <?= $ringkasan['followup_terlambat'] > 0 ? '<strong class="text-danger">' . $ringkasan['followup_terlambat'] . ' terlambat</strong>' : 'jadwal jatuh tempo' ?>
+            <a href="<?= site_url('admin/crm/followup?tab=tagihan') ?>" class="text-decoration-none text-reset">
+                <div class="card border-0 shadow-sm h-100 border-start border-4 border-danger">
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted small fw-semibold">Follow-up Tagihan</span>
+                            <i class="fal fa-money-bill-wave text-danger fs-5"></i>
+                        </div>
+                        <h3 class="fw-bold mb-0 text-danger mt-1"><?= number_format($ringkasan['tagihan_pending']) ?></h3>
+                        <div class="text-muted small mt-1" style="font-size: 11px;">invoice belum lunas</div>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
     </div>
 

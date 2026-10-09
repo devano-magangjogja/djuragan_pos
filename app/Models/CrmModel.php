@@ -163,9 +163,13 @@ class CrmModel extends Model
         $status = trim($filter['status'] ?? '');
         if (!empty($status) && $status !== 'semua') {
             if ($status === 'prospek') {
+                $sembilanPuluhHariLalu = strtotime('-90 days');
                 $builder->groupStart()
                     ->where('pro.status_crm', 'prospek')
-                    ->orWhere('cp.jumlah_order', 0)
+                    ->orGroupStart()
+                        ->where('cp.jumlah_order', 0)
+                        ->where('cp.terdaftar_sejak >=', $sembilanPuluhHariLalu)
+                    ->groupEnd()
                     ->groupEnd();
             } elseif ($status === 'loyal') {
                 $builder->groupStart()
@@ -173,7 +177,7 @@ class CrmModel extends Model
                     ->orWhere('cp.jumlah_order >=', 3)
                     ->groupEnd();
             } elseif ($status === 'aktif') {
-                $batas = date('Y-m-d', strtotime('-60 days'));
+                $batas = date('Y-m-d', strtotime('-30 days'));
                 $builder->groupStart()
                     ->where('pro.status_crm', 'aktif')
                     ->orGroupStart()
@@ -234,6 +238,10 @@ class CrmModel extends Model
     {
         $jml = (int) ($p['jumlah_order'] ?? 0);
         if ($jml === 0) {
+            $terdaftar = (int) ($p['terdaftar_sejak'] ?? 0);
+            if ($terdaftar > 0 && $terdaftar < strtotime('-90 days')) {
+                return 'tidak_aktif';
+            }
             return 'prospek';
         }
         if ($jml >= 3) {
@@ -1322,6 +1330,37 @@ class CrmModel extends Model
     }
 
     /**
+     * Menghitung total invoice belum lunas untuk badge tab Follow-up Tagihan
+     */
+    public function countInvoiceBelumLunas(string $cari = ''): int
+    {
+        $pInv  = $this->db->prefixTable('invoice');
+        $pPel  = $this->db->prefixTable('pelanggan');
+        $pKon  = $this->db->prefixTable('pelanggan_kontak');
+
+        $whereCari = '';
+        $params = [];
+        if (!empty($cari)) {
+            $whereCari = "AND (inv.seri LIKE ? OR pel.nama_pelanggan LIKE ? OR kon.nomor LIKE ?)";
+            $params = ["%{$cari}%", "%{$cari}%", "%{$cari}%"];
+        }
+
+        $sql = "SELECT COUNT(DISTINCT inv.id_invoice) as total
+        FROM `{$pInv}` inv
+        JOIN `{$pPel}` pel ON pel.id_pelanggan = inv.pemesan_id
+        LEFT JOIN (
+            SELECT pelanggan_id, MIN(nomor_pure) as nomor 
+            FROM `{$pKon}` GROUP BY pelanggan_id
+        ) kon ON kon.pelanggan_id = pel.id_pelanggan
+        WHERE inv.deleted_at IS NULL 
+          AND inv.status_pembayaran IN ('1','2','3','4')
+          {$whereCari}";
+
+        $row = $this->db->query($sql, $params)->getRowArray();
+        return (int) ($row['total'] ?? 0);
+    }
+
+    /**
      * Mengambil daftar invoice untuk notifikasi pengiriman resi
      */
     public function getInvoicePengiriman(string $cari = '', int $limit = 50, int $offset = 0): array
@@ -1426,6 +1465,98 @@ class CrmModel extends Model
         LIMIT 1";
 
         return $this->db->query($sql, [$id_invoice])->getRowArray();
+    }
+
+    /**
+     * Ringkasan ringan satu customer: nama + jumlah orderannya.
+     */
+    public function getRingkasPelanggan(int $id_pelanggan): ?array
+    {
+        $pInv = $this->db->prefixTable('invoice');
+        $pPel = $this->db->prefixTable('pelanggan');
+
+        $sql = "SELECT pel.id_pelanggan,
+                       pel.nama_pelanggan,
+                       (SELECT COUNT(*) FROM `{$pInv}` inv
+                         WHERE inv.pemesan_id = pel.id_pelanggan AND inv.deleted_at IS NULL) as jumlah_order
+                FROM `{$pPel}` pel
+                WHERE pel.id_pelanggan = ?
+                LIMIT 1";
+
+        return $this->db->query($sql, [$id_pelanggan])->getRowArray();
+    }
+
+    /**
+     * Nota yang paling nyambung untuk jadi konteks pesan customer: yang masih
+     * punya utang didahulukan (template CRM kebanyakan untuk menagih), kalau
+     * semuanya sudah lunas ambil yang terbaru.
+     */
+    public function getIdInvoiceTerakhir(int $id_pelanggan): ?int
+    {
+        $pInv = $this->db->prefixTable('invoice');
+
+        $sql = "SELECT id_invoice
+                FROM `{$pInv}`
+                WHERE pemesan_id = ? AND deleted_at IS NULL
+                ORDER BY (status_pembayaran IN (5, 6)), tanggal_pesan DESC
+                LIMIT 1";
+
+        $row = $this->db->query($sql, [$id_pelanggan])->getRowArray();
+
+        return $row === null ? null : (int) $row['id_invoice'];
+    }
+
+    /**
+     * Peta token {nama}, {invoice}, {total}, {sisa}, {link_invoice}, {kurir},
+     * {resi}, {total_order} untuk template pesan WhatsApp.
+     *
+     * $id_invoice dipakai apa adanya bila pengirim sudah memilih satu nota
+     * (halaman Tagihan/Follow Up/Pengiriman); bila hanya customer yang diketahui,
+     * nota terakhirnya yang jadi konteks. Token yang tidak punya data sengaja
+     * tidak dikirim supaya crm_isi_token() membiarkan {kuncinya} utuh.
+     */
+    public function getTokenPesan(int $id_pelanggan = 0, int $id_invoice = 0, string $nama_kontak = ''): array
+    {
+        $inv = null;
+
+        if ($id_invoice > 0) {
+            $inv = $this->getInvoiceDetailPesan($id_invoice);
+        } elseif ($id_pelanggan > 0) {
+            $id_invoice = (int) $this->getIdInvoiceTerakhir($id_pelanggan);
+            if ($id_invoice > 0) {
+                $inv = $this->getInvoiceDetailPesan($id_invoice);
+            }
+        }
+
+        if ($inv !== null && empty($id_pelanggan)) {
+            $id_pelanggan = (int) $inv['id_pelanggan'];
+        }
+
+        $token = [];
+
+        if ($id_pelanggan > 0) {
+            $pel = $this->getRingkasPelanggan($id_pelanggan);
+            if ($pel !== null) {
+                $token['nama']        = $pel['nama_pelanggan'];
+                $token['total_order'] = (string) $pel['jumlah_order'];
+            }
+        }
+
+        if ($inv !== null) {
+            $token['nama']         = $inv['nama_pelanggan'] ?: ($token['nama'] ?? '');
+            $token['invoice']      = $inv['seri'];
+            $token['total']        = number_format((float) $inv['total_tagihan'], 0, ',', '.');
+            $token['sisa']         = number_format((float) $inv['sisa_tagihan'], 0, ',', '.');
+            $token['link_invoice'] = site_url('download/invoice/' . $inv['seri']);
+            $token['kurir']        = $inv['kurir'];
+            $token['resi']         = $inv['resi'];
+        }
+
+        if (empty($token['nama']) && $nama_kontak !== '') {
+            $token['nama'] = $nama_kontak;
+        }
+
+        return $token;
     }
 
     /**

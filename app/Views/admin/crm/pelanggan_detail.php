@@ -948,11 +948,26 @@ document.addEventListener('DOMContentLoaded', function() {
     const selTpl = document.getElementById('selectTemplateWaDirect');
     const txtPesan = document.getElementById('pesanWaDirect');
     if (selTpl && txtPesan) {
+        const urlTokenWa  = '<?= site_url('admin/crm/chat/token') ?>';
+        const idPelanggan = <?= (int) ($pelanggan['id_pelanggan'] ?? 0) ?>;
+        let tokenWa = null;
+
+        const isiTokenWa = (teks, token) => teks.replace(/\{([a-zA-Z_][a-zA-Z0-9_]*)\}/g, function (utuh, kunci) {
+            const nilai = token[kunci.toLowerCase()];
+            return (nilai === undefined || nilai === null || nilai === '') ? utuh : nilai;
+        });
+
         selTpl.addEventListener('change', function() {
-            if (this.value) {
-                let text = this.value.replace('{nama}', '<?= addslashes($pelanggan['nama_pelanggan']) ?>');
-                txtPesan.value = text;
-            }
+            const mentah = this.value;
+            if (!mentah) return;
+
+            const pasang = (token) => { txtPesan.value = isiTokenWa(mentah, token || {}); };
+            if (tokenWa) { pasang(tokenWa); return; }
+
+            fetch(urlTokenWa + '?id_pelanggan=' + idPelanggan, { headers: { 'Accept': 'application/json' } })
+                .then(r => r.json())
+                .then(res => { tokenWa = (res && res.data) ? res.data : {}; pasang(tokenWa); })
+                .catch(() => pasang({}));
         });
     }
 

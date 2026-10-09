@@ -290,7 +290,7 @@ class Crm extends BaseController
      */
     public function followup()
     {
-        $tab    = $this->request->getGet('tab') ?? 'customer'; // customer, tagihan, reminder
+        $tab    = $this->request->getGet('tab') ?? 'tagihan'; // tagihan, reminder, customer
         $cari   = trim($this->request->getGet('cari') ?? '');
         $status = $this->request->getGet('status') ?? 'menunggu';
 
@@ -302,7 +302,12 @@ class Crm extends BaseController
         ], 50);
 
         // 2. Data Follow-up Tagihan
-        $invoicesTagihan = $this->crmModel->getInvoiceBelumLunas($cari, 50);
+        $page                 = max(1, (int) ($this->request->getGet('page') ?? 1));
+        $limit                = 25;
+        $offset               = ($page - 1) * $limit;
+        $invoicesTagihan      = $this->crmModel->getInvoiceBelumLunas($cari, $limit, $offset);
+        $totalInvoicesTagihan = $this->crmModel->countInvoiceBelumLunas($cari);
+        $totalPagesTagihan    = (int) ceil($totalInvoicesTagihan / $limit);
 
         // 3. Data Reminder Otomatis
         $reminders = $this->crmModel->getReminders();
@@ -312,14 +317,18 @@ class Crm extends BaseController
         $templateTagihan = $db->table('crm_template')->where('kode', 'tagihan_belum_lunas')->get()->getRowArray();
 
         $data = [
-            'title'           => 'Pusat Follow-up & Reminder CRM',
-            'tab'             => $tab,
-            'cari'            => $cari,
-            'status'          => $status,
-            'followupList'    => $followupList,
-            'invoicesTagihan' => $invoicesTagihan,
-            'reminders'       => $reminders,
-            'templateTagihan' => $templateTagihan['pesan'] ?? '',
+            'title'                => 'Pusat Follow-up & Reminder CRM',
+            'tab'                  => $tab,
+            'cari'                 => $cari,
+            'status'               => $status,
+            'page'                 => $page,
+            'limit'                => $limit,
+            'totalPagesTagihan'    => $totalPagesTagihan,
+            'followupList'         => $followupList,
+            'invoicesTagihan'      => $invoicesTagihan,
+            'totalInvoicesTagihan' => $totalInvoicesTagihan,
+            'reminders'            => $reminders,
+            'templateTagihan'      => $templateTagihan['pesan'] ?? '',
         ];
 
         return view('admin/crm/followup', $data);
@@ -386,6 +395,8 @@ class Crm extends BaseController
         }
 
         $user = session()->get('user_id') ?? 1;
+
+        $pesan = crm_isi_token($pesan, $this->crmModel->getTokenPesan((int) $id));
 
         $res = $this->wa->send($nomor, $pesan, [
             'pelanggan_id' => $id,
@@ -619,11 +630,10 @@ class Crm extends BaseController
 
         if ($isSandbox === 1) {
             $contohPelanggan = $daftarPelanggan[0];
-            $pesanFinal = str_replace(
-                ['{nama}', '{total_order}'],
-                [$contohPelanggan['nama_pelanggan'], $contohPelanggan['jumlah_order']],
-                $pesan
-            );
+            $pesanFinal = crm_isi_token($pesan, [
+                'nama'        => $contohPelanggan['nama_pelanggan'],
+                'total_order' => $contohPelanggan['jumlah_order'],
+            ]);
 
             $pesanSandbox = "[MODE SANDBOX - Target Sampel: {$contohPelanggan['nama_pelanggan']} ({$contohPelanggan['nomor_utama']})]\n\n" . $pesanFinal;
             $res = $this->wa->send($sandboxNumber, $pesanSandbox, [
@@ -642,11 +652,10 @@ class Crm extends BaseController
                     continue;
                 }
 
-                $pesanFinal = str_replace(
-                    ['{nama}', '{total_order}'],
-                    [$p['nama_pelanggan'], $p['jumlah_order']],
-                    $pesan
-                );
+                $pesanFinal = crm_isi_token($pesan, [
+                    'nama'        => $p['nama_pelanggan'],
+                    'total_order' => $p['jumlah_order'],
+                ]);
 
                 $res = $this->wa->send($p['nomor_utama'], $pesanFinal, [
                     'pelanggan_id' => $p['id_pelanggan'],
@@ -956,6 +965,12 @@ class Crm extends BaseController
 
         $pelangganId = $inv['id_pelanggan'] ?? null;
 
+        // Token {nama} {invoice} {total} {sisa} {link_invoice} {kurir} {resi} diisi
+        // di sini juga, bukan hanya di JavaScript, supaya pesan yang tertinggal
+        // ber-token (misalnya dikirim lewat tab lama) tidak pernah sampai ke
+        // pelanggan dalam bentuk kurung kurawal.
+        $pesan = crm_isi_token($pesan, $this->crmModel->getTokenPesan((int) $pelangganId, $idInvoice));
+
         $res = $this->wa->send($nomor, $pesan, [
             'invoice_id'   => $idInvoice > 0 ? $idInvoice : null,
             'pelanggan_id' => $pelangganId,
@@ -1184,12 +1199,16 @@ class Crm extends BaseController
         $db = Database::connect();
         $targetNumber = null;
         $pelangganId  = null;
+        $namaKontak   = '';
 
         if ($idPercakapan > 0) {
             $conv = $db->table('crm_chat_percakapan')->where('id_percakapan', $idPercakapan)->get()->getRowArray();
             if ($conv) {
                 $targetNumber = $conv['nomor_wa'];
                 $pelangganId  = $conv['pelanggan_id'];
+                // Kontak yang belum jadi customer punya nama sama dengan nomornya;
+                // itu bukan nama yang layak dikirim ke orang.
+                $namaKontak = $conv['nama_kontak'] !== $conv['nomor_wa'] ? (string) $conv['nama_kontak'] : '';
             }
         } elseif (!empty($nomorBaru)) {
             $targetNumber = preg_replace('/[^\d]/', '', $nomorBaru);
@@ -1198,6 +1217,13 @@ class Crm extends BaseController
         if (empty($targetNumber)) {
             return $this->response->setJSON(['status' => 'error', 'message' => 'Nomor tujuan tidak valid.']);
         }
+
+        if (empty($pelangganId)) {
+            $autoMatch   = $this->crmModel->cariCustomerByWa($targetNumber);
+            $pelangganId = $autoMatch['id_pelanggan'] ?? null;
+        }
+
+        $pesan = crm_isi_token($pesan, $this->crmModel->getTokenPesan((int) $pelangganId, 0, $namaKontak));
 
         $res = $this->wa->send($targetNumber, $pesan, [
             'pelanggan_id' => $pelangganId,
@@ -1236,6 +1262,41 @@ class Crm extends BaseController
         return $this->response->setJSON([
             'status'  => 'error',
             'message' => 'Gagal mengirim: ' . ($res['error'] ?? 'Terjadi kesalahan pada WhatsApp API.'),
+        ]);
+    }
+
+    /**
+     * AJAX: Isi token template untuk pratinjau, dipakai dropdown Template di
+     * Live Chat dan di profil Customer 360. CS harus melihat nama/nota sungguhan
+     * saat memilih template, bukan {nama} yang baru terisi diam-diam ketika
+     * pesan ditekan kirim.
+     */
+    public function chat_token()
+    {
+        $idPercakapan = (int) $this->request->getGet('id_percakapan');
+        $idPelanggan  = (int) $this->request->getGet('id_pelanggan');
+        $namaKontak   = '';
+
+        if ($idPelanggan <= 0 && $idPercakapan > 0) {
+            $conv = Database::connect()->table('crm_chat_percakapan')
+                ->where('id_percakapan', $idPercakapan)->get()->getRowArray();
+
+            if ($conv === null) {
+                return $this->response->setJSON(['status' => 'error', 'message' => 'Percakapan tidak ditemukan.']);
+            }
+
+            $idPelanggan = (int) $conv['pelanggan_id'];
+            $namaKontak  = $conv['nama_kontak'] !== $conv['nomor_wa'] ? (string) $conv['nama_kontak'] : '';
+
+            if ($idPelanggan <= 0) {
+                $autoMatch   = $this->crmModel->cariCustomerByWa($conv['nomor_wa']);
+                $idPelanggan = (int) ($autoMatch['id_pelanggan'] ?? 0);
+            }
+        }
+
+        return $this->response->setJSON([
+            'status' => 'success',
+            'data'   => $this->crmModel->getTokenPesan($idPelanggan, 0, $namaKontak),
         ]);
     }
 

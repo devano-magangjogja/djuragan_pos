@@ -813,9 +813,35 @@ $(function() {
     });
 
     // ── Masukkan template cepat ──────────────────────────────────────────────
+    // Token {nama} {invoice} {total} ... diisi lebih dulu dengan data percakapan
+    // yang sedang dibuka, supaya CS melihat isi pesan yang sebenarnya dan bukan
+    // kurung kurawal yang terkirim mentah ke pelanggan.
+    function isiTokenPesan(teks, token) {
+        return teks.replace(/\{([a-zA-Z_][a-zA-Z0-9_]*)\}/g, function (utuh, kunci) {
+            var nilai = token[kunci.toLowerCase()];
+            return (nilai === undefined || nilai === null || nilai === '') ? utuh : nilai;
+        });
+    }
+
     $(document).on('click', '.btn-insert-tpl', function(e) {
         e.preventDefault();
-        $('#chatInput').val($(this).data('text')).focus();
+        var mentah = String($(this).attr('data-text') || '');
+        var idSaatKlik = currentConvId;
+
+        if (!idSaatKlik) {
+            $('#chatInput').val(mentah).focus();
+            return;
+        }
+
+        $.getJSON('<?= site_url('admin/crm/chat/token') ?>', { id_percakapan: idSaatKlik }, function(res) {
+            // Percakapan sudah dipindah sebelum datanya balik — jangan menimpa input orang.
+            if (idSaatKlik !== currentConvId) return;
+            var token = (res && res.status === 'success' && res.data) ? res.data : {};
+            $('#chatInput').val(isiTokenPesan(mentah, token)).focus().trigger('input');
+        }).fail(function() {
+            if (idSaatKlik !== currentConvId) return;
+            $('#chatInput').val(mentah).focus().trigger('input');
+        });
     });
 
     // ── Chat Baru ────────────────────────────────────────────────────────────
