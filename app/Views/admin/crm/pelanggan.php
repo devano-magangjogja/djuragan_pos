@@ -202,24 +202,73 @@
         </div>
 
         <?php if ($totalPages > 1) : ?>
+            <?php
+            $akhir = (int) $totalPages;
+
+            $tautanHalaman = static function (int $n) use ($segmen, $status, $tagId, $cari): string {
+                return site_url('admin/crm/pelanggan?' . http_build_query([
+                    'page'   => $n,
+                    'segmen' => $segmen,
+                    'status' => $status,
+                    'tag_id' => $tagId,
+                    'cari'   => $cari,
+                ]));
+            };
+
+            // Jendela 5 nomor di sekitar halaman aktif, plus halaman pertama/terakhir
+            // dengan penanda "..." supaya halaman terjauh tetap bisa diklik.
+            $dari   = max(1, min($page - 2, $akhir - 4));
+            $sampai = min($akhir, $dari + 4);
+
+            $nomorHalaman = [];
+            if ($dari > 1) {
+                $nomorHalaman[] = 1;
+                if ($dari > 2) {
+                    $nomorHalaman[] = null;
+                }
+            }
+            for ($n = $dari; $n <= $sampai; $n++) {
+                $nomorHalaman[] = $n;
+            }
+            if ($sampai < $akhir) {
+                if ($sampai < $akhir - 1) {
+                    $nomorHalaman[] = null;
+                }
+                $nomorHalaman[] = $akhir;
+            }
+            ?>
             <div class="card-footer bg-white d-flex justify-content-between align-items-center py-3">
                 <div class="small text-muted">
-                    Halaman <?= $page ?> dari <?= $totalPages ?> (Total <?= number_format($totalData) ?> data)
+                    Halaman <?= $page ?> dari <?= $akhir ?> (Total <?= number_format($totalData) ?> data)
                 </div>
                 <ul class="pagination pagination-sm mb-0">
                     <?php if ($page > 1) : ?>
                         <li class="page-item">
-                            <a class="page-link" href="<?= site_url('admin/crm/pelanggan?page=' . ($page - 1) . '&segmen=' . $segmen . '&status=' . $status . '&tag_id=' . $tagId . '&cari=' . urlencode($cari)) ?>">« Sebelumnya</a>
+                            <a class="page-link" href="<?= $tautanHalaman($page - 1) ?>">« Sebelumnya</a>
+                        </li>
+                    <?php else : ?>
+                        <li class="page-item disabled">
+                            <span class="page-link">« Sebelumnya</span>
                         </li>
                     <?php endif; ?>
 
-                    <li class="page-item active">
-                        <span class="page-link"><?= $page ?></span>
-                    </li>
+                    <?php foreach ($nomorHalaman as $n) : ?>
+                        <?php if ($n === null) : ?>
+                            <li class="page-item disabled"><span class="page-link">&hellip;</span></li>
+                        <?php elseif ($n === $page) : ?>
+                            <li class="page-item active" aria-current="page"><span class="page-link"><?= $n ?></span></li>
+                        <?php else : ?>
+                            <li class="page-item"><a class="page-link" href="<?= $tautanHalaman($n) ?>"><?= $n ?></a></li>
+                        <?php endif; ?>
+                    <?php endforeach; ?>
 
-                    <?php if ($page < $totalPages) : ?>
+                    <?php if ($page < $akhir) : ?>
                         <li class="page-item">
-                            <a class="page-link" href="<?= site_url('admin/crm/pelanggan?page=' . ($page + 1) . '&segmen=' . $segmen . '&status=' . $status . '&tag_id=' . $tagId . '&cari=' . urlencode($cari)) ?>">Berikutnya »</a>
+                            <a class="page-link" href="<?= $tautanHalaman($page + 1) ?>">Berikutnya »</a>
+                        </li>
+                    <?php else : ?>
+                        <li class="page-item disabled">
+                            <span class="page-link">Berikutnya »</span>
                         </li>
                     <?php endif; ?>
                 </ul>
