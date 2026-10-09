@@ -11,9 +11,12 @@
             </h4>
             <p class="text-muted small mb-0">Kelola tindakan follow-up customer, penagihan invoice, dan pengingat jadwal pakaian penting.</p>
         </div>
-        <button class="btn btn-primary btn-sm fw-semibold" data-bs-toggle="modal" data-bs-target="#modalTambahFollowupGlobal">
-            <i class="fal fa-plus me-1"></i> Buat Follow-up Customer
-        </button>
+        <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-primary btn-sm fw-semibold" data-bs-toggle="modal" data-bs-target="#modalTambahFollowupGlobal">
+                <i class="fal fa-plus me-1"></i> Buat Follow-up Customer
+            </button>
+            <?= $this->include('admin/crm/tombol_wa') ?>
+        </div>
     </div>
 
     <?= $this->include('admin/crm/nav_crm') ?>

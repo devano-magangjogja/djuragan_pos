@@ -568,6 +568,7 @@ $session  = \Config\Services::session();
                             <span class="fw-normal text-muted small">- opsional, hanya untuk pesanan custom</span>
                         </h6>
                     </div>
+                    <?= ukuran_form_panel(['id' => 'ukuranModal']) ?>
                     <div class="col-sm-6 mb-2">
                         <?= form_label('Ukuran Jadi', 'ri_ukuran_jadi', ['class' => 'form-label']); ?>
                         <input type="text" class="form-control ri-field" id="ri_ukuran_jadi" data-key="ukuran_jadi" placeholder="cth: L / PM" autocomplete="off">
@@ -585,18 +586,9 @@ $session  = \Config\Services::session();
                         <input type="text" class="form-control ri-field" id="ri_spesifikasi" data-key="spesifikasi" placeholder="cth: KANCING JAS 2, SAKU BAWAH VARIASI" autocomplete="off">
                     </div>
                     <div class="col-12">
-                        <?= form_label('Tabel Ukuran Detail', 'ri_ukuran_detail', ['class' => 'form-label']); ?>
-                        <textarea class="form-control ri-field" id="ri_ukuran_detail" data-key="ukuran_detail" rows="2" placeholder="cth: P.JAS 75, L.DADA 103, L.PINGGANG 80"></textarea>
+                        <?= form_label('Catatan', 'ri_ukuran_detail', ['class' => 'form-label']); ?>
+                        <textarea class="form-control ri-field" id="ri_ukuran_detail" data-key="ukuran_detail" rows="2" placeholder="cth: lengan diperpendek 2 cm, ada kancing cadangan"></textarea>
                     </div>
-                </div>
-                <div class="row gx-2 mt-1 rounded-[0.85rem] border border-dashed border-[#dbe3ee] bg-ink-50 px-[0.85rem] pb-[0.6rem] pt-[0.4rem] [&_h6]:text-[0.78rem] [&_h6]:font-bold [&_h6]:uppercase [&_h6]:tracking-[0.06em] [&_h6]:text-ink-600 [&_.fal]:text-brand-500 [&_.form-label]:text-xs [&_.form-label]:text-ink-500">
-                    <div class="col-12">
-                        <h6 class="mb-2 mt-3 fw-bold">
-                            <i class="fal fa-ruler-combined text-danger"></i> Ukuran Terstruktur
-                            <span class="fw-normal text-muted small">- opsional, pilih jenisnya lalu isi hasil ukurnya</span>
-                        </h6>
-                    </div>
-                    <?= ukuran_form_panel(['id' => 'ukuranModal']) ?>
                 </div>
             </div>
             <div class="modal-footer">
@@ -1260,12 +1252,17 @@ $js = <<< JS
     	// default kategori satuan: card rombongan langsung tersembunyi sejak awal
     	tampilKategori($('#tipe_orderan').val());
 
-    	// spesifikasi custom hanya muncul saat ukuran = Custom
+    	// spesifikasi custom hanya muncul saat ukuran = Custom; ukuran terstruktur
+    	// sekarang ikut di dalam panelnya
     	$('#ukuran').on('change', function() {
     		var custom = $(this).val() === 'custom';
     		$('#customDetail').toggleClass('d-none', !custom);
     		if (!custom) {
     			$('#customDetail .ri-field').val('');
+    			// panel yang tersembunyi tetap terbaca waktu baris dikirim,
+    			// jadi jenis dan angkanya dibuang bersamaan
+    			$('#ukuranModal .uk-field').val('');
+    			UKURAN.kosongkan('#ukuranModal');
     		}
     	});
 
@@ -1496,7 +1493,7 @@ $js = <<< JS
     			pemilik: 'Pemilik ukuran',
     			bahan: 'Bahan',
     			spesifikasi: 'Model & jahitan',
-    			ukuran_detail: 'Detail ukuran'
+    			ukuran_detail: 'Catatan'
     		};
 
     		$.each(rincian, function (key, v) {
@@ -1515,6 +1512,7 @@ $js = <<< JS
     		var a=$('#nambahProduk');
     		a.removeClass('was-validated')[0].reset();
     		$('#customDetail').addClass('d-none');
+    		$('#ukuranModal .uk-field').val('');
     		UKURAN.kosongkan('#ukuranModal');
     		$('#tambahProdukLabel').text('Tambah Orderan');
     		a.find('button[type="submit"]').text('Tambahkan');
