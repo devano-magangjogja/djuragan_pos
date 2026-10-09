@@ -37,6 +37,9 @@
     flex: 1;
     display: flex;
     flex-direction: column;
+    min-height: 0;
+    height: 100%;
+    position: relative;
     background: #efeae2;
     background-image: radial-gradient(#d1d7db 1px, transparent 1px);
     background-size: 20px 20px;
@@ -45,9 +48,11 @@
     background: #ffffff;
     border-bottom: 1px solid #e2e8f0;
     padding: 12px 20px;
+    flex-shrink: 0;
 }
 .chat-body {
     flex: 1;
+    min-height: 0;
     overflow-y: auto;
     padding: 20px;
     display: flex;
@@ -87,6 +92,8 @@
     background: #ffffff;
     border-top: 1px solid #e2e8f0;
     padding: 12px 18px;
+    flex-shrink: 0;
+    z-index: 5;
 }
 .avatar-circle {
     width: 44px;
@@ -143,10 +150,10 @@
         </div>
         <div class="d-flex align-items-center gap-2">
             <button class="btn btn-outline-dark btn-sm" data-bs-toggle="modal" data-bs-target="#modalInfoWebhook">
-                <i class="fal fa-webhook me-1"></i> Webhook URL
+                <i class="fal fa-webhook me-1"></i> Webhook & Status
             </button>
             <?php if (!empty($isSandbox)) : ?>
-                <span class="badge bg-warning text-dark py-2 px-3">
+                <span class="btn btn-sm pe-none fw-semibold text-nowrap bg-warning text-dark border-warning">
                     <i class="fal fa-flask me-1"></i> Sandbox Mode
                 </span>
             <?php endif; ?>
@@ -275,12 +282,12 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header bg-dark text-white">
-                <h5 class="modal-title"><i class="fal fa-webhook me-2"></i>URL Webhook WhatsApp Inbound</h5>
+                <h5 class="modal-title"><i class="fal fa-webhook me-2"></i>Webhook WhatsApp Inbound</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <p class="small text-muted mb-2">
-                    Untuk menerima balasan chat dari pelanggan ke website ini secara real-time, daftarkan URL berikut di dashboard <strong>Kapso &gt; Integrations &gt; Webhooks</strong>:
+                    Untuk menerima balasan chat dari pelanggan ke website ini secara real-time, daftarkan URL berikut di dashboard <strong>Fonnte (Menu Device &gt; Edit Device &gt; Webhook URL)</strong> atau <strong>Kapso &gt; Integrations &gt; Webhooks</strong>:
                 </p>
                 <div class="input-group mb-3">
                     <input type="text" class="form-control font-monospace bg-light" value="<?= site_url('webhook/whatsapp') ?>" readonly id="copyWebhookInput">
@@ -288,9 +295,30 @@
                         <i class="fal fa-copy"></i> Salin
                     </button>
                 </div>
-                <div class="alert alert-info small py-2 mb-0">
-                    <i class="fal fa-check-circle me-1"></i> Endpoint ini sudah dibuka tanpa blokir CSRF sehingga siap menerima event <code>whatsapp.message.received</code>.
+                <div class="alert alert-info small py-2 mb-3">
+                    <i class="fal fa-check-circle me-1"></i> Endpoint ini sudah dibuka tanpa blokir CSRF sehingga siap menerima pesan masuk dari Fonnte maupun Kapso.
                 </div>
+
+                <h6 class="small fw-bold text-uppercase text-muted mb-2">
+                    <i class="fal fa-clock me-1"></i> Status jalur pesan masuk
+                </h6>
+                <div id="panelStatusWebhook" class="border rounded bg-light px-3 py-2 small mb-2">
+                    <div class="text-muted">Memuat status…</div>
+                </div>
+                <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" id="btnMuatStatusWebhook">
+                        <i class="fal fa-clock me-1"></i> Muat ulang
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-success" id="btnUjiWebhook">
+                        <i class="fal fa-bolt me-1"></i> Uji pencatatan pesan
+                    </button>
+                </div>
+                <div id="hasilUjiWebhook" class="alert small py-2 mb-0 d-none"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Modal Buat Customer Baru dari Chat WA -->
 <div class="modal fade" id="modalBuatCustomerWa" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -335,10 +363,13 @@ $(function() {
     'use strict';
 
     var currentConvId   = null;
+    var requestedConvId = <?= (int) ($activeId ?? 0) ?>;
     var lastMsgId       = 0;     // ID pesan terakhir yang sudah dimuat
     var pollInterval    = null;
     var modalChatBaru   = new bootstrap.Modal(document.getElementById('modalChatBaru'));
     var isAtBottom      = true;  // Lacak apakah user scroll ke bawah
+    var muatPenuhSeq    = 0;     // Penanda permintaan terakhir; respons telat dibuang
+    var muatPenuhJalan  = false; // Polling dilarang selagi muat penuh berjalan
 
     // ── Muat daftar percakapan ──────────────────────────────────────────────
     function loadConversations(keepActive) {
@@ -355,6 +386,19 @@ $(function() {
         if (list.length === 0) {
             container.html('<div class="p-4 text-center text-muted small"><i class="fal fa-comments fa-2x mb-2 d-block"></i>Belum ada percakapan chat.</div>');
             return;
+        }
+
+        // Jika belum ada percakapan aktif yang terbuka, otomatis buka yang diminta atau percakapan pertama
+        if (!currentConvId && list.length > 0) {
+            var targetItem = null;
+            if (requestedConvId > 0) {
+                targetItem = list.find(function(it) { return it.id_percakapan === requestedConvId; });
+            }
+            if (!targetItem) {
+                targetItem = list[0];
+            }
+            currentConvId = targetItem.id_percakapan;
+            openConversation(targetItem.id_percakapan, targetItem.nama_kontak, targetItem.nomor_wa);
         }
 
         var html = '';
@@ -408,12 +452,20 @@ $(function() {
     });
 
     function openConversation(id, nama, nomor) {
+        // Kontak yang belum disimpan punya nama berupa nomor telepon. jQuery .data()
+        // mengubah angka jadi Number, dan charAt()/trim() di atas Number melempar
+        // TypeError yang menghentikan fungsi ini sebelum pesan dimuat — akibatnya
+        // bubble percakapan lama tetap tertempel di percakapan yang baru dibuka.
+        nama  = nama === null || nama === undefined ? '' : String(nama);
+        nomor = nomor === null || nomor === undefined ? '' : String(nomor);
+
         $('#activeName').text(nama);
         $('#activePhone').text(nomor);
         $('#activeAvatar').text((nama || 'U').charAt(0).toUpperCase());
         $('#chatHeader').attr('style', 'display: flex !important;');
-        $('#chatFooter').show();
+        $('#chatFooter').css('display', 'block').show();
         $('#newMsgNotif').hide();
+        setTimeout(function() { $('#chatInput').focus(); }, 100);
 
         // Full load pertama kali
         loadMessagesFull(id);
@@ -422,7 +474,18 @@ $(function() {
     // ── Load full (pertama buka percakapan) ─────────────────────────────────
     function loadMessagesFull(id) {
         if (!id) return;
+        var seq = ++muatPenuhSeq;
+        muatPenuhJalan = true;
+
+        // Bersihkan kanvas lebih dulu supaya bubble percakapan lama tidak
+        // tertinggal di bawah pesan yang baru dimuat.
+        $('#chatMessages').empty();
+
         $.getJSON('<?= site_url('admin/crm/chat/pesan/') ?>' + id, function(res) {
+            // Respons dari percakapan yang sudah ditinggalkan jangan dipakai.
+            if (seq !== muatPenuhSeq || id !== currentConvId) return;
+            muatPenuhJalan = false;
+
             if (res.status === 'success') {
                 var num = res.percakapan ? res.percakapan.nomor_wa : $('#activePhone').text();
                 renderCustomerBadge(res.pelanggan, num);
@@ -433,20 +496,82 @@ $(function() {
                 // Refresh sidebar
                 loadConversations(true);
             }
+        }).fail(function() {
+            if (seq === muatPenuhSeq) muatPenuhJalan = false;
         });
     }
 
     // ── Incremental polling: append pesan baru saja ──────────────────────────
     function pollNewMessages() {
-        if (!currentConvId) return;
+        var id = currentConvId;
 
-        var url = '<?= site_url('admin/crm/chat/pesan/') ?>' + currentConvId + '?last_id=' + lastMsgId;
+        // Dengan last_id=0 server membalas SELURUH pesan, jadi polling saat muat
+        // penuh belum selesai akan menempelkan isi percakapan ini di atas bubble
+        // percakapan sebelumnya — itulah sebabnya dua chat tampak menyatu.
+        if (!id || muatPenuhJalan) return;
+
+        var url = '<?= site_url('admin/crm/chat/pesan/') ?>' + id + '?last_id=' + lastMsgId;
         $.getJSON(url, function(res) {
+            if (id !== currentConvId) return;
             if (res.status === 'success' && res.messages && res.messages.length > 0) {
                 appendMessages(res.messages);
                 lastMsgId = res.messages[res.messages.length - 1].id_pesan;
                 // Refresh sidebar untuk update pesan terakhir + badge
                 loadConversations(true);
+            }
+        });
+
+        // Update ikon centang pesan keluar yang mungkin statusnya berubah (terkirim → diterima → dibaca)
+        updateOutgoingStatuses();
+    }
+
+    // ── Update status centang pesan keluar secara real-time ─────────────────
+    function buildCheckIcon(status) {
+        if (status === 'dibaca') {
+            return ' <i class="fal fa-check-double ms-1" style="color:#53bdeb;" title="Dibaca"></i>';
+        } else if (status === 'diterima') {
+            return ' <i class="fal fa-check-double ms-1 text-secondary" title="Diterima"></i>';
+        } else if (status === 'gagal') {
+            return ' <i class="fal fa-exclamation-circle ms-1 text-danger" title="Gagal terkirim"></i>';
+        }
+        return ' <i class="fal fa-check ms-1 text-secondary" title="Terkirim"></i>';
+    }
+
+    function updateOutgoingStatuses() {
+        // Cari semua bubble pesan keluar yang belum status 'dibaca'
+        var $bubbles = $('.chat-bubble.keluar').not('[data-status="dibaca"]');
+        if ($bubbles.length === 0) return;
+
+        // Ambil ID pesan yang perlu dicek
+        var ids = [];
+        $bubbles.each(function() {
+            var id = $(this).data('id');
+            if (id) ids.push(id);
+        });
+        if (ids.length === 0) return;
+
+        $.ajax({
+            url: '<?= site_url('admin/crm/chat/status_pesan') ?>',
+            method: 'GET',
+            data: { ids: ids.join(',') },
+            dataType: 'json',
+            success: function(res) {
+                if (res.status === 'success' && res.data) {
+                    $.each(res.data, function(id, status) {
+                        var $bubble = $('.chat-bubble.keluar[data-id="' + id + '"]');
+                        if (!$bubble.length) return;
+                        var currentStatus = $bubble.data('status');
+                        if (currentStatus !== status) {
+                            $bubble.attr('data-status', status).data('status', status);
+                            // Update ikon centang di .chat-meta
+                            var $meta = $bubble.find('.chat-meta');
+                            var waktu = $meta.text().trim().replace(/\s*[\u2713\u2713\u2713\u2713\u2713!]*$/, '').trim();
+                            // Ambil hanya waktu (sebelum ikon)
+                            var waktuTeks = $meta.clone().children().remove().end().text().trim();
+                            $meta.html(waktuTeks + buildCheckIcon(status));
+                        }
+                    });
+                }
             }
         });
     }
@@ -455,7 +580,7 @@ $(function() {
     function renderMessages(messages, scrollToBottom) {
         var container = $('#chatMessages');
         if (messages.length === 0) {
-            container.html('<div class="text-center text-muted my-auto"><i class="fal fa-comment-dots fa-2x mb-2 d-block"></i>Belum ada pesan. Kirim pesan pertama Anda!</div>');
+            container.html('<div class="text-center text-muted my-auto no-msg-placeholder"><i class="fal fa-comment-dots fa-2x mb-2 d-block"></i>Belum ada pesan. Kirim pesan pertama Anda!</div>');
             return;
         }
 
@@ -481,14 +606,24 @@ $(function() {
         container.find('.no-msg-placeholder').remove();
 
         var lastDate = container.find('[data-date]').last().data('date') || '';
-        var html = '';
+        var html     = '';
+        var jumlah   = 0;
 
         messages.forEach(function(m) {
+            // Gelembung yang sudah tampil tidak ditempel ulang
+            if (m.id_pesan && container.find('.chat-bubble[data-id="' + m.id_pesan + '"]').length) {
+                lastDate = m.tanggal;
+                return;
+            }
             html += buildMessageHtml(m, lastDate);
             lastDate = m.tanggal;
+            jumlah++;
         });
 
+        if (jumlah === 0) return;
+
         container.append(html);
+        container.find('.sending-bubble').remove();
 
         // Cek apakah ada pesan masuk (dari pelanggan) — kalau ya, scroll ke bawah + notif
         var hasInbound = messages.some(function(m) { return m.arah === 'masuk'; });
@@ -499,7 +634,7 @@ $(function() {
             scrollBottom();
         } else if (hasInbound) {
             // Tampilkan notifikasi ada pesan baru
-            showNewMsgNotif(messages.length);
+            showNewMsgNotif(jumlah);
         }
     }
 
@@ -512,11 +647,26 @@ $(function() {
                   + m.tanggal + '</span></div>';
         }
 
-        var checkIcon = m.arah === 'keluar'
-            ? ' <i class="fal fa-check-double text-primary ms-1"></i>'
-            : '';
+        // Ikon status centang — hanya untuk pesan keluar, persis gaya WhatsApp
+        var checkIcon = '';
+        if (m.arah === 'keluar') {
+            var st = m.status || 'terkirim';
+            if (st === 'dibaca') {
+                // ✓✓ biru = sudah dibaca
+                checkIcon = ' <i class="fal fa-check-double ms-1" style="color:#53bdeb;" title="Dibaca"></i>';
+            } else if (st === 'diterima') {
+                // ✓✓ abu = sudah diterima di HP penerima
+                checkIcon = ' <i class="fal fa-check-double ms-1 text-secondary" title="Diterima"></i>';
+            } else if (st === 'gagal') {
+                // Tanda seru merah = gagal kirim
+                checkIcon = ' <i class="fal fa-exclamation-circle ms-1 text-danger" title="Gagal terkirim"></i>';
+            } else {
+                // ✓ abu = terkirim ke server (belum sampai HP)
+                checkIcon = ' <i class="fal fa-check ms-1 text-secondary" title="Terkirim"></i>';
+            }
+        }
 
-        html += '<div class="chat-bubble ' + m.arah + '" data-id="' + m.id_pesan + '">';
+        html += '<div class="chat-bubble ' + m.arah + '" data-id="' + m.id_pesan + '" data-status="' + (m.status || '') + '">';
         html += '  <div>' + escapeHtml(m.isi_pesan) + '</div>';
         html += '  <div class="chat-meta">' + m.waktu + checkIcon + '</div>';
         html += '</div>';
@@ -626,12 +776,13 @@ $(function() {
             },
             success: function(res) {
                 btn.prop('disabled', false);
-                // Hapus bubble sementara, reload pesan dari server
-                $('.sending-bubble').remove();
                 if (res.status === 'success') {
+                    // Bubble sementara dibuang oleh appendMessages/renderMessages
+                    // begitu pesan aslinya benar-benar muncul dari server.
                     pollNewMessages();
                     loadConversations(true);
                 } else {
+                    $('.sending-bubble').remove();
                     alert('Gagal mengirim pesan: ' + res.message);
                     // Kembalikan teks ke input jika gagal
                     $('#chatInput').val(text);
@@ -662,9 +813,35 @@ $(function() {
     });
 
     // ── Masukkan template cepat ──────────────────────────────────────────────
+    // Token {nama} {invoice} {total} ... diisi lebih dulu dengan data percakapan
+    // yang sedang dibuka, supaya CS melihat isi pesan yang sebenarnya dan bukan
+    // kurung kurawal yang terkirim mentah ke pelanggan.
+    function isiTokenPesan(teks, token) {
+        return teks.replace(/\{([a-zA-Z_][a-zA-Z0-9_]*)\}/g, function (utuh, kunci) {
+            var nilai = token[kunci.toLowerCase()];
+            return (nilai === undefined || nilai === null || nilai === '') ? utuh : nilai;
+        });
+    }
+
     $(document).on('click', '.btn-insert-tpl', function(e) {
         e.preventDefault();
-        $('#chatInput').val($(this).data('text')).focus();
+        var mentah = String($(this).attr('data-text') || '');
+        var idSaatKlik = currentConvId;
+
+        if (!idSaatKlik) {
+            $('#chatInput').val(mentah).focus();
+            return;
+        }
+
+        $.getJSON('<?= site_url('admin/crm/chat/token') ?>', { id_percakapan: idSaatKlik }, function(res) {
+            // Percakapan sudah dipindah sebelum datanya balik — jangan menimpa input orang.
+            if (idSaatKlik !== currentConvId) return;
+            var token = (res && res.status === 'success' && res.data) ? res.data : {};
+            $('#chatInput').val(isiTokenPesan(mentah, token)).focus().trigger('input');
+        }).fail(function() {
+            if (idSaatKlik !== currentConvId) return;
+            $('#chatInput').val(mentah).focus().trigger('input');
+        });
     });
 
     // ── Chat Baru ────────────────────────────────────────────────────────────
@@ -690,6 +867,10 @@ $(function() {
                 if (res.status === 'success') {
                     modalChatBaru.hide();
                     $('#newChatPesan').val('');
+                    if (res.id_percakapan) {
+                        requestedConvId = res.id_percakapan;
+                        currentConvId   = null;
+                    }
                     loadConversations(false);
                 } else {
                     $('#alertNewChat').removeClass('d-none alert-success').addClass('alert-danger').text(res.message);
@@ -782,6 +963,101 @@ $(function() {
             pollNewMessages();
         }
     }, 3000);
+
+    // ── Panel status jalur pesan masuk (di dalam modal Webhook URL) ──────────
+    var urlWebhookStatus = '<?= site_url('admin/crm/chat/webhook_status') ?>';
+    var urlWebhookUji    = '<?= site_url('admin/crm/chat/webhook_uji') ?>';
+    var urlStatusFonnte  = '<?= site_url('admin/crm/cek_status_fonnte') ?>';
+
+    function waktuLalu(ts) {
+        var detik = Math.floor(Date.now() / 1000) - Number(ts);
+        if (detik < 60) { return detik + ' detik lalu'; }
+        if (detik < 3600) { return Math.floor(detik / 60) + ' menit lalu'; }
+        if (detik < 86400) { return Math.floor(detik / 3600) + ' jam lalu'; }
+        return Math.floor(detik / 86400) + ' hari lalu';
+    }
+
+    function barisStatus(label, nilai, kelas) {
+        var $baris = $('<div class="d-flex justify-content-between align-items-start gap-2 py-1 border-bottom"></div>');
+        $baris.append($('<span class="text-muted"></span>').text(label));
+        $baris.append($('<span class="fw-semibold text-end"></span>').addClass(kelas || '').text(nilai));
+        return $baris;
+    }
+
+    function muatStatusWebhook() {
+        var $panel = $('#panelStatusWebhook').empty().append($('<div class="text-muted">Memuat status…</div>'));
+
+        $.getJSON(urlWebhookStatus).done(function(res) {
+            var d = (res && res.data) || {};
+            $panel.empty();
+            $panel.append(barisStatus('Provider aktif', d.provider || '-'));
+
+            if (d.event) {
+                $panel.append(barisStatus(
+                    'Event gateway terakhir',
+                    waktuLalu(d.event.waktu) + ' · ' + d.event.sumber + (d.event.nomor ? ' · ' + d.event.nomor : ''),
+                    d.event.diproses ? 'text-success' : 'text-warning'
+                ));
+            } else {
+                $panel.append(barisStatus('Event gateway terakhir', 'belum pernah ada', 'text-danger'));
+            }
+
+            if (d.masuk_terakhir) {
+                $panel.append(barisStatus('Pesan masuk tercatat', waktuLalu(d.masuk_terakhir.waktu) + ' · ' + d.masuk_terakhir.nomor));
+            } else {
+                $panel.append(barisStatus('Pesan masuk tercatat', 'belum ada', 'text-danger'));
+            }
+
+            $panel.append(barisStatus('Pesan masuk hari ini', String(d.masuk_hari_ini || 0)));
+
+            if (d.provider === 'fonnte') {
+                var $perangkat = barisStatus('Perangkat Fonnte', 'memeriksa…', 'text-muted');
+                $panel.append($perangkat);
+                $.getJSON(urlStatusFonnte).done(function(dev) {
+                    $perangkat.find('span').last()
+                        .removeClass('text-muted')
+                        .addClass(dev && dev.device_status === 'connect' ? 'text-success' : 'text-danger')
+                        .text((dev && dev.device ? dev.device + ' · ' : '') + (dev && dev.device_status ? dev.device_status : 'tidak diketahui'));
+                }).fail(function() {
+                    $perangkat.find('span').last().removeClass('text-muted').addClass('text-danger').text('gagal diperiksa');
+                });
+            }
+
+            $panel.children().last().removeClass('border-bottom');
+
+            if (!d.event) {
+                $panel.append($('<div class="text-muted mt-2"></div>').text('Belum ada event yang sampai ke server. Daftarkan URL webhook di atas pada dashboard gateway, lalu pastikan tunnel publiknya hidup.'));
+            }
+        }).fail(function() {
+            $panel.empty().append($('<div class="text-danger">Gagal memuat status.</div>'));
+        });
+    }
+
+    $('#modalInfoWebhook').on('shown.bs.modal', muatStatusWebhook);
+    $('#btnMuatStatusWebhook').on('click', muatStatusWebhook);
+
+    $('#btnUjiWebhook').on('click', function() {
+        var $btn   = $(this).prop('disabled', true);
+        var $hasil = $('#hasilUjiWebhook')
+            .removeClass('d-none alert-success alert-danger')
+            .addClass('alert-secondary')
+            .text('Menjalankan payload uji…');
+
+        $.ajax({ url: urlWebhookUji, method: 'POST', dataType: 'json' })
+            .done(function(res) {
+                $hasil.removeClass('alert-secondary')
+                    .addClass(res.status === 'success' ? 'alert-success' : 'alert-danger')
+                    .text(res.message || (res.status === 'success' ? 'Jalur webhook sehat.' : 'Uji gagal.'));
+                muatStatusWebhook();
+            })
+            .fail(function(xhr) {
+                var pesan = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'Uji gagal dijalankan (HTTP ' + xhr.status + ').';
+                $hasil.removeClass('alert-secondary').addClass('alert-danger').text(pesan);
+            })
+            .always(function() {
+                $btn.prop('disabled', false);
+            });
+    });
 });
 </script>
 <?= $this->endSection() ?>

@@ -103,6 +103,10 @@ $routes->group('admin', static function ($routes) {
         $routes->get('chat/pesan/(:num)', 'Admin\Crm::chat_pesan/$1');
         $routes->get('chat/polling/(:num)', 'Admin\Crm::chat_polling/$1');
         $routes->post('chat/kirim', 'Admin\Crm::chat_kirim');
+        $routes->get('chat/status_pesan', 'Admin\Crm::chat_status_pesan');
+        $routes->get('chat/token', 'Admin\Crm::chat_token');
+        $routes->get('chat/webhook_status', 'Admin\Crm::webhook_status');
+        $routes->post('chat/webhook_uji', 'Admin\Crm::webhook_uji');
         $routes->get('pelanggan', 'Admin\Crm::pelanggan');
         $routes->get('pelanggan/(:num)', 'Admin\Crm::pelanggan_detail/$1');
         $routes->post('pelanggan/simpan_profil/(:num)', 'Admin\Crm::simpan_profil/$1');
@@ -129,6 +133,8 @@ $routes->group('admin', static function ($routes) {
         $routes->post('simpan_template', 'Admin\Crm::simpan_template');
         $routes->post('simpan_pengaturan', 'Admin\Crm::simpan_pengaturan');
         $routes->post('tes_koneksi', 'Admin\Crm::tes_koneksi');
+        $routes->match(['GET', 'POST'], 'cek_status_fonnte', 'Admin\Crm::cek_status_fonnte');
+        $routes->match(['GET', 'POST'], 'ambil_qr_fonnte', 'Admin\Crm::ambil_qr_fonnte');
     });
 
     $routes->group('settings', ['filter' => 'auth:superadmin'], static function ($routes) {
@@ -141,6 +147,8 @@ $routes->group('admin', static function ($routes) {
             $routes->get('/', 'Admin\Settings\Bank::index');
             $routes->post('save', 'Admin\Settings\Bank::simpan');
             $routes->post('update', 'Admin\Settings\Bank::perbarui');
+            // hapus lunak: nota lama tetap terbaca, hanya pilihan rekeningnya hilang
+            $routes->post('hapus', 'Admin\Settings\Bank::hapus');
         });
 
         $routes->group('juragan', static function ($routes) {

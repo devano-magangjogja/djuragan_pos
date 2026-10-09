@@ -110,4 +110,103 @@ class FonnteProvider implements WhatsAppProviderInterface
         }
         return $phone;
     }
+
+    /**
+     * Cek status profil & koneksi perangkat ke Fonnte
+     * Endpoint: POST https://api.fonnte.com/device
+     */
+    public function getDeviceStatus(): array
+    {
+        if (!$this->isConfigured()) {
+            return [
+                'status'  => false,
+                'message' => 'Token Fonnte belum dikonfigurasi.',
+            ];
+        }
+
+        $endpoint = "{$this->baseUrl}/device";
+
+        $ch = curl_init($endpoint);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Authorization: ' . $this->token,
+        ]);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 15);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlError = curl_error($ch);
+        curl_close($ch);
+
+        if ($response === false || !empty($curlError)) {
+            return [
+                'status'  => false,
+                'message' => 'Gagal menghubungi server Fonnte: ' . $curlError,
+            ];
+        }
+
+        $data = json_decode($response, true);
+        if (!is_array($data)) {
+            return [
+                'status'  => false,
+                'message' => 'Respon Fonnte tidak valid (HTTP ' . $httpCode . ')',
+                'raw'     => $response,
+            ];
+        }
+
+        return $data;
+    }
+
+    /**
+     * Mengambil QR Code untuk koneksi WhatsApp via Fonnte
+     * Endpoint: POST https://api.fonnte.com/qr
+     */
+    public function getQrCode(): array
+    {
+        if (!$this->isConfigured()) {
+            return [
+                'status'  => false,
+                'message' => 'Token Fonnte belum dikonfigurasi.',
+            ];
+        }
+
+        $endpoint = "{$this->baseUrl}/qr";
+
+        $ch = curl_init($endpoint);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Authorization: ' . $this->token,
+        ]);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, ['type' => 'qr']);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 15);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlError = curl_error($ch);
+        curl_close($ch);
+
+        if ($response === false || !empty($curlError)) {
+            return [
+                'status'  => false,
+                'message' => 'Gagal mengambil QR Fonnte: ' . $curlError,
+            ];
+        }
+
+        $data = json_decode($response, true);
+        if (!is_array($data)) {
+            return [
+                'status'  => false,
+                'message' => 'Respon QR Fonnte tidak valid (HTTP ' . $httpCode . ')',
+                'raw'     => $response,
+            ];
+        }
+
+        return $data;
+    }
 }

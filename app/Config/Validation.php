@@ -54,14 +54,22 @@ class Validation extends BaseConfig
     ];
     public $addBank = [
         'nama_bank'      => 'required|in_list[bri,bni,bca,mandiri,edc]',
-        'nomor_rekening' => 'required|max_length[50]|alpha_dash|is_unique[bank.rekening]',
+        'nomor_rekening' => 'required|max_length[30]|numeric|is_unique[bank.rekening]',
         'atas_nama'      => 'required|max_length[50]|alpha_space',
     ];
     public $updateBank = [
         'id_bank'                => 'required|numeric',
         'sunting_nama_bank'      => 'required|in_list[bri,bni,bca,mandiri,edc]',
-        'sunting_nomor_rekening' => 'required|max_length[50]|alpha_dash|is_unique[bank.rekening,id_bank,{id_bank}]',
+        'sunting_nomor_rekening' => 'required|max_length[30]|numeric|is_unique[bank.rekening,id_bank,{id_bank}]',
         'sunting_atas_nama'      => 'required|max_length[50]|alpha_space',
+    ];
+    // pesan khusus grup: lok api masih 'en', jadi aturan angka di bawah ini
+    // dibahasakan agar tidak mencolok di form
+    public $addBank_errors = [
+        'nomor_rekening' => ['numeric' => 'Nomor rekening hanya boleh angka.'],
+    ];
+    public $updateBank_errors = [
+        'sunting_nomor_rekening' => ['numeric' => 'Nomor rekening hanya boleh angka.'],
     ];
     public $addJuragan = [
         'nama_juragan' => 'required|min_length[3]|max_length[60]|is_unique[juragan.nama_juragan]',

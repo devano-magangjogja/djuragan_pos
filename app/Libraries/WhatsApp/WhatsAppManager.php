@@ -72,9 +72,42 @@ class WhatsAppManager
         $this->settings[$key] = $value;
     }
 
+    /**
+     * Rekam event webhook terakhir yang sampai ke server. Panel status di Live
+     * Chat membacanya untuk membedakan "gateway tidak pernah mengirim" dari
+     * "pesan masuk tapi tidak tampil". Disimpan di crm_setting yang sudah
+     * key-value, jadi tidak butuh tabel atau kolom baru.
+     */
+    public function catatEventWebhook(string $sumber, ?string $nomor, bool $diproses): void
+    {
+        try {
+            $this->setSetting('wa_webhook_event_terakhir', json_encode([
+                'waktu'    => time(),
+                'sumber'   => $sumber,
+                'nomor'    => $nomor,
+                'diproses' => $diproses,
+            ], JSON_UNESCAPED_SLASHES));
+        } catch (\Throwable $e) {
+            log_message('error', 'Gagal mencatat event webhook: ' . $e->getMessage());
+        }
+    }
+
+    public function eventWebhookTerakhir(): ?array
+    {
+        $mentah = $this->getSetting('wa_webhook_event_terakhir');
+
+        if (! is_string($mentah) || $mentah === '') {
+            return null;
+        }
+
+        $event = json_decode($mentah, true);
+
+        return is_array($event) && isset($event['waktu']) ? $event : null;
+    }
+
     public function getActiveProviderName(): string
     {
-        return $this->getSetting('wa_provider', 'kapso');
+        return $this->getSetting('wa_provider', 'fonnte');
     }
 
     public function getProvider(?string $name = null): WhatsAppProviderInterface
@@ -104,6 +137,30 @@ class WhatsAppManager
     }
 
     /**
+     * Cek status perangkat Fonnte
+     */
+    public function getFonnteDeviceStatus(): array
+    {
+        $provider = $this->getProvider('fonnte');
+        if ($provider instanceof FonnteProvider) {
+            return $provider->getDeviceStatus();
+        }
+        return ['status' => false, 'message' => 'Provider Fonnte tidak tersedia'];
+    }
+
+    /**
+     * Ambil QR Code Fonnte untuk pairing
+     */
+    public function getFonnteQr(): array
+    {
+        $provider = $this->getProvider('fonnte');
+        if ($provider instanceof FonnteProvider) {
+            return $provider->getQrCode();
+        }
+        return ['status' => false, 'message' => 'Provider Fonnte tidak tersedia'];
+    }
+
+    /**
      * Kirim pesan WhatsApp dan otomatis catat log ke crm_pesan_log
      */
     public function send(string $to, string $message, array $meta = []): array
@@ -116,7 +173,7 @@ class WhatsAppManager
         $tipePesan   = $meta['tipe_pesan'] ?? 'manual';
         $userId      = $meta['user_id'] ?? (is_cli() ? null : (session()->get('id') ?: null));
 
-        // Jika mode sandbox aktif dan sandbox_test_number diatur, kita bisa pastikan pengiriman aman
+        // Jika mode sandbox aktif dan sandbox_test_number diatur (khusus Kapso)
         $sandboxMode = (int) $this->getSetting('kapso_sandbox_mode', '1');
         $sandboxTestNumber = $this->getSetting('kapso_sandbox_test_number', '6285161384750');
 
@@ -133,6 +190,7 @@ class WhatsAppManager
         }
 
         $result = $provider->sendMessage($targetPhone, $message, $meta);
+        $result['provider'] = $providerName;
 
         // Catat log pengiriman & sinkronisasi percakapan chat
         try {
@@ -246,8 +304,14 @@ class WhatsAppManager
 
     /**
      * Catat pesan masuk dari webhook WhatsApp (Kapso / Fonnte)
+     *
+     * @param string      $from        Nomor pengirim
+     * @param string      $message     Isi pesan
+     * @param string|null $waMsgId     ID pesan dari gateway (untuk dedup)
+     * @param array|null  $raw         Payload mentah
+     * @param string|null $senderName  Nama kontak dari WhatsApp (dari Fonnte 'name' field)
      */
-    public function recordIncomingMessage(string $from, string $message, ?string $waMsgId = null, ?array $raw = null): array
+    public function recordIncomingMessage(string $from, string $message, ?string $waMsgId = null, ?array $raw = null, ?string $senderName = null): array
     {
         $db = Database::connect();
         $now = time();
@@ -285,23 +349,38 @@ class WhatsAppManager
         $pelangganId = $kRow['id_pelanggan'] ?? null;
         $namaKontak  = $kRow['nama_pelanggan'] ?? null;
 
+        // Jika tidak ada di database pelanggan, gunakan nama dari WhatsApp (Fonnte)
+        if (empty($namaKontak) && !empty($senderName)) {
+            $namaKontak = $senderName;
+        }
+
         // Cari atau buat percakapan
         $conv = $db->table('crm_chat_percakapan')->where('nomor_wa', $cleanPhone)->get()->getRowArray();
 
         if ($conv) {
             $convId = (int) $conv['id_percakapan'];
-            $db->table('crm_chat_percakapan')->where('id_percakapan', $convId)->update([
+            $updateData = [
                 'pesan_terakhir' => $message,
                 'waktu_terakhir' => $now,
                 'arah_terakhir'  => 'masuk',
                 'unread_admin'   => 1,
                 'updated_at'     => $now,
-            ]);
+            ];
+            // Perbarui nama_kontak jika belum ada nama asli (masih nomor/kosong) dan sekarang ada nama
+            $namaLama = $conv['nama_kontak'] ?? '';
+            if (!empty($namaKontak) && (empty($namaLama) || preg_match('/^\d+$/', $namaLama))) {
+                $updateData['nama_kontak'] = $namaKontak;
+            }
+            // Link pelanggan jika belum ter-link
+            if (!empty($pelangganId) && empty($conv['pelanggan_id'])) {
+                $updateData['pelanggan_id'] = $pelangganId;
+            }
+            $db->table('crm_chat_percakapan')->where('id_percakapan', $convId)->update($updateData);
         } else {
             $db->table('crm_chat_percakapan')->insert([
                 'nomor_wa'       => $cleanPhone,
                 'pelanggan_id'   => $pelangganId,
-                'nama_kontak'    => $namaKontak ?: 'Kontak ' . substr($cleanPhone, -4),
+                'nama_kontak'    => $namaKontak ?: $cleanPhone,
                 'pesan_terakhir' => $message,
                 'waktu_terakhir' => $now,
                 'arah_terakhir'  => 'masuk',
@@ -328,5 +407,40 @@ class WhatsAppManager
             'percakapan_id' => $convId,
             'pesan_id'      => $db->insertID(),
         ];
+    }
+
+    /**
+     * Update status pengiriman pesan (terkirim/diterima/dibaca) dari callback Fonnte.
+     * Fonnte mengirim wa_message_id = id pesan yang statusnya berubah.
+     */
+    public function updateMessageStatus(string $waMsgId, string $status): bool
+    {
+        $db = Database::connect();
+
+        // Validasi status yang diizinkan
+        $validStatus = ['terkirim', 'diterima', 'dibaca', 'gagal'];
+        if (!in_array($status, $validStatus, true)) {
+            return false;
+        }
+
+        // Update baris pertama yang cocok (arah keluar saja)
+        $rows = $db->table('crm_chat_pesan')
+            ->where('wa_message_id', $waMsgId)
+            ->where('arah', 'keluar')
+            ->get()
+            ->getResultArray();
+
+        if (empty($rows)) {
+            log_message('info', '[WhatsApp] updateMessageStatus: wa_message_id tidak ditemukan: ' . $waMsgId);
+            return false;
+        }
+
+        $updated = $db->table('crm_chat_pesan')
+            ->where('wa_message_id', $waMsgId)
+            ->where('arah', 'keluar')
+            ->update(['status' => $status]);
+
+        log_message('info', '[WhatsApp] updateMessageStatus: ' . $waMsgId . ' -> ' . $status);
+        return (bool) $updated;
     }
 }
