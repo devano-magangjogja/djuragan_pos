@@ -833,6 +833,101 @@ class Crm extends BaseController
     }
 
     /**
+     * AJAX: Status jalur pesan masuk (webhook) untuk panel di Live Chat.
+     * Menjawab dua hal: gateway-nya pernah mengirim tidak, dan kalau mengirim
+     * pesannya tercatat tidak.
+     */
+    public function webhook_status()
+    {
+        $db    = Database::connect();
+        $event = $this->wa->eventWebhookTerakhir();
+
+        $masukTerakhir = $db->table('crm_chat_pesan')
+            ->select('created_at, nomor_wa')
+            ->where('arah', 'masuk')
+            ->groupStart()
+                ->where('wa_message_id', null)
+                ->orWhere('wa_message_id NOT LIKE', 'selftest-%')
+            ->groupEnd()
+            ->orderBy('id_pesan', 'DESC')
+            ->get(1)
+            ->getRowArray();
+
+        $jumlahHariIni = $db->table('crm_chat_pesan')
+            ->where('arah', 'masuk')
+            ->where('created_at >=', strtotime('today'))
+            ->countAllResults();
+
+        return $this->response->setJSON([
+            'status' => 'success',
+            'data'   => [
+                'provider'    => $this->wa->getActiveProviderName(),
+                'url_webhook' => site_url('webhook/whatsapp'),
+                'event'       => $event === null ? null : [
+                    'waktu'    => (int) $event['waktu'],
+                    'sumber'   => $event['sumber'] ?? '-',
+                    'nomor'    => $event['nomor'] ?? null,
+                    'diproses' => (bool) ($event['diproses'] ?? false),
+                ],
+                'masuk_terakhir' => $masukTerakhir === null ? null : [
+                    'waktu' => (int) $masukTerakhir['created_at'],
+                    'nomor' => $masukTerakhir['nomor_wa'],
+                ],
+                'masuk_hari_ini' => $jumlahHariIni,
+            ],
+        ]);
+    }
+
+    /**
+     * AJAX: Uji jalur pencatatan pesan masuk.
+     *
+     * Payload contoh dijalankan lewat jalur yang sama dengan webhook
+     * (recordIncomingMessage → crm_chat_pesan → Live Chat), lalu baris ujinya
+     * dibersihkan lagi supaya daftar percakapan tidak kotor. Sengaja tidak
+     * memanggil URL publik dari dalam server: dev server PHP cuma punya satu
+     * pekerja, jadi permintaan bersarang menggantung sampai timeout. Apakah URL
+     * publik terjangkau gateway terlihat dari baris "Event gateway terakhir".
+     */
+    public function webhook_uji()
+    {
+        $idUji    = 'selftest-' . time();
+        $nomorUji = '628999000111';
+        $isi      = 'Uji pencatatan pesan masuk dari panel Live Chat';
+
+        $this->wa->recordIncomingMessage($nomorUji, $isi, $idUji, ['selftest' => true], 'Uji Panel Webhook');
+
+        $db   = Database::connect();
+        $baru = $db->table('crm_chat_pesan')
+            ->select('id_pesan, percakapan_id')
+            ->where('wa_message_id', $idUji)
+            ->where('arah', 'masuk')
+            ->get()->getRowArray();
+
+        if ($baru === null) {
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => 'Payload uji tidak tercatat di crm_chat_pesan. Periksa log aplikasi.',
+                'data'    => ['tercatat' => false, 'dibersihkan' => false],
+            ]);
+        }
+
+        $idPercakapan = (int) $baru['percakapan_id'];
+        $db->table('crm_chat_pesan')->where('id_pesan', (int) $baru['id_pesan'])->delete();
+
+        // percakapan ikut dibuang hanya kalau isinya memang pesan uji itu saja
+        $sisa = $db->table('crm_chat_pesan')->where('percakapan_id', $idPercakapan)->countAllResults();
+        if ($sisa === 0) {
+            $db->table('crm_chat_percakapan')->where('id_percakapan', $idPercakapan)->delete();
+        }
+
+        return $this->response->setJSON([
+            'status'  => 'success',
+            'message' => 'Jalur pencatatan sehat: pesan uji masuk ke Live Chat lalu dibersihkan. Kalau balasan asli tetap tidak muncul, gateway-nya yang belum mengirim ke URL webhook.',
+            'data'    => ['tercatat' => true, 'dibersihkan' => true],
+        ]);
+    }
+
+    /**
      * Alias endpoint kirim_wa → kirim_pesan (kompatibilitas route lama)
      */
     public function kirim_wa()
@@ -1121,10 +1216,20 @@ class Crm extends BaseController
                 ]);
             }
 
+            $convIdOut = $idPercakapan;
+            if ($convIdOut <= 0 && !empty($targetNumber)) {
+                $clean = preg_replace('/[^\d]/', '', $targetNumber);
+                $c = $db->table('crm_chat_percakapan')->where('nomor_wa', $clean)->get()->getRowArray();
+                if ($c) {
+                    $convIdOut = (int) $c['id_percakapan'];
+                }
+            }
+
             return $this->response->setJSON([
-                'status'     => 'success',
-                'message'    => 'Pesan terkirim!',
-                'message_id' => $res['message_id'],
+                'status'        => 'success',
+                'message'       => 'Pesan terkirim!',
+                'message_id'    => $res['message_id'],
+                'id_percakapan' => $convIdOut,
             ]);
         }
 
@@ -1132,5 +1237,38 @@ class Crm extends BaseController
             'status'  => 'error',
             'message' => 'Gagal mengirim: ' . ($res['error'] ?? 'Terjadi kesalahan pada WhatsApp API.'),
         ]);
+    }
+
+    /**
+     * API: Ambil status pengiriman beberapa pesan sekaligus (untuk update centang real-time)
+     * GET admin/crm/chat/status_pesan?ids=1,2,3,4
+     */
+    public function chat_status_pesan()
+    {
+        $idsParam = trim($this->request->getGet('ids') ?? '');
+        if (empty($idsParam)) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Tidak ada ID pesan.']);
+        }
+
+        // Hanya izinkan digit dan koma untuk keamanan
+        $ids = array_filter(array_map('intval', explode(',', $idsParam)));
+        if (empty($ids)) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'ID tidak valid.']);
+        }
+
+        $db   = Database::connect();
+        $rows = $db->table('crm_chat_pesan')
+            ->select('id_pesan, status')
+            ->whereIn('id_pesan', $ids)
+            ->where('arah', 'keluar')
+            ->get()
+            ->getResultArray();
+
+        $data = [];
+        foreach ($rows as $r) {
+            $data[(int) $r['id_pesan']] = $r['status'];
+        }
+
+        return $this->response->setJSON(['status' => 'success', 'data' => $data]);
     }
 }

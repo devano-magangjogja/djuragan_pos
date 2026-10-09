@@ -104,11 +104,46 @@ class Webhook extends BaseController
         }
 
         // ── Format E: Fonnte Webhook ─────────────────────────────────────────────
-        if (!$processed && isset($payload['sender'], $payload['message'])) {
-            $from = $payload['sender'];
-            $text = $payload['message'];
-            $waManager->recordIncomingMessage($from, $text, null, $payload);
-            $processed = true;
+        // Fonnte mengirim: pesan masuk, status update (read/delivered), pesan keluar.
+        // Field 'sender' = nomor pengirim, 'message' = isi pesan, 'status' = event type.
+        // 'name' = nama WhatsApp pengirim.
+        if (!$processed && isset($payload['sender'])) {
+            $fonnteStatus = $payload['status'] ?? null;
+            $from         = $payload['sender'];
+            $text         = $payload['message'] ?? null;
+            $senderName   = $payload['name'] ?? null;
+
+            // Jika ini adalah event status update pesan keluar (delivered/read)
+            // Fonnte menyertakan field 'status' berisi 'read', 'receive', atau 'sent'
+            // dan tidak ada isi 'message' bermakna
+            if (in_array($fonnteStatus, ['read', 'receive', 'sent'], true)) {
+                // Update status pesan di DB jika ada wa_message_id
+                $waMsgId = $payload['id'] ?? null;
+                if ($waMsgId) {
+                    $statusMap = ['sent' => 'terkirim', 'receive' => 'diterima', 'read' => 'dibaca'];
+                    $newStatus = $statusMap[$fonnteStatus] ?? null;
+                    if ($newStatus) {
+                        $waManager->updateMessageStatus((string) $waMsgId, $newStatus);
+                    }
+                }
+                log_message('info', '[Webhook WA] Fonnte status update: ' . $fonnteStatus . ' id=' . ($waMsgId ?? '-'));
+                $processed = true;
+
+            } elseif (!empty($text)) {
+                // Pesan masuk dari pelanggan
+                $waId = $payload['id'] ?? null;
+                $waManager->recordIncomingMessage(
+                    (string) $from,
+                    (string) $text,
+                    $waId ? (string) $waId : null,
+                    $payload,
+                    $senderName ? (string) $senderName : null
+                );
+                $processed = true;
+            } else {
+                log_message('info', '[Webhook WA] Fonnte event tanpa isi pesan, status=' . ($fonnteStatus ?? '-'));
+                $processed = true; // Jangan log sebagai error
+            }
         }
 
         // ── Format F: Kapso Cloud API (pesan di akar payload, arah di message.kapso.direction) ──
@@ -144,6 +179,29 @@ class Webhook extends BaseController
         if (!$processed) {
             log_message('warning', '[Webhook WA] Format payload tidak dikenali: ' . json_encode(array_keys($payload)));
         }
+
+        // Jejak "kapan terakhir gateway mengetuk pintu" dipakai panel status di
+        // Live Chat untuk membedakan gateway yang diam dari pesan yang nyangkut.
+        // Payload kiriman tombol uji panel ditandai supaya tidak menyamar jadi
+        // event gateway asli.
+        $sumber = 'tak dikenal';
+        if (isset($payload['selftest'])) {
+            $sumber = 'uji-panel';
+        } elseif (isset($payload['sender'])) {
+            $sumber = 'fonnte';
+        } elseif (isset($payload['entry'])) {
+            $sumber = 'meta';
+        } elseif (isset($payload['message']) || isset($payload['event']) || isset($payload['data']) || isset($payload['inactivity'])) {
+            $sumber = 'kapso';
+        }
+
+        $nomorEvent = $payload['sender']
+            ?? $payload['message']['from']
+            ?? $payload['data']['message']['from']
+            ?? $payload['entry'][0]['changes'][0]['value']['messages'][0]['from']
+            ?? null;
+
+        $waManager->catatEventWebhook($sumber, $nomorEvent !== null ? (string) $nomorEvent : null, $processed);
 
         // Response 200 OK harus selalu dikirim cepat ke webhook provider
         return $this->response->setJSON(['status' => 'ok', 'processed' => $processed]);
