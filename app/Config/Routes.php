@@ -103,6 +103,8 @@ $routes->group('admin', static function ($routes) {
         $routes->get('chat/pesan/(:num)', 'Admin\Crm::chat_pesan/$1');
         $routes->get('chat/polling/(:num)', 'Admin\Crm::chat_polling/$1');
         $routes->post('chat/kirim', 'Admin\Crm::chat_kirim');
+        $routes->post('chat/hapus', 'Admin\Crm::chat_hapus');
+        $routes->post('chat/nama', 'Admin\Crm::chat_ganti_nama');
         $routes->get('chat/status_pesan', 'Admin\Crm::chat_status_pesan');
         $routes->get('chat/token', 'Admin\Crm::chat_token');
         $routes->get('chat/webhook_status', 'Admin\Crm::webhook_status');
