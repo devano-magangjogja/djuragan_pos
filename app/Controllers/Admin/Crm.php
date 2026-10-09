@@ -1013,14 +1013,12 @@ class Crm extends BaseController
 
         $templates     = $db->table('crm_template')->get()->getResultArray();
         $isSandbox     = (int) $this->wa->getSetting('kapso_sandbox_mode', '1');
-        $sandboxNumber = $this->wa->getSetting('kapso_sandbox_test_number', '6285161384750');
 
         $data = [
             'title'         => 'Live Chat WhatsApp CRM',
             'activeId'      => $activeId,
             'templates'     => $templates,
             'isSandbox'     => $isSandbox,
-            'sandboxNumber' => $sandboxNumber,
         ];
 
         return view('admin/crm/chat', $data);
@@ -1056,7 +1054,7 @@ class Crm extends BaseController
                 'id_percakapan'  => (int) $r['id_percakapan'],
                 'nomor_wa'       => $r['nomor_wa'],
                 'pelanggan_id'   => $r['pelanggan_id'] ? (int) $r['pelanggan_id'] : null,
-                'nama_kontak'    => $r['nama_pelanggan'] ?: ($r['nama_kontak'] ?: $r['nomor_wa']),
+                'nama_kontak'    => $this->namaChat($r),
                 'status_crm'     => $r['status_crm'] ?? null,
                 'pesan_terakhir' => $r['pesan_terakhir'] ?? '',
                 'arah_terakhir'  => $r['arah_terakhir'],
@@ -1067,6 +1065,30 @@ class Crm extends BaseController
         }
 
         return $this->response->setJSON(['status' => 'success', 'data' => $list]);
+    }
+
+    /**
+     * Nama yang tampil di daftar Live Chat.
+     *
+     * Label chat yang diisi manual lewat "Ganti nama chat" lebih diprioritaskan
+     * daripada nama profil customer supaya hasil edit langsung terlihat. Label
+     * bawaan sistem (kosong, nomor, atau "Kontak 4750") bukan hasil edit, jadi
+     * tetap mengikuti nama profil.
+     */
+    private function namaChat(array $r): string
+    {
+        $label    = trim((string) ($r['nama_kontak'] ?? ''));
+        $nomorWa  = (string) ($r['nomor_wa'] ?? '');
+        $eksplisit = $label !== ''
+            && $label !== $nomorWa
+            && ! preg_match('/^\d+$/', $label)
+            && ! preg_match('/^Kontak \d{1,4}$/', $label);
+
+        if ($eksplisit) {
+            return $label;
+        }
+
+        return ($r['nama_pelanggan'] ?? '') ?: ($label !== '' ? $label : $nomorWa);
     }
 
     /**
@@ -1263,6 +1285,62 @@ class Crm extends BaseController
             'status'  => 'error',
             'message' => 'Gagal mengirim: ' . ($res['error'] ?? 'Terjadi kesalahan pada WhatsApp API.'),
         ]);
+    }
+
+    /**
+     * API: Hapus satu percakapan lengkap dengan seluruh isinya dari Live Chat.
+     * Semua barisnya di crm_chat_pesan ikut terhapus permanen dan profil
+     * pelanggan tidak disentuh. Kalau nomor itu chat lagi, percakapan baru
+     * dibuat ulang oleh webhook seperti biasa.
+     */
+    public function chat_hapus()
+    {
+        $idPercakapan = (int) $this->request->getPost('id_percakapan');
+        if ($idPercakapan <= 0) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Pilih chat yang mau dihapus.']);
+        }
+
+        $db = Database::connect();
+        $conv = $db->table('crm_chat_percakapan')->select('id_percakapan')
+            ->where('id_percakapan', $idPercakapan)->get()->getRowArray();
+        if (! $conv) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Chat tidak ditemukan.']);
+        }
+
+        $db->table('crm_chat_pesan')->where('percakapan_id', $idPercakapan)->delete();
+        $db->table('crm_chat_percakapan')->where('id_percakapan', $idPercakapan)->delete();
+
+        return $this->response->setJSON(['status' => 'success']);
+    }
+
+    /**
+     * API: Ganti label percakapan (crm_chat_percakapan.nama_kontak) saja.
+     * Nama pelanggan di profil CRM (pelanggan.nama_pelanggan) tidak disentuh —
+     * selama percakapan sudah tertaut customer, daftar chat tetap menampilkan
+     * nama dari profil itu.
+     */
+    public function chat_ganti_nama()
+    {
+        $idPercakapan = (int) $this->request->getPost('id_percakapan');
+        $nama         = trim($this->request->getPost('nama_kontak') ?? '');
+
+        if ($idPercakapan <= 0 || $nama === '') {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Nama tidak boleh kosong.']);
+        }
+
+        $db   = Database::connect();
+        $conv = $db->table('crm_chat_percakapan')->select('id_percakapan')
+            ->where('id_percakapan', $idPercakapan)->get()->getRowArray();
+        if (! $conv) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Percakapan tidak ditemukan.']);
+        }
+
+        // kolom nama_kontak VARCHAR(100)
+        $nama = mb_substr($nama, 0, 100);
+        $db->table('crm_chat_percakapan')->where('id_percakapan', $idPercakapan)
+            ->update(['nama_kontak' => $nama]);
+
+        return $this->response->setJSON(['status' => 'success', 'nama_kontak' => $nama]);
     }
 
     /**

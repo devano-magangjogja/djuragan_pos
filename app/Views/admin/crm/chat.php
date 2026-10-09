@@ -88,6 +88,31 @@
     text-align: right;
     margin-top: 4px;
 }
+/* Tombol aksi baris percakapan (pena ganti nama + hapus chat) */
+.chat-aksi-btn {
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    color: #54656f;
+    border-radius: 5px;
+    font-size: 11px;
+    line-height: 1;
+    padding: 4px 6px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+.chat-aksi-btn:hover {
+    color: #111b21;
+}
+/* Pena ganti nama + tombol hapus muncul saat baris percakapan di-hover */
+.chat-conv-item .btn-conv-aksi {
+    display: none;
+}
+.chat-conv-item:hover .btn-conv-aksi {
+    display: inline-block;
+}
+.chat-conv-item .btn-hapus-chat:hover {
+    color: #b3261e;
+    border-color: #f3c1bd;
+}
 .chat-footer {
     background: #ffffff;
     border-top: 1px solid #e2e8f0;
@@ -259,7 +284,7 @@
                 <div id="alertNewChat" class="alert d-none"></div>
                 <div class="mb-3">
                     <label class="form-label small fw-bold">Nomor WhatsApp Tujuan</label>
-                    <input type="text" id="newChatNomor" class="form-control font-monospace" placeholder="628123456789 atau 08123456789" value="<?= (!empty($isSandbox) && !empty($sandboxNumber)) ? esc($sandboxNumber) : '' ?>">
+                    <input type="text" id="newChatNomor" class="form-control font-monospace" placeholder="628123456789 atau 08123456789">
                     <div class="form-text small">Gunakan format internasional (contoh: 628xxx).</div>
                 </div>
                 <div class="mb-3">
@@ -354,6 +379,31 @@
         </form>
     </div>
 </div>
+<!-- Modal Ganti Label Percakapan: hanya mengubah nama di daftar chat, bukan
+     data pelanggan di profil CRM -->
+<div class="modal fade" id="modalGantiNama" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title"><i class="fal fa-tag me-2"></i>Ganti Nama Chat</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="alertGantiNama" class="alert d-none"></div>
+                <div class="mb-3">
+                    <label class="form-label small fw-bold" for="inputGantiNama">Nama Percakapan</label>
+                    <input type="text" id="inputGantiNama" class="form-control" maxlength="100" placeholder="cth: Bu Rina">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-success fw-bold" id="btnSubmitGantiNama">
+                    <i class="fal fa-save me-1"></i> Simpan
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 <?= $this->endSection() ?>
 
 <?= $this->section('js') ?>
@@ -367,6 +417,10 @@ $(function() {
     var lastMsgId       = 0;     // ID pesan terakhir yang sudah dimuat
     var pollInterval    = null;
     var modalChatBaru   = new bootstrap.Modal(document.getElementById('modalChatBaru'));
+    var modalGantiNama  = new bootstrap.Modal(document.getElementById('modalGantiNama'));
+    var idGantiNama     = 0;
+    // Isian awal panel chat, dipakai lagi setelah chat aktif dihapus
+    var placeholderChat = $('#chatMessages').html();
     var isAtBottom      = true;  // Lacak apakah user scroll ke bawah
     var muatPenuhSeq    = 0;     // Penanda permintaan terakhir; respons telat dibuang
     var muatPenuhJalan  = false; // Polling dilarang selagi muat penuh berjalan
@@ -385,6 +439,7 @@ $(function() {
         var container = $('#convList');
         if (list.length === 0) {
             container.html('<div class="p-4 text-center text-muted small"><i class="fal fa-comments fa-2x mb-2 d-block"></i>Belum ada percakapan chat.</div>');
+            if (!currentConvId) resetChatArea();
             return;
         }
 
@@ -412,6 +467,11 @@ $(function() {
                 ? '<i class="fal fa-check text-muted me-1"></i>'
                 : '<i class="fal fa-arrow-down-left text-success me-1"></i>';
 
+            var btnNama = '<button type="button" class="chat-aksi-btn btn-ganti-nama btn-conv-aksi ms-1" title="Ganti nama chat">'
+                        + '<i class="fal fa-pen"></i></button>';
+            var btnHapus = '<button type="button" class="chat-aksi-btn btn-hapus-chat btn-conv-aksi ms-1" title="Hapus chat ini">'
+                         + '<i class="fal fa-trash"></i></button>';
+
             html += '<div class="chat-conv-item p-3 d-flex align-items-center' + activeClass + '"'
                   + ' data-id="' + item.id_percakapan + '"'
                   + ' data-nomor="' + escapeAttr(item.nomor_wa) + '"'
@@ -426,7 +486,7 @@ $(function() {
             html += '      ' + prefixArah + escapeHtml(item.pesan_terakhir || 'Mulai percakapan...');
             html += '    </div>';
             html += '  </div>';
-            html += '  <div>' + unreadBadge + '</div>';
+            html += '  <div class="flex-shrink-0">' + unreadBadge + btnNama + btnHapus + '</div>';
             html += '</div>';
         });
 
@@ -434,7 +494,9 @@ $(function() {
     }
 
     // ── Klik percakapan ─────────────────────────────────────────────────────
-    $(document).on('click', '.chat-conv-item', function() {
+    $(document).on('click', '.chat-conv-item', function(e) {
+        if ($(e.target).closest('.btn-conv-aksi').length) return;
+
         var id   = $(this).data('id');
         var nama = $(this).data('nama');
         var nomor = $(this).data('nomor');
@@ -469,6 +531,15 @@ $(function() {
 
         // Full load pertama kali
         loadMessagesFull(id);
+    }
+
+    function resetChatArea() {
+        currentConvId = null;
+        lastMsgId     = 0;
+        $('#chatHeader').attr('style', 'display: none !important;');
+        $('#chatFooter').css('display', 'none');
+        $('#customerBadge').empty();
+        $('#chatMessages').html(placeholderChat);
     }
 
     // ── Load full (pertama buka percakapan) ─────────────────────────────────
@@ -667,7 +738,7 @@ $(function() {
         }
 
         html += '<div class="chat-bubble ' + m.arah + '" data-id="' + m.id_pesan + '" data-status="' + (m.status || '') + '">';
-        html += '  <div>' + escapeHtml(m.isi_pesan) + '</div>';
+        html += '  <div class="chat-bubble-isi">' + escapeHtml(m.isi_pesan) + '</div>';
         html += '  <div class="chat-meta">' + m.waktu + checkIcon + '</div>';
         html += '</div>';
         return html;
@@ -845,6 +916,29 @@ $(function() {
     });
 
     // ── Chat Baru ────────────────────────────────────────────────────────────
+    // Nomor tujuan selalu dibersihkan ulang setiap kali isian berubah (ketik,
+    // paste, atau autofill): buang simbol, ganti awalan 0 jadi 62, maksimal 13 angka
+    $('#newChatNomor').on('input', function() {
+        var angka = this.value.replace(/[^\d]/g, '');
+        angka = angka.replace(/^00(?=62)/, '');
+        if (angka.charAt(0) === '0') {
+            angka = '62' + angka.replace(/^0+/, '');
+        }
+        angka = angka.slice(0, 13);
+        if (angka !== this.value) {
+            this.value = angka;
+        }
+    });
+
+    // Setiap kali modal dibuka: form selalu kosong, tidak membawa sisa sebelumnya
+    $('#modalChatBaru').on('show.bs.modal', function() {
+        $('#newChatNomor').val('');
+        $('#newChatPesan').val('');
+        $('#alertNewChat').addClass('d-none');
+        $('#btnSubmitNewChat').prop('disabled', false)
+            .html('<i class="fab fa-whatsapp me-1"></i> Mulai &amp; Kirim Chat');
+    });
+
     $('#btnSubmitNewChat').on('click', function() {
         var nomor = $('#newChatNomor').val().trim();
         var pesan = $('#newChatPesan').val().trim();
@@ -880,6 +974,69 @@ $(function() {
                 btn.prop('disabled', false).html('<i class="fab fa-whatsapp me-1"></i> Mulai &amp; Kirim Chat');
                 $('#alertNewChat').removeClass('d-none alert-success').addClass('alert-danger').text('Gagal menghubungi server.');
             }
+        });
+    });
+
+    // ── Hapus satu chat beserta semua pesannya ───────────────────────────────
+    $(document).on('click', '.btn-hapus-chat', function(e) {
+        e.stopPropagation();
+        var $item = $(this).closest('.chat-conv-item');
+        var id    = $item.data('id');
+        var nama  = ($item.data('nama') || '').toString();
+
+        var pertanyaan = 'Hapus chat "' + nama + '" beserta semua pesannya?'
+            + '\nChat yang sudah dihapus tidak bisa dikembalikan.';
+        if (!window.confirm(pertanyaan)) return;
+
+        $.post('<?= site_url('admin/crm/chat/hapus') ?>', { id_percakapan: id }, function(res) {
+            if (res.status !== 'success') {
+                alert(res.message || 'Gagal menghapus chat.');
+                return;
+            }
+            if (currentConvId === id) resetChatArea();
+            $item.remove();
+            loadConversations(true);
+        }, 'json').fail(function() {
+            alert('Gagal menghubungi server.');
+        });
+    });
+
+    // ── Ganti nama chat (label percakapan saja) ─────────────────────────────
+    $(document).on('click', '.btn-ganti-nama', function(e) {
+        e.stopPropagation();
+        var $item = $(this).closest('.chat-conv-item');
+
+        idGantiNama = $item.data('id');
+        $('#alertGantiNama').addClass('d-none');
+        $('#inputGantiNama').val(($item.data('nama') || '').toString());
+
+        modalGantiNama.show();
+    });
+
+    $('#btnSubmitGantiNama').on('click', function() {
+        var nama = $('#inputGantiNama').val().trim();
+        if (nama === '') {
+            $('#alertGantiNama').removeClass('d-none alert-success').addClass('alert-danger').text('Nama tidak boleh kosong.');
+            return;
+        }
+
+        var $btn = $(this).prop('disabled', true).text('Menyimpan...');
+        $.post('<?= site_url('admin/crm/chat/nama') ?>', { id_percakapan: idGantiNama, nama_kontak: nama }, function(res) {
+            $btn.prop('disabled', false).html('<i class="fal fa-save me-1"></i> Simpan');
+            if (res.status !== 'success') {
+                $('#alertGantiNama').removeClass('d-none alert-success').addClass('alert-danger')
+                    .text(res.message || 'Gagal menyimpan nama.');
+                return;
+            }
+            modalGantiNama.hide();
+            if (currentConvId === idGantiNama) {
+                $('#activeName').text(nama);
+                $('#activeAvatar').text(nama.charAt(0).toUpperCase());
+            }
+            loadConversations(true);
+        }, 'json').fail(function() {
+            $btn.prop('disabled', false).html('<i class="fal fa-save me-1"></i> Simpan');
+            $('#alertGantiNama').removeClass('d-none alert-success').addClass('alert-danger').text('Gagal menghubungi server.');
         });
     });
 
