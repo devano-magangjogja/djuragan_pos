@@ -8,7 +8,7 @@
                 'data-bs-target' => '#juragan',
                 'data-bs-toggle' => 'offcanvas',
             ]) ?>
-            <?= anchor('', 'Pesanan Juragan', ['class' => 'navbar-brand ms-3']) ?>
+            <?= anchor('', 'Djuragan POS', ['class' => 'navbar-brand ms-3']) ?>
         </div>
         <div id="menu" class="order-3 order-md-0 navbar-nav-scroll d-flex justify-content-center">
             <ul class="navbar-nav bd-navbar-nav flex-row py-2 py-md-0">

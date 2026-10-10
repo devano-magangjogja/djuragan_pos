@@ -893,6 +893,45 @@ $session  = \Config\Services::session();
     </div>
 </div>
 
+<!-- Modal alasan hapus orderan -->
+<div class="modal fade" id="modalBatal" tabindex="-1" aria-labelledby="modalBatalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <?= form_open('', ['id' => 'submitBatal', 'class' => 'modal-content']) ?>
+        <div class="modal-header">
+            <h5 class="modal-title" id="modalBatalLabel">Hapus Orderan</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <p class="small text-body-secondary mb-3">
+                Orderan <span class="fw-bold" id="batalSeri">-</span> akan dihapus.
+                Alasannya dicatat supaya pembatalan yang sah tidak dihitung sebagai kesalahan siapa pun.
+            </p>
+            <div>
+                <?php
+                $opsi_alasan = ['' => 'Pilih alasan'];
+                $grup_alasan = ['kesalahan' => 'Kesalahan input', 'sah' => 'Pembatalan sah'];
+
+                foreach (alasan_batal() as $kunci_alasan => $r) {
+                    $opsi_alasan[$grup_alasan[$r['jenis']]][$kunci_alasan] = $r['label'];
+                }
+                ?>
+
+                <?= form_label('Alasan pembatalan', 'alasan', ['class' => 'form-label']) ?>
+                <?= form_dropdown('alasan', $opsi_alasan, '', [
+                    'class'    => 'form-select',
+                    'id'       => 'alasanBatal',
+                    'required' => '',
+                ]) ?>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn link" data-bs-dismiss="modal">Batal</button>
+            <button type="submit" class="btn btn-danger">Hapus Orderan</button>
+        </div>
+        <?= form_close(); ?>
+    </div>
+</div>
+
 <!-- Modal pencarian invoice -->
 <div class="modal fade" id="modalCari" tabindex="-1" aria-labelledby="modalCariLabel" aria-hidden="true">
     <div class="modal-dialog modal-md modal-dialog-centered">
@@ -1434,22 +1473,31 @@ $js = <<< JS
     		}
     	});
 
-    	$('.hapusOrderan').on('click',function(){
-    		let seri = $(this).data('seri');
-    		let id = $(this).data('invoice');
+    	// hapus orderan: alasannya wajib dipilih dan ikut tersimpan di nota
+    	var invoiceBatal = 0;
 
-    		if(confirm("Hapus orderan " + seri + "? sudah yakin?"))
-    		{
-    			$.ajax({
-    				method: "POST",
-    				url: "{$link_hapus_orderan}",
-    				data: { invoice_id: id }
-    			})
-    			.done(function( msg ) {
-    				// console.log( "Data Saved: " + msg );
-    				document.location.href = msg.url;
-    			});
-    		}
+    	$('.hapusOrderan').on('click',function(){
+    		invoiceBatal = $(this).data('invoice');
+
+    		$('#batalSeri').text($(this).data('seri'));
+    		$('#alasanBatal').val('');
+
+    		var modal = new bootstrap.Modal(document.getElementById('modalBatal'));
+    		modal.show();
+    	});
+
+    	$('#submitBatal').on('submit',function(e){
+    		e.preventDefault();
+
+    		$.ajax({
+    			method: "POST",
+    			url: "{$link_hapus_orderan}",
+    			data: { invoice_id: invoiceBatal, alasan: $('#alasanBatal').val() }
+    		})
+    		.done(function( msg ) {
+    			// console.log( "Data Saved: " + msg );
+    			document.location.href = msg.url;
+    		});
     	});
 
     	// submit resi

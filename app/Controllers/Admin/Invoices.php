@@ -176,15 +176,35 @@ class Invoices extends BaseController
     {
         if ($this->request->isAJAX()) {
             $invModel   = new InvoiceModel();
-            $invoice_id = $this->request->getPost('invoice_id');
-            $nota       = $this->notaMilikToko((int) $invoice_id);
+            $invoice_id = (int) $this->request->getPost('invoice_id');
+            $nota       = $this->notaMilikToko($invoice_id);
 
             // nota yang bukan miliknya tidak boleh dihapus akun mana pun di luar tokonya
             if ($nota === null) {
                 return $this->tolakToko();
             }
 
+            // alasan wajib dan hanya dari daftar yang dikenal: Error/Void Rate
+            // memisahkan kesalahan operasional dari pembatalan yang sah
+            $alasan = (string) $this->request->getPost('alasan');
+
+            if (! array_key_exists($alasan, alasan_batal())) {
+                return $this->response->setJSON([
+                    'status' => 'Pilih alasan pembatalan lebih dulu.',
+                    'url'    => site_url('admin/invoices/lihat/semua/semua?cari[kolom]=id&cari[q]=' . $invoice_id),
+                ]);
+            }
+
             $invModel->delete($invoice_id);
+
+            // deleted_by/alasan_batal ada di luar allowedFields InvoiceModel,
+            // jadi ditulis langsung; soft delete-nya sudah terjadi di baris yang sama
+            \Config\Database::connect()->table('invoice')
+                ->where('id_invoice', $invoice_id)
+                ->update([
+                    'deleted_by'   => pengguna_sesi(),
+                    'alasan_batal' => $alasan,
+                ]);
 
             // simpan notif
             simpan_notif(3, $nota->juragan_id, $invoice_id);
@@ -514,6 +534,9 @@ class Invoices extends BaseController
         $builder->set('invoice_id', $data['invoice_id']);
         $builder->set('status', $data['status']);
         $builder->set('tanggal_masuk', time());
+        // pelaksananya ikut tercatat: tanpa kolom ini kecepatan fulfillment tidak
+        // bisa dikaitkan ke orang, dan nilai lama tetap NULL (tidak ditebak)
+        $builder->set('user_id', pengguna_sesi());
 
         if ($data['stat'] === '1') {
             $builder->set('tanggal_selesai', time());

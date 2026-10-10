@@ -27,6 +27,19 @@ $isi_opsi = static function (array $daftar): array {
 $opsi_admin = $isi_opsi($admins);
 $opsi_cs    = $isi_opsi($cs_list);
 
+// rekening dipilih dengan kotak centang: satu klik langsung menambah atau
+// membatalkan satu rekening, tanpa daftar yang harus ditahan CTRL
+$kotak_rekening = static function (array $opsi, array $terpilih, string $awalan): void {
+    foreach ($opsi as $id => $label) {
+        $kunci = $awalan . '_' . preg_replace('/[^A-Za-z0-9_.-]/', '', (string) $id); ?>
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="bank[]" value="<?= esc((string) $id) ?>"
+                id="<?= esc($kunci) ?>" required <?= in_array((string) $id, $terpilih, true) ? 'checked' : '' ?>>
+            <label class="form-check-label" for="<?= esc($kunci) ?>"><?= esc($label) ?></label>
+        </div>
+<?php }
+};
+
 // satu baris daftar pemegang: label + pil nama, atau keterangan kosong
 $chip = static function (string $label, array $daftar): void { ?>
     <div class="d-flex align-items-center flex-wrap gap-1">
@@ -110,10 +123,11 @@ $chip = static function (string $label, array $daftar): void { ?>
                                 <?php } ?>
                             </td>
                             <td class="text-end text-nowrap">
-                                <?= anchor('admin/invoices/lihat/' . $j->juragan, '<i class="fal fa-ballot-check"></i> Orderan', ['class' => 'btn btn-sm btn-outline-secondary', 'title' => 'Lihat orderan ' . $j->nama_juragan]) ?>
+                                <?= anchor('admin/invoices/lihat/' . $j->juragan, '<i class="fal fa-shopping-cart"></i>', ['class' => 'btn btn-sm btn-outline-secondary', 'aria-label' => 'Orderan', 'title' => 'Lihat orderan ' . $j->nama_juragan]) ?>
                                 <?= form_button([
                                     'class'          => 'btn btn-sm btn-outline-secondary',
-                                    'content'        => '<i class="fal fa-pencil"></i> Sunting',
+                                    'content'        => '<i class="fal fa-pencil"></i>',
+                                    'aria-label'     => 'Sunting',
                                     'data-bs-target' => '#modalSuntingJuragan',
                                     'data-bs-toggle' => 'modal',
                                     'title'          => 'Sunting ' . $j->nama_juragan,
@@ -121,7 +135,8 @@ $chip = static function (string $label, array $daftar): void { ?>
                                 ]) ?>
                                 <?= form_button([
                                     'class'          => 'btn btn-sm btn-outline-secondary',
-                                    'content'        => '<i class="fal fa-user-plus"></i> Penanggung jawab',
+                                    'content'        => '<i class="fal fa-user-plus"></i>',
+                                    'aria-label'     => 'Penanggung jawab',
                                     'data-bs-target' => '#modalPengelola',
                                     'data-bs-toggle' => 'modal',
                                     'title'          => 'Tunjuk penanggung jawab ' . $j->nama_juragan,
@@ -139,10 +154,10 @@ $chip = static function (string $label, array $daftar): void { ?>
                                 ?>
                                 <?= form_open('admin/settings/juragan/hapus', ['class' => 'd-inline']) ?>
                                 <?= form_hidden('id_juragan', (string) $j->id_juragan) ?>
-                                <button type="submit" class="btn btn-sm btn-outline-danger"
+                                <button type="submit" class="btn btn-sm btn-outline-danger" aria-label="Hapus"
                                     title="Hapus <?= esc($j->nama_juragan, 'attr') ?>"
                                     onclick="return confirm('<?= esc($peringatan, 'js') ?>')">
-                                    <i class="fal fa-trash"></i> Hapus
+                                    <i class="fal fa-trash"></i>
                                 </button>
                                 <?= form_close() ?>
                             </td>
@@ -172,9 +187,11 @@ $chip = static function (string $label, array $daftar): void { ?>
                     <?= form_input('nama_juragan', set_value('nama_juragan'), ['class' => 'form-control', 'id' => 'tambah_nama_juragan', 'required' => '', 'placeholder' => 'nama juragan']); ?>
                 </div>
                 <div class="mb-0">
-                    <?= form_label('Rekening Bank / EDC', 'tambah_bank', ['class' => 'form-label']); ?>
-                    <?= form_multiselect('bank[]', $opsi_bank, $pilihan_bank, ['class' => 'form-select', 'required' => '', 'id' => 'tambah_bank']); ?>
-                    <div class="form-text">tekan CTRL untuk memilih lebih dari 1</div>
+                    <span class="form-label d-block">Rekening Bank / EDC</span>
+                    <div class="border rounded px-2 py-1" style="max-height: 180px; overflow-y: auto;">
+                        <?= $kotak_rekening($opsi_bank, $pilihan_bank, 'tambah_rek'); ?>
+                    </div>
+                    <div class="form-text">centang semua rekening yang dipakai toko ini</div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -203,15 +220,11 @@ $chip = static function (string $label, array $daftar): void { ?>
                     <?= form_input('nama_juragan', '', ['class' => 'form-control', 'id' => 'nama_juragan', 'required' => '', 'placeholder' => 'nama juragan']); ?>
                 </div>
                 <div class="mb-3">
-                    <?= form_label('Rekening Bank', 'bank', ['class' => 'form-label']); ?>
-                    <?= form_multiselect([
-                        'name'     => 'bank[]',
-                        'options'  => $opsi_bank,
-                        'class'    => 'form-select',
-                        'required' => true,
-                        'id'       => 'multipleSelect',
-                    ]) ?>
-                    <div class="form-text">tekan CTRL untuk memilih lebih dari 1</div>
+                    <span class="form-label d-block">Rekening Bank</span>
+                    <div class="border rounded px-2 py-1" style="max-height: 180px; overflow-y: auto;">
+                        <?= $kotak_rekening($opsi_bank, [], 'sunting_rek'); ?>
+                    </div>
+                    <div class="form-text">centang semua rekening yang dipakai toko ini</div>
                 </div>
 
             </div>
@@ -404,7 +417,15 @@ $js = <<< JS
             var bankId = [];
 
             bank.forEach(function(el, index, array){
-                bankId.push(el.id);
+                bankId.push(String(el.id));
+            });
+
+            // rekening toko ini disetel ulang setiap modal dibuka, supaya sisa
+            // centangan toko sebelumnya tidak ikut tersimpan
+            var kotak = modalSuntingJuragan.querySelectorAll('input[name="bank[]"]');
+
+            kotak.forEach(function (el) {
+                el.checked = bankId.indexOf(el.value) !== -1;
             });
 
     		var modalTitle = modalSuntingJuragan.querySelector('.modal-title');
@@ -414,8 +435,6 @@ $js = <<< JS
     		modalTitle.textContent='Perbarui ' + juragan.nama_juragan,
     		namaJuragan.value=juragan.nama_juragan,
             juraganId.value=juragan.id_juragan;
-
-            $('#multipleSelect').val(bankId)
     	}),
     	modalSuntingJuragan.addEventListener('hide.bs.modal',function(a){
     		document.getElementById('mf').reset();

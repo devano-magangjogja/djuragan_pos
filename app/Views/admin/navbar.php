@@ -8,7 +8,7 @@
                 'data-bs-target' => '#juragan',
                 'data-bs-toggle' => 'offcanvas',
             ]) ?>
-            <?= anchor('', 'Pesanan Juragan', ['class' => 'navbar-brand ms-3']) ?>
+            <?= anchor('', 'Djuragan POS', ['class' => 'navbar-brand ms-3']) ?>
         </div>
         <div id="menu" class="order-3 order-md-0 navbar-nav-scroll d-flex justify-content-center">
             <ul class="navbar-nav bd-navbar-nav flex-row py-2 py-md-0">
@@ -24,9 +24,13 @@
                     ['admin/produk', 'Produk', 'fa-tshirt', url_is('admin/produk*')],
                     ['admin/laporan', 'Laporan', 'fa-file-alt', url_is('admin/laporan*')],
                 ];
-                // Menu CRM hanya untuk admin dan superadmin
+                // Menu CRM dan KPI hanya untuk admin dan superadmin.
+                // KPI berdiri sendiri di menu, tidak menumpang di CRM atau Laporan.
                 if (in_array($levelSesi, ['admin', 'superadmin'], true)) {
-                    array_splice($menu, 3, 0, [['admin/crm', 'CRM', 'fa-comments-alt', url_is('admin/crm*')]]);
+                    array_splice($menu, 3, 0, [
+                        ['admin/crm', 'CRM', 'fa-comments-alt', url_is('admin/crm*')],
+                        ['admin/kpi', 'KPI', 'fa-bullseye', url_is('admin/kpi*')],
+                    ]);
                 }
 
                 foreach ($menu as [$alamat, $label, $ikon, $aktif]) {

@@ -299,6 +299,12 @@ class Invoices extends BaseController
 
             $invModel->delete($invoice_id);
 
+            // siapa yang menghapus dicatat; alasan pembatalan baru diminta di
+            // halaman nota admin, jadi kolom itu sengaja masih kosong di sini
+            \Config\Database::connect()->table('invoice')
+                ->where('id_invoice', (int) $invoice_id)
+                ->update(['deleted_by' => pengguna_sesi()]);
+
             return $this->response->setJSON([
                 'status' => 'Orderan dihapus',
                 'url'    => site_url('user/invoices'),

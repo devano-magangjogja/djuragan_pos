@@ -91,11 +91,22 @@ class TabelFotoInvoice extends Migration
         ];
 
         foreach ($rujukan as [$nama, $kolom, $rujukanTabel, $kolomAcuan, $saatHapus]) {
-            if (! $this->punyaConstraint('invoice_foto', $nama)) {
-                $this->db->query('ALTER TABLE ' . $this->t('invoice_foto') . " ADD CONSTRAINT {$nama}"
-                    . " FOREIGN KEY ({$kolom}) REFERENCES " . $this->t($rujukanTabel) . " ({$kolomAcuan})"
-                    . " ON DELETE {$saatHapus} ON UPDATE RESTRICT");
+            if ($this->punyaConstraint('invoice_foto', $nama)) {
+                continue;
             }
+
+            // Constraint tidak bisa dipasang selama masih ada baris yang merujuk
+            // nota/akun yang sudah dihapus permanen. Tabel ini sempat dipakai
+            // sebelum FK-nya ada, jadi database lama punya beberapa yatim.
+            // Memaksanya berarti menghapus data foto, jadi pilihan yang aman:
+            // FK dipasang di database bersih dan yatim dibiarkan apa adanya.
+            if ($this->yatim($kolom, $rujukanTabel, $kolomAcuan) > 0) {
+                continue;
+            }
+
+            $this->db->query('ALTER TABLE ' . $this->t('invoice_foto') . " ADD CONSTRAINT {$nama}"
+                . " FOREIGN KEY ({$kolom}) REFERENCES " . $this->t($rujukanTabel) . " ({$kolomAcuan})"
+                . " ON DELETE {$saatHapus} ON UPDATE RESTRICT");
         }
     }
 
@@ -120,5 +131,15 @@ class TabelFotoInvoice extends Migration
         return $this->db->query('SELECT 1 FROM information_schema.table_constraints
                 WHERE table_schema = DATABASE() AND table_name = ? AND constraint_name = ? LIMIT 1',
             [$this->t($tabel), $nama])->getNumRows() > 0;
+    }
+
+    /** Jumlah baris foto yang merujuk kunci yang sudah tidak ada di tabel acuan. */
+    private function yatim(string $kolom, string $rujukanTabel, string $kolomAcuan): int
+    {
+        $baris = $this->db->query('SELECT COUNT(*) AS jml FROM ' . $this->t('invoice_foto') . ' f'
+            . ' LEFT JOIN ' . $this->t($rujukanTabel) . ' r ON r.' . $kolomAcuan . ' = f.' . $kolom
+            . ' WHERE f.' . $kolom . ' IS NOT NULL AND r.' . $kolomAcuan . ' IS NULL')->getRow();
+
+        return (int) ($baris->jml ?? 0);
     }
 }
