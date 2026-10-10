@@ -11,9 +11,17 @@
     <?= $this->renderSection('css') ?>
 
     <title><?= esc($title) ?></title>
+    <script>
+        if (localStorage.getItem('djuragan_sidebar_collapsed') === '1') {
+            document.documentElement.classList.add('sidebar-collapsed');
+            document.addEventListener('DOMContentLoaded', function() {
+                document.body.classList.add('sidebar-collapsed');
+            });
+        }
+    </script>
 </head>
 
-<body>
+<body class="<?= ! empty(session()->get('id')) ? 'has-app-sidebar' : '' ?>">
     <?= $this->renderSection('content') ?>
 
     <?= $this->renderSection('modal') ?>

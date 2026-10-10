@@ -20,7 +20,6 @@
         </div>
     </div>
 
-    <?= $this->include('admin/crm/nav_crm') ?>
 
     <div class="alert alert-info border-0 shadow-sm mb-4">
         <i class="fal fa-info-circle me-1"></i>

@@ -20,7 +20,6 @@
         </div>
     </div>
 
-    <?= $this->include('admin/crm/nav_crm') ?>
 
     <div class="card border-0 shadow-sm">
         <div class="card-header bg-white py-3">

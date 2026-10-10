@@ -61,7 +61,7 @@
 }
 .chat-bubble {
     max-width: 65%;
-    padding: 8px 14px;
+    padding: 4px 12px;
     border-radius: 10px;
     font-size: 0.92rem;
     line-height: 1.45;
@@ -185,7 +185,6 @@
         </div>
     </div>
 
-    <?= $this->include('admin/crm/nav_crm') ?>
 
     <div class="chat-container d-flex">
         <!-- Sidebar Daftar Percakapan -->
