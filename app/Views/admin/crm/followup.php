@@ -16,7 +16,6 @@
         </div>
     </div>
 
-    <?= $this->include('admin/crm/nav_crm') ?>
 
     <?php if (session()->getFlashdata('pesan')): ?>
         <div class="alert alert-success alert-dismissible fade show" role="alert">

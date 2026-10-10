@@ -17,6 +17,12 @@ $session  = \Config\Services::session();
 <div class="container-xxl">
 
     <h1 class="h3 mt-5"><?= esc($title) ?></h1>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb p-0">
+            <li class="breadcrumb-item"><?= anchor('', 'Dasbor') ?></li>
+            <li class="breadcrumb-item active" aria-current="page">Transaksi</li>
+        </ol>
+    </nav>
 
     <?php
     // [slug tab, label pendek, id badge counter, keterangan tooltip]
@@ -28,7 +34,7 @@ $session  = \Config\Services::session();
         ['selesai', 'Selesai', 'counterSelesai', 'Transaksi yang sudah selesai'],
     ];
     ?>
-    <div class="mb-3 flex flex-wrap items-center gap-x-1 gap-y-2">
+    <div class="mb-4 flex flex-wrap items-center gap-x-1 gap-y-2">
         <?php
         foreach ($tab as [$slug, $label, $counter, $keterangan]) {
             echo anchor(
@@ -43,6 +49,26 @@ $session  = \Config\Services::session();
         ?>
 
         <div class="ms-sm-auto flex items-center gap-1">
+            <?php
+            // akun CS selalu melihat satu tokonya saja, tidak ada "semua", jadi
+            // pemilih ini hanya muncul kalau akun itu memegang lebih dari satu toko
+            $kueri_cari = ($cari === '' || $cari === []) ? '' : '?' . http_build_query(['cari' => (array) $cari]);
+            ?>
+            <?php if (count($daftar_toko) > 1) : ?>
+                <div class="dropdown">
+                    <button type="button" class="btn rounded-pill btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="Pilih djuragan">
+                        <i class="fal fa-user-circle me-1"></i> <?= esc($nama_toko) ?>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <?php foreach ($daftar_toko as $slug => $nama) : ?>
+                            <li>
+                                <a class="dropdown-item<?= $juragan === $slug ? ' active' : '' ?>" href="<?= esc(site_url('user/invoices/lihat/' . rawurlencode($slug) . '/' . $hal . '/' . $kategori) . $kueri_cari) ?>"><?= esc($nama) ?></a>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                </div>
+            <?php endif; ?>
+
             <?= form_button([
                 'class'          => 'btn rounded-pill btn-outline-secondary',
                 'content'        => '<i class="fal fa-search"></i> <span class="hidden sm:inline">Cari</span>',
@@ -799,7 +825,6 @@ $session  = \Config\Services::session();
 $current_user_id         = $session->get('id');
 $link_api_get_bank       = site_url('api/juragan/all/');
 $link_api_get_pembayaran = site_url('user/invoices/info_pembayaran');
-$link_api_juragan        = site_url('api/juragan/by_user/');
 $link_invoice            = site_url('user/invoices/lihat/');
 $link_tambah_pembayaran  = site_url('user/invoices/simpan_pembayaran');
 $link_api_notif          = site_url('api/notifikasi/');
@@ -825,24 +850,6 @@ $js = <<< JS
     	var ttl = tt.map(function(e) {
     		return new bootstrap.Tooltip(e);
     	});
-
-    	// sidebar
-
-    	var juragan = document.getElementById('juragan');
-        if(juragan) {
-            juragan.addEventListener('show.bs.offcanvas', function () {
-                var id = {$current_user_id};
-                $('#listLi').html('');
-                $.getJSON('{$link_api_juragan}', { id: id }, function(b){
-                    var a=[];
-                    $.each(b[id].juragan,function(c,b){
-                        a.push('<a href="{$link_invoice}'+b.slug+'" class="list-group-item text-light list-group-item-action"><i class="fal fa-user-circle"></i> '+b.nama+'</a>');
-                    }),
-
-                    $(a.join('')).appendTo('#listLi');
-                });
-            });
-        }
 
     	// notifikasi
 

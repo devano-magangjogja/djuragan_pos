@@ -20,7 +20,6 @@
         </div>
     </div>
 
-    <?= $this->include('admin/crm/nav_crm') ?>
 
     <div class="row g-4">
         <!-- Form Pengaturan Provider -->

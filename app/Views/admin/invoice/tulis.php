@@ -11,7 +11,7 @@ $session  = \Config\Services::session();
 <?= $this->section('content') ?>
 <?= $this->include('admin/navbar') ?>
 
-<div class="mb-3 w-full px-4 px-lg-5">
+<div class="container-xxl">
 
     <h1 class="h3 mt-5">Tulis Orderan</h1>
 
@@ -23,11 +23,7 @@ $session  = \Config\Services::session();
         </ol>
     </nav>
 
-</div>
-
-<div class="mb-5 w-full px-4 px-lg-5">
-
-    <?= form_open('admin/invoices/save', ['class' => 'row', 'id' => 'iForm']); ?>
+    <?= form_open('admin/invoices/save', ['class' => 'row mb-5', 'id' => 'iForm']); ?>
 
     <div class="col-12 col-lg-6 mb-3">
         <div class="h-full rounded-kartu border border-ink-200 bg-white shadow-kartu">

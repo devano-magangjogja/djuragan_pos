@@ -20,7 +20,6 @@
         </div>
     </div>
 
-    <?= $this->include('admin/crm/nav_crm') ?>
 
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-body">

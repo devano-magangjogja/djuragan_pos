@@ -123,6 +123,36 @@ abstract class BaseController extends Controller
     }
 
     /**
+     * Pilihan toko untuk pemilih djuragan di halaman Transaksi. Kuncinya slug
+     * karena tautan daftar transaksi memakai slug, dan superadmin ikut melihat
+     * semua toko (sama seperti $hanya yang tidak dibatasi untuk akun itu).
+     *
+     * @return array<string, string> slug => nama
+     */
+    public function tokoPilihan(): array
+    {
+        $pilihan = [];
+
+        if (session()->get('level') === 'superadmin') {
+            foreach ((new JuraganModel())->orderBy('nama_juragan', 'ASC')->findAll() as $t) {
+                $pilihan[$t->juragan] = $t->nama_juragan;
+            }
+
+            return $pilihan;
+        }
+
+        $user_id = (int) session()->get('id');
+
+        foreach (Jrgn::by_user($user_id)[$user_id]['juragan'] ?? [] as $j) {
+            $pilihan[$j['slug']] = $j['nama'];
+        }
+
+        asort($pilihan);
+
+        return $pilihan;
+    }
+
+    /**
      * Daftar toko yang boleh dibuka akun ini. superadmin memegang semuanya, jadi
      * daftar lengkap dikembalikan apa adanya; admin/CS/viewer hanya toko yang
      * tertaut di order_relasi (table=1).

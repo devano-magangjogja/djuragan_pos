@@ -23,7 +23,7 @@ $rincian_pesanan = baca_rincian($orderan->rincian);
 <?= $this->section('content') ?>
 <?= $this->include('admin/navbar') ?>
 
-<div class="mx-auto mb-3 w-full max-w-[1120px] px-4">
+<div class="container-xxl">
 
     <h1 class="h3 mt-5"><?= esc($title) ?></h1>
 
@@ -36,11 +36,7 @@ $rincian_pesanan = baca_rincian($orderan->rincian);
         </ol>
     </nav>
 
-</div>
-
-<div class="mx-auto mb-5 w-full max-w-[1120px] px-4">
-
-    <?= form_open('admin/invoices/update', ['class' => 'row', 'id' => 'iForm'], ['id_invoice' => $orderan->id_invoice]); ?>
+    <?= form_open('admin/invoices/update', ['class' => 'row mb-5', 'id' => 'iForm'], ['id_invoice' => $orderan->id_invoice]); ?>
     <div class="col-12 col-lg-6 mb-3">
 
         <div class="h-full rounded-kartu border border-ink-200 bg-white shadow-kartu">
