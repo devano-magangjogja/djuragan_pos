@@ -30,7 +30,6 @@
     </div>
 
 
-    <?= $this->include('admin/crm/nav_crm') ?>
 
     <!-- 6 KPI Bercerita Utama -->
     <div class="row g-3 mb-4">

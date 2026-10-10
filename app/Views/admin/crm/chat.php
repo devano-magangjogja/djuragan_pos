@@ -185,7 +185,6 @@
         </div>
     </div>
 
-    <?= $this->include('admin/crm/nav_crm') ?>
 
     <div class="chat-container d-flex">
         <!-- Sidebar Daftar Percakapan -->

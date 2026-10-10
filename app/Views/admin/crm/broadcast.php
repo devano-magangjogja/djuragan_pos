@@ -20,7 +20,6 @@
         </div>
     </div>
 
-    <?= $this->include('admin/crm/nav_crm') ?>
 
     <?php if (($provider ?? '') === 'fonnte') : ?>
         <div class="alert alert-success border-0 shadow-sm d-flex align-items-center mb-4">

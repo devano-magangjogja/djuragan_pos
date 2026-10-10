@@ -19,7 +19,6 @@
         </div>
     </div>
 
-    <?= $this->include('admin/crm/nav_crm') ?>
 
     <!-- Filter & Pencarian Diperkuat -->
     <div class="card border-0 shadow-sm mb-4">

@@ -78,6 +78,38 @@
 /* FA6 Free tidak punya glyf "webhook" (Pro only) — dipinjam "link" supaya
    tombol tidak lagi melebar di kiri hanya karena margin ikonnya. */
 .fal.fa-webhook::before         { content: "\f0c1"; } /* link (free)           */
+.fal.fa-home::before            { content: "\f015"; } /* home */
+.fal.fa-receipt::before         { content: "\f543"; } /* receipt */
+.fal.fa-comments-alt::before,
+.fal.fa-comments::before        { content: "\f086"; } /* comments */
+.fal.fa-chart-pie::before       { content: "\f200"; } /* chart-pie */
+.fal.fa-file-invoice-dollar::before,
+.fal.fa-file-invoice::before    { content: "\f570"; } /* file-invoice-dollar */
+.fal.fa-bullhorn::before        { content: "\f0a1"; } /* bullhorn */
+.fal.fa-clone::before           { content: "\f24d"; } /* clone */
+.fal.fa-history::before,
+.fal.fa-clock-rotate-left::before { content: "\f1da"; } /* clock-rotate-left */
+.fal.fa-sliders-h::before,
+.fal.fa-sliders::before         { content: "\f1de"; } /* sliders */
+.fal.fa-chart-line::before      { content: "\f201"; } /* chart-line */
+.fal.fa-bell::before            { content: "\f0f3"; } /* bell */
+.fal.fa-bars::before            { content: "\f0c9"; } /* bars */
+.fal.fa-times::before,
+.fal.fa-xmark::before           { content: "\f00d"; } /* xmark */
+.fal.fa-sign-out-alt::before,
+.fal.fa-sign-out::before,
+.fal.fa-right-from-bracket::before { content: "\f2f5"; } /* right-from-bracket */
+.fal.fa-user-edit::before,
+.fal.fa-user-pen::before        { content: "\f4ff"; } /* user-pen */
+.fal.fa-university::before,
+.fal.fa-building-columns::before { content: "\f19c"; } /* building-columns */
+.fal.fa-store::before,
+.fal.fa-shop::before            { content: "\f54f"; } /* store */
+.fal.fa-user-tie::before        { content: "\f502"; } /* user-tie */
+.fal.fa-users-cog::before,
+.fal.fa-users-gear::before      { content: "\f509"; } /* users-gear */
+.fal.fa-chevron-right::before   { content: "\f054"; } /* chevron-right */
+.fal.fa-chevron-up::before      { content: "\f077"; } /* chevron-up */
 
 /* ------------------------------------------------------------------
    Wadah pilihan bergulir — pemilih juragan di Pengaturan > Pengguna.
@@ -500,4 +532,481 @@
     .kartu-invoice .blok-lipat .collapse > div { padding: 0.6rem 0.95rem 0.85rem !important; }
     .kartu-invoice hr { margin: 0.45rem 0 !important; }
     .kartu-invoice .aksi .btn { padding: 0.45rem 0.7rem; font-size: 0.82rem; }
+}
+
+/* ------------------------------------------------------------------
+   App Sidebar Layout & Navigation — tema terang (gaya "Untitled UI")
+   Kartu putih mengambang di atas kanvas abu, rail ikon saat collapse,
+   dan melebar sendiri begitu kursor atau fokus keyboard masuk ke dalamnya.
+   ------------------------------------------------------------------ */
+:root {
+    --sidebar-width: 255px;
+    --sidebar-rail-width: 68px;
+    --sidebar-gap: 12px;
+    --sidebar-radius: 16px;
+    --sidebar-bg: #ffffff;
+    --sidebar-border: #eaecf0;
+    --sidebar-text: #475467;
+    --sidebar-text-hover: #101828;
+    --sidebar-muted: #98a2b3;
+    --sidebar-hover-bg: #f9fafb;
+    --sidebar-active-bg: #f2f4f7;
+    --sidebar-active-color: #101828;
+    --sidebar-tile-bg: #101828;
+    --sidebar-tile-color: #ffffff;
+}
+
+body.has-app-sidebar {
+    min-height: 100vh;
+    background-color: #f9fafb;
+    transition: padding-left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (min-width: 992px) {
+    body.has-app-sidebar {
+        padding-left: calc(var(--sidebar-width) + (var(--sidebar-gap) * 2));
+    }
+    body.has-app-sidebar.sidebar-collapsed {
+        padding-left: calc(var(--sidebar-rail-width) + (var(--sidebar-gap) * 2));
+    }
+    .mobile-topbar {
+        display: none !important;
+    }
+}
+
+@media (max-width: 991.98px) {
+    body.has-app-sidebar {
+        padding-left: 0;
+    }
+    .mobile-topbar {
+        display: flex !important;
+    }
+}
+
+/* Sidebar Container */
+.app-sidebar {
+    position: fixed;
+    top: var(--sidebar-gap);
+    bottom: var(--sidebar-gap);
+    left: var(--sidebar-gap);
+    width: var(--sidebar-width);
+    background: var(--sidebar-bg);
+    border: 1px solid var(--sidebar-border);
+    border-radius: var(--sidebar-radius);
+    z-index: 1045;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: width 0.22s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 8px 24px rgba(16, 24, 40, 0.06);
+}
+
+@media (max-width: 991.98px) {
+    .app-sidebar {
+        transform: translateX(calc(-100% - (var(--sidebar-gap) * 2)));
+    }
+    .app-sidebar.show {
+        transform: translateX(0);
+    }
+}
+
+/* Rail ikon: sempit, lalu melebar sendiri saat disentuh kursor atau fokus.
+   Hanya di desktop — di layar kecil sidebar tetap laci penuh. */
+@media (min-width: 992px) {
+    body.sidebar-collapsed .app-sidebar {
+        width: var(--sidebar-rail-width);
+    }
+    body.sidebar-collapsed .app-sidebar:hover,
+    body.sidebar-collapsed .app-sidebar:focus-within {
+        width: var(--sidebar-width);
+        box-shadow: 0 12px 32px rgba(16, 24, 40, 0.16);
+    }
+
+    body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-brand-text,
+    body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-heading,
+    body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-link > span,
+    body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-chevron,
+    body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-submenu,
+    body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-user-info,
+    body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-user-actions,
+    body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-footer-link > span,
+    body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-footer-link > .counter,
+    body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-collapse-btn {
+        display: none;
+    }
+
+    body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-header,
+    body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-brand {
+        justify-content: center;
+    }
+    body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-link,
+    body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-footer-link {
+        justify-content: center;
+        padding-left: 0;
+        padding-right: 0;
+    }
+    body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-link-icon {
+        margin-right: 0;
+        font-size: 1.02rem;
+    }
+    body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-user-card {
+        justify-content: center;
+        padding: 0.4rem 0;
+    }
+    body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-menu {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+}
+
+/* Tombol collapse desktop. Sengaja tidak memakai utilitas Bootstrap
+   `d-none d-lg-inline-flex`: `!important` utility itu mengalahkan aturan
+   persembunyian mode rail, jadi hamburgernya tetap nongol di rail ikon. */
+/* Kelasnya di-scope lewat .app-sidebar supaya menang atas .sidebar-close-btn
+   yang juga menyetel display di blok warna tombol bawah. */
+.app-sidebar .sidebar-collapse-btn {
+    display: none;
+}
+@media (min-width: 992px) {
+    .app-sidebar .sidebar-collapse-btn {
+        display: inline-flex;
+    }
+}
+
+/* Mobile Backdrop */
+.sidebar-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(16, 24, 40, 0.45);
+    backdrop-filter: blur(2px);
+    z-index: 1040;
+}
+.sidebar-backdrop.show {
+    display: block;
+}
+
+/* Sidebar Brand Header */
+.sidebar-header {
+    padding: 0.9rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--sidebar-border);
+    background: var(--sidebar-bg);
+    min-height: 60px;
+    flex-shrink: 0;
+}
+.sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    text-decoration: none;
+    color: var(--sidebar-text-hover);
+}
+.sidebar-brand:hover {
+    color: var(--sidebar-text-hover);
+}
+.sidebar-brand-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    background: var(--sidebar-tile-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--sidebar-tile-color);
+    font-size: 0.95rem;
+    flex-shrink: 0;
+}
+.sidebar-brand-text {
+    font-size: 0.95rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+    display: flex;
+    flex-direction: column;
+}
+.sidebar-brand-text .role-badge {
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: var(--sidebar-muted);
+    text-transform: uppercase;
+}
+
+/* Tombol collapse/tutup di header. id-nya sengaja tidak dipakai sebagai
+   selector: `#desktopSidebarCollapse` (1,1,0) mengalahkan aturan persembunyian
+   mode rail yang murni kelas, jadi `display: inline-flex` di sini menembus
+   `display: none` dan hamburgernya tetap tampil di rail. */
+.sidebar-close-btn,
+.sidebar-close-btn:hover,
+.sidebar-close-btn:focus {
+    color: var(--sidebar-muted);
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    width: 30px;
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.sidebar-close-btn:hover {
+    color: var(--sidebar-text-hover);
+    background: var(--sidebar-active-bg);
+}
+
+/* Sidebar Menu Body */
+.sidebar-menu {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0.85rem 0.65rem;
+    scrollbar-width: thin;
+    scrollbar-color: #d0d5dd transparent;
+}
+.sidebar-menu::-webkit-scrollbar {
+    width: 4px;
+}
+.sidebar-menu::-webkit-scrollbar-track {
+    background: transparent;
+}
+.sidebar-menu::-webkit-scrollbar-thumb {
+    background: #d0d5dd;
+    border-radius: 4px;
+}
+.sidebar-menu::-webkit-scrollbar-thumb:hover {
+    background: #98a2b3;
+}
+
+.sidebar-heading {
+    font-size: 0.64rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--sidebar-muted);
+    padding: 0.8rem 0.65rem 0.3rem;
+}
+.sidebar-heading:first-child {
+    padding-top: 0;
+}
+
+/* Nav Item & Links */
+.sidebar-nav {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.sidebar-nav .nav-item {
+    margin-bottom: 0.2rem;
+}
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    padding: 0.52rem 0.75rem;
+    color: var(--sidebar-text);
+    text-decoration: none;
+    font-size: 0.86rem;
+    font-weight: 500;
+    border-radius: 8px;
+    transition: background-color 0.15s ease, color 0.15s ease;
+    position: relative;
+    user-select: none;
+}
+.sidebar-link:hover {
+    color: var(--sidebar-text-hover);
+    background: var(--sidebar-hover-bg);
+}
+.sidebar-link.active {
+    color: var(--sidebar-active-color);
+    background: var(--sidebar-active-bg);
+    font-weight: 600;
+}
+.sidebar-link-icon {
+    width: 1.25rem;
+    text-align: center;
+    margin-right: 0.7rem;
+    font-size: 0.95rem;
+    flex-shrink: 0;
+    color: #667085;
+}
+.sidebar-link:hover .sidebar-link-icon,
+.sidebar-link.active .sidebar-link-icon {
+    color: var(--sidebar-active-color);
+}
+.sidebar-link .sidebar-chevron {
+    margin-left: auto;
+    font-size: 0.72rem;
+    color: var(--sidebar-muted);
+    transition: transform 0.2s ease;
+}
+.sidebar-link[aria-expanded="true"] .sidebar-chevron {
+    transform: rotate(180deg);
+    color: var(--sidebar-text);
+}
+
+/* Submenu */
+.sidebar-submenu {
+    list-style: none;
+    padding: 0.2rem 0 0.2rem 0.65rem;
+    margin: 0.15rem 0 0.35rem 1.15rem;
+    border-left: 1px solid var(--sidebar-border);
+}
+.sidebar-submenu .submenu-item {
+    margin-bottom: 0.12rem;
+}
+.sidebar-submenu-link {
+    display: flex;
+    align-items: center;
+    padding: 0.38rem 0.65rem;
+    color: #667085;
+    text-decoration: none;
+    font-size: 0.81rem;
+    font-weight: 400;
+    border-radius: 8px;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+.sidebar-submenu-link:hover {
+    color: var(--sidebar-text-hover);
+    background: var(--sidebar-hover-bg);
+}
+.sidebar-submenu-link.active {
+    color: var(--sidebar-active-color);
+    background: var(--sidebar-active-bg);
+    font-weight: 600;
+}
+.sidebar-submenu-link i {
+    font-size: 0.78rem;
+    margin-right: 0.55rem;
+    width: 1rem;
+    text-align: center;
+    color: #98a2b3;
+}
+.sidebar-submenu-link:hover i,
+.sidebar-submenu-link.active i {
+    color: var(--sidebar-active-color);
+}
+
+/* Sidebar Footer / User section */
+.sidebar-footer {
+    flex-shrink: 0;
+    border-top: 1px solid var(--sidebar-border);
+    background: var(--sidebar-bg);
+    padding: 0.75rem 0.85rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.sidebar-footer-link {
+    display: flex;
+    align-items: center;
+    padding: 0.45rem 0.75rem;
+    color: var(--sidebar-text);
+    text-decoration: none;
+    font-size: 0.84rem;
+    font-weight: 500;
+    border-radius: 8px;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+.sidebar-footer-link:hover {
+    color: var(--sidebar-text-hover);
+    background: var(--sidebar-hover-bg);
+}
+.sidebar-footer-link i {
+    width: 1.25rem;
+    text-align: center;
+    margin-right: 0.7rem;
+    font-size: 0.9rem;
+    color: #667085;
+}
+.sidebar-user-card {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.5rem 0.6rem;
+    border-radius: 10px;
+    background: var(--sidebar-hover-bg);
+    border: 1px solid var(--sidebar-border);
+}
+.sidebar-user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--sidebar-tile-bg);
+    color: var(--sidebar-tile-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.82rem;
+    flex-shrink: 0;
+}
+.sidebar-user-info {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+.sidebar-user-name {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--sidebar-text-hover);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.2;
+}
+.sidebar-user-role {
+    font-size: 0.65rem;
+    color: var(--sidebar-muted);
+    text-transform: capitalize;
+}
+.sidebar-user-actions {
+    display: flex;
+    gap: 0.2rem;
+}
+.sidebar-action-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #667085;
+    background: transparent;
+    border: none;
+    text-decoration: none;
+    font-size: 0.82rem;
+    transition: all 0.15s ease;
+}
+.sidebar-action-btn:hover {
+    color: var(--sidebar-text-hover);
+    background: var(--sidebar-active-bg);
+}
+.sidebar-action-btn.btn-logout:hover {
+    color: #d92d20;
+    background: #fef3f2;
+}
+
+/* Mobile Topbar — permukaan putih, ikon gelap */
+.mobile-topbar {
+    background: var(--sidebar-bg);
+    border-bottom: 1px solid var(--sidebar-border);
+    height: 52px;
+    z-index: 1030;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+}
+.mobile-topbar-btn,
+.mobile-topbar-btn:hover,
+.mobile-topbar-btn:focus,
+.mobile-topbar-brand,
+.mobile-topbar-brand:hover {
+    color: #667085;
+    text-decoration: none;
+}
+.mobile-topbar-brand:hover,
+.mobile-topbar-btn:hover {
+    color: var(--sidebar-text-hover);
+}
+.mobile-topbar .sidebar-brand-text-label {
+    color: var(--sidebar-text-hover);
 }
