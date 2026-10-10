@@ -12,18 +12,16 @@
         </div>
         <div class="d-flex align-items-center gap-2 flex-nowrap">
             <?= $this->include('admin/crm/tombol_wa') ?>
-            <?php if (($provider ?? '') === 'fonnte') : ?>
-                <span class="btn btn-sm pe-none fw-semibold text-nowrap bg-success text-white border-success" title="Provider aktif: Fonnte WhatsApp Gateway">
-                    <i class="fab fa-whatsapp me-1"></i> Fonnte
-                </span>
-            <?php elseif ($isSandbox) : ?>
-                <span class="btn btn-sm pe-none fw-semibold text-nowrap bg-warning text-dark border-warning" title="Mode sandbox Kapso aktif">
-                    <i class="fal fa-flask me-1"></i> Sandbox
-                </span>
-            <?php else : ?>
-                <span class="btn btn-sm pe-none fw-semibold text-nowrap bg-success text-white border-success" title="Production mode">
-                    <i class="fal fa-check-circle me-1"></i> Production
-                </span>
+            <?php if (($provider ?? '') !== 'fonnte') : ?>
+                <?php if ($isSandbox) : ?>
+                    <span class="btn btn-sm pe-none fw-semibold text-nowrap bg-warning text-dark border-warning" title="Mode sandbox Kapso aktif">
+                        <i class="fal fa-flask me-1"></i> Sandbox
+                    </span>
+                <?php else : ?>
+                    <span class="btn btn-sm pe-none fw-semibold text-nowrap bg-success text-white border-success" title="Production mode">
+                        <i class="fal fa-check-circle me-1"></i> Production
+                    </span>
+                <?php endif; ?>
             <?php endif; ?>
             <a href="<?= site_url('admin/crm/pengaturan') ?>" class="btn btn-outline-secondary btn-sm">
                 <i class="fal fa-cog"></i>
