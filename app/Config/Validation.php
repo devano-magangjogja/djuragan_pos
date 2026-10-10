@@ -80,6 +80,13 @@ class Validation extends BaseConfig
         'nama_juragan' => 'required|min_length[3]|max_length[60]',
         'bank'         => 'required',
     ];
+    // rekening dipilih dengan kotak centang, jadi kabarnya ikut bahasa halaman
+    public $addJuragan_errors = [
+        'bank' => ['required' => 'Centang minimal satu rekening.'],
+    ];
+    public $editJuragan_errors = [
+        'bank' => ['required' => 'Centang minimal satu rekening.'],
+    ];
     public $addPengguna = [
         'username' => 'required|min_length[3]|max_length[100]|is_unique[user.username]|alpha_dash',
         'password' => 'required|min_length[6]',

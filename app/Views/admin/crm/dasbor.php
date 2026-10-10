@@ -194,16 +194,14 @@
                                         <p class="mb-0 text-muted small"><?= esc($r['deskripsi']) ?></p>
                                     </div>
                                     <div class="text-end flex-shrink-0 ms-3">
-                                        <div class="btn-group btn-group-sm">
-                                            <a href="<?= site_url('admin/crm/pelanggan/' . $r['pelanggan_id']) ?>" class="btn btn-outline-primary" title="Profil 360">
-                                                <i class="fal fa-id-card"></i>
+                                        <a href="<?= site_url('admin/crm/pelanggan/' . $r['pelanggan_id']) ?>" class="btn btn-sm btn-outline-primary me-2" title="Profil 360">
+                                            <i class="fal fa-id-card"></i>
+                                        </a>
+                                        <?php if (!empty($r['nomor_wa'])): ?>
+                                            <a href="<?= site_url('admin/crm/chat?nomor=' . $r['nomor_wa']) ?>" class="btn btn-sm btn-outline-success" title="Chat WA">
+                                                <i class="fab fa-whatsapp"></i>
                                             </a>
-                                            <?php if (!empty($r['nomor_wa'])): ?>
-                                                <a href="<?= site_url('admin/crm/chat?nomor=' . $r['nomor_wa']) ?>" class="btn btn-outline-success" title="Chat WA">
-                                                    <i class="fab fa-whatsapp"></i>
-                                                </a>
-                                            <?php endif; ?>
-                                        </div>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
                             <?php endforeach; ?>

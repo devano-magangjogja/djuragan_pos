@@ -139,24 +139,22 @@
                                             <?= esc($f['nama_staff'] ?? 'Staff') ?>
                                         </td>
                                         <td class="text-center">
-                                            <div class="btn-group btn-group-sm">
-                                                <a href="<?= site_url('admin/crm/pelanggan/' . $f['pelanggan_id']) ?>" class="btn btn-outline-primary" title="Buka Profil 360">
-                                                    <i class="fal fa-id-card"></i>
+                                            <a href="<?= site_url('admin/crm/pelanggan/' . $f['pelanggan_id']) ?>" class="btn btn-sm btn-outline-primary me-2" title="Buka Profil 360">
+                                                <i class="fal fa-id-card"></i>
+                                            </a>
+                                            <?php if (!empty($f['nomor_wa'])): ?>
+                                                <a href="<?= site_url('admin/crm/chat?nomor=' . $f['nomor_wa']) ?>" class="btn btn-sm btn-outline-success me-2" title="Chat WhatsApp">
+                                                    <i class="fab fa-whatsapp"></i>
                                                 </a>
-                                                <?php if (!empty($f['nomor_wa'])): ?>
-                                                    <a href="<?= site_url('admin/crm/chat?nomor=' . $f['nomor_wa']) ?>" class="btn btn-outline-success" title="Chat WhatsApp">
-                                                        <i class="fab fa-whatsapp"></i>
-                                                    </a>
-                                                <?php endif; ?>
-                                                <?php if ($f['status'] === 'menunggu'): ?>
-                                                    <form action="<?= site_url('admin/crm/followup/selesai/' . $f['id_followup']) ?>" method="post" class="d-inline" onsubmit="return confirm('Tandai follow-up ini telah selesai?');">
-                                                        <?= csrf_field() ?>
-                                                        <button type="submit" class="btn btn-success" title="Tandai Selesai">
-                                                            <i class="fal fa-check"></i>
-                                                        </button>
-                                                    </form>
-                                                <?php endif; ?>
-                                            </div>
+                                            <?php endif; ?>
+                                            <?php if ($f['status'] === 'menunggu'): ?>
+                                                <form action="<?= site_url('admin/crm/followup/selesai/' . $f['id_followup']) ?>" method="post" class="d-inline" onsubmit="return confirm('Tandai follow-up ini telah selesai?');">
+                                                    <?= csrf_field() ?>
+                                                    <button type="submit" class="btn btn-sm btn-success" title="Tandai Selesai">
+                                                        <i class="fal fa-check"></i>
+                                                    </button>
+                                                </form>
+                                            <?php endif; ?>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>

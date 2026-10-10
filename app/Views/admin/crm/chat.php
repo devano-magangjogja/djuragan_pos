@@ -21,6 +21,12 @@
     flex: 1;
     overflow-y: auto;
 }
+/* style.css memaksa padding & radius .form-control-sm dengan !important, jadi
+   kelas Bootstrap (rounded-pill, ps-4) tidak mempan di sini */
+.chat-sidebar .form-control.chat-cari {
+    border-radius: 999px !important;
+    padding: 0.4rem 1rem 0.4rem 2.2rem !important;
+}
 .chat-conv-item {
     cursor: pointer;
     transition: background 0.15s ease;
@@ -196,9 +202,9 @@
                         <i class="fal fa-plus me-1"></i> Chat Baru
                     </button>
                 </div>
-                <div class="input-group input-group-sm">
-                    <span class="input-group-text bg-white"><i class="fal fa-search text-muted"></i></span>
-                    <input type="text" id="searchConv" class="form-control" placeholder="Cari kontak / nomor...">
+                <div class="position-relative">
+                    <i class="fal fa-search text-muted position-absolute top-50 start-0 translate-middle-y ms-2"></i>
+                    <input type="text" id="searchConv" class="form-control form-control-sm chat-cari" placeholder="Cari kontak / nomor...">
                 </div>
             </div>
 

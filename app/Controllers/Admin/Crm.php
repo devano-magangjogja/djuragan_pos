@@ -151,7 +151,7 @@ class Crm extends BaseController
         // Catat di timeline jika catatan baru diisi
         $catatanBaru = trim($this->request->getPost('catatan_baru') ?? '');
         if (!empty($catatanBaru)) {
-            $user = session()->get('user_id') ?? 1;
+            $user = pengguna_sesi();
             $this->crmModel->tambahAktivitas([
                 'pelanggan_id' => $id,
                 'tipe'         => 'catatan',
@@ -205,7 +205,7 @@ class Crm extends BaseController
         $this->crmModel->simpanUkuranPreferensi($id, $payload);
 
         // Catat ke timeline
-        $user = session()->get('user_id') ?? 1;
+        $user = pengguna_sesi();
         $this->crmModel->tambahAktivitas([
             'pelanggan_id' => $id,
             'tipe'         => 'fitting',
@@ -230,7 +230,7 @@ class Crm extends BaseController
         $judul     = trim($this->request->getPost('judul') ?? '');
         $deskripsi = trim($this->request->getPost('deskripsi') ?? '');
         $invoiceId = (int) ($this->request->getPost('invoice_id') ?? 0);
-        $user      = session()->get('user_id') ?? 1;
+        $user      = pengguna_sesi();
 
         if (empty($judul)) {
             $judul = ucfirst($tipe) . ' Customer';
@@ -345,7 +345,7 @@ class Crm extends BaseController
         $catatan     = trim($this->request->getPost('catatan') ?? '');
         $tglTempo    = $this->request->getPost('tanggal_jatuh_tempo') ?: date('Y-m-d');
         $invoiceId   = (int) ($this->request->getPost('invoice_id') ?? 0);
-        $user        = session()->get('user_id') ?? 1;
+        $user        = pengguna_sesi();
 
         if (empty($pelangganId) || empty($judul)) {
             return redirect()->back()->with('error', 'Pelanggan dan Judul follow-up wajib diisi.');
@@ -370,7 +370,7 @@ class Crm extends BaseController
      */
     public function selesaikan_followup(int $id)
     {
-        $user    = session()->get('user_id') ?? 1;
+        $user    = pengguna_sesi();
         $catatan = trim($this->request->getPost('catatan_penyelesaian') ?? '');
 
         $this->crmModel->selesaikanFollowup($id, $user, $catatan);
@@ -394,7 +394,7 @@ class Crm extends BaseController
             return $this->response->setJSON(['status' => 'error', 'message' => 'Nomor dan pesan wajib diisi.']);
         }
 
-        $user = session()->get('user_id') ?? 1;
+        $user = pengguna_sesi();
 
         $pesan = crm_isi_token($pesan, $this->crmModel->getTokenPesan((int) $id));
 
@@ -449,7 +449,7 @@ class Crm extends BaseController
     {
         $idUtama    = (int) $this->request->getPost('id_utama');
         $idDuplikat = (int) $this->request->getPost('id_duplikat');
-        $user       = session()->get('user_id') ?? 1;
+        $user       = pengguna_sesi();
 
         if (empty($idUtama) || empty($idDuplikat)) {
             return $this->response->setJSON(['status' => 'error', 'message' => 'Pilih customer utama dan customer yang akan digabung.']);
@@ -506,7 +506,7 @@ class Crm extends BaseController
         $nomor  = trim($this->request->getPost('nomor') ?? '');
         $nama   = trim($this->request->getPost('nama') ?? '');
         $alamat = trim($this->request->getPost('alamat') ?? '');
-        $user   = session()->get('user_id') ?? 1;
+        $user   = pengguna_sesi();
 
         if (empty($nomor) || empty($nama)) {
             return $this->response->setJSON(['status' => 'error', 'message' => 'Nama dan nomor WhatsApp wajib diisi.']);
@@ -678,7 +678,7 @@ class Crm extends BaseController
             'total_target'   => count($daftarPelanggan),
             'total_terkirim' => $totalTerkirim,
             'total_gagal'    => $totalGagal,
-            'user_id'        => session()->get('user_id') ?? 1,
+            'user_id'        => pengguna_sesi(),
             'created_at'     => time(),
         ]);
 
@@ -985,7 +985,7 @@ class Crm extends BaseController
                     'judul'        => 'Follow-up WhatsApp Terkirim (' . ucfirst($tipePesan) . ')',
                     'deskripsi'    => $pesan,
                     'invoice_id'   => $idInvoice > 0 ? $idInvoice : null,
-                    'user_id'      => session()->get('user_id') ?? 1,
+                    'user_id'      => pengguna_sesi(),
                 ]);
             }
 
@@ -1250,7 +1250,7 @@ class Crm extends BaseController
         $res = $this->wa->send($targetNumber, $pesan, [
             'pelanggan_id' => $pelangganId,
             'tipe_pesan'   => 'manual',
-            'user_id'      => session()->get('user_id') ?? 1,
+            'user_id'      => pengguna_sesi(),
         ]);
 
         if ($res['success']) {
@@ -1260,7 +1260,7 @@ class Crm extends BaseController
                     'tipe'         => 'wa',
                     'judul'        => 'Pesan WhatsApp Keluar (Live Chat)',
                     'deskripsi'    => $pesan,
-                    'user_id'      => session()->get('user_id') ?? 1,
+                    'user_id'      => pengguna_sesi(),
                 ]);
             }
 

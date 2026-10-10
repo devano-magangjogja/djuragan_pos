@@ -94,7 +94,10 @@ class Juragan extends BaseController
         }
 
         if (! $validation->withRequest($this->request)->run()) {
-            return redirect()->to('/admin/settings/juragan')->with('error', $validation->getErrors());
+            // 'error' tidak dibaca oleh halaman ini, jadi gagal simpan dulu terjadi
+            // tanpa kabar apa pun; 'gagal' tampil sebagai alert di atas daftar
+            return redirect()->to('/admin/settings/juragan')
+                ->withInput()->with('gagal', implode(' ', $validation->getErrors()));
         }
 
         $db           = \Config\Database::connect();

@@ -95,6 +95,17 @@ $routes->group('admin', static function ($routes) {
         $routes->get('(:segment)', 'Admin\Laporan::index/$1');
     });
 
+    // KPI karyawan: angka admin dan CS, dihitung dari jejak kerja yang tercatat
+    $routes->group('kpi', ['filter' => 'auth:admin,superadmin'], static function ($routes) {
+        $routes->get('/', 'Admin\Kpi::index', ['as' => 'hal.kpi']);
+        // target dipasang sebelum rute detail supaya 'target' tidak dikira indikator
+        $routes->get('target', 'Admin\Kpi::target');
+        $routes->post('target', 'Admin\Kpi::simpanTarget');
+        $routes->get('ranking', 'Admin\Kpi::ranking');
+        // (:segment), bukan (:alpha): nama indikator memakai garis bawah (gmv_cs)
+        $routes->get('detail/(:segment)', 'Admin\Kpi::detail/$1');
+    });
+
     // crm: manajemen pelanggan, live chat WA, follow-up tagihan, notif resi, broadcast, pengaturan gateway WA
     $routes->group('crm', ['filter' => 'auth:admin,superadmin'], static function ($routes) {
         $routes->get('/', 'Admin\Crm::index', ['as' => 'hal.crm']);

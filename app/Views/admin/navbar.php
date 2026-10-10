@@ -10,8 +10,16 @@ $isDasborAktif   = url_is('admin/dasbor*') || $di_halaman === 'admin';
 $isTrxAktif      = url_is('admin/invoices*');
 $isProdukAktif   = url_is('admin/produk*');
 $isCrmAktif      = url_is('admin/crm*');
+$isKpiAktif      = url_is('admin/kpi*');
 $isLaporanAktif  = url_is('admin/laporan*');
 $isSettingsAktif = url_is('admin/settings*');
+
+// Submenu KPI
+$kpiSubmenu = [
+    ['admin/kpi', 'Ringkasan', 'fa-chart-pie', $di_halaman === 'admin/kpi'],
+    ['admin/kpi/ranking', 'Ranking', 'fa-trophy', str_starts_with($di_halaman, 'admin/kpi/ranking')],
+    ['admin/kpi/target', 'Target & Bobot', 'fa-bullseye', str_starts_with($di_halaman, 'admin/kpi/target')],
+];
 
 // Submenu CRM
 $crmSubmenu = [
@@ -150,6 +158,30 @@ $settingsSubmenu = [
                     <div class="collapse <?= $isCrmAktif ? 'show' : '' ?>" id="submenuCrm">
                         <ul class="sidebar-submenu">
                             <?php foreach ($crmSubmenu as [$url, $label, $ikon, $aktif]) : ?>
+                                <li class="submenu-item">
+                                    <a class="sidebar-submenu-link <?= $aktif ? 'active' : '' ?>" href="<?= site_url($url) ?>">
+                                        <i class="fal <?= $ikon ?>"></i>
+                                        <span><?= esc($label) ?></span>
+                                    </a>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
+                    </div>
+                </li>
+            </ul>
+
+            <div class="sidebar-heading mt-2">Kinerja & KPI</div>
+            <ul class="sidebar-nav">
+                <!-- Submenu KPI -->
+                <li class="nav-item">
+                    <a class="sidebar-link <?= $isKpiAktif ? 'active' : '' ?>" data-bs-toggle="collapse" href="#submenuKpi" role="button" aria-expanded="<?= $isKpiAktif ? 'true' : 'false' ?>" aria-controls="submenuKpi">
+                        <i class="sidebar-link-icon fal fa-bullseye"></i>
+                        <span>KPI</span>
+                        <i class="fal fa-chevron-down sidebar-chevron"></i>
+                    </a>
+                    <div class="collapse <?= $isKpiAktif ? 'show' : '' ?>" id="submenuKpi">
+                        <ul class="sidebar-submenu">
+                            <?php foreach ($kpiSubmenu as [$url, $label, $ikon, $aktif]) : ?>
                                 <li class="submenu-item">
                                     <a class="sidebar-submenu-link <?= $aktif ? 'active' : '' ?>" href="<?= site_url($url) ?>">
                                         <i class="fal <?= $ikon ?>"></i>
