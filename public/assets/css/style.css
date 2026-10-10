@@ -1010,3 +1010,544 @@ body.has-app-sidebar {
 .mobile-topbar .sidebar-brand-text-label {
     color: var(--sidebar-text-hover);
 }
+
+/* ==================================================================
+   Tema Keseluruhan Website — Senada dengan Sidebar (Untitled UI / Modern SaaS)
+   ================================================================== */
+
+/* 1. Global Background & Spacing */
+body.has-app-sidebar {
+    background-color: #f9fafb !important;
+    color: #344054 !important;
+}
+
+body.has-app-sidebar > .container-xxl,
+body.has-app-sidebar > .container,
+body.has-app-sidebar > .container-fluid,
+body.has-app-sidebar > div.container-xxl {
+    padding-top: 1.75rem !important;
+    padding-bottom: 2.5rem !important;
+}
+
+@media (max-width: 991.98px) {
+    body.has-app-sidebar > .container-xxl,
+    body.has-app-sidebar > .container,
+    body.has-app-sidebar > .container-fluid,
+    body.has-app-sidebar > div.container-xxl {
+        padding-top: 1.25rem !important;
+    }
+}
+
+/* 2. Page Titles & Headers */
+h1, .h1, h2, .h2, h3, .h3, h4, .h4, h5, .h5, h6, .h6 {
+    color: #101828;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+/* Menormalkan margin h3.mt-5 yang dulu dipakai untuk navbar lama */
+body.has-app-sidebar h1.h3.mt-5,
+body.has-app-sidebar .h3.mt-5 {
+    margin-top: 0 !important;
+    margin-bottom: 0.45rem !important;
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.025em !important;
+    color: #101828 !important;
+    line-height: 1.25 !important;
+}
+
+body.has-app-sidebar h1.h3.mt-5:not(:has(+ nav)):not(:has(+ .breadcrumb)) {
+    margin-bottom: 1.35rem !important;
+}
+
+body.has-app-sidebar h1.h3.mt-3,
+body.has-app-sidebar .h3.mt-3 {
+    margin-top: 0 !important;
+    margin-bottom: 0.45rem !important;
+    font-size: 1.5rem !important;
+}
+
+/* 3. Modern Breadcrumb */
+.breadcrumb {
+    background: transparent !important;
+    padding: 0 !important;
+    margin-bottom: 1.35rem !important;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8125rem !important;
+}
+.breadcrumb-item {
+    display: inline-flex;
+    align-items: center;
+    color: #667085 !important;
+    font-size: 0.8125rem !important;
+    font-weight: 500 !important;
+}
+.breadcrumb-item + .breadcrumb-item {
+    padding-left: 0.4rem !important;
+}
+.breadcrumb-item + .breadcrumb-item::before {
+    content: "\f054" !important;
+    font-family: "Font Awesome 6 Free" !important;
+    font-weight: 900 !important;
+    font-size: 0.6rem !important;
+    color: #98a2b3 !important;
+    padding-right: 0.4rem !important;
+}
+.breadcrumb-item a {
+    color: #475467 !important;
+    text-decoration: none !important;
+    transition: color 0.15s ease;
+}
+.breadcrumb-item a:hover {
+    color: #101828 !important;
+}
+.breadcrumb-item.active {
+    color: #101828 !important;
+    font-weight: 600 !important;
+}
+
+/* 4. Modern Cards & Surfaces */
+.card,
+.kartu-invoice {
+    background: #ffffff !important;
+    border: 1px solid #eaecf0 !important;
+    border-radius: 16px !important;
+    box-shadow: 0 1px 3px rgba(16, 24, 40, 0.05), 0 1px 2px rgba(16, 24, 40, 0.03) !important;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.card-header {
+    background: #ffffff !important;
+    border-bottom: 1px solid #eaecf0 !important;
+    padding: 1rem 1.25rem !important;
+    font-weight: 600 !important;
+    color: #101828 !important;
+    border-top-left-radius: 16px !important;
+    border-top-right-radius: 16px !important;
+}
+.card-body {
+    padding: 1.25rem !important;
+}
+.card-footer {
+    background: #f9fafb !important;
+    border-top: 1px solid #eaecf0 !important;
+    padding: 0.85rem 1.25rem !important;
+    border-bottom-left-radius: 16px !important;
+    border-bottom-right-radius: 16px !important;
+}
+
+/* 5. Stat / Metric KPI Cards (Dasbor, Produk, Laporan) */
+.border.border-ink-200.bg-white,
+.rounded-3.border.border-ink-200,
+.rounded-kartu.border.border-ink-200 {
+    border: 1px solid #eaecf0 !important;
+    border-radius: 14px !important;
+    box-shadow: 0 1px 3px rgba(16, 24, 40, 0.04), 0 1px 2px rgba(16, 24, 40, 0.02) !important;
+    background-color: #ffffff !important;
+    padding: 0.95rem 1.15rem !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+a.border.border-ink-200.bg-white:hover,
+a.rounded-3.border.border-ink-200:hover {
+    border-color: #d0d5dd !important;
+    box-shadow: 0 6px 18px rgba(16, 24, 40, 0.08) !important;
+    transform: translateY(-2px);
+}
+.border.border-ink-200 .text-muted.small.text-uppercase,
+.rounded-3.border.border-ink-200 .text-muted.small.text-uppercase {
+    font-size: 0.68rem !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.05em !important;
+    color: #667085 !important;
+    margin-bottom: 0.35rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+.border.border-ink-200 .fs-4.fw-bold,
+.border.border-ink-200 .fs-5.fw-bold,
+.rounded-3.border.border-ink-200 .fs-4.fw-bold,
+.rounded-3.border.border-ink-200 .fs-5.fw-bold {
+    font-weight: 700 !important;
+    letter-spacing: -0.025em !important;
+    color: #101828 !important;
+    line-height: 1.25 !important;
+}
+.border.border-ink-200 .small.text-ink-500,
+.rounded-3.border.border-ink-200 .small.text-ink-500 {
+    font-size: 0.78rem !important;
+    color: #667085 !important;
+    margin-top: 0.25rem;
+}
+
+/* 6. Modern Tables */
+.table {
+    --bs-table-bg: transparent;
+    --bs-table-striped-bg: #fcfcfd;
+    --bs-table-hover-bg: #f9fafb;
+    color: #344054 !important;
+    border-color: #eaecf0 !important;
+    margin-bottom: 0;
+}
+.table thead th {
+    background: #f9fafb !important;
+    color: #475467 !important;
+    font-size: 0.72rem !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    border-bottom: 1px solid #eaecf0 !important;
+    border-top: none !important;
+    padding: 0.75rem 1rem !important;
+    white-space: nowrap;
+}
+.table tbody td {
+    border-bottom: 1px solid #f2f4f7 !important;
+    padding: 0.8rem 1rem !important;
+    font-size: 0.85rem !important;
+    color: #344054 !important;
+    vertical-align: middle !important;
+}
+.table tbody tr:hover td {
+    background-color: #f9fafb !important;
+}
+.table tfoot td {
+    background: #f9fafb !important;
+    font-weight: 600 !important;
+    color: #101828 !important;
+    border-top: 1px solid #eaecf0 !important;
+    padding: 0.75rem 1rem !important;
+}
+.table-responsive {
+    border-radius: 12px;
+    border: 1px solid #eaecf0;
+    overflow: hidden;
+    background: #ffffff;
+}
+.card .table-responsive {
+    border: none;
+    border-radius: 0;
+}
+
+/* 7. Modern Form Controls */
+.form-control, .form-select {
+    border: 1px solid #d0d5dd !important;
+    border-radius: 9px !important;
+    background-color: #ffffff !important;
+    color: #101828 !important;
+    font-size: 0.85rem !important;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.form-control:focus, .form-select:focus {
+    border-color: #101828 !important;
+    box-shadow: 0 0 0 3px rgba(16, 24, 40, 0.08) !important;
+    outline: none !important;
+}
+.form-control-sm, .form-select-sm {
+    font-size: 0.8rem !important;
+    padding: 0.35rem 0.65rem !important;
+    border-radius: 8px !important;
+}
+.form-label {
+    font-size: 0.76rem !important;
+    font-weight: 600 !important;
+    color: #344054 !important;
+    margin-bottom: 0.3rem !important;
+}
+.input-group-text {
+    background-color: #f9fafb !important;
+    border: 1px solid #d0d5dd !important;
+    color: #667085 !important;
+    font-size: 0.85rem !important;
+    border-radius: 9px !important;
+}
+
+/* 8. Modern Buttons */
+.btn {
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 0.84rem;
+    border-radius: 10px !important;
+    padding: 0.45rem 0.95rem;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    line-height: 1.4;
+}
+.btn:focus {
+    box-shadow: 0 0 0 3px rgba(16, 24, 40, 0.12) !important;
+}
+.btn-dark, .btn-primary {
+    background-color: #101828 !important;
+    border-color: #101828 !important;
+    color: #ffffff !important;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
+}
+.btn-dark:hover, .btn-dark:focus,
+.btn-primary:hover, .btn-primary:focus {
+    background-color: #1e293b !important;
+    border-color: #1e293b !important;
+    color: #ffffff !important;
+}
+.btn-outline-dark, .btn-outline-secondary {
+    background-color: #ffffff !important;
+    border-color: #d0d5dd !important;
+    color: #344054 !important;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
+}
+.btn-outline-dark:hover, .btn-outline-secondary:hover {
+    background-color: #f9fafb !important;
+    border-color: #98a2b3 !important;
+    color: #101828 !important;
+}
+.btn-sm {
+    padding: 0.32rem 0.7rem !important;
+    font-size: 0.78rem !important;
+    border-radius: 8px !important;
+}
+.btn-success {
+    background-color: #059669 !important;
+    border-color: #059669 !important;
+    color: #ffffff !important;
+}
+.btn-success:hover {
+    background-color: #047857 !important;
+    border-color: #047857 !important;
+}
+.btn-danger {
+    background-color: #e11d48 !important;
+    border-color: #e11d48 !important;
+    color: #ffffff !important;
+}
+.btn-danger:hover {
+    background-color: #be123c !important;
+    border-color: #be123c !important;
+}
+.btn-outline-success {
+    border-color: #a7f3d0 !important;
+    color: #047857 !important;
+    background-color: #ffffff !important;
+}
+.btn-outline-success:hover {
+    background-color: #ecfdf5 !important;
+    border-color: #6ee7b7 !important;
+    color: #065f46 !important;
+}
+.btn-outline-danger {
+    border-color: #fecdd3 !important;
+    color: #be123c !important;
+    background-color: #ffffff !important;
+}
+.btn-outline-danger:hover {
+    background-color: #fff1f2 !important;
+    border-color: #fda4af !important;
+    color: #9f1239 !important;
+}
+
+/* 9. Soft Pill Badges */
+.badge {
+    font-weight: 600 !important;
+    font-size: 0.72rem !important;
+    padding: 0.25rem 0.6rem !important;
+    letter-spacing: 0.02em !important;
+    border-radius: 6px !important;
+}
+.badge.rounded-pill {
+    border-radius: 9999px !important;
+}
+.badge.bg-success {
+    background-color: #ecfdf5 !important;
+    color: #027a48 !important;
+    border: 1px solid #a6f4c5 !important;
+}
+.badge.bg-danger {
+    background-color: #fef3f2 !important;
+    color: #b42318 !important;
+    border: 1px solid #fecdca !important;
+}
+.badge.bg-warning {
+    background-color: #fffaeb !important;
+    color: #b54708 !important;
+    border: 1px solid #fedf89 !important;
+}
+.badge.bg-primary {
+    background-color: #eff8ff !important;
+    color: #175cd3 !important;
+    border: 1px solid #b2ddff !important;
+}
+.badge.bg-info {
+    background-color: #f0f9ff !important;
+    color: #026aa2 !important;
+    border: 1px solid #b9e6fe !important;
+}
+.badge.bg-secondary, .badge.bg-dark {
+    background-color: #f2f4f7 !important;
+    color: #344054 !important;
+    border: 1px solid #eaecf0 !important;
+}
+.badge.counter,
+.mobile-topbar .counter {
+    background-color: #ef4444 !important;
+    color: #ffffff !important;
+    border: none !important;
+}
+
+/* 10. Nav Pills & Tab Filters */
+.nav-pills {
+    gap: 0.35rem;
+}
+.nav-pills .nav-link {
+    font-size: 0.8125rem !important;
+    font-weight: 500 !important;
+    color: #475467 !important;
+    background: #ffffff !important;
+    border: 1px solid #eaecf0 !important;
+    border-radius: 9px !important;
+    padding: 0.4rem 0.85rem !important;
+    transition: all 0.15s ease !important;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.03);
+}
+.nav-pills .nav-link:hover {
+    color: #101828 !important;
+    background: #f9fafb !important;
+    border-color: #d0d5dd !important;
+}
+.nav-pills .nav-link.active {
+    background: #101828 !important;
+    border-color: #101828 !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    box-shadow: 0 1px 3px rgba(16, 24, 40, 0.12) !important;
+}
+
+/* 11. Modern Alerts */
+.alert {
+    border-radius: 12px !important;
+    font-size: 0.85rem !important;
+    font-weight: 500 !important;
+    padding: 0.75rem 1.15rem !important;
+    border-width: 1px !important;
+}
+.alert-success {
+    background-color: #ecfdf5 !important;
+    border-color: #a6f4c5 !important;
+    color: #027a48 !important;
+}
+.alert-danger {
+    background-color: #fef3f2 !important;
+    border-color: #fecdca !important;
+    color: #b42318 !important;
+}
+.alert-warning {
+    background-color: #fffaeb !important;
+    border-color: #fedf89 !important;
+    color: #b54708 !important;
+}
+.alert-info {
+    background-color: #eff8ff !important;
+    border-color: #b2ddff !important;
+    color: #175cd3 !important;
+}
+
+/* 12. Modals & Dropdowns */
+.modal-content {
+    border-radius: 16px !important;
+    border: 1px solid #eaecf0 !important;
+    box-shadow: 0 20px 25px -5px rgba(16, 24, 40, 0.1), 0 8px 10px -6px rgba(16, 24, 40, 0.05) !important;
+    overflow: hidden;
+}
+.modal-header {
+    border-bottom: 1px solid #eaecf0 !important;
+    padding: 1.15rem 1.25rem !important;
+    background: #ffffff !important;
+}
+.modal-title {
+    font-weight: 700 !important;
+    font-size: 1.05rem !important;
+    color: #101828 !important;
+}
+.modal-footer {
+    border-top: 1px solid #eaecf0 !important;
+    background: #f9fafb !important;
+    padding: 0.85rem 1.25rem !important;
+}
+.dropdown-menu {
+    border-radius: 12px !important;
+    border: 1px solid #eaecf0 !important;
+    box-shadow: 0 12px 24px -4px rgba(16, 24, 40, 0.08), 0 4px 6px -2px rgba(16, 24, 40, 0.03) !important;
+    padding: 0.35rem !important;
+}
+.dropdown-item {
+    border-radius: 8px !important;
+    font-size: 0.835rem !important;
+    color: #344054 !important;
+    font-weight: 500 !important;
+    padding: 0.45rem 0.75rem !important;
+    transition: all 0.15s ease;
+}
+.dropdown-item:hover {
+    background-color: #f2f4f7 !important;
+    color: #101828 !important;
+}
+
+/* 13. Modern Floating Feedback Button */
+.fixed-bottom {
+    z-index: 1020;
+    pointer-events: none;
+}
+.fixed-bottom .container-xxl {
+    pointer-events: auto;
+}
+.fixed-bottom button[data-bs-target="#feedbackModal"] {
+    background: #101828 !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    color: #ffffff !important;
+    border-radius: 9999px !important;
+    padding: 0.45rem 1rem !important;
+    font-size: 0.78rem !important;
+    font-weight: 600 !important;
+    margin-bottom: 1rem !important;
+    box-shadow: 0 4px 12px rgba(16, 24, 40, 0.15) !important;
+    transition: all 0.2s ease !important;
+}
+.fixed-bottom button[data-bs-target="#feedbackModal"]:hover {
+    background: #1e293b !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(16, 24, 40, 0.2) !important;
+}
+
+/* 14. Modern Live Chat WA Container Harmonization */
+.chat-container {
+    border: 1px solid #eaecf0 !important;
+    border-radius: 16px !important;
+    background: #ffffff !important;
+    box-shadow: 0 1px 3px rgba(16, 24, 40, 0.05), 0 8px 24px -4px rgba(16, 24, 40, 0.06) !important;
+    overflow: hidden !important;
+}
+.chat-sidebar {
+    border-right: 1px solid #eaecf0 !important;
+}
+.chat-header {
+    border-bottom: 1px solid #eaecf0 !important;
+    background: #ffffff !important;
+}
+.chat-footer {
+    border-top: 1px solid #eaecf0 !important;
+    background: #ffffff !important;
+}
+.chat-conv-item {
+    border-bottom: 1px solid #f2f4f7 !important;
+}
+.chat-conv-item:hover {
+    background: #f9fafb !important;
+}
+.chat-conv-item.active {
+    background: #f2f4f7 !important;
+    border-left: 3px solid #101828 !important;
+}
+

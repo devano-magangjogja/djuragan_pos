@@ -17,6 +17,12 @@ $session  = \Config\Services::session();
 <div class="container-xxl">
 
     <h1 class="h3 mt-5"><?= esc($title) ?></h1>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb p-0">
+            <li class="breadcrumb-item"><?= anchor('', 'Dasbor') ?></li>
+            <li class="breadcrumb-item active" aria-current="page">Transaksi</li>
+        </ol>
+    </nav>
 
     <?php
     // [slug tab, label pendek, id badge counter, keterangan tooltip]
@@ -28,7 +34,7 @@ $session  = \Config\Services::session();
         ['selesai', 'Selesai', 'counterSelesai', 'Transaksi yang sudah selesai'],
     ];
     ?>
-    <div class="mb-3 flex flex-wrap items-center gap-x-1 gap-y-2">
+    <div class="mb-4 flex flex-wrap items-center gap-x-1 gap-y-2">
         <?php
         foreach ($tab as [$slug, $label, $counter, $keterangan]) {
             echo anchor(
