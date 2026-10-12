@@ -57,7 +57,7 @@ $settingsSubmenu = [
 ?>
 
 <!-- Mobile Topbar (< 992px) -->
-<header class="mobile-topbar d-flex d-lg-none align-items-center justify-content-between px-3 sticky-top">
+<header class="mobile-topbar d-flex d-lg-none align-items-center justify-content-between px-2 sticky-top">
     <div class="d-flex align-items-center gap-2">
         <button class="btn btn-sm btn-link mobile-topbar-btn p-1 text-decoration-none" id="mobileSidebarToggle" type="button" aria-label="Buka Menu">
             <i class="fal fa-bars fs-5"></i>
@@ -66,7 +66,7 @@ $settingsSubmenu = [
             <div class="sidebar-brand-icon" style="width:28px;height:28px;font-size:0.85rem;">
                 <i class="fal fa-layer-group"></i>
             </div>
-            <span class="fw-bold small sidebar-brand-text-label">Pesanan Juragan</span>
+            <span class="fw-bold small sidebar-brand-text-label">Djuragan POS</span>
         </a>
     </div>
     <div class="d-flex align-items-center gap-2">
@@ -105,7 +105,7 @@ $settingsSubmenu = [
                 <i class="fal fa-layer-group"></i>
             </div>
             <div class="sidebar-brand-text">
-                <span>Pesanan Juragan</span>
+                <span>Djuragan POS</span>
                 <span class="role-badge"><?= esc(strtoupper($levelSesi ?: 'Admin')) ?></span>
             </div>
         </a>

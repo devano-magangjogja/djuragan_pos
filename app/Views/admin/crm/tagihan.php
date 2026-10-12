@@ -1,5 +1,14 @@
 <?= $this->extend('template/main') ?>
 
+<?= $this->section('css') ?>
+<style>
+/* ikon cari ikut di dalam field, bukan kotak terpisah di kirinya */
+.form-control.crm-cari {
+    padding-left: 2.1rem !important;
+}
+</style>
+<?= $this->endSection() ?>
+
 <?= $this->section('content') ?>
 <?= $this->include('admin/navbar') ?>
 
@@ -25,9 +34,9 @@
         <div class="card-body">
             <form method="get" action="<?= site_url('admin/crm/tagihan') ?>" class="row g-2 align-items-center">
                 <div class="col-md-5">
-                    <div class="input-group">
-                        <span class="input-group-text bg-white"><i class="fal fa-search text-muted"></i></span>
-                        <input type="text" name="cari" class="form-control" placeholder="Cari nomor invoice, nama, atau no HP..." value="<?= esc($cari) ?>">
+                    <div class="position-relative">
+                        <i class="fal fa-search text-muted position-absolute top-50 start-0 translate-middle-y ms-3"></i>
+                        <input type="text" name="cari" class="form-control crm-cari" placeholder="Cari nomor invoice, nama, atau no HP..." value="<?= esc($cari) ?>">
                     </div>
                 </div>
                 <div class="col-auto">
@@ -62,8 +71,13 @@
                     <?php if (empty($invoices)) : ?>
                         <tr>
                             <td colspan="8" class="text-center py-5 text-muted">
-                                <i class="fal fa-check-circle fa-3x text-success mb-2 d-block"></i>
-                                Tidak ada antrean tagihan yang perlu difollow-up.
+                                <?php if (trim((string) $cari) !== '') : ?>
+                                    <i class="fal fa-search fa-3x mb-2 d-block"></i>
+                                    Tidak ada hasil untuk "<?= esc($cari) ?>".
+                                <?php else : ?>
+                                    <i class="fal fa-check-circle fa-3x text-success mb-2 d-block"></i>
+                                    Tidak ada antrean tagihan yang perlu difollow-up.
+                                <?php endif; ?>
                             </td>
                         </tr>
                     <?php else : ?>

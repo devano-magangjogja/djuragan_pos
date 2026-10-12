@@ -1010,6 +1010,17 @@ body.has-app-sidebar {
 .mobile-topbar .sidebar-brand-text-label {
     color: var(--sidebar-text-hover);
 }
+/* Jarak kiri bar. Tombol hamburger itu .btn.btn-sm, dan ".btn-sm" di bagian
+   Modern Buttons memakai !important, jadi utilitas p-1/p-0 di markup tidak
+   pernah menang: ikonnya berjarak 8px (px pada bar) + 11px (padding tombol)
+   = ~20px dari tepi layar. Padding kiri tombol di bar ini dinolkan supaya
+   ikonnya sejajar dengan isi halaman di bawahnya.
+   Hanya sisi KIRI yang dinolkan. Padding kanan avatar dibiarkan (.btn-sm =
+   11px) supaya lonceng dan avatar tetap mepet ke kanan tapi tidak menempel
+   di tepi layar: jaraknya jadi 8px (px-2 pada bar) + 11px = ~19px. */
+.mobile-topbar .btn.mobile-topbar-btn {
+    padding-left: 0 !important;
+}
 
 /* ==================================================================
    Tema Keseluruhan Website — Senada dengan Sidebar (Untitled UI / Modern SaaS)

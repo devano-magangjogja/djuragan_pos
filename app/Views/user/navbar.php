@@ -19,7 +19,7 @@ $isChartAktif = url_is('user/chart*');
             <div class="sidebar-brand-icon" style="width:28px;height:28px;font-size:0.85rem;">
                 <i class="fal fa-layer-group"></i>
             </div>
-            <span class="fw-bold small sidebar-brand-text-label">Pesanan Juragan</span>
+            <span class="fw-bold small sidebar-brand-text-label">Djuragan POS</span>
         </a>
     </div>
     <div class="d-flex align-items-center gap-2">
@@ -58,7 +58,7 @@ $isChartAktif = url_is('user/chart*');
                 <i class="fal fa-layer-group"></i>
             </div>
             <div class="sidebar-brand-text">
-                <span>Pesanan Juragan</span>
+                <span>Djuragan POS</span>
                 <span class="role-badge"><?= esc(strtoupper($levelSesi ?: 'CS')) ?></span>
             </div>
         </a>
