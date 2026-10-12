@@ -589,7 +589,7 @@ class Crm extends BaseController
             'template'         => $template['pesan'] ?? '',
             'riwayatBroadcast' => $riwayatBroadcast,
             'provider'         => $provider,
-            'sandboxNumber'    => $this->wa->getSetting('kapso_sandbox_test_number', '6285161384750'),
+            'sandboxNumber'    => $this->wa->getSetting('kapso_sandbox_test_number', $this->wa->nomorToko()),
             'isSandbox'        => $isSandbox,
         ];
 
@@ -611,7 +611,7 @@ class Crm extends BaseController
 
         $provider  = $this->wa->getActiveProviderName();
         $isSandbox = ($provider === 'kapso') ? (int) $this->wa->getSetting('kapso_sandbox_mode', '1') : 0;
-        $sandboxNumber = $this->wa->getSetting('kapso_sandbox_test_number', '6285161384750');
+        $sandboxNumber = $this->wa->getSetting('kapso_sandbox_test_number', $this->wa->nomorToko());
 
         $daftarPelanggan = $this->crmModel->getDaftarPelanggan(['segmen' => $segmen], 100, 0);
 
@@ -750,8 +750,9 @@ class Crm extends BaseController
         $settings = $this->wa->loadSettings();
 
         $data = [
-            'title'    => 'Pengaturan Gateway WhatsApp',
-            'settings' => $settings,
+            'title'     => 'Pengaturan Gateway WhatsApp',
+            'settings'  => $settings,
+            'nomorToko' => $this->wa->nomorToko(),
         ];
 
         return view('admin/crm/pengaturan', $data);
@@ -764,6 +765,7 @@ class Crm extends BaseController
     {
         $keys = [
             'wa_provider',
+            'wa_nomor_toko',
             'kapso_api_key',
             'kapso_phone_number_id',
             'kapso_base_url',
@@ -773,11 +775,18 @@ class Crm extends BaseController
             'fonnte_base_url',
         ];
 
+        $nomor = ['wa_nomor_toko', 'kapso_sandbox_test_number'];
+
         foreach ($keys as $key) {
             $val = $this->request->getPost($key);
-            if ($val !== null) {
-                $this->wa->setSetting($key, trim((string) $val));
+            if ($val === null) {
+                continue;
             }
+            $val = trim((string) $val);
+            if (in_array($key, $nomor, true)) {
+                $val = preg_replace('/[^\d]/', '', $val);
+            }
+            $this->wa->setSetting($key, $val);
         }
 
         return $this->response->setJSON([
@@ -797,7 +806,7 @@ class Crm extends BaseController
 
         if (empty($nomor)) {
             if ($provider === 'kapso') {
-                $nomor = $this->wa->getSetting('kapso_sandbox_test_number', '6285161384750');
+                $nomor = $this->wa->getSetting('kapso_sandbox_test_number', $this->wa->nomorToko());
             } else {
                 return $this->response->setJSON(['status' => 'error', 'message' => 'Nomor WhatsApp tujuan pengetesan wajib diisi.']);
             }
@@ -871,6 +880,7 @@ class Crm extends BaseController
             'status' => 'success',
             'data'   => [
                 'provider'    => $this->wa->getActiveProviderName(),
+                'nomor_toko'  => $this->wa->nomorToko(),
                 'url_webhook' => site_url('webhook/whatsapp'),
                 'event'       => $event === null ? null : [
                     'waktu'    => (int) $event['waktu'],
@@ -1019,6 +1029,7 @@ class Crm extends BaseController
             'activeId'      => $activeId,
             'templates'     => $templates,
             'isSandbox'     => $isSandbox,
+            'nomorToko'     => $this->wa->nomorToko(),
         ];
 
         return view('admin/crm/chat', $data);
@@ -1036,6 +1047,10 @@ class Crm extends BaseController
             ->select('cp.*, p.nama_pelanggan, pro.status_crm')
             ->join('pelanggan p', 'p.id_pelanggan = cp.pelanggan_id', 'left')
             ->join('crm_pelanggan_profil pro', 'pro.pelanggan_id = cp.pelanggan_id', 'left')
+            // Percakapan atas nama nomor toko sendiri adalah sisa gema pesan
+            // keluar, bukan chat pelanggan. Barisnya tidak dihapus, hanya tidak
+            // lagi ditampilkan supaya daftar tidak membingungkan.
+            ->where('cp.nomor_wa !=', $this->wa->nomorToko())
             ->orderBy('cp.waktu_terakhir', 'DESC');
 
         if (!empty($q)) {
@@ -1238,6 +1253,16 @@ class Crm extends BaseController
 
         if (empty($targetNumber)) {
             return $this->response->setJSON(['status' => 'error', 'message' => 'Nomor tujuan tidak valid.']);
+        }
+
+        // Thread atas nama nomor toko sendiri bukan percakapan pelanggan; dulu
+        // seperti ini lahir dari gema pesan keluar yang ikut tercatat sebagai
+        // pesan masuk.
+        if (preg_replace('/[^\d]/', '', (string) $targetNumber) === $this->wa->nomorToko()) {
+            return $this->response->setJSON([
+                'status'  => 'error',
+                'message' => 'Itu nomor WhatsApp toko sendiri, bukan nomor pelanggan.',
+            ]);
         }
 
         if (empty($pelangganId)) {
