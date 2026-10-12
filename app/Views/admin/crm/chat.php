@@ -1153,7 +1153,6 @@ $(function() {
             var d = (res && res.data) || {};
             $panel.empty();
             $panel.append(barisStatus('Provider aktif', d.provider || '-'));
-            $panel.append(barisStatus('Nomor toko', d.nomor_toko || '-', 'font-monospace'));
 
             if (d.event) {
                 $panel.append(barisStatus(

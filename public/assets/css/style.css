@@ -649,9 +649,21 @@ body.has-app-sidebar {
         margin-right: 0;
         font-size: 1.02rem;
     }
+    /* Ikon lonceng di footer bukan .sidebar-link-icon, tapi ikut membawa
+       margin-right 0.7rem dari .sidebar-footer-link i. Di rail ikon margin itu
+       membuat lonceng bergeser ~11px ke kiri sehingga tidak sejajar dengan
+       kolom ikon di atasnya. */
+    body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-footer-link i {
+        margin-right: 0;
+    }
     body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-user-card {
         justify-content: center;
         padding: 0.4rem 0;
+        /* Kotak kartunya hanya dipakai di sidebar yang terbuka. Di rail ikon
+           tidak ada nama/tombol lagi, jadi kotak itu tinggal jadi garis kosong
+           di bawah avatar — hilangkan sampai sidebar-nya dibuka. */
+        background: transparent;
+        border-color: transparent;
     }
     body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-menu {
         padding-left: 0.5rem;
@@ -1010,6 +1022,17 @@ body.has-app-sidebar {
 .mobile-topbar .sidebar-brand-text-label {
     color: var(--sidebar-text-hover);
 }
+/* Jarak kiri bar. Tombol hamburger itu .btn.btn-sm, dan ".btn-sm" di bagian
+   Modern Buttons memakai !important, jadi utilitas p-1/p-0 di markup tidak
+   pernah menang: ikonnya berjarak 8px (px pada bar) + 11px (padding tombol)
+   = ~20px dari tepi layar. Padding kiri tombol di bar ini dinolkan supaya
+   ikonnya sejajar dengan isi halaman di bawahnya.
+   Hanya sisi KIRI yang dinolkan. Padding kanan avatar dibiarkan (.btn-sm =
+   11px) supaya lonceng dan avatar tetap mepet ke kanan tapi tidak menempel
+   di tepi layar: jaraknya jadi 8px (px-2 pada bar) + 11px = ~19px. */
+.mobile-topbar .btn.mobile-topbar-btn {
+    padding-left: 0 !important;
+}
 
 /* ==================================================================
    Tema Keseluruhan Website — Senada dengan Sidebar (Untitled UI / Modern SaaS)
@@ -1264,6 +1287,40 @@ a.rounded-3.border.border-ink-200:hover {
     font-size: 0.85rem !important;
     border-radius: 9px !important;
 }
+/* Kotak cari satu kolom saja. .input-group di sini terlihat jadi dua kotak
+   terpisah karena .form-control dan .input-group-text sama-sama dapat border +
+   radius sendiri, jadi ikonnya dipindah ke dalam field sebagai tombol submit. */
+.cari-merged {
+    position: relative;
+}
+.cari-merged .form-control {
+    padding-left: 2.1rem !important;
+}
+.cari-merged .cari-kirim {
+    position: absolute;
+    top: 50%;
+    left: 0.65rem;
+    transform: translateY(-50%);
+    border: 0;
+    background: transparent;
+    padding: 0;
+    line-height: 1;
+    color: #667085;
+}
+.cari-merged .cari-kirim:hover {
+    color: #101828;
+}
+/* Versi tanpa tombol: kotaknya dicari lewat JS, jadi ikonnya hanya hiasan di
+   dalam field dan tidak boleh menangkap klik (pointer-events: none). */
+.cari-merged .cari-ikon {
+    position: absolute;
+    top: 50%;
+    left: 0.65rem;
+    transform: translateY(-50%);
+    line-height: 1;
+    color: #667085;
+    pointer-events: none;
+}
 
 /* 8. Modern Buttons */
 .btn {
@@ -1500,15 +1557,20 @@ a.rounded-3.border.border-ink-200:hover {
     z-index: 1020;
     pointer-events: none;
 }
-.fixed-bottom .container-xxl {
+.fixed-bottom > div {
     pointer-events: auto;
 }
+/* Tombol masukan cuma ikon headset (tanpa tulisan) dan duduk di pojok kanan
+   bawah layar, bukan di tepi container-xxl yang ikut terpusat di layar lebar.
+   Jadi kotak tombolnya dibuat bulat sempurna dengan lebar = tinggi. */
 .fixed-bottom button[data-bs-target="#feedbackModal"] {
     background: #101828 !important;
     border: 1px solid rgba(255, 255, 255, 0.15) !important;
     color: #ffffff !important;
     border-radius: 9999px !important;
-    padding: 0.45rem 1rem !important;
+    padding: 0 !important;
+    width: 2.6rem;
+    height: 2.6rem;
     font-size: 0.78rem !important;
     font-weight: 600 !important;
     margin-bottom: 1rem !important;

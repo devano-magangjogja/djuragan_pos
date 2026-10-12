@@ -6,14 +6,7 @@
 <div class="container-xxl py-4">
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
         <div>
-            <h1 class="h3 mb-1">Broadcast Promo &amp; Pesan Massal WhatsApp</h1>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb p-0 m-0">
-                    <li class="breadcrumb-item"><?= anchor('', 'Dasbor') ?></li>
-                    <li class="breadcrumb-item"><?= anchor('admin/crm', 'CRM') ?></li>
-                    <li class="breadcrumb-item active" aria-current="page">Broadcast</li>
-                </ol>
-            </nav>
+            <h1 class="h3 mb-0">Broadcast Promo &amp; Pesan Massal WhatsApp</h1>
         </div>
         <div class="d-flex align-items-center gap-2">
             <?= $this->include('admin/crm/tombol_wa') ?>

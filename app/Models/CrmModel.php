@@ -148,13 +148,45 @@ class CrmModel extends Model
 
         $cari = trim($filter['cari'] ?? '');
         if ($cari !== '') {
-            $builder->groupStart()
-                ->like('cp.nama_pelanggan', $cari)
-                ->orLike('cp.nomor_utama', $cari)
-                ->orLike('cp.kota', $cari)
-                ->orLike('cp.alamat', $cari);
-            if (is_numeric($cari)) {
-                $builder->orWhere('cp.id_pelanggan', (int) $cari);
+            // nomor tersimpan campur: ada yang 0812..., ada yang 62812... Jadi
+            // pembandingnya angka murni yang disetel ke bentuk 0, baik di kolom
+            // maupun di kata kunci, supaya satu sama lain tetap ketemu.
+            $angkaKolom = "REGEXP_REPLACE(cp.nomor_utama, '[^0-9]', '')";
+            $nomorKanon = "CASE WHEN {$angkaKolom} LIKE '62%'"
+                . " THEN CONCAT('0', SUBSTRING({$angkaKolom}, 3)) ELSE {$angkaKolom} END";
+
+            $angka       = preg_replace('/\D/', '', $cari);
+            $hanya_angka = $angka !== '' && ctype_digit($cari);
+            $nomor_cari  = $angka === '' ? ''
+                : (str_starts_with($angka, '62') ? '0' . substr($angka, 2) : $angka);
+
+            $builder->groupStart();
+            if ($hanya_angka) {
+                // angka maksudnya nomor WA / ID / kode pos, bukan nama atau kota.
+                // tanpa batas ini, mencari "1" akan mencocokkan hampir semua nomor
+                $builder->where('cp.kodepos', $angka)
+                    ->orLike('cp.nama_pelanggan', $angka);
+
+                if (strlen($angka) <= 10) {
+                    $builder->orWhere('cp.id_pelanggan', (int) $angka);
+                }
+                if (strlen($angka) >= 6) {
+                    $builder->orWhere("{$nomorKanon} LIKE '" . $nomor_cari . "%'"
+                        . " OR {$nomorKanon} LIKE '%" . $nomor_cari . "'");
+                }
+            } else {
+                // kata kunci hanya dicari ke NAMA, dan harus mulai dari awal kata:
+                // "mu" untuk MUKO MUKO / MUHAMMAD, bukan untuk pelanggan yang
+                // kebetulan beralamat atau ber-kota memuat "mu"
+                $builder->groupStart()
+                    ->like('cp.nama_pelanggan', $cari, 'after')
+                    ->orLike('cp.nama_pelanggan', ' ' . $cari, 'both');
+
+                // kecuali kalau kata kuncinya menyelipkan nomor panjang
+                if ($nomor_cari !== '' && strlen($angka) >= 6) {
+                    $builder->orWhere("{$nomorKanon} LIKE '%" . $nomor_cari . "%'");
+                }
+                $builder->groupEnd();
             }
             $builder->groupEnd();
         }

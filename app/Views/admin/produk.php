@@ -110,10 +110,10 @@ $keadaan_baris = static function (int $stok) use ($ambangnya): array {
                             'value'       => $cari,
                         ]) ?>
                     </div>
-                    <!-- Satu kolom untuk dua tombol: kalau dipisah, "Tambah Barang"
-                         meloncat ke baris kedua dan jatuh lebih rendah dari "Cari". -->
-                    <div class="col-auto ms-md-auto d-flex align-items-end gap-2">
+                    <div class="col-auto">
                         <button class="btn btn-sm btn-dark" type="submit"><i class="fal fa-search"></i> Cari</button>
+                    </div>
+                    <div class="col-md-auto ms-md-auto">
                         <button class="btn btn-sm btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#modalTambahBarang">
                             <i class="fal fa-plus"></i> Tambah Barang
                         </button>

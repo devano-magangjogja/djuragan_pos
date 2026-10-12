@@ -63,22 +63,13 @@ $chip = static function (string $label, array $daftar): void { ?>
 
     <h1 class="h3 mt-5">Pengaturan Juragan</h1>
 
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb p-0">
-            <li class="breadcrumb-item"><?= anchor('', 'Dasbor') ?></li>
-            <li class="breadcrumb-item"><?= anchor('admin/settings', 'Pengaturan') ?></li>
-            <li class="breadcrumb-item active" aria-current="page">Juragan</li>
-        </ol>
-    </nav>
-
     <?php if (($sukses ?? null) !== null) { ?>
         <div class="alert alert-success py-2"><?= esc($sukses) ?></div>
     <?php } ?>
     <?php if (($gagal ?? null) !== null) { ?>
         <div class="alert alert-danger py-2"><?= esc($gagal) ?></div>
     <?php } ?>
-</div>
-<div class="container-xxl">
+
     <div class="card">
         <div class="card-body">
             <div class="d-flex align-items-center justify-content-between mb-3">
@@ -119,7 +110,7 @@ $chip = static function (string $label, array $daftar): void { ?>
                                 <?php $chip('Admin', $pg['admin']); ?>
                                 <?php $chip('CS', $pg['cs']); ?>
                                 <?php if (count($pg['admin']) > 1 || count($pg['cs']) > 1) { ?>
-                                    <div class="text-warning">lebih dari satu — tunjuk satu Admin dan satu CS</div>
+                                    <div style="color:#b42318">lebih dari satu — tunjuk satu Admin dan satu CS</div>
                                 <?php } ?>
                             </td>
                             <td class="text-end text-nowrap">

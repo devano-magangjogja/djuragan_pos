@@ -5,18 +5,10 @@ namespace App\Libraries\WhatsApp;
 use App\Libraries\WhatsApp\Contracts\WhatsAppProviderInterface;
 use App\Libraries\WhatsApp\Providers\FonnteProvider;
 use App\Libraries\WhatsApp\Providers\KapsoProvider;
-use App\Models\CrmModel;
 use Config\Database;
 
 class WhatsAppManager
 {
-    /**
-     * Nomor WA toko bawaan. Satu-satunya tempat nomor ini ditulis di source
-     * code; semuanya membacanya lewat nomorToko() supaya server lokal dan
-     * hosting tidak berakhir memakai nomor yang berbeda.
-     */
-    public const NOMOR_TOKO = '6285161384750';
-
     protected static ?self $instance = null;
     protected array $settings = [];
     protected array $providers = [];
@@ -113,72 +105,6 @@ class WhatsAppManager
         return is_array($event) && isset($event['waktu']) ? $event : null;
     }
 
-    /**
-     * Nomor WhatsApp toko sendiri — satu sumber kebenaran untuk seluruh modul
-     * WhatsApp. Urut prioritas: setelan CRM (CRm > Pengaturan), .env
-     * (wa.nomorToko), lalu bawaan di kelas ini. Sebelumnya nomor ini ditulis di
-     * lima tempat dengan tiga nilai berbeda, sehingga habis pull/push aplikasi
-     * bisa berakhir memakai nomor lain.
-     */
-    public function nomorToko(): string
-    {
-        foreach ([
-            trim((string) $this->getSetting('wa_nomor_toko', '')),
-            trim((string) env('wa.nomorToko', '')),
-            self::NOMOR_TOKO,
-        ] as $calon) {
-            $bersih = preg_replace('/[^\d]/', '', $calon);
-            if (strlen($bersih) >= 9) {
-                return $bersih;
-            }
-        }
-
-        return self::NOMOR_TOKO;
-    }
-
-    /**
-     * Nomor perangkat (nomor toko) yang ikut terkirim dalam payload gateway.
-     * Fonnte mengirimnya di field device/username; Kapso dan Meta tidak
-     * menyertakan nomor bisnis, jadi null.
-     */
-    public static function nomorPerangkatDari(?array $payload): ?string
-    {
-        if ($payload === null) {
-            return null;
-        }
-
-        foreach (['device', 'username'] as $kunci) {
-            $nilai = $payload[$kunci] ?? null;
-            if (! is_string($nilai)) {
-                continue;
-            }
-            $bersih = preg_replace('/[^\d]/', '', $nilai);
-            if (strlen($bersih) >= 9) {
-                return $bersih;
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Rekam nomor toko dari payload gateway kalau setelan masih kosong, supaya
-     * webhook langsung punya pembanding untuk mengenali gema pesan keluar.
-     * Setelan yang sudah diisi manual tidak pernah ditimpa.
-     */
-    public function pelajariNomorToko(?array $payload): void
-    {
-        if (trim((string) $this->getSetting('wa_nomor_toko', '')) !== '') {
-            return;
-        }
-
-        $nomor = self::nomorPerangkatDari($payload);
-
-        if ($nomor !== null && $nomor !== self::NOMOR_TOKO) {
-            $this->setSetting('wa_nomor_toko', $nomor);
-        }
-    }
-
     public function getActiveProviderName(): string
     {
         return $this->getSetting('wa_provider', 'fonnte');
@@ -249,7 +175,7 @@ class WhatsAppManager
 
         // Jika mode sandbox aktif dan sandbox_test_number diatur (khusus Kapso)
         $sandboxMode = (int) $this->getSetting('kapso_sandbox_mode', '1');
-        $sandboxTestNumber = $this->getSetting('kapso_sandbox_test_number', $this->nomorToko());
+        $sandboxTestNumber = $this->getSetting('kapso_sandbox_test_number', '6285161384750');
 
         $targetPhone = $to;
         $warningNotice = null;
@@ -302,27 +228,6 @@ class WhatsAppManager
     }
 
     /**
-     * Cocokkan nomor WhatsApp dengan pelanggan memakai aturan yang sama dengan
-     * modul CRM (CrmModel::cariCustomerByWa: persis, kedua ragam 62... dan 08...).
-     * Dulu pustaka ini mencocokan 9 digit terakhir sendiri, sehingga chat bisa
-     * tersambat ke pelanggan lain yang nomornya mirip — termasuk nomor toko
-     * sendiri, yang lalu muncul sebagai "pelanggan" di daftar Live Chat.
-     */
-    private function cariPelangganDariNomor(string $nomor): ?array
-    {
-        $pelanggan = model(CrmModel::class)->cariCustomerByWa($nomor);
-
-        if ($pelanggan === null) {
-            return null;
-        }
-
-        return [
-            'id_pelanggan'   => $pelanggan['id_pelanggan'],
-            'nama_pelanggan' => $pelanggan['nama_pelanggan'],
-        ];
-    }
-
-    /**
      * Simpan pesan keluar ke tabel chat percakapan
      */
     public function syncChatOutgoing(string $phone, string $message, ?string $waMsgId = null, ?int $pelangganId = null, ?int $userId = null): void
@@ -342,7 +247,11 @@ class WhatsAppManager
             $namaKontak = $conv['nama_kontak'];
         } else {
             // Cari dari kontak pelanggan yang ada
-            $kRow = $this->cariPelangganDariNomor($cleanPhone);
+            $kRow = $db->table('pelanggan_kontak k')
+                ->select('p.id_pelanggan, p.nama_pelanggan')
+                ->join('pelanggan p', 'p.id_pelanggan = k.pelanggan_id')
+                ->like('k.nomor_pure', substr($cleanPhone, -9))
+                ->get()->getRowArray();
             if ($kRow) {
                 $pelangganId = $kRow['id_pelanggan'];
                 $namaKontak = $kRow['nama_pelanggan'];
@@ -412,21 +321,6 @@ class WhatsAppManager
             $cleanPhone = '62' . substr($cleanPhone, 1);
         }
 
-        $this->pelajariNomorToko($raw);
-
-        // Fonnte mengirim ulang pesan yang toko kirim lewat API sebagai event
-        // dengan sender = nomor toko sendiri. Kalau ikut dicatat, riwayat toko
-        // muncul sebagai percakapan pelanggan baru di Live Chat.
-        if ($cleanPhone !== '' && $cleanPhone === $this->nomorToko()) {
-            log_message('info', '[Webhook WA] Gema pesan nomor toko sendiri diabaikan: ' . $cleanPhone);
-
-            return [
-                'percakapan_id' => 0,
-                'pesan_id'      => 0,
-                'diabaikan'     => 'nomor toko sendiri',
-            ];
-        }
-
         // Gateway bisa mengirim ulang event yang sama (retry webhook), jadi satu
         // wa_message_id hanya boleh tercatat sekali sebagai pesan masuk
         if ($waMsgId !== null && $waMsgId !== '') {
@@ -446,7 +340,11 @@ class WhatsAppManager
         }
 
         // Cari pelanggan dari database
-        $kRow = $this->cariPelangganDariNomor($cleanPhone);
+        $kRow = $db->table('pelanggan_kontak k')
+            ->select('p.id_pelanggan, p.nama_pelanggan')
+            ->join('pelanggan p', 'p.id_pelanggan = k.pelanggan_id')
+            ->like('k.nomor_pure', substr($cleanPhone, -9))
+            ->get()->getRowArray();
 
         $pelangganId = $kRow['id_pelanggan'] ?? null;
         $namaKontak  = $kRow['nama_pelanggan'] ?? null;
