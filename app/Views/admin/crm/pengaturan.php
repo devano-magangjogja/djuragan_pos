@@ -1,5 +1,37 @@
 <?= $this->extend('template/main') ?>
 
+<?= $this->section('css') ?>
+<style>
+/* Baris "Fonnte API Token": field dan tombol Cek Koneksi dulu terlihat jadi
+   dua kotak yang jomplang — .form-control memakai padding/tinggi Bootstrap
+   sementara .btn di style.css punya padding, tinggi dan radius 10px sendiri.
+   Tingginya disamakan, lengkungnya dipertemukan, dan border tengahnya ditumpuk
+   supaya terbaca sebagai satu kolom. */
+.cek-koneksi .form-control,
+.cek-koneksi .btn {
+    height: 2.25rem;
+    border-radius: 9px !important;
+}
+.cek-koneksi .form-control {
+    border-top-right-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+}
+.cek-koneksi .btn {
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+    margin-left: -1px;
+    padding: 0 0.95rem;
+    white-space: nowrap;
+}
+/* .btn di style.css sudah memberi gap 0.4rem antar isinya, jadi me-1 pada
+   ikon membuat jarak ikon-teks jadi dobel. Diatur di sini (bukan di markup)
+   karena JS ikut menulis ulang label tombol ini saat statusnya berubah. */
+.cek-koneksi .btn i {
+    margin-right: 0 !important;
+}
+</style>
+<?= $this->endSection() ?>
+
 <?= $this->section('content') ?>
 <?= $this->include('admin/navbar') ?>
 
@@ -7,13 +39,6 @@
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
         <div>
             <h1 class="h3 mb-1">Pengaturan Gateway WhatsApp</h1>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb p-0 m-0">
-                    <li class="breadcrumb-item"><?= anchor('', 'Dasbor') ?></li>
-                    <li class="breadcrumb-item"><?= anchor('admin/crm', 'CRM') ?></li>
-                    <li class="breadcrumb-item active" aria-current="page">Pengaturan Gateway</li>
-                </ol>
-            </nav>
         </div>
         <div class="d-flex align-items-center gap-2">
             <?= $this->include('admin/crm/tombol_wa') ?>
@@ -50,7 +75,7 @@
                             </h6>
                             <div class="mb-3">
                                 <label class="form-label small fw-bold">Fonnte API Token</label>
-                                <div class="input-group">
+                                <div class="input-group cek-koneksi">
                                     <input type="text" name="fonnte_token" id="fonnte_token" class="form-control font-monospace" value="<?= esc($settings['fonnte_token'] ?? '') ?>" placeholder="Masukkan token perangkat Fonnte (contoh: c3a8e9f...)" required>
                                     <button class="btn btn-outline-success" type="button" id="btnCekStatusFonnte" title="Cek status koneksi perangkat ke server Fonnte">
                                         <i class="fal fa-sync-alt me-1"></i> Cek Koneksi

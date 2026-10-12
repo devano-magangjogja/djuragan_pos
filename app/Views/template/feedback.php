@@ -1,6 +1,8 @@
 <div class="fixed-bottom">
-    <div class="container-xxl d-flex flex-row-reverse">
-        <button type="button" class="btn btn-danger btn-sm rounded-0 rounded-top" data-bs-toggle="modal" data-bs-target="#feedbackModal">Kirim Masukan</button>
+    <div class="container-fluid d-flex justify-content-end px-2">
+        <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#feedbackModal" title="Kirim Masukan" aria-label="Kirim Masukan">
+            <i class="fal fa-headset fs-5"></i>
+        </button>
     </div>
 </div>
 

@@ -26,14 +26,6 @@ $per_halaman = (int) config('Pager')->perPage;
 
     <h1 class="h3 mt-5">Pengaturan Pengguna</h1>
 
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb p-0">
-            <li class="breadcrumb-item"><?= anchor('', 'Dasbor') ?></li>
-            <li class="breadcrumb-item"><?= anchor('admin/settings', 'Pengaturan') ?></li>
-            <li class="breadcrumb-item active" aria-current="page">Pengguna</li>
-        </ol>
-    </nav>
-
     <?php if ($sukses !== null) { ?>
         <div class="alert alert-success py-2"><?= esc($sukses) ?></div>
     <?php } ?>
@@ -51,8 +43,8 @@ $per_halaman = (int) config('Pager')->perPage;
 
     <div class="card mb-5">
         <div class="card-header d-flex flex-wrap align-items-center gap-2">
-            <div class="input-group input-group-sm" style="width: 18rem">
-                <span class="input-group-text"><i class="fal fa-search"></i></span>
+            <div class="cari-merged" style="width: 18rem">
+                <span class="cari-ikon"><i class="fal fa-search"></i></span>
                 <input type="search" class="form-control form-control-sm" id="cariPengguna" placeholder="nama, username, email, level" autocomplete="off">
             </div>
             <span class="text-muted small ms-auto" id="jumlahPengguna">memuat ...</span>

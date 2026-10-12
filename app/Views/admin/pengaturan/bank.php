@@ -38,19 +38,7 @@ $sunting_err = $validation->hasError('sunting_nama_bank') || $validation->hasErr
 
 <div class="container-xxl">
     <h1 class="h3 mt-5">Pengaturan Bank</h1>
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb p-0">
-            <li class="breadcrumb-item">
-                <?= anchor('', 'Dasbor') ?>
-            </li>
-            <li class="breadcrumb-item">
-                <?= anchor('admin/settings', 'Pengaturan') ?>
-            </li>
-            <li class="breadcrumb-item active" aria-current="page">Bank & EDC</li>
-        </ol>
-    </nav>
-</div>
-<div class="container-xxl">
+
     <div class="row">
         <div class="col-12 mb-3">
             <?php if (($sukses ?? null) !== null) { ?>

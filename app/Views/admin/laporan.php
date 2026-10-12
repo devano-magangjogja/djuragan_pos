@@ -25,10 +25,6 @@ $param = static function () use ($f): array {
     ], static fn ($v) => $v !== null && $v !== '');
 };
 
-$tautan = static function (string $jenis) use ($param): string {
-    return site_url('admin/laporan/' . $jenis) . '?' . http_build_query($param());
-};
-
 $tautan_unduh = static function (string $format) use ($param, $jenis): string {
     return site_url('admin/laporan/' . $jenis . '/unduh/' . $format) . '?' . http_build_query($param());
 };
@@ -66,22 +62,6 @@ $kartu = LaporanModel::kartu($jenis, $r);
 
 <div class="container-xxl">
     <h1 class="h3 mt-5"><?= esc($pil_jenis[$jenis]['label']) ?></h1>
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb p-0">
-            <li class="breadcrumb-item"><?= anchor('admin/dasbor', 'Dasbor') ?></li>
-            <li class="breadcrumb-item active" aria-current="page">Laporan</li>
-        </ol>
-    </nav>
-
-    <ul class="nav nav-pills flex-wrap gap-1 mb-2">
-        <?php foreach ($pil_jenis as $slug => $pil) { ?>
-            <li class="nav-item">
-                <a class="nav-link py-1 px-3 <?= $slug === $jenis ? 'active' : '' ?>" href="<?= $tautan($slug) ?>">
-                    <i class="fal <?= $pil['ikon'] ?> me-1"></i><?= esc($pil['label']) ?>
-                </a>
-            </li>
-        <?php } ?>
-    </ul>
 
     <p class="text-muted small mb-3"><?= esc($pil_jenis[$jenis]['catatan']) ?></p>
 

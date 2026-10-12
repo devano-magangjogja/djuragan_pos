@@ -1310,6 +1310,17 @@ a.rounded-3.border.border-ink-200:hover {
 .cari-merged .cari-kirim:hover {
     color: #101828;
 }
+/* Versi tanpa tombol: kotaknya dicari lewat JS, jadi ikonnya hanya hiasan di
+   dalam field dan tidak boleh menangkap klik (pointer-events: none). */
+.cari-merged .cari-ikon {
+    position: absolute;
+    top: 50%;
+    left: 0.65rem;
+    transform: translateY(-50%);
+    line-height: 1;
+    color: #667085;
+    pointer-events: none;
+}
 
 /* 8. Modern Buttons */
 .btn {
@@ -1546,15 +1557,20 @@ a.rounded-3.border.border-ink-200:hover {
     z-index: 1020;
     pointer-events: none;
 }
-.fixed-bottom .container-xxl {
+.fixed-bottom > div {
     pointer-events: auto;
 }
+/* Tombol masukan cuma ikon headset (tanpa tulisan) dan duduk di pojok kanan
+   bawah layar, bukan di tepi container-xxl yang ikut terpusat di layar lebar.
+   Jadi kotak tombolnya dibuat bulat sempurna dengan lebar = tinggi. */
 .fixed-bottom button[data-bs-target="#feedbackModal"] {
     background: #101828 !important;
     border: 1px solid rgba(255, 255, 255, 0.15) !important;
     color: #ffffff !important;
     border-radius: 9999px !important;
-    padding: 0.45rem 1rem !important;
+    padding: 0 !important;
+    width: 2.6rem;
+    height: 2.6rem;
     font-size: 0.78rem !important;
     font-weight: 600 !important;
     margin-bottom: 1rem !important;

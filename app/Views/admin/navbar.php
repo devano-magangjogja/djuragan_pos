@@ -49,7 +49,6 @@ $laporanSubmenu = [
 
 // Submenu Pengaturan (Superadmin)
 $settingsSubmenu = [
-    ['admin/settings', 'Pengaturan Utama', 'fa-cogs', $di_halaman === 'admin/settings'],
     ['admin/settings/bank', 'Atur Bank', 'fa-university', str_starts_with($di_halaman, 'admin/settings/bank')],
     ['admin/settings/juragan', 'Atur Juragan', 'fa-store', str_starts_with($di_halaman, 'admin/settings/juragan')],
     ['admin/settings/pengguna', 'Atur Pengguna', 'fa-users-cog', str_starts_with($di_halaman, 'admin/settings/pengguna')],
