@@ -649,9 +649,21 @@ body.has-app-sidebar {
         margin-right: 0;
         font-size: 1.02rem;
     }
+    /* Ikon lonceng di footer bukan .sidebar-link-icon, tapi ikut membawa
+       margin-right 0.7rem dari .sidebar-footer-link i. Di rail ikon margin itu
+       membuat lonceng bergeser ~11px ke kiri sehingga tidak sejajar dengan
+       kolom ikon di atasnya. */
+    body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-footer-link i {
+        margin-right: 0;
+    }
     body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-user-card {
         justify-content: center;
         padding: 0.4rem 0;
+        /* Kotak kartunya hanya dipakai di sidebar yang terbuka. Di rail ikon
+           tidak ada nama/tombol lagi, jadi kotak itu tinggal jadi garis kosong
+           di bawah avatar — hilangkan sampai sidebar-nya dibuka. */
+        background: transparent;
+        border-color: transparent;
     }
     body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-menu {
         padding-left: 0.5rem;
@@ -1274,6 +1286,29 @@ a.rounded-3.border.border-ink-200:hover {
     color: #667085 !important;
     font-size: 0.85rem !important;
     border-radius: 9px !important;
+}
+/* Kotak cari satu kolom saja. .input-group di sini terlihat jadi dua kotak
+   terpisah karena .form-control dan .input-group-text sama-sama dapat border +
+   radius sendiri, jadi ikonnya dipindah ke dalam field sebagai tombol submit. */
+.cari-merged {
+    position: relative;
+}
+.cari-merged .form-control {
+    padding-left: 2.1rem !important;
+}
+.cari-merged .cari-kirim {
+    position: absolute;
+    top: 50%;
+    left: 0.65rem;
+    transform: translateY(-50%);
+    border: 0;
+    background: transparent;
+    padding: 0;
+    line-height: 1;
+    color: #667085;
+}
+.cari-merged .cari-kirim:hover {
+    color: #101828;
 }
 
 /* 8. Modern Buttons */

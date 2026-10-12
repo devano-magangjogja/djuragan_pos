@@ -212,29 +212,8 @@
 .fup-segmen {
     flex-wrap: wrap;
 }
-/* style.css memberi border + radius sendiri pada .form-control dan .btn, jadi
-   input-group di sini terlihat sebagai dua kotak terpisah dengan garis tengah.
-   Kotaknya disatukan: ikon cari jadi tombol submit di sisi kiri dalam field. */
-.cari-merged {
-    position: relative;
-}
-.cari-merged .form-control {
-    padding-left: 2.1rem !important;
-}
-.cari-merged .cari-kirim {
-    position: absolute;
-    top: 50%;
-    left: 0.65rem;
-    transform: translateY(-50%);
-    border: 0;
-    background: transparent;
-    padding: 0;
-    line-height: 1;
-    color: #667085;
-}
-.cari-merged .cari-kirim:hover {
-    color: #101828;
-}
+/* Kelas .cari-merged (kotak cari satu kolom) sekarang ada di style.css karena
+   dipakai juga oleh halaman Pengiriman. */
 </style>
 <?= $this->endSection() ?>
 
