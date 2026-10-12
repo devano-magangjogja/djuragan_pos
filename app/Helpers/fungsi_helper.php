@@ -279,6 +279,47 @@ if (! function_exists('status_orderan')) {
     }
 }
 
+if (! function_exists('alasan_batal')) {
+    /**
+     * Alasan sebuah orderan dihapus/VOID. Kunci array ini yang disimpan di
+     * order_invoice.alasan_batal, jadi nilainya tidak boleh berubah seenaknya.
+     *
+     * 'jenis' membedakan kesalahan operasional dari pembatalan yang sah: KPI
+     * Error/Void Rate hanya menghitung 'kesalahan'. Membatalkan karena pelanggan
+     * tidak lanjut itu kerja yang benar, bukan error, jadi tidak boleh membuat
+     * angka karyawan jelek tanpa bukti.
+     */
+    function alasan_batal(): array
+    {
+        return [
+            'salah_input' => [
+                'label' => 'Salah input barang / ukuran',
+                'jenis' => 'kesalahan',
+            ],
+            'salah_harga' => [
+                'label' => 'Salah harga atau jumlah',
+                'jenis' => 'kesalahan',
+            ],
+            'duplikat' => [
+                'label' => 'Nota duplikat',
+                'jenis' => 'kesalahan',
+            ],
+            'pelanggan_batal' => [
+                'label' => 'Pelanggan membatalkan',
+                'jenis' => 'sah',
+            ],
+            'tidak_lanjut' => [
+                'label' => 'Tidak jadi order / pembayaran tidak masuk',
+                'jenis' => 'sah',
+            ],
+            'lainnya' => [
+                'label' => 'Lainnya',
+                'jenis' => 'sah',
+            ],
+        ];
+    }
+}
+
 if (! function_exists('kategori_pembayaran')) {
     /**
      * Kelompok orderan untuk tab Pembayaran, kunci = slug kategori.
@@ -702,6 +743,24 @@ if (! function_exists('crm_isi_token')) {
 
             return (string) $data[$kunci];
         }, (string) $pesan);
+    }
+}
+
+if (! function_exists('pengguna_sesi')) {
+    /**
+     * ID akun yang sedang login, null kalau tidak ada.
+     *
+     * Kunci session yang diisi Auth.php saat login itu 'id'. Beberapa tempat lama
+     * membaca 'user_id' yang tidak pernah ada lalu jatuh ke nilai cadangan 1,
+     * sehingga aksi orang tercatat atas nama akun pertama. Modul KPI mengukur
+     * orang, jadi pembacaan session dikumpulkan di sini supaya tidakulangan
+     * kesalahan yang sama tidak muncul lagi.
+     */
+    function pengguna_sesi(): ?int
+    {
+        $id = (int) (\Config\Services::session()->get('id') ?? 0);
+
+        return $id > 0 ? $id : null;
     }
 }
 

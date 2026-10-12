@@ -43,6 +43,15 @@
                             </div>
                         </div>
 
+                        <div class="mb-4">
+                            <label class="form-label fw-bold" for="wa_nomor_toko">Nomor WhatsApp Toko</label>
+                            <input type="text" name="wa_nomor_toko" id="wa_nomor_toko" class="form-control font-monospace" value="<?= esc($settings['wa_nomor_toko'] ?? $nomorToko) ?>" placeholder="62xxxxxxxxxx">
+                            <div class="form-text small">
+                                Nomor WA yang terhubung ke gateway. Seluruh modul (Live Chat, sandbox, uji koneksi) memakai satu nomor ini,
+                                dan pesan yang pengirimnya nomor ini dianggap gema pesan toko sendiri — tidak dicatat sebagai chat pelanggan.
+                            </div>
+                        </div>
+
                         <!-- Tab/Box Fonnte -->
                         <div id="boxFonnte" class="mb-4">
                             <h6 class="fw-bold border-bottom pb-2 text-success">
@@ -121,7 +130,7 @@
                                     Gunakan mode ini untuk menghindari risiko banned pada nomor biasa. Di mode sandbox Kapso, pesan pengujian diarahkan ke nomor tester yang sudah terdaftar.
                                 </div>
                                 <label class="form-label small fw-bold">Nomor Tester Sandbox</label>
-                                <input type="text" name="kapso_sandbox_test_number" class="form-control font-monospace" value="<?= esc($settings['kapso_sandbox_test_number'] ?? '6289674577831') ?>" placeholder="6289674577831">
+                                <input type="text" name="kapso_sandbox_test_number" class="form-control font-monospace" value="<?= esc($settings['kapso_sandbox_test_number'] ?? $nomorToko) ?>" placeholder="62xxxxxxxxxx">
                             </div>
                         </div>
 
@@ -151,7 +160,7 @@
                     <form id="formTesKoneksi">
                         <div class="mb-3">
                             <label class="form-label small fw-bold">Nomor Tujuan WhatsApp</label>
-                            <input type="text" id="tesNomor" class="form-control font-monospace" value="<?= esc($settings['kapso_sandbox_test_number'] ?? '6289674577831') ?>" placeholder="08xxx atau 628xxx" required>
+                            <input type="text" id="tesNomor" class="form-control font-monospace" value="<?= esc($settings['kapso_sandbox_test_number'] ?? $nomorToko) ?>" placeholder="08xxx atau 628xxx" required>
                             <div class="form-text small" id="tesNomorHelp">Format: 08123456789 atau 628123456789.</div>
                         </div>
 

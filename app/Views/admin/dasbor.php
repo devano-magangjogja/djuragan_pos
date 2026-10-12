@@ -121,7 +121,7 @@ $tautan_transaksi = static function (string $slug, string $seri): string {
     </div>
 
     <div class="row gx-3">
-        <div class="col-lg-8">
+        <div class="col-lg-8 d-flex flex-column">
             <div class="card mb-3">
                 <div class="card-body">
                     <h2 class="h6 mb-3">Tren <?= count($tren) ?> bulan terakhir</h2>
@@ -164,11 +164,11 @@ $tautan_transaksi = static function (string $slug, string $seri): string {
                 </div>
             </div>
 
-            <div class="card mb-3">
+            <div class="card mb-3 flex-grow-1 d-flex flex-column">
                 <div class="card-header bg-white">
                     <h2 class="h6 mb-0">Transaksi terbaru</h2>
                 </div>
-                <div class="table-responsive">
+                <div class="table-responsive flex-grow-1">
                     <table class="table table-hover align-middle mb-0">
                         <thead class="small text-muted text-uppercase">
                             <tr>
