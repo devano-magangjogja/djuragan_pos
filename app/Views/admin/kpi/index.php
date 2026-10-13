@@ -129,30 +129,6 @@ $tooltip = [
 
 <div class="container-xxl">
     <h1 class="h3 mt-5">KPI Karyawan</h1>
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb p-0">
-            <li class="breadcrumb-item"><?= anchor('admin/dasbor', 'Dasbor') ?></li>
-            <li class="breadcrumb-item active" aria-current="page">KPI</li>
-        </ol>
-    </nav>
-
-    <ul class="nav nav-pills flex-wrap gap-1 mb-3">
-        <li class="nav-item">
-            <a class="nav-link py-1 px-3 active" href="<?= site_url('admin/kpi') ?>">
-                <i class="fal fa-bullseye me-1"></i>Ringkasan
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link py-1 px-3" href="<?= site_url('admin/kpi/ranking') ?>">
-                <i class="fal fa-trophy me-1"></i>Ranking
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link py-1 px-3" href="<?= site_url('admin/kpi/target') ?>">
-                <i class="fal fa-target me-1"></i>Target dan bobot
-            </a>
-        </li>
-    </ul>
 
     <p class="text-muted small mb-3">
         Semua angka dihitung dari catatan kerja yang tersimpan di database. Tanda
@@ -328,7 +304,6 @@ $tooltip = [
 
 <?= $this->section('js') ?>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
-<?= $this->include('template/common_js') ?>
 <?php
 $js = <<< JS
     \$(function() {

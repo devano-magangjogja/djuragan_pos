@@ -43,16 +43,36 @@ $tautan_transaksi = static function (string $slug, string $seri): string {
 ?>
 <?= $this->extend('template/main') ?>
 
+<?= $this->section('css') ?>
+<style>
+    /* Kartu Transaksi terbaru hanya selebar col-lg-8, jadi selnya dirapatkan dan
+       teks panjang dipotong "…" supaya kolom Status tidak terdorong keluar kartu.
+       Padding aslinya memakai !important di style.css, jadi di sini juga !important. */
+    .tabel-ringkas thead th {
+        padding: 0.5rem 0.55rem !important;
+    }
+
+    .tabel-ringkas tbody td {
+        padding: 0.55rem !important;
+        font-size: 0.8rem !important;
+    }
+
+    .tabel-ringkas .potong {
+        display: block;
+        max-width: 8rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+</style>
+<?= $this->endSection() ?>
+
 <?= $this->section('content') ?>
 <?= $this->include('admin/navbar') ?>
 
 <div class="container-xxl">
     <h1 class="h3 mt-3">Dasbor</h1>
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb p-0">
-            <li class="breadcrumb-item active" aria-current="page"><?= esc($tanggal_hari_ini) ?></li>
-        </ol>
-    </nav>
+    <p class="text-muted small mb-4"><?= esc($tanggal_hari_ini) ?></p>
 
     <?php
     // kartu utama versi brief: order hari ini sampai siap diambil
@@ -169,7 +189,7 @@ $tautan_transaksi = static function (string $slug, string $seri): string {
                     <h2 class="h6 mb-0">Transaksi terbaru</h2>
                 </div>
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
+                    <table class="table table-hover align-middle mb-0 tabel-ringkas">
                         <thead class="small text-muted text-uppercase">
                             <tr>
                                 <th scope="col">No Nota</th>
@@ -193,13 +213,17 @@ $tautan_transaksi = static function (string $slug, string $seri): string {
                                         <div class="small text-muted"><?= esc($t['tanggal_pesan']) ?></div>
                                     </td>
                                     <td>
-                                        <?= esc($t['nama_pelanggan'] ?? '—') ?>
+                                        <span class="potong" title="<?= esc($t['nama_pelanggan'] ?? '—') ?>"><?= esc($t['nama_pelanggan'] ?? '—') ?></span>
                                         <?php if ($jum_juragan > 1) { ?>
                                             <div class="small text-muted"><?= esc($t['nama_juragan']) ?></div>
                                         <?php } ?>
                                     </td>
                                     <td>
-                                        <?= $t['produk'] === '' ? '-' : esc($t['produk']) ?>
+                                        <?php if ($t['produk'] === '') { ?>
+                                            <span class="potong">-</span>
+                                        <?php } else { ?>
+                                            <span class="potong" title="<?= esc($t['produk']) ?>"><?= esc($t['produk']) ?></span>
+                                        <?php } ?>
                                         <?php if ((int) $t['item'] > 1) { ?>
                                             <div class="small text-muted">+<?= (int) $t['item'] - 1 ?> item lain</div>
                                         <?php } ?>
@@ -374,7 +398,6 @@ $tautan_transaksi = static function (string $slug, string $seri): string {
 <?= $this->section('js') ?>
 <script defer src="https://kit.fontawesome.com/22a9d93fa2.js" data-auto-replace-svg="nest" crossorigin="anonymous"></script>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
-<?= $this->include('template/common_js') ?>
 <?php
 $label_tren = json_encode(array_map($label_bulan, array_column($tren, 'bulan')));
 $order_tren = json_encode(array_map('intval', array_column($tren, 'orderan')));

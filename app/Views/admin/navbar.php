@@ -37,14 +37,20 @@ $crmSubmenu = [
 ];
 
 // Submenu Laporan
+// 'produk' adalah awalan dari 'produksi', jadi pencocokan harus per segmen penuh
+// supaya hanya satu entri yang ikut menyala.
+$laporan_aktif = static function (string $segmen) use ($di_halaman): bool {
+    return $di_halaman === 'admin/laporan/' . $segmen
+        || str_starts_with($di_halaman, 'admin/laporan/' . $segmen . '/');
+};
 $laporanSubmenu = [
-    ['admin/laporan/pesanan', 'Laporan Pesanan', 'fa-file-alt', str_starts_with($di_halaman, 'admin/laporan/pesanan') || $di_halaman === 'admin/laporan'],
-    ['admin/laporan/pendapatan', 'Laporan Pendapatan', 'fa-wallet', str_starts_with($di_halaman, 'admin/laporan/pendapatan')],
-    ['admin/laporan/pembayaran', 'Laporan Pembayaran', 'fa-money-check-edit', str_starts_with($di_halaman, 'admin/laporan/pembayaran')],
-    ['admin/laporan/piutang', 'Laporan Piutang', 'fa-inbox-in', str_starts_with($di_halaman, 'admin/laporan/piutang')],
-    ['admin/laporan/produksi', 'Laporan Produksi', 'fa-tasks', str_starts_with($di_halaman, 'admin/laporan/produksi')],
-    ['admin/laporan/produk', 'Laporan Produk', 'fa-box-alt', str_starts_with($di_halaman, 'admin/laporan/produk')],
-    ['admin/laporan/pelanggan', 'Laporan Customer', 'fa-user', str_starts_with($di_halaman, 'admin/laporan/pelanggan')],
+    ['admin/laporan/pesanan', 'Laporan Pesanan', 'fa-file-alt', $laporan_aktif('pesanan') || $di_halaman === 'admin/laporan'],
+    ['admin/laporan/pendapatan', 'Laporan Pendapatan', 'fa-wallet', $laporan_aktif('pendapatan')],
+    ['admin/laporan/pembayaran', 'Laporan Pembayaran', 'fa-money-check-edit', $laporan_aktif('pembayaran')],
+    ['admin/laporan/piutang', 'Laporan Piutang', 'fa-inbox-in', $laporan_aktif('piutang')],
+    ['admin/laporan/produksi', 'Laporan Produksi', 'fa-tasks', $laporan_aktif('produksi')],
+    ['admin/laporan/produk', 'Laporan Produk', 'fa-box-alt', $laporan_aktif('produk')],
+    ['admin/laporan/pelanggan', 'Laporan Customer', 'fa-user', $laporan_aktif('pelanggan')],
 ];
 
 // Submenu Pengaturan (Superadmin)
@@ -55,7 +61,8 @@ $settingsSubmenu = [
 ];
 ?>
 
-<!-- Mobile Topbar (< 992px) -->
+<!-- Topbar khusus layar kecil; di desktop lonceng notifikasi melayang sendiri
+     (lihat .notif-melayang di template/notif_bar.php), bukan bar penuh. -->
 <header class="mobile-topbar d-flex d-lg-none align-items-center justify-content-between px-2 sticky-top">
     <div class="d-flex align-items-center gap-2">
         <button class="btn btn-sm btn-link mobile-topbar-btn p-1 text-decoration-none" id="mobileSidebarToggle" type="button" aria-label="Buka Menu">
@@ -69,7 +76,7 @@ $settingsSubmenu = [
         </a>
     </div>
     <div class="d-flex align-items-center gap-2">
-        <a class="mobile-topbar-btn text-decoration-none position-relative p-2" data-bs-toggle="offcanvas" href="#notifikasi" role="button" aria-controls="notifikasi" title="Notifikasi">
+        <a class="mobile-topbar-btn text-decoration-none position-relative p-2" data-notif-toggle="1" href="#notifikasi" role="button" aria-label="Notifikasi" title="Notifikasi">
             <i class="fal fa-bell fs-5"></i>
             <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger counter" style="font-size: 0.65rem;"></span>
         </a>
@@ -245,14 +252,8 @@ $settingsSubmenu = [
         <?php endif; ?>
     </div>
 
-    <!-- Footer Sidebar: Notifikasi & Profil -->
+    <!-- Footer Sidebar: Profil -->
     <div class="sidebar-footer">
-        <a class="sidebar-footer-link" id="notif" data-bs-toggle="offcanvas" href="#notifikasi" role="button" aria-controls="notifikasi">
-            <i class="fal fa-bell"></i>
-            <span>Notifikasi</span>
-            <span class="badge rounded-pill bg-danger counter ms-auto"></span>
-        </a>
-
         <div class="sidebar-user-card">
             <div class="sidebar-user-avatar">
                 <?= esc($namaInisial) ?>

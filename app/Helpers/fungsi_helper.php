@@ -1880,3 +1880,29 @@ if (! function_exists('simpan_anggota')) {
         return simpan_ukuran_anggota($invoice_id, $hasil['peta'], $anggota['ukuran']);
     }
 }
+
+if (! function_exists('tautan_invoice_notif')) {
+    /**
+     * Tujuan klik satu notifikasi: tab Semua tempat nota itu berada. Admin bebas
+     * lintas juragan, CS hanya lewat slug juragan milik notanya sendiri supaya
+     * tautannya tidak menembus toko lain (dipakai panel lonceng dan halaman daftar).
+     */
+    function tautan_invoice_notif($seri, $slug_juragan): string
+    {
+        if (empty($seri)) {
+            return '';
+        }
+
+        $kueri = http_build_query(['cari' => ['kolom' => 'faktur', 'q' => $seri]]);
+
+        if (in_array(session()->get('level'), ['admin', 'superadmin'], true)) {
+            return site_url('admin/invoices/lihat/semua/semua?' . $kueri);
+        }
+
+        if (empty($slug_juragan)) {
+            return site_url('user/invoices');
+        }
+
+        return site_url('user/invoices/lihat/' . rawurlencode($slug_juragan) . '/semua?' . $kueri);
+    }
+}

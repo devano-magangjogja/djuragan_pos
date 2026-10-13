@@ -9,8 +9,9 @@ $isTrxAktif   = url_is('user/invoices*');
 $isChartAktif = url_is('user/chart*');
 ?>
 
-<!-- Mobile Topbar (< 992px) -->
-<header class="mobile-topbar d-flex d-lg-none align-items-center justify-content-between px-3 sticky-top">
+<!-- Topbar khusus layar kecil; di desktop lonceng notifikasi melayang sendiri
+     (lihat .notif-melayang di template/notif_bar.php), bukan bar penuh. -->
+<header class="mobile-topbar d-flex d-lg-none align-items-center justify-content-between px-2 sticky-top">
     <div class="d-flex align-items-center gap-2">
         <button class="btn btn-sm btn-link mobile-topbar-btn p-1 text-decoration-none" id="mobileSidebarToggle" type="button" aria-label="Buka Menu">
             <i class="fal fa-bars fs-5"></i>
@@ -23,7 +24,7 @@ $isChartAktif = url_is('user/chart*');
         </a>
     </div>
     <div class="d-flex align-items-center gap-2">
-        <a class="mobile-topbar-btn text-decoration-none position-relative p-2" data-bs-toggle="offcanvas" href="#notifikasi" role="button" aria-controls="notifikasi" title="Notifikasi">
+        <a class="mobile-topbar-btn text-decoration-none position-relative p-2" data-notif-toggle="1" href="#notifikasi" role="button" aria-label="Notifikasi" title="Notifikasi">
             <i class="fal fa-bell fs-5"></i>
             <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger counter" style="font-size: 0.65rem;"></span>
         </a>
@@ -93,14 +94,8 @@ $isChartAktif = url_is('user/chart*');
         </ul>
     </div>
 
-    <!-- Footer Sidebar: Notifikasi & Profil -->
+    <!-- Footer Sidebar: Profil -->
     <div class="sidebar-footer">
-        <a class="sidebar-footer-link" id="notif" data-bs-toggle="offcanvas" href="#notifikasi" role="button" aria-controls="notifikasi">
-            <i class="fal fa-bell"></i>
-            <span>Notifikasi</span>
-            <span class="badge rounded-pill bg-danger counter ms-auto"></span>
-        </a>
-
         <div class="sidebar-user-card">
             <div class="sidebar-user-avatar">
                 <?= esc($namaInisial) ?>

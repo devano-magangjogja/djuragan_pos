@@ -1106,17 +1106,14 @@ $session  = \Config\Services::session();
 <script defer src="https://kit.fontawesome.com/22a9d93fa2.js" data-auto-replace-svg="nest" crossorigin="anonymous"></script>
 <?php
 
-$current_user_id         = $session->get('id');
 $link_api_get_bank       = site_url('api/juragan/all/');
 $link_api_get_pembayaran = site_url('admin/invoices/info_pembayaran');
 $link_api_pengiriman     = site_url('api/pengiriman');
 $link_get_status_invoice = site_url('admin/invoices/detail_status/');
 $link_hapus_orderan      = site_url('admin/invoices/hapus_orderan');
-$link_invoice            = site_url('admin/invoices/lihat/');
 $link_save_progress      = site_url('admin/invoices/save_progress');
 $link_tambah_pembayaran  = site_url('admin/invoices/simpan_pembayaran');
 $link_update_pembayaran  = site_url('admin/invoices/update_bayar');
-$link_api_notif          = site_url('api/notifikasi/');
 $link_api_counter_tab    = site_url('api/invoice/counter_tab/' . $juragan_id);
 
 $codvalue = 'COD' . $sekarang->toLocalizedString('ddMMyyyy');
@@ -1142,100 +1139,6 @@ $js = <<< JS
     		return new bootstrap.Tooltip(e);
     	});
 
-    	// notifikasi
-
-    	function getNotif(page = 1, dibaca = 0){
-    		var id = {$current_user_id};
-    		$.getJSON('{$link_api_notif}' + 'get', { id: id, page: page, dibaca: dibaca }, function(b){
-    			var a=[],
-    				data = b.results;
-
-    			if (b.count > 0) {
-    				$('.btnSettingNotif').show();
-    				a.push('');
-
-    				$.each(data,function(c,b){
-    					a.push(`<div class="list-group-item list-group-item-action">
-    						<div class="d-flex">
-    							<div class="me-auto">
-    								<div class="text-muted small">`+b.created_at +`</div>
-    								<a class="d-block text-decoration-none" href="{$link_invoice}semua/semua?cari[kolom]=faktur&cari[q]=`+b.invoice+`">`+ b.notif+`</a>
-    							</div>
-    							<div class="d-flex justify-content-right flex-column actionNotif">
-    								<button data-id="`+b.id+`" class="markAs border-0 bg-transparent text-primary small" type="button"><i class="fal fa-circle"></i></button>
-    							</div>
-    						</div>
-    					</div>`);
-    				}),
-    				$(a.join('')).appendTo('#notifDisini');
-    				var next = '';
-
-    				if (b.next) {
-    					$('<button type="button" class="list-group-item list-group-item-action text-center lanjutNotif" data-page="'+ (b.page+1) +'">lanjut ...</button>').appendTo('#notifDisini');
-    				}
-    			}
-    			else {
-    				$('.btnSettingNotif').hide();
-
-    				$('<div class="d-flex justify-content-center align-items-center" style="height: 90vh"><i class="fal fa-bell-slash fa-5x"></i></div>').appendTo('#notifDisini');
-    			}
-    		});
-    	}
-
-    	$(document).on('click', '.lanjutNotif',function(){
-    		getNotif($(this).data('page'));
-    		$(this).attr('disabled', true).html(`<div class="text-center">
-    			<div class="spinner-border" role="status">
-    				<span class="visually-hidden">Loading...</span>
-    			</div>
-    		</div>`).remove();
-    	});
-
-        var notifikasi = document.getElementById('notifikasi');
-        if(notifikasi) {
-            notifikasi.addEventListener('show.bs.offcanvas', function () {
-                var id = {$current_user_id};
-                $('#notifDisini').empty(),
-                getNotif();
-            });
-        }
-
-    	counter_notif();
-
-    	setInterval(function(){
-    		counter_notif();
-    	}, 10000);
-
-    	function counter_notif() {
-    		var id = {$current_user_id};
-    		$.getJSON('{$link_api_notif}' + 'get', { id: id }, function(b){
-    			$('.counter').text(b.count_text);
-    		});
-    	}
-
-    	$(document).on('click', '.actionNotif .markAs', function() { // markAs
-    		var action = '';
-
-    		if ($(this).hasClass( "text-primary" )) {
-    			$(this).removeClass('text-primary').addClass('text-muted');
-    			action = 'sudahBaca';
-    		}
-    		else {
-    			$(this).removeClass('text-muted').addClass('text-primary');
-    			action = 'belumBaca';
-    		}
-
-    		$.post( '{$link_api_notif}' + 'mark', { action: action, id: $(this).data('id') });
-    	});
-
-    	$('.tandaiSemuaTerbaca').on('click',function(){
-    		var id = {$current_user_id};
-
-    		$.post( '{$link_api_notif}' + 'mark_all', { id: id }, function() {
-    			//
-    			$('.actionNotif .markAs').removeClass('text-primary').addClass('text-muted');
-    		});
-    	});
 
     	//
 

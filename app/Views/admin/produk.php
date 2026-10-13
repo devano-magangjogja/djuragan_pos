@@ -373,7 +373,6 @@ $keadaan_baris = static function (int $stok) use ($ambangnya): array {
 
 <?= $this->section('js') ?>
 <script defer src="https://kit.fontawesome.com/22a9d93fa2.js" data-auto-replace-svg="nest" crossorigin="anonymous"></script>
-<?= $this->include('template/common_js') ?>
 <?php
 $showModalSunting = $sunting_err ? 'true' : 'false';
 $showModalTambah  = $tambah_err ? 'true' : 'false';

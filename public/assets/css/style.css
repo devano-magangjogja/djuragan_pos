@@ -569,9 +569,6 @@ body.has-app-sidebar {
     body.has-app-sidebar.sidebar-collapsed {
         padding-left: calc(var(--sidebar-rail-width) + (var(--sidebar-gap) * 2));
     }
-    .mobile-topbar {
-        display: none !important;
-    }
 }
 
 @media (max-width: 991.98px) {
@@ -1604,6 +1601,19 @@ a.rounded-3.border.border-ink-200:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(16, 24, 40, 0.2) !important;
 }
+/* Tombol Live Chat ikut mengambang, ditumpuk tepat di atas tombol kirim masukan
+   (lingkaran 2.6rem + margin-bottom 1rem milik tombol itu, lalu jarak 0.7rem). */
+.wa-melayang {
+    bottom: 4.3rem;
+}
+.wa-melayang .btn {
+    border: 0;
+    border-radius: 9999px !important;
+    padding: 0 !important;
+    width: 2.6rem;
+    height: 2.6rem;
+    box-shadow: 0 4px 12px rgba(16, 24, 40, 0.15) !important;
+}
 
 /* 14. Modern Live Chat WA Container Harmonization */
 .chat-container {
@@ -1633,5 +1643,122 @@ a.rounded-3.border.border-ink-200:hover {
 .chat-conv-item.active {
     background: #f2f4f7 !important;
     border-left: 3px solid #101828 !important;
+}
+
+/* 15. Panel Notifikasi Melayang
+   Dulu offcanvas yang ditarik dari tepi kanan; sekarang kartu melayang yang
+   menempel di bawah topbar, dibuka dari lonceng mana pun. */
+.notif-panel {
+    display: none;
+    position: fixed;
+    top: 60px;
+    right: 0.9rem;
+    z-index: 1040;
+    flex-direction: column;
+    width: 22rem;
+    max-width: calc(100vw - 1.8rem);
+    background: #ffffff;
+    border: 1px solid var(--sidebar-border);
+    border-radius: 12px;
+    box-shadow: 0 12px 32px rgba(16, 24, 40, 0.16);
+    overflow: hidden;
+}
+.notif-panel.tampil {
+    display: flex;
+}
+.notif-panel__kepala {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.65rem 0.9rem;
+    background: #101828;
+    color: #ffffff;
+}
+.notif-panel__kepala .btn {
+    color: #d0d5dd !important;
+}
+.notif-panel__kepala .btn:hover {
+    color: #ffffff !important;
+}
+.notif-panel__isi {
+    max-height: 60vh;
+    overflow-y: auto;
+}
+.notif-panel__isi .list-group-item {
+    padding: 0.6rem 0.9rem;
+    border-color: #f2f4f7;
+}
+.notif-kosong {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 2.4rem 1rem;
+    color: #98a2b3;
+}
+.notif-panel__buntut {
+    display: block;
+    padding: 0.6rem;
+    text-align: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #344054;
+    text-decoration: none;
+    background: #f9fafb;
+    border-top: 1px solid #eaecf0;
+}
+.notif-panel__buntut:hover {
+    color: #101828;
+    background: #f2f4f7;
+}
+
+/* Lonceng desktop: melayang sendiri di pojok kanan atas, satu bahasa dengan
+   tombol mengambang di kanan bawah. Topbar tetap khusus layar kecil, jadi tidak
+   ada bar putih baru di halaman desktop. */
+.notif-melayang {
+    display: none;
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 1041;
+    width: 2.6rem;
+    height: 2.6rem;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--sidebar-border);
+    border-radius: 9999px;
+    background: #ffffff;
+    color: #667085;
+    box-shadow: 0 4px 12px rgba(16, 24, 40, 0.15);
+    text-decoration: none;
+}
+.notif-melayang:hover {
+    color: #101828;
+}
+.notif-melayang__angka {
+    position: absolute;
+    top: -3px;
+    right: -5px;
+    min-width: 1.1rem;
+    padding: 0 0.25rem;
+    border-radius: 9999px;
+    background: #ef4444;
+    color: #ffffff;
+    font-size: 0.62rem;
+    font-weight: 700;
+    line-height: 1.1rem;
+    text-align: center;
+}
+
+/* Panelnya menggantung tepat di bawah lonceng. */
+@media (min-width: 992px) {
+    .notif-melayang {
+        display: inline-flex;
+    }
+    .notif-panel {
+        top: 4rem;
+        right: 1rem;
+    }
 }
 

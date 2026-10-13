@@ -1,5 +1,22 @@
 <?= $this->extend('template/main') ?>
 
+<?= $this->section('css') ?>
+<style>
+    /* Badge ini duduk semeja dengan tombol, jadi kotak dan hurufnya
+       mengikuti .btn-sm, bukan .badge. */
+    .card-header .badge.jumlah-grup {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.32rem 0.7rem !important;
+        font-size: 0.78rem !important;
+        line-height: 1.4;
+        letter-spacing: normal !important;
+        border-radius: 8px !important;
+    }
+</style>
+<?= $this->endSection() ?>
+
 <?= $this->section('content') ?>
 <?= $this->include('admin/navbar') ?>
 
@@ -11,9 +28,6 @@
             </h4>
             <p class="text-muted small mb-0">Mendeteksi customer ganda berdasarkan kesamaan nomor WhatsApp atau kemiripan nama, serta fitur merge tanpa kehilangan riwayat transaksi.</p>
         </div>
-        <button class="btn btn-primary btn-sm fw-semibold" data-bs-toggle="modal" data-bs-target="#modalManualMerge">
-            <i class="fal fa-code-merge me-1"></i> Gabungkan 2 Akun Manual
-        </button>
     </div>
 
 
@@ -28,9 +42,14 @@
     </div>
 
     <div class="card border-0 shadow-sm">
-        <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+        <div class="card-header bg-white py-3 border-bottom d-flex flex-wrap gap-2 justify-content-between align-items-center">
             <h6 class="fw-bold mb-0">Daftar Akun yang Terindikasi Duplikat</h6>
-            <span class="badge bg-light text-dark border"><?= count($duplikatList) ?> Grup Duplikat Terdeteksi</span>
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-light text-dark border jumlah-grup"><?= $totalDuplikat ?> Grup Duplikat Terdeteksi</span>
+                <button class="btn btn-primary btn-sm fw-semibold" data-bs-toggle="modal" data-bs-target="#modalManualMerge">
+                    <i class="fal fa-code-merge me-1"></i> Gabungkan
+                </button>
+            </div>
         </div>
         <div class="card-body p-0">
             <?php if (empty($duplikatList)): ?>
@@ -96,6 +115,73 @@
                 </div>
             <?php endif; ?>
         </div>
+        <?php if ($totalPages > 1) : ?>
+            <?php
+            $akhir = (int) $totalPages;
+
+            $tautanHalaman = static function (int $n): string {
+                return site_url('admin/crm/duplikat?' . http_build_query(['page' => $n]));
+            };
+
+            // Jendela 5 nomor di sekitar halaman aktif, plus halaman pertama/terakhir
+            // dengan penanda "..." supaya halaman terjauh tetap bisa diklik.
+            $dari   = max(1, min($page - 2, $akhir - 4));
+            $sampai = min($akhir, $dari + 4);
+
+            $nomorHalaman = [];
+            if ($dari > 1) {
+                $nomorHalaman[] = 1;
+                if ($dari > 2) {
+                    $nomorHalaman[] = null;
+                }
+            }
+            for ($n = $dari; $n <= $sampai; $n++) {
+                $nomorHalaman[] = $n;
+            }
+            if ($sampai < $akhir) {
+                if ($sampai < $akhir - 1) {
+                    $nomorHalaman[] = null;
+                }
+                $nomorHalaman[] = $akhir;
+            }
+            ?>
+            <div class="card-footer bg-white d-flex justify-content-between align-items-center py-3">
+                <div class="small text-muted">
+                    Halaman <?= $page ?> dari <?= $akhir ?> (Total <?= number_format($totalDuplikat) ?> grup)
+                </div>
+                <ul class="pagination pagination-sm mb-0">
+                    <?php if ($page > 1) : ?>
+                        <li class="page-item">
+                            <a class="page-link" href="<?= $tautanHalaman($page - 1) ?>">&laquo; Sebelumnya</a>
+                        </li>
+                    <?php else : ?>
+                        <li class="page-item disabled">
+                            <span class="page-link">&laquo; Sebelumnya</span>
+                        </li>
+                    <?php endif; ?>
+
+                    <?php foreach ($nomorHalaman as $n) : ?>
+                        <?php if ($n === null) : ?>
+                            <li class="page-item disabled"><span class="page-link">&hellip;</span></li>
+                        <?php elseif ($n === $page) : ?>
+                            <li class="page-item active" aria-current="page"><span class="page-link"><?= $n ?></span></li>
+                        <?php else : ?>
+                            <li class="page-item"><a class="page-link" href="<?= $tautanHalaman($n) ?>"><?= $n ?></a></li>
+                        <?php endif; ?>
+                    <?php endforeach; ?>
+
+                    <?php if ($page < $akhir) : ?>
+                        <li class="page-item">
+                            <a class="page-link" href="<?= $tautanHalaman($page + 1) ?>">Berikutnya &raquo;</a>
+                        </li>
+                    <?php else : ?>
+                        <li class="page-item disabled">
+                            <span class="page-link">Berikutnya &raquo;</span>
+                        </li>
+                    <?php endif; ?>
+                </ul>
+            </div>
+        <?php endif; ?>
     </div>
 </div>
 

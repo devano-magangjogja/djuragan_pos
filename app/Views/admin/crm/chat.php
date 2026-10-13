@@ -168,27 +168,11 @@
 <?= $this->include('admin/navbar') ?>
 
 <div class="container-xxl py-4">
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
-        <div>
-            <h1 class="h3 mb-1">Live WhatsApp Chat</h1>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb p-0 m-0">
-                    <li class="breadcrumb-item"><?= anchor('', 'Dasbor') ?></li>
-                    <li class="breadcrumb-item"><?= anchor('admin/crm', 'CRM') ?></li>
-                    <li class="breadcrumb-item active" aria-current="page">Live Chat</li>
-                </ol>
-            </nav>
-        </div>
-        <div class="d-flex align-items-center gap-2">
-            <button class="btn btn-outline-dark btn-sm" data-bs-toggle="modal" data-bs-target="#modalInfoWebhook">
-                <i class="fal fa-webhook me-1"></i> Webhook & Status
-            </button>
-            <?php if (!empty($isSandbox)) : ?>
-                <span class="btn btn-sm pe-none fw-semibold text-nowrap bg-warning text-dark border-warning">
-                    <i class="fal fa-flask me-1"></i> Sandbox Mode
-                </span>
-            <?php endif; ?>
-        </div>
+    <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+        <h1 class="h3 mb-1">Live WhatsApp Chat</h1>
+        <button class="btn btn-outline-dark btn-sm" data-bs-toggle="modal" data-bs-target="#modalInfoWebhook">
+            <i class="fal fa-webhook me-1"></i> Webhook & Status
+        </button>
     </div>
 
 

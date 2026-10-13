@@ -15,15 +15,7 @@ $session  = \Config\Services::session();
 
     <h1 class="h3 mt-5">Tulis Orderan</h1>
 
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb p-0">
-            <li class="breadcrumb-item"><?= anchor('', 'Dasbor') ?></li>
-            <li class="breadcrumb-item"><?= anchor('user/invoices', 'Transaksi') ?></li>
-            <li class="breadcrumb-item active" aria-current="page">Tulis Orderan</li>
-        </ol>
-    </nav>
-
-    <?= form_open('user/invoices/save', ['class' => 'row mb-5', 'id' => 'iForm'], ['pengguna' => $session->get('id')]); ?>
+    <?= form_open('user/invoices/save', ['class' => 'row mb-5', 'id' => 'iForm'], ['pengguna' => (string) $session->get('id')]); ?>
 
     <div class="col-12 col-lg-6 mb-3">
         <div class="h-full rounded-kartu border border-ink-200 bg-white shadow-kartu">
@@ -77,7 +69,6 @@ $session  = \Config\Services::session();
                 </div>
                 <div class="mb-3">
                     <div class="hidden_id">
-                        <?= form_label('Pelanggan', 'pelanggan', ['class' => 'form-label']); ?>
                         <?= form_hidden('id_pemesan', ''); ?>
                         <?= form_hidden('id_kirimKe', ''); ?>
                     </div>
@@ -223,17 +214,14 @@ $session  = \Config\Services::session();
 
     <div class="col-12 mb-3">
         <div class="card mb-3 overflow-hidden rounded-kartu border-ink-200 shadow-kartu">
-            <div class="card-header border-ink-100 bg-ink-50/60">
-                <ul class="nav nav-tabs card-header-tabs">
-                    <li class="nav-item">
-                        <span class="nav-link active" aria-current="true">Orderan</span>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#!" class="nav-link" data-bs-toggle="modal" data-bs-target="#tambahProduk">
-                            <i class="fal fa-plus"></i>
-                        </a>
-                    </li>
-                </ul>
+            <div class="card-header border-ink-100 bg-ink-50/60 d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <div class="flex items-center gap-2.5">
+                    <span class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-[0.65rem] border border-brand-100 bg-white text-brand-500"><i class="fal fa-receipt text-xs"></i></span>
+                    <h6 class="mb-0 text-[0.78rem] font-bold uppercase tracking-[0.06em] text-ink-700">Orderan</h6>
+                </div>
+                <a href="#!" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#tambahProduk">
+                    <i class="fal fa-plus"></i> Tambah Barang
+                </a>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
@@ -626,7 +614,6 @@ $link_cari_pelanggan = site_url('pelanggan/cari');
 $link_invoice        = site_url('user/invoices/lihat/');
 $link_post_pelanggan = site_url('pelanggan/baru');
 $link_data_pelanggan = rtrim(site_url('pelanggan/data'), '/') . '/';
-$link_api_notif      = site_url('api/notifikasi/');
 
 ?>
 <script>
@@ -668,101 +655,6 @@ $js = <<< JS
             });
         }
 
-    	// notifikasi
-
-    	function getNotif(page = 1, dibaca = 0){
-    		var id = {$current_user_id};
-    		$.getJSON('{$link_api_notif}' + 'get', { id: id, page: page, dibaca: dibaca }, function(b){
-    			var a=[],
-    				data = b.results;
-
-    			if (b.count > 0) {
-    				$('.btnSettingNotif').show();
-    				a.push('');
-
-    				$.each(data,function(c,b){
-    					a.push(`<div class="list-group-item list-group-item-action">
-    						<div class="d-flex">
-    							<div class="me-auto">
-    								<div class="text-muted small">`+b.created_at +`</div>
-    								<a class="d-block text-decoration-none" href="{$link_invoice}semua/semua?cari[kolom]=faktur&cari[q]=`+b.invoice+`">`+ b.notif+`</a>
-    							</div>
-    							<div class="d-flex justify-content-right flex-column actionNotif">
-    								<button data-id="`+b.id+`" class="markAs border-0 bg-transparent text-primary small" type="button"><i class="fal fa-circle"></i></button>
-    							</div>
-    						</div>
-    					</div>`);
-    				}),
-    				$(a.join('')).appendTo('#notifDisini');
-    				var next = '';
-
-    				if (b.next) {
-    					$('<button type="button" class="list-group-item list-group-item-action text-center lanjutNotif" data-page="'+ (b.page+1) +'">lanjut ...</button>').appendTo('#notifDisini');
-    				}
-    			}
-    			else {
-    				$('.btnSettingNotif').hide();
-
-    				$('<div class="d-flex justify-content-center align-items-center" style="height: 90vh"><i class="fal fa-bell-slash fa-5x"></i></div>').appendTo('#notifDisini');
-    			}
-    		});
-    	}
-
-    	$(document).on('click', '.lanjutNotif',function(){
-    		getNotif($(this).data('page'));
-    		$(this).attr('disabled', true).html(`<div class="text-center">
-    			<div class="spinner-border" role="status">
-    				<span class="visually-hidden">Loading...</span>
-    			</div>
-    		</div>`).remove();
-    	});
-
-    	var notifikasi = document.getElementById('notifikasi');
-        if(notifikasi) {
-            notifikasi.addEventListener('show.bs.offcanvas', function () {
-
-                var id = {$current_user_id};
-                $('#notifDisini').empty(),
-                getNotif();
-            });
-        }
-
-    	counter_notif();
-
-    	setInterval(function(){
-    		counter_notif();
-    	}, 10000);
-
-    	function counter_notif() {
-    		var id = {$current_user_id};
-    		$.getJSON('{$link_api_notif}' + 'get', { id: id }, function(b){
-    			$('.counter').text(b.count_text);
-    		});
-    	}
-
-    	$(document).on('click', '.actionNotif .markAs', function() { // markAs
-    		var action = '';
-
-    		if ($(this).hasClass( "text-primary" )) {
-    			$(this).removeClass('text-primary').addClass('text-muted');
-    			action = 'sudahBaca';
-    		}
-    		else {
-    			$(this).removeClass('text-muted').addClass('text-primary');
-    			action = 'belumBaca';
-    		}
-
-    		$.post( '{$link_api_notif}' + 'mark', { action: action, id: $(this).data('id') });
-    	});
-
-    	$('.tandaiSemuaTerbaca').on('click',function(){
-    		var id = {$current_user_id};
-
-    		$.post( '{$link_api_notif}' + 'mark_all', { id: id }, function() {
-    			//
-    			$('.actionNotif .markAs').removeClass('text-primary').addClass('text-muted');
-    		});
-    	});
 
     	// salin data cuma bisa dipakai setelah ada pemesan
     	function sinkronSalin() {
