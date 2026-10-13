@@ -1381,6 +1381,21 @@ a.rounded-3.border.border-ink-200:hover {
     border-color: #98a2b3 !important;
     color: #101828 !important;
 }
+/* Pil juragan di Pengaturan > Pengguna. Bootstrap memberi warna pil lewat
+   .btn-check:checked + .btn, tapi .btn-outline-secondary di atas dipaksa
+   !important sehingga pil yang sudah dicentang terlihat sama persis dengan yang
+   belum: penderitanya merasa hanya boleh memilih satu. Ditimpa balik dengan
+   aturan sama kerasnya, hanya di dalam wadah pilihan. */
+.gulir-pilihan .btn-check:checked + .btn {
+    background-color: #101828 !important;
+    border-color: #101828 !important;
+    color: #ffffff !important;
+}
+.gulir-pilihan .btn-check:checked + .btn:hover {
+    background-color: #1e293b !important;
+    border-color: #1e293b !important;
+    color: #ffffff !important;
+}
 .btn-sm {
     padding: 0.32rem 0.7rem !important;
     font-size: 0.78rem !important;

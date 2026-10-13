@@ -581,6 +581,27 @@ $js = <<< JS
     		bootstrap.Modal.getOrCreateInstance(popupTambah).show();
     	}
 
+    	// ditutup = mulai dari nol. Dulu isian percobaan sebelumnya (dan pil juragan
+    	// yang sudah dicentang) tertinggal di dalam popup, jadi tombol Tambah
+    	// Pengguna berikutnya membuka form yang masih terisi.
+    	popupTambah.addEventListener('hidden.bs.modal', function () {
+    			var form = popupTambah.querySelector('form');
+
+    			// reset() mengembalikan tiap kontrol ke keadaan bawaan HTML, dan pil
+    			// yang ikut ter-render membawa atribut checked, jadi centangnya harus
+    			// dilepas sendiri setelahnya
+    			if (form) { form.reset(); }
+
+    			var centang = popupTambah.querySelectorAll('#pilihJuragan input:checked');
+    			for (var i = 0; i < centang.length; i++) { centang[i].checked = false; }
+
+    			$('#pilihJuragan').attr('data-juragan', '[]');
+    			sinkronHintLevel(popupTambah);
+
+    			var salah = popupTambah.querySelectorAll('.is-invalid');
+    			for (var j = 0; j < salah.length; j++) { salah[j].classList.remove('is-invalid'); }
+    	});
+
     	var mP=document.getElementById('modalSuntingPengguna');
     	mP.addEventListener('show.bs.modal',function(o){
     		var a=o.relatedTarget;

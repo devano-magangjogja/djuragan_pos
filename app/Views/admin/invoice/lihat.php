@@ -73,6 +73,15 @@ $session  = \Config\Services::session();
         width: 100%;
     }
 }
+
+/* Baris "juragan: / admin/cs:" dan tombol cetak di kepala kartu. Dua-duanya
+   tetap tautan yang bisa diklik tapi tidak perlu bergaris bawah: tanpa Bootstrap
+   CSS, tautan memakai garis bawah bawaan peramban yang membuatnya terlihat
+   seperti salah potong. */
+.meta-transaksi a,
+.aksi-kepala a {
+    text-decoration: none;
+}
 </style>
 <?= $this->endSection() ?>
 
@@ -269,7 +278,7 @@ $session  = \Config\Services::session();
                                 </span>
                             <?php endif; ?>
 
-                            <div class="ms-auto flex items-center gap-1 max-sm:ms-0">
+                            <div class="aksi-kepala ms-auto flex items-center gap-1 max-sm:ms-0">
                                 <a class="inline-flex cursor-pointer items-center gap-1 rounded-[0.7rem] border border-ink-200 bg-ink-50 px-2.5 py-1 text-sm text-ink-700 transition hover:bg-ink-100 hover:text-ink-900" href="<?= site_url('download/penjahit/' . $pesanan->seri) ?>" target="_blank" rel="noopener" title="Cetak lembar kerja penjahit (tanpa harga)">
                                     <i class="fal fa-cut"></i> <span class="hidden md:inline">Penjahit</span>
                                 </a>
@@ -282,7 +291,7 @@ $session  = \Config\Services::session();
                             </div>
                         </div>
 
-                        <div class="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-sm text-ink-600">
+                        <div class="meta-transaksi mt-2 flex flex-wrap gap-x-5 gap-y-1 text-sm text-ink-600">
                             <span class="inline-flex min-w-0 items-center gap-1 [&>.fal]:text-[0.85rem] [&>.fal]:text-ink-400">
                                 <i class="fal fa-store"></i>
                                 <span class="text-lowercase text-ink-500">Juragan:</span> <?= anchor('admin/invoices/lihat/' . $pesanan->juragan->slug, esc($pesanan->juragan->nama)) ?>
