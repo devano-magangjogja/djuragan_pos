@@ -102,7 +102,7 @@ $rincian_pesanan = baca_rincian($orderan->rincian);
                     <!-- pemesan -->
                     <div class="mb-3">
                         <?= form_label('Pemesan', 'cari_pelanggan', ['class' => 'form-label small text-muted mb-1']); ?>
-                        <div class="input-group mycustom form_pemesan" style="display: none;">
+                        <div class="input-group mycustom tambah-dalam form_pemesan" style="display: none;">
                         <?= form_input([
                             'class'       => 'form-control cari_pelanggan',
                             'id'          => 'cari_pelanggan',
@@ -182,7 +182,7 @@ $rincian_pesanan = baca_rincian($orderan->rincian);
                                 'type'     => 'button',
                             ]); ?>
                         </div>
-                        <div class="input-group mycustom form_kirimKe" style="display: none;">
+                        <div class="input-group mycustom tambah-dalam form_kirimKe" style="display: none;">
                             <?= form_input([
                                 'class'       => 'form-control cari_pelanggan kirimKe',
                                 'id'          => 'cari_kirimKe',

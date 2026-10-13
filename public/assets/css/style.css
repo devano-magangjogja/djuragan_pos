@@ -1305,6 +1305,7 @@ a.rounded-3.border.border-ink-200:hover {
     background: transparent;
     padding: 0;
     line-height: 1;
+    cursor: pointer;
     color: #667085;
 }
 .cari-merged .cari-kirim:hover {
@@ -1320,6 +1321,27 @@ a.rounded-3.border.border-ink-200:hover {
     line-height: 1;
     color: #667085;
     pointer-events: none;
+}
+/* Kolom cari pelanggan di form orderan. Sama seperti .cari-merged, .input-group
+   di sini terbaca jadi dua kotak karena field dan tombolnya punya border sendiri,
+   jadi tombol "+ Tambah" dipindah ke dalam field di sisi kanan. Dia ikut ditarik
+   sampai setinggi kolomnya dan hanya sisi kanannya yang melengkung (8px = radius
+   field 9px dikurangi border 1px), supaya pembatas hitam-putihnya jadi satu garis lurus. */
+.tambah-dalam {
+    position: relative;
+}
+.tambah-dalam .form-control {
+    padding-right: 6.4rem !important;
+}
+.tambah-dalam .btn {
+    position: absolute;
+    top: 1px;
+    right: 1px;
+    bottom: 1px;
+    height: auto;
+    border: 0;
+    padding: 0 0.7rem !important;
+    border-radius: 0 8px 8px 0 !important;
 }
 
 /* 8. Modern Buttons */

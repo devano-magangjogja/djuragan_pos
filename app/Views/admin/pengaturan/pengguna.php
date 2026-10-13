@@ -19,6 +19,35 @@ $per_halaman = (int) config('Pager')->perPage;
 ?>
 <?= $this->extend('template/main') ?>
 
+<?= $this->section('css') ?>
+<style>
+/* Tombol mata dulu menempel sebagai kotak .input-group-text sendiri di samping
+   kolom kata sandi; sekarang dia melayang di dalam field, sisi kanan, supaya
+   kolomnya terbaca satu kesatuan seperti kolom cari. */
+.sandi-merged {
+    position: relative;
+}
+.sandi-merged .form-control {
+    padding-right: 2.35rem !important;
+}
+.sandi-merged .sandi-lihat {
+    position: absolute;
+    top: 50%;
+    right: 0.6rem;
+    transform: translateY(-50%);
+    border: 0;
+    background: transparent;
+    padding: 0;
+    line-height: 1;
+    cursor: pointer;
+    color: #667085;
+}
+.sandi-merged .sandi-lihat:hover {
+    color: #101828;
+}
+</style>
+<?= $this->endSection() ?>
+
 <?= $this->section('content') ?>
 <?= $this->include('admin/navbar') ?>
 
@@ -103,7 +132,7 @@ $per_halaman = (int) config('Pager')->perPage;
                     </div>
                     <div class="col-6">
                         <?= form_label('Password', 'password', ['class' => 'form-label']); ?>
-                        <div class="input-group">
+                        <div class="sandi-merged">
                             <?= form_password([
                                 'class'       => 'form-control' . ($err('password') ? ' is-invalid' : ''),
                                 'name'        => 'password',
@@ -111,7 +140,7 @@ $per_halaman = (int) config('Pager')->perPage;
                                 'required'    => '',
                                 'placeholder' => 'minimal 6 karakter',
                             ]); ?>
-                            <button class="btn btn-outline-secondary" type="button" data-lihat="password" aria-label="Tampilkan atau sembunyikan kata sandi"><i class="fal fa-eye"></i></button>
+                            <button type="button" class="sandi-lihat" data-lihat="password" aria-label="Tampilkan atau sembunyikan kata sandi"><i class="fal fa-eye"></i></button>
                         </div>
                         <?php if ($err('password')) { ?>
                             <div class="invalid-feedback d-block"><?= esc($err('password')) ?></div>
@@ -225,9 +254,9 @@ $per_halaman = (int) config('Pager')->perPage;
                     </div>
                     <div class="col-6">
                         <?= form_label('Password', 'password_', ['class' => 'form-label']); ?>
-                        <div class="input-group">
+                        <div class="sandi-merged">
                             <?= form_password('password', '', ['class' => 'form-control', 'id' => 'password_', 'placeholder' => 'password - isi jika diganti']); ?>
-                            <button class="btn btn-outline-secondary" type="button" data-lihat="password_" aria-label="Tampilkan atau sembunyikan kata sandi"><i class="fal fa-eye"></i></button>
+                            <button type="button" class="sandi-lihat" data-lihat="password_" aria-label="Tampilkan atau sembunyikan kata sandi"><i class="fal fa-eye"></i></button>
                         </div>
                     </div>
                 </div>

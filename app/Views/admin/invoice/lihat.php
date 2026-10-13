@@ -11,18 +11,77 @@ $session  = \Config\Services::session();
 ?>
 <?= $this->extend('template/main') ?>
 
+<?= $this->section('css') ?>
+<style>
+/* Toolbar transaksi dulu dirakit dari utility flex + ms-sm-auto, begitu tab dan
+   tombol aksi tidak muat satu baris kelompok tombol jatuh ke baris kedua dan
+   tepinya tidak lagi lurus dengan tab. Dipakai satu baris flex dengan padding
+   tombol yang lebih ramping supaya tetap muat sampai layar ±1000px. */
+.toolbar-transaksi {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem 0.5rem;
+}
+.toolbar-transaksi__tab {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+.toolbar-transaksi__aksi {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    flex: 0 1 auto;
+    margin-left: auto;
+}
+.toolbar-transaksi .btn {
+    padding: 0.42rem 0.62rem;
+    gap: 0.3rem;
+    white-space: nowrap;
+}
+.toolbar-transaksi .badge {
+    padding: 0.2rem 0.45rem !important;
+}
+
+@media (max-width: 767.98px) {
+    /* tab digulir mendatar supaya tetap satu baris dan sejajar, tombol aksi
+       turun ke barisnya sendiri dengan nama toko mengisi sisa lebar */
+    .toolbar-transaksi__tab {
+        flex: 1 1 100%;
+        overflow-x: auto;
+        scrollbar-width: none;
+        padding-bottom: 0.15rem;
+    }
+    .toolbar-transaksi__tab::-webkit-scrollbar {
+        display: none;
+    }
+    .toolbar-transaksi__tab .btn {
+        flex: 0 0 auto;
+    }
+    .toolbar-transaksi__aksi {
+        flex: 1 1 100%;
+        margin-left: 0;
+    }
+    .toolbar-transaksi__aksi > .dropdown {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+    .toolbar-transaksi__aksi > .dropdown .btn {
+        width: 100%;
+    }
+}
+</style>
+<?= $this->endSection() ?>
+
 <?= $this->section('content') ?>
 <?= $this->include('admin/navbar') ?>
 
 <div class="container-xxl">
 
     <h1 class="h3 mt-5"><?= esc($title) ?></h1>
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb p-0">
-            <li class="breadcrumb-item"><?= anchor('', 'Dasbor') ?></li>
-            <li class="breadcrumb-item active" aria-current="page">Transaksi</li>
-        </ol>
-    </nav>
 
     <?php
     // [slug tab, label pendek, id badge counter, keterangan tooltip]
@@ -34,21 +93,23 @@ $session  = \Config\Services::session();
         ['selesai', 'Selesai', 'counterSelesai', 'Transaksi yang sudah selesai'],
     ];
     ?>
-    <div class="mb-4 flex flex-wrap items-center gap-x-1 gap-y-2">
-        <?php
-        foreach ($tab as [$slug, $label, $counter, $keterangan]) {
-            echo anchor(
-                'admin/invoices/lihat/' . $juragan . '/' . $slug,
-                $label . ' <span class="badge rounded-pill bg-ink-100 text-ink-600" id="' . $counter . '">0</span>',
-                [
-                    'class' => 'btn rounded-pill btn-' . ($hal === $slug ? 'primary' : 'outline-secondary'),
-                    'title' => $keterangan,
-                ]
-            );
-        }
-        ?>
+    <div class="toolbar-transaksi mb-4">
+        <div class="toolbar-transaksi__tab">
+            <?php
+            foreach ($tab as [$slug, $label, $counter, $keterangan]) {
+                echo anchor(
+                    'admin/invoices/lihat/' . $juragan . '/' . $slug,
+                    $label . ' <span class="badge rounded-pill bg-ink-100 text-ink-600" id="' . $counter . '">0</span>',
+                    [
+                        'class' => 'btn rounded-pill btn-' . ($hal === $slug ? 'primary' : 'outline-secondary'),
+                        'title' => $keterangan,
+                    ]
+                );
+            }
+            ?>
+        </div>
 
-        <div class="ms-sm-auto flex items-center gap-1">
+        <div class="toolbar-transaksi__aksi">
             <?php
             // Tab, filter kategori, dan kata yang sedang dicari ikut dibawa ke
             // tautan toko supaya ganti toko tidak melempar user ke tab lain.

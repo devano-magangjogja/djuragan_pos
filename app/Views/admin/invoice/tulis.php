@@ -89,7 +89,7 @@ $session  = \Config\Services::session();
                     <!-- pemesan -->
                     <div class="mb-3">
                         <?= form_label('Pemesan', 'cari_pelanggan', ['class' => 'form-label small text-muted mb-1']); ?>
-                        <div class="input-group mycustom form_pemesan">
+                        <div class="input-group mycustom tambah-dalam form_pemesan">
                             <?= form_input([
                                 'class'       => 'form-control cari_pelanggan',
                                 'id'          => 'cari_pelanggan',
@@ -137,7 +137,7 @@ $session  = \Config\Services::session();
                                 'type'     => 'button',
                             ]); ?>
                         </div>
-                        <div class="input-group mycustom form_kirimKe">
+                        <div class="input-group mycustom tambah-dalam form_kirimKe">
                             <?= form_input([
                                 'class'       => 'form-control cari_pelanggan kirimKe',
                                 'id'          => 'cari_kirimKe',
