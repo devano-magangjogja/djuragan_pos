@@ -85,6 +85,7 @@ $routes->group('admin', static function ($routes) {
         $routes->post('save', 'Admin\Produk::simpan');
         $routes->post('update', 'Admin\Produk::perbarui');
         $routes->post('hapus', 'Admin\Produk::hapus');
+        $routes->post('hapus-kartu', 'Admin\Produk::hapus_kartu');
     });
 
     // laporan per jenis: pesanan, pendapatan, pembayaran, piutang, produksi, produk, pelanggan
@@ -228,6 +229,29 @@ $routes->group('api', ['filter' => 'auth:admin,superadmin,user'], static functio
         $routes->post('unggah/(:num)', 'Api\Foto::unggah/$1');
         $routes->get('saji/(:num)', 'Api\Foto::saji/$1');
         $routes->post('hapus/(:num)', 'Api\Foto::hapus/$1');
+    });
+
+    // foto produk katalog, berkasnya juga di writable/uploads: saji() boleh dibaca
+    // CS karena form tulis orderan menampilkan contoh bentuk barang, sedangkan
+    // panel kelola + unggah + hapus khusus Admin/superadmin seperti halaman Produk.
+    // Filter grup bersarang digabung, jadi yang lebih sempit tetap memotong CS
+    $routes->group('produk-foto', static function ($routes) {
+        $routes->get('saji/(:num)', 'Api\ProdukFoto::saji/$1');
+        // baca() cuma daftar foto, tidak bisa menulis: form tulis orderan CS
+        // menampilkan contoh bentuk barang dari stok
+        $routes->get('baca/(:num)', 'Api\ProdukFoto::baca/$1');
+
+        $routes->group('', ['filter' => 'auth:admin,superadmin'], static function ($routes) {
+            $routes->get('kelola/(:num)', 'Api\ProdukFoto::kelola/$1');
+            $routes->post('unggah/(:num)', 'Api\ProdukFoto::unggah/$1');
+            $routes->post('hapus/(:num)', 'Api\ProdukFoto::hapus/$1');
+        });
+    });
+
+    // saran varian stok untuk form tulis orderan; hanya membaca dan hanya toko
+    // milik akun ini, sama seperti pencarian pelanggan
+    $routes->group('stok', static function ($routes) {
+        $routes->get('cari', 'Api\Stok::cari');
     });
 });
 

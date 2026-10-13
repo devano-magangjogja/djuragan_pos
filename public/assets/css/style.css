@@ -1613,3 +1613,97 @@ a.rounded-3.border.border-ink-200:hover {
     border-left: 3px solid #101828 !important;
 }
 
+
+/* 15. Katalog Produk & Stok (kartu produk) */
+.produk-kartu:hover {
+    border-color: #d0d5dd !important;
+    box-shadow: 0 4px 12px rgba(16, 24, 40, 0.08), 0 1px 3px rgba(16, 24, 40, 0.05) !important;
+}
+.produk-sampul {
+    height: 9.5rem;
+    overflow: hidden;
+    background: linear-gradient(160deg, #f9fafb, #f2f4f7);
+}
+.produk-sampul img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.produk-inisial {
+    font-size: 1.9rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #d0d5dd;
+}
+/* tombol kamera di pojok sampul: satu-satunya jalan mengelola foto kartu */
+.produk-foto-btn {
+    width: 1.85rem;
+    height: 1.85rem;
+    padding: 0;
+    border: 1px solid #eaecf0;
+    background: rgba(255, 255, 255, 0.92);
+    color: #475467;
+    font-size: 0.8rem;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.1);
+    transition: color 0.12s ease, border-color 0.12s ease;
+}
+.produk-foto-btn:hover {
+    color: #da251d;
+    border-color: #d0d5dd;
+    background: #ffffff;
+}
+.produk-foto-btn span {
+    margin-left: 0.15rem;
+    font-size: 0.68rem;
+    font-weight: 600;
+}
+/* daftar varian per baris: ukuran dan stoknya terpisah jelas tapi tetap sekotak */
+.varian-daftar {
+    border: 1px solid #eaecf0;
+    overflow: hidden;
+}
+.varian-baris {
+    padding: 0.3rem 0.5rem;
+    border: 0;
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.12s ease;
+}
+.varian-baris + .varian-baris {
+    border-top: 1px solid #f2f4f7;
+}
+.varian-baris:hover {
+    background: #f9fafb;
+}
+.varian-ukuran {
+    background: #ffffff;
+    border: 1px solid #d0d5dd;
+    color: #344054;
+    font-weight: 600;
+}
+
+/* 16. Panel "Ambil dari stok produk" di modal tambah orderan */
+.stok-foto-kecil {
+    display: block;
+    width: 3.4rem;
+    height: 3.4rem;
+    object-fit: cover;
+    border: 1px solid #eaecf0;
+    border-radius: 0.6rem;
+}
+.saran-stok .list-group-item {
+    border: 0;
+    border-bottom: 1px solid #f2f4f7;
+    cursor: pointer;
+}
+.saran-stok .list-group-item:last-child {
+    border-bottom: 0;
+}
+.saran-stok .list-group-item:hover {
+    background: #f9fafb;
+}

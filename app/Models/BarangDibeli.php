@@ -21,7 +21,9 @@ class BarangDibeli extends Model
      */
     public function getSimple(int $invoice_id): array
     {
-        return $this->select('id_beli as id,kode, ukuran, qty, harga, rincian')
+        // stok_id ikut dibaca supaya halaman Sunting bisa mengirim taunya kembali
+        // ke stok produk; baris lama yang ditulis manual menjawab null
+        return $this->select('id_beli as id,kode, ukuran, qty, harga, rincian, stok_id')
             ->where('invoice_id', $invoice_id)
             ->findAll();
     }

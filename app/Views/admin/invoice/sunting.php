@@ -365,6 +365,9 @@ $rincian_pesanan = baca_rincian($orderan->rincian);
                                             <?= form_hidden('produk[' . $produk->id . '][harga]', $produk->harga); ?>
                                             <?= form_hidden('produk[' . $produk->id . '][ukuran]', (string) $produk->ukuran); ?>
                                             <?= form_hidden('produk[' . $produk->id . '][qty]', $produk->qty); ?>
+                                            <?php if (! empty($produk->stok_id)) : ?>
+                                                <?= form_hidden('produk[' . $produk->id . '][stok_id]', (string) $produk->stok_id); ?>
+                                            <?php endif; ?>
                                             <?php foreach (baca_rincian($produk->rincian) as $key_rincian => $nilai_rincian) { ?>
                                                 <?= form_hidden('produk[' . $produk->id . '][rincian][' . $key_rincian . ']', $nilai_rincian); ?>
                                             <?php } ?>
@@ -634,6 +637,7 @@ $rincian_pesanan = baca_rincian($orderan->rincian);
             </div>
             <?= form_open('', ['id' => 'nambahProduk']); ?>
             <div class="modal-body">
+                <?= stok_panel_form() ?>
                 <div class="row gx-2">
                     <div class="col col-sm-6 col-md-3">
                         <?= form_label('Kode Produk', 'kode_produk', ['class' => 'form-label']); ?>
@@ -751,6 +755,7 @@ $link_api_notif          = site_url('api/notifikasi/');
 <script defer src="<?= base_url('assets/js/anggota-form.js') ?>?v=<?= (int) @filemtime(FCPATH . 'assets/js/anggota-form.js') ?>"></script>
 <script defer src="<?= base_url('assets/js/cari-pelanggan.js') ?>?v=<?= (int) @filemtime(FCPATH . 'assets/js/cari-pelanggan.js') ?>"></script>
 <script defer src="<?= base_url('assets/js/foto-form.js') ?>?v=<?= (int) @filemtime(FCPATH . 'assets/js/foto-form.js') ?>"></script>
+<script defer src="<?= base_url('assets/js/ambil-stok.js') ?>?v=<?= (int) @filemtime(FCPATH . 'assets/js/ambil-stok.js') ?>"></script>
 
 <?php
 
@@ -1398,8 +1403,10 @@ $js = <<< JS
     		return src;
     	}
 
-    	// satu baris orderan; dipakai lagi waktu edit supaya kuncinya (k) tetap sama
-    	function bikinBaris(k, d, a, e, b, rincian, jenis, nilai) {
+    	// satu baris orderan; dipakai lagi waktu edit supaya kuncinya (k) tetap sama.
+    	// `s` id_stok yang sedang terpakai di modal: ikut terkirim supaya nota bisa
+    	// mengambil foto produknya, dan tetap tidak ada kalau barangnya ditulis manual
+    	function bikinBaris(k, d, a, e, b, rincian, jenis, nilai, s) {
     		var label = d + ' ( ' + String(e).toUpperCase() + ' )',
     			bd = $('<button type="button" class="bg-transparent border-0 detail_row px-1" title="Detail"><i class="fal fa-eye h6 text-secondary"></i></button>'),
     			be = $('<button type="button" class="bg-transparent border-0 edit_row px-1" title="Ubah"><i class="fal fa-pen h6 text-primary"></i></button>'),
@@ -1415,7 +1422,8 @@ $js = <<< JS
     				.append($('<input/>', {'type':'hidden','name':'produk['+k+'][kode]','value':d}))
     				.append($('<input/>', {'type':'hidden','name':'produk['+k+'][harga]','value':a}))
     				.append($('<input/>', {'type':'hidden','name':'produk['+k+'][ukuran]','value':e}))
-    				.append($('<input/>', {'type':'hidden','name':'produk['+k+'][qty]','value':b})),
+    				.append($('<input/>', {'type':'hidden','name':'produk['+k+'][qty]','value':b}))
+    				.append(s ? $('<input/>', {'type':'hidden','name':'produk['+k+'][stok_id]','value':s}) : $()),
     			tr = $('<tr/>', {'data-kunci': k})
     				.append($('<td/>').append(t))
     				.append($('<td/>').append(f))
@@ -1466,6 +1474,7 @@ $js = <<< JS
     			a=fpro.find('[name="harga_satuan"]').val(),
     			e=fpro.find('[name="ukuran"]').val(),
     			b=fpro.find('[name="QTY"]').val(),
+    			s=window.STOK ? String(STOK.ambil() || '') : '',
     			rincian={},
     			nilai={},
     			jenis=$('#ukuranModal .uk-jenis').val() || '',
@@ -1486,7 +1495,7 @@ $js = <<< JS
     			}
     		});
 
-    		var tr = bikinBaris(k, d, a, e, b, rincian, jenis, nilai);
+    		var tr = bikinBaris(k, d, a, e, b, rincian, jenis, nilai, s);
 
     		if (rowEdit) {
     			rowEdit.replaceWith(tr);
@@ -1559,6 +1568,12 @@ $js = <<< JS
     				$(this).val(nilai[key]);
     			}
     		});
+
+    		// baris yang dulu diambil dari stok produk tetap tersambung ke stoknya,
+    		// jadi fotonya tidak hilang waktu orderannya disunting
+    		if (window.STOK) {
+    			STOK.tata(d.stok_id || 0);
+    		}
 
     		rowEdit = tr;
     		$('#tambahProdukLabel').text('Edit Orderan');

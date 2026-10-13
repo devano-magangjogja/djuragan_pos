@@ -1356,27 +1356,39 @@ if (! function_exists('anggota_panel_form')) {
 
 if (! function_exists('foto_panel_form')) {
     /**
-     * Panel "Foto Orderan" di bawah panel anggota, form Tulis dan form Sunting.
+     * Panel "Foto Orderan" di bawah panel anggota, form Tulis dan form Sunting,
+     * dan panel "Foto Produk" di modal katalog barang.
      *
      * Foto sengaja tidak dikirim lewat formulir ini. Berkasnya naik sendiri ke
      * api/foto/unggah setelah orderan tersimpan (lihat public/assets/js/foto-form.js),
      * jadi tidak ada penanda tersembunyi seperti anggota_dikirim: kalau JavaScript
      * gagal dimuat, orderan tetap tersimpan apa adanya dan fotonya memang tidak ikut.
      *
-     * @param array $sudah     baris foto tersimpan: id_foto, nama_asli
-     * @param int   $invoice_id 0 berarti orderannya belum tersimpan
+     * Panel produk memakai pipa yang sama tetapi kolom acuannya beda (stok, bukan
+     * invoice), jadi alamat API dan kelas fotonya ikut dipilih lewat $sumber.
+     *
+     * @param array  $sudah      baris foto tersimpan: id_foto, nama_asli
+     * @param int    $pemilik    0 = sumbernya belum tersimpan; untuk produk ini id_stok
+     * @param string $sumber     'invoice' atau 'produk'
      */
-    function foto_panel_form(array $sudah = [], int $invoice_id = 0): string
+    function foto_panel_form(array $sudah = [], int $pemilik = 0, string $sumber = 'invoice'): string
     {
-        $ada     = $sudah !== [];
-        $petunjuk = $invoice_id > 0
+        $produk  = $sumber === 'produk';
+        $model   = $produk ? \App\Models\ProdukFotoModel::class : \App\Models\FotoModel::class;
+        $api     = $produk ? 'api/produk-foto' : 'api/foto';
+        $judul   = $produk ? 'Foto Produk' : 'Foto Orderan';
+        $acuan   = $produk
+            ? 'Contoh bentuk barang ini; satu foto terlihat di semua ukuran sekartu.'
+            : 'Acuan bentuk dari pelanggan.';
+        $ada       = $sudah !== [];
+        $petunjuk  = $pemilik > 0
             ? 'Foto langsung tersimpan begitu dipilih.'
             : 'Fotonya ikut dikirim setelah orderan disimpan.';
-        $kartu = '';
+        $kartu     = '';
 
         foreach ($sudah as $f) {
-            $alamat = \App\Models\FotoModel::alamat((int) $f['id_foto']);
-            $kecil  = \App\Models\FotoModel::alamat((int) $f['id_foto'], 480);
+            $alamat = $model::alamat((int) $f['id_foto']);
+            $kecil  = $model::alamat((int) $f['id_foto'], 480);
             $nama   = (string) ($f['nama_asli'] ?? '');
 
             $kartu .= '<div class="col-4 col-sm-3 col-md-2 foto-kartu" data-id="' . (int) $f['id_foto'] . '">'
@@ -1392,20 +1404,20 @@ if (! function_exists('foto_panel_form')) {
         }
 
         return '<div class="card mb-3 overflow-hidden rounded-kartu border-ink-200 shadow-kartu foto-panel"'
-            . ' data-invoice="' . (int) $invoice_id . '"'
-            . ' data-maks="' . (int) \App\Models\FotoModel::MAKS_FOTO . '"'
-            . ' data-unggah="' . esc(site_url('api/foto/unggah'), 'attr') . '"'
-            . ' data-hapus="' . esc(site_url('api/foto/hapus'), 'attr') . '">'
+            . ' data-pemilik="' . (int) $pemilik . '"'
+            . ' data-maks="' . (int) $model::MAKS_FOTO . '"'
+            . ' data-unggah="' . esc(site_url($api . '/unggah'), 'attr') . '"'
+            . ' data-hapus="' . esc(site_url($api . '/hapus'), 'attr') . '">'
             . '<div class="card-header border-ink-100 bg-ink-50/60 py-2.5 px-3 px-sm-4">'
             . '<button type="button" class="buka-foto flex w-full cursor-pointer items-center gap-2 border-0 bg-transparent p-0 text-[0.78rem] font-bold uppercase tracking-[0.08em] text-ink-700" aria-expanded="' . ($ada ? 'true' : 'false') . '">'
             . '<span class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-[0.65rem] border border-brand-100 bg-white text-brand-500"><i class="fal fa-camera text-xs"></i></span>'
-            . '<span>Foto Orderan</span>'
+            . '<span>' . $judul . '</span>'
             . '<span class="inline-block rounded-full bg-ink-900 px-2 py-0.5 text-xs font-semibold text-white jumlah-foto">' . count($sudah) . '</span>'
             . '<i class="fal fa-chevron-down ms-auto text-ink-400 ikon-panah-foto transition-transform' . ($ada ? ' rotate-180' : '') . '"></i>'
             . '</button>'
             . '</div>'
             . '<div class="card-body foto-isi' . ($ada ? '' : ' d-none') . ' p-3 p-sm-4">'
-            . '<p class="small text-muted mb-2"><i class="fal fa-info-circle me-1 text-primary"></i>Acuan bentuk dari pelanggan. ' . $petunjuk . ' Maksimum ' . (int) \App\Models\FotoModel::MAKS_FOTO . ' foto JPG, PNG, atau WebP.</p>'
+            . '<p class="small text-muted mb-2"><i class="fal fa-info-circle me-1 text-primary"></i>' . $acuan . ' ' . $petunjuk . ' Maksimum ' . (int) $model::MAKS_FOTO . ' foto JPG, PNG, atau WebP.</p>'
             . '<div class="row g-2 foto-daftar">' . $kartu . '</div>'
             . '<label class="foto-pilih mt-2">'
             . '<input type="file" class="foto-input d-none" multiple accept="image/jpeg,image/png,image/webp">'
@@ -1414,6 +1426,48 @@ if (! function_exists('foto_panel_form')) {
             . '<span class="d-block" style="font-size:0.72rem">Yang besar diperkecil dulu oleh peramban sebelum dikirim.</span>'
             . '</label>'
             . '<div class="foto-galat small text-danger mt-2 d-none"></div>'
+            . '</div>'
+            . '</div>';
+    }
+}
+
+if (! function_exists('stok_panel_form')) {
+    /**
+     * Panel "Ambil dari stok produk" di modal tambah orderan.
+     *
+     * Dipakai modal yang sama di halaman Tulis admin, Tulis CS, dan Sunting,
+     * jadi markupnya satu tempat saja seperti panel foto. Isinya cuma kolom
+     * cari + daftar saran + contoh foto; pengisian kolomnya yang dikerjakan
+     * public/assets/js/ambil-stok.js.
+     *
+     * Daftar saran ditampilkan sebagai blok di bawah kolom (bukan layer mengambang)
+     * karena ia hidup di dalam modal, yang punya scroll-nya sendiri.
+     *
+     * tautan API-nya dibacakan JS dari data-cari/data-baca, jadi halaman yang
+     * tidak memasang panelnya (mis. halaman lama) tidak memanggil apa pun.
+     */
+    function stok_panel_form(): string
+    {
+        return '<div class="stok-panel rounded-[0.85rem] border border-dashed border-[#dbe3ee] bg-ink-50 px-3 pb-3 pt-2 mb-3"'
+            . ' data-cari="' . esc(site_url('api/stok/cari'), 'attr') . '"'
+            . ' data-baca="' . esc(site_url('api/produk-foto/baca'), 'attr') . '">'
+            . '<div class="d-flex flex-wrap align-items-end gap-2">'
+            . '<div class="flex-grow-1">'
+            . '<label class="form-label text-xs text-ink-500 mb-1" for="stok_cari">Ambil dari stok produk</label>'
+            . '<input type="text" class="form-control stok-cari" id="stok_cari" autocomplete="off"'
+            . ' placeholder="Ketik nama barang yang dipantau, cth: JAS HITAM">'
+            . '<input type="hidden" name="stok_produk" class="stok-id" value="">'
+            . '</div>'
+            . '<button type="button" class="btn btn-link text-decoration-none stok-batal d-none p-0 small">Tulis manual</button>'
+            . '</div>'
+            . '<p class="small text-muted mb-0 mt-2"><i class="fal fa-lightbulb me-1 text-primary"></i>'
+            . 'Opsional. Pilih barang yang sudah dipantau stoknya supaya harga, ukuran, dan foto produknya ikut terpakai; '
+            . 'kalau belum ada, tulis saja manual seperti biasa.</p>'
+            . '<div class="list-group list-group-flush saran-stok mt-2 d-none" style="max-height:13rem;overflow:auto"></div>'
+            . '<div class="stok-catatan small mt-2 d-none"></div>'
+            . '<div class="foto-acuan mt-2 d-none">'
+            . '<div class="small text-muted mb-1"><i class="fal fa-images me-1 text-primary"></i>Contoh bentuk barang ini ikut tersalin ke orderan setelah disimpan.</div>'
+            . '<div class="d-flex flex-wrap gap-2 stok-foto-isi"></div>'
             . '</div>'
             . '</div>';
     }
@@ -1666,6 +1720,63 @@ if (! function_exists('produk_dibeli')) {
         }
 
         return ['baris' => $baris, 'ukuran' => $ukuran];
+    }
+}
+
+if (! function_exists('tautkan_stok')) {
+    /**
+     * Hanya boleh menautkan baris orderan ke varian stok milik toko sendiri.
+     *
+     * id_stok dikirim peramban lewat produk[k][stok_id], jadi isinya bisa saja
+     * angka toko lain, angka yang tidak ada, atau kosong karena pemanggilnya
+     * menulis manual. Tiga aturan yang dijaga di sini:
+     *  - tautan yang bukan varian toko ini ditulis NULL, bukan dibiarkan: kalau
+     *    tidak, nota yang sedang disunting bisa tetap membawa tautan lama
+     *    sementara peramban mengklaim barang lain;
+     *  - baris yang tidak mengirim key sama sekali (klien lama, JS form gagal)
+     *    tidak disentuh, jadi taunya tetap seperti sebelumnya;
+     *  - nilainya selalu angka bulat atau null, jangan sampai string kosong
+     *    masuk ke kolom INT dan diam-diam jadi 0.
+     *
+     * Kolom stok_id memang boleh null: orderan lama dan barang yang ditulis
+     * manual tidak punya varian stok.
+     *
+     * @param array<string|int, array> $baris      hasil produk_dibeli()['baris']
+     * @param int                      $juragan_id toko tempat orderan ini ditulis
+     *
+     * @return array<string|int, array>
+     */
+    function tautkan_stok(array $baris, int $juragan_id): array
+    {
+        $dipakai = array_values(array_unique(array_filter(array_map(
+            static fn (array $v): int => (int) ($v['stok_id'] ?? 0),
+            $baris
+        ))));
+
+        $punya = [];
+
+        if ($dipakai !== [] && $juragan_id > 0) {
+            $punya = array_map('intval', array_column(
+                (new \App\Models\StokModel())
+                    ->select('id_stok')
+                    ->whereIn('id_stok', $dipakai)
+                    ->where('juragan_id', $juragan_id)
+                    ->findAll(),
+                'id_stok'
+            ));
+        }
+
+        foreach ($baris as $k => $v) {
+            if (! array_key_exists('stok_id', $v)) {
+                continue;
+            }
+
+            $taut = (int) $v['stok_id'];
+
+            $baris[$k]['stok_id'] = in_array($taut, $punya, true) ? $taut : null;
+        }
+
+        return $baris;
     }
 }
 

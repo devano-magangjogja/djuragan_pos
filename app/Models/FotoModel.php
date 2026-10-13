@@ -19,6 +19,11 @@ use CodeIgniter\Model;
  *
  * Order lama tidak punya baris di tabel ini dan itu normal; pembacanya hanya
  * menampilkan panel foto kalau isinya tidak kosong.
+ *
+ * Kelas ini juga jadi dasar ProdukFotoModel. Empat penyetel di bawah
+ * (kolomAcuan/folder/api/induk) satu-satunya perbedaan antara foto orderan dan
+ * foto produk, jadi seluruh jalur penulisan berkas dipakai bersama dan tidak
+ * ada dua salinan pipa unggah yang bisa berbeda sendiri nanti.
  */
 class FotoModel extends Model
 {
@@ -57,6 +62,30 @@ class FotoModel extends Model
      */
     public const SISI_THUMB = [240, 480];
 
+    /** Kolom yang menautkan baris foto ke pemiliknya. */
+    protected static function kolomAcuan(): string
+    {
+        return 'invoice_id';
+    }
+
+    /** Folder di writable/uploads tempat berkas ditulis. */
+    protected static function folder(): string
+    {
+        return 'invoice';
+    }
+
+    /** Path API yang menyajikan berkasnya; cuma satu jalan membaca foto. */
+    protected static function api(): string
+    {
+        return 'api/foto/saji';
+    }
+
+    /** Sebutan untuk pemilik foto, dipakai supaya pesan galat tidak menyesatkan. */
+    protected static function induk(): string
+    {
+        return 'orderan';
+    }
+
     /** Foto siap tampil untuk satu orderan, urut dari yang paling lama. */
     public function untukInvoice(int $invoice_id): array
     {
@@ -64,38 +93,39 @@ class FotoModel extends Model
     }
 
     /**
-     * Foto siap tampil untuk banyak orderan sekali query:
-     * [invoice_id => [baris, ...]]. Dipakai daftar transaksi supaya tidak
-     * menambah satu query per kartu.
+     * Foto siap tampil untuk banyak pemilik sekali query:
+     * [id_pemilik => [baris, ...]]. Dipakai daftar transaksi dan daftar barang
+     * supaya tidak menambah satu query per kartu.
      *
-     * @param int[] $invoice_ids
+     * @param int[] $pemilik_ids
      *
      * @return array<int, array<int, array<string, mixed>>>
      */
-    public function banyak(array $invoice_ids): array
+    public function banyak(array $pemilik_ids): array
     {
-        $id = array_values(array_filter(array_map('intval', $invoice_ids)));
+        $id = array_values(array_filter(array_map('intval', $pemilik_ids)));
 
         if ($id === []) {
             return [];
         }
 
-        $tabel = $this->db->prefixTable('invoice_foto');
+        $ak    = static::kolomAcuan();
+        $tabel = $this->db->prefixTable($this->table);
         $hasil = [];
 
-        $baris = $this->db->query('SELECT id_foto, invoice_id, nama_asli, tipe, byte, lebar, tinggi, created_at'
-            . ' FROM `' . $tabel . '` WHERE invoice_id IN (' . implode(',', $id) . ') ORDER BY id_foto')->getResultArray();
+        $baris = $this->db->query('SELECT id_foto, ' . $ak . ' AS pemilik, nama_asli, tipe, byte, lebar, tinggi, created_at'
+            . ' FROM `' . $tabel . '` WHERE ' . $ak . ' IN (' . implode(',', $id) . ') ORDER BY id_foto')->getResultArray();
 
         foreach ($baris as $b) {
-            $hasil[(int) $b['invoice_id']][] = $b;
+            $hasil[(int) $b['pemilik']][] = $b;
         }
 
         return $hasil;
     }
 
-    public function jumlah(int $invoice_id): int
+    public function jumlah(int $pemilik): int
     {
-        return $this->where('invoice_id', $invoice_id)->countAllResults();
+        return $this->where(static::kolomAcuan(), $pemilik)->countAllResults();
     }
 
     /** Tipe tersimpan => isi header Content-Type waktu foto dibuka. */
@@ -111,7 +141,7 @@ class FotoModel extends Model
     /** Alamat satu foto di API. $sisi diisi untuk minta versi kecilnya. */
     public static function alamat(int $id_foto, int $sisi = 0): string
     {
-        $alamat = site_url('api/foto/saji/' . $id_foto);
+        $alamat = site_url(static::api() . '/' . $id_foto);
 
         return $sisi > 0 ? $alamat . '?s=' . $sisi : $alamat;
     }
@@ -201,10 +231,10 @@ class FotoModel extends Model
      *
      * @return array{0:?array, 1:?string} [baris baru, null] atau [null, pesan galat]
      */
-    public function terima(UploadedFile $berkas, int $invoice_id, int $user_id): array
+    public function terima(UploadedFile $berkas, int $pemilik, int $user_id): array
     {
-        if ($this->jumlah($invoice_id) >= self::MAKS_FOTO) {
-            return [null, 'Foto di orderan ini sudah ' . self::MAKS_FOTO . ' buah, cukup segitu ya.'];
+        if ($this->jumlah($pemilik) >= self::MAKS_FOTO) {
+            return [null, 'Foto di ' . static::induk() . ' ini sudah ' . self::MAKS_FOTO . ' buah, cukup segitu ya.'];
         }
 
         $galat_upload = $berkas->getError();
@@ -266,7 +296,7 @@ class FotoModel extends Model
         $lebar = imagesx($kanvas);
         $tinggi = imagesy($kanvas);
 
-        $folder = self::arah($invoice_id);
+        $folder = static::arah($pemilik);
 
         if ($folder === null) {
             imagedestroy($kanvas);
@@ -292,8 +322,8 @@ class FotoModel extends Model
         }
 
         $id = $this->insert([
-            'invoice_id' => $invoice_id,
-            'berkas'     => self::relatif($nama, $invoice_id),
+            static::kolomAcuan() => $pemilik,
+            'berkas'     => static::relatif($nama, $pemilik),
             'nama_asli'  => self::namaTampil($berkas->getClientName()),
             'tipe'       => $tipe,
             'byte'       => (int) filesize($jalan),
@@ -343,6 +373,138 @@ class FotoModel extends Model
     }
 
     /**
+     * Salin foto produk ke orderan yang baru ditulis dari stok.
+     *
+     * Barang yang dicatat dari katalog sudah punya contoh bentuk di kartu
+     * produknya, jadi tidak perlu difoto ulang. Yang masuk ke orderan adalah
+     * salinan berkas baru dengan nama acak sendiri, bukan tautan ke foto produk:
+     * orderan harus tetap punya fotonya sendiri walaupun produknya diganti atau
+     * dihapus nanti.
+     *
+     * Hanya baris yang bertaut stok yang jadi sumber; baris manual memang tidak
+     * punya foto. Dipanggil setelah transaksi save commit, jadi orderan yang
+     * gagal validasi tidak meninggalkan berkas di disk.
+     *
+     * @return int banyak foto yang berhasil disalin
+     */
+    public function salin_dari_produk(int $invoice_id, int $user_id): int
+    {
+        if ($invoice_id < 1) {
+            return 0;
+        }
+
+        // orderan yang fotonya sudah penuh tidak diberi salinan lagi
+        $sisa = self::MAKS_FOTO - $this->jumlah($invoice_id);
+
+        if ($sisa < 1) {
+            return 0;
+        }
+
+        $tautan = $this->db->table('dibeli')
+            ->select('stok_id')
+            ->where('invoice_id', $invoice_id)
+            ->where('stok_id IS NOT NULL')
+            ->get()
+            ->getResultArray();
+
+        $stok_ids = array_values(array_unique(array_filter(array_map('intval', array_column($tautan, 'stok_id')))));
+
+        if ($stok_ids === []) {
+            return 0;
+        }
+
+        // foto memang menempel di satu varian, tapi kartu katalog menampilkannya
+        // untuk sekartu, jadi ikut cara kartu itu dibaca supaya ukurannya tidak
+        // harus sama dengan yang ditulis di orderan
+        $stok   = new StokModel();
+        $varian = [];
+
+        foreach ($this->db->table('stok')->select('juragan_id, kode')->whereIn('id_stok', $stok_ids)->get()->getResultArray() as $kartu) {
+            foreach ($stok->sekartu((int) $kartu['juragan_id'], (string) $kartu['kode']) as $id) {
+                $varian[$id] = $id;
+            }
+        }
+
+        if ($varian === []) {
+            return 0;
+        }
+
+        // banyak() sengaja tidak membawa kolom berkas, jadi barisnya dibaca lagi
+        $sumber = (new ProdukFotoModel())
+            ->select('berkas, nama_asli')
+            ->whereIn('stok_id', array_values($varian))
+            ->orderBy('id_foto', 'ASC')
+            ->limit($sisa)
+            ->get()
+            ->getResultArray();
+
+        if ($sumber === []) {
+            return 0;
+        }
+
+        $folder = static::arah($invoice_id);
+
+        if ($folder === null) {
+            return 0;
+        }
+
+        $disalin = 0;
+
+        foreach ($sumber as $b) {
+            $asal = self::jalur((string) ($b['berkas'] ?? ''));
+
+            if ($asal === null) {
+                continue;
+            }
+
+            $isi = @file_get_contents($asal);
+
+            if ($isi === false || $isi === '') {
+                continue;
+            }
+
+            // berkas produk sudah bersih dari muatan tersembunyi, tapi tipe dan
+            // ukuran tetap dibaca ulang dari isinya, bukan dari kolom tabel
+            $kepala = @getimagesizefromstring($isi);
+
+            if ($kepala === false || ! isset(self::TIPE[$kepala['mime']])) {
+                continue;
+            }
+
+            [$tipe, $ekstensi] = self::TIPE[$kepala['mime']];
+            $nama               = bin2hex(random_bytes(8)) . '.' . $ekstensi;
+            $jalan              = $folder . DIRECTORY_SEPARATOR . $nama;
+
+            if (@file_put_contents($jalan, $isi) === false || ! is_file($jalan)) {
+                @unlink($jalan);
+
+                continue;
+            }
+
+            $id = $this->insert([
+                static::kolomAcuan() => $invoice_id,
+                'berkas'     => static::relatif($nama, $invoice_id),
+                'nama_asli'  => self::namaTampil((string) ($b['nama_asli'] ?? '')),
+                'tipe'       => $tipe,
+                'byte'       => (int) filesize($jalan),
+                'lebar'      => (int) $kepala[0],
+                'tinggi'     => (int) $kepala[1],
+                'user_id'    => $user_id,
+            ]);
+
+            if ($id === false) {
+                @unlink($jalan);
+
+                continue;
+            }
+
+            $disalin++;
+        }
+
+        return $disalin;
+    }
+
+    /**
      * Lokasi asli berkas di disk, atau null kalau jalur di tabel tidak bisa
      * dipercaya (berkas hilang / jalurnya mencoba keluar dari folder uploads).
      */
@@ -363,16 +525,16 @@ class FotoModel extends Model
         return $nyata;
     }
 
-    /** Folder penyimpanan satu orderan, dibuat kalau belum ada. */
-    public static function arah(int $invoice_id): ?string
+    /** Folder penyimpanan satu pemilik foto, dibuat kalau belum ada. */
+    public static function arah(int $pemilik): ?string
     {
-        $dasar = WRITEPATH . 'uploads' . DIRECTORY_SEPARATOR . 'invoice';
+        $dasar = WRITEPATH . 'uploads' . DIRECTORY_SEPARATOR . static::folder();
 
         if (! is_dir($dasar) && ! @mkdir($dasar, 0775, true) && ! is_dir($dasar)) {
             return null;
         }
 
-        $baru = $dasar . DIRECTORY_SEPARATOR . $invoice_id;
+        $baru = $dasar . DIRECTORY_SEPARATOR . $pemilik;
 
         if (! is_dir($baru) && ! @mkdir($baru, 0775) && ! is_dir($baru)) {
             return null;
@@ -435,9 +597,9 @@ class FotoModel extends Model
     }
 
     /** Nama berkas di disk selalu relatif terhadap writable/uploads/. */
-    private static function relatif(string $nama, int $invoice_id): string
+    protected static function relatif(string $nama, int $pemilik): string
     {
-        return 'invoice/' . $invoice_id . '/' . $nama;
+        return static::folder() . '/' . $pemilik . '/' . $nama;
     }
 
     /** Nama asli cuma untuk label, jadi dipangkas dan dibuang karakter aneh. */

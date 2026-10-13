@@ -285,7 +285,11 @@ class Invoices extends BaseController
 
                 // simpan produk, lalu ukuran terstruktur per item
                 $produk = produk_dibeli($this->request->getPost('produk'), $invoice_id);
-                $peta   = sinkron_dibeli($invoice_id, $produk['baris']);
+
+                // tautan stok diperiksa di server: id_stok datang dari peramban,
+                // jadi bisa saja milik toko lain atau tidak ada sama sekali
+                $peta = sinkron_dibeli($invoice_id, tautkan_stok($produk['baris'], (int) $juragan_id));
+
                 $galat  = array_merge(
                     simpan_ukuran_produk($invoice_id, $peta, $produk['ukuran']),
                     simpan_anggota($invoice_id, $this->request->getPost('anggota_dikirim'), $this->request->getPost('anggota'))
@@ -323,6 +327,9 @@ class Invoices extends BaseController
             }
 
             $db->transCommit();
+
+            // barang yang ditulis dari stok ikut membawa foto kartunya
+            (new FotoModel())->salin_dari_produk($invoice_id, (int) session()->get('id'));
 
             $ret = [
                 'status' => 'data tersimpan',
@@ -409,7 +416,10 @@ class Invoices extends BaseController
             // simpan produk; baris yang nomornya (key = id_beli) masih ada di-update
             // supaya ukuran yang sudah tercatat tetap nempel di itemnya
             $produk = produk_dibeli($this->request->getPost('produk'), $invoice_id);
-            $peta   = sinkron_dibeli($invoice_id, $produk['baris']);
+
+            // tokonya sudah dipastikan milik akun ini di atas; tautan stok yang
+            // bukan barang toko itu dilepas sebelum barisnya ditulis
+            $peta = sinkron_dibeli($invoice_id, tautkan_stok($produk['baris'], (int) $this->request->getPost('juragan')));
             $galat  = array_merge(
                 simpan_ukuran_produk($invoice_id, $peta, $produk['ukuran']),
                 simpan_anggota($invoice_id, $this->request->getPost('anggota_dikirim'), $this->request->getPost('anggota'))
