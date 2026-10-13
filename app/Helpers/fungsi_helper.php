@@ -1564,9 +1564,9 @@ if (! function_exists('deadline_iso')) {
 
 if (! function_exists('label_deadline')) {
     /**
-     * Deadline jadi [teks, kelas badge] untuk dasbor. Jaraknya dihitung dari hari
-     * ini supaya admin cukup membaca badge, bukan menghitung tanggal. 'kelas' kosong
-     * berarti tanggalnya masih jauh dan cukup ditulis polos.
+     * Deadline jadi [teks, kelas badge]: tanggal yang sudah lewat merah, sisanya
+     * hijau, tanpa kata "terlewat" karena warnanya yang bicara. 'kelas' kosong
+     * hanya untuk tanggal yang gagal dibaca, itu ditulis polos.
      */
     function label_deadline(?string $deadline): array
     {
@@ -1585,22 +1585,22 @@ if (! function_exists('label_deadline')) {
         $tertulis = tanggal_rincian($deadline);
 
         if ($selisih < 0) {
-            return ['teks' => $tertulis . ' · terlewat', 'kelas' => 'danger'];
+            return ['teks' => $tertulis, 'kelas' => 'danger'];
         }
 
         if ($selisih === 0) {
-            return ['teks' => 'Hari ini', 'kelas' => 'danger'];
+            return ['teks' => 'Hari ini', 'kelas' => 'success'];
         }
 
         if ($selisih === 1) {
-            return ['teks' => 'Besok', 'kelas' => 'warning'];
+            return ['teks' => 'Besok', 'kelas' => 'success'];
         }
 
         if ($selisih <= 3) {
-            return ['teks' => $selisih . ' hari lagi', 'kelas' => 'warning'];
+            return ['teks' => $selisih . ' hari lagi', 'kelas' => 'success'];
         }
 
-        return ['teks' => $tertulis, 'kelas' => ''];
+        return ['teks' => $tertulis, 'kelas' => 'success'];
     }
 }
 
