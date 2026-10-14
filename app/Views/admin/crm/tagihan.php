@@ -1,5 +1,14 @@
 <?= $this->extend('template/main') ?>
 
+<?= $this->section('css') ?>
+<style>
+/* ikon cari ikut di dalam field, bukan kotak terpisah di kirinya */
+.form-control.crm-cari {
+    padding-left: 2.1rem !important;
+}
+</style>
+<?= $this->endSection() ?>
+
 <?= $this->section('content') ?>
 <?= $this->include('admin/navbar') ?>
 
@@ -7,13 +16,6 @@
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
         <div>
             <h1 class="h3 mb-1">Follow-up Tagihan Belum Lunas</h1>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb p-0 m-0">
-                    <li class="breadcrumb-item"><?= anchor('', 'Dasbor') ?></li>
-                    <li class="breadcrumb-item"><?= anchor('admin/crm', 'CRM') ?></li>
-                    <li class="breadcrumb-item active" aria-current="page">Tagihan</li>
-                </ol>
-            </nav>
         </div>
         <div class="d-flex align-items-center gap-2">
             <?= $this->include('admin/crm/tombol_wa') ?>
@@ -25,9 +27,9 @@
         <div class="card-body">
             <form method="get" action="<?= site_url('admin/crm/tagihan') ?>" class="row g-2 align-items-center">
                 <div class="col-md-5">
-                    <div class="input-group">
-                        <span class="input-group-text bg-white"><i class="fal fa-search text-muted"></i></span>
-                        <input type="text" name="cari" class="form-control" placeholder="Cari nomor invoice, nama, atau no HP..." value="<?= esc($cari) ?>">
+                    <div class="position-relative">
+                        <i class="fal fa-search text-muted position-absolute top-50 start-0 translate-middle-y ms-3"></i>
+                        <input type="text" name="cari" class="form-control crm-cari" placeholder="Cari nomor invoice, nama, atau no HP..." value="<?= esc($cari) ?>">
                     </div>
                 </div>
                 <div class="col-auto">
@@ -62,8 +64,13 @@
                     <?php if (empty($invoices)) : ?>
                         <tr>
                             <td colspan="8" class="text-center py-5 text-muted">
-                                <i class="fal fa-check-circle fa-3x text-success mb-2 d-block"></i>
-                                Tidak ada antrean tagihan yang perlu difollow-up.
+                                <?php if (trim((string) $cari) !== '') : ?>
+                                    <i class="fal fa-search fa-3x mb-2 d-block"></i>
+                                    Tidak ada hasil untuk "<?= esc($cari) ?>".
+                                <?php else : ?>
+                                    <i class="fal fa-check-circle fa-3x text-success mb-2 d-block"></i>
+                                    Tidak ada antrean tagihan yang perlu difollow-up.
+                                <?php endif; ?>
                             </td>
                         </tr>
                     <?php else : ?>

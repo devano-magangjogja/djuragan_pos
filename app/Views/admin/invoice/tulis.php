@@ -15,14 +15,6 @@ $session  = \Config\Services::session();
 
     <h1 class="h3 mt-5">Tulis Orderan</h1>
 
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb p-0">
-            <li class="breadcrumb-item"><?= anchor('', 'Dasbor') ?></li>
-            <li class="breadcrumb-item"><?= anchor('admin/invoices/lihat/semua/semua', 'Transaksi') ?></li>
-            <li class="breadcrumb-item active" aria-current="page">Tulis Orderan</li>
-        </ol>
-    </nav>
-
     <?= form_open('admin/invoices/save', ['class' => 'row mb-5', 'id' => 'iForm']); ?>
 
     <div class="col-12 col-lg-6 mb-3">
@@ -81,7 +73,6 @@ $session  = \Config\Services::session();
                 </div>
                 <div class="mb-3">
                     <div class="hidden_id">
-                        <?= form_label('Pelanggan', 'pelanggan', ['class' => 'form-label']); ?>
                         <?= form_hidden('id_pemesan', ''); ?>
                         <?= form_hidden('id_kirimKe', ''); ?>
                     </div>
@@ -89,7 +80,7 @@ $session  = \Config\Services::session();
                     <!-- pemesan -->
                     <div class="mb-3">
                         <?= form_label('Pemesan', 'cari_pelanggan', ['class' => 'form-label small text-muted mb-1']); ?>
-                        <div class="input-group mycustom form_pemesan">
+                        <div class="input-group mycustom tambah-dalam form_pemesan">
                             <?= form_input([
                                 'class'       => 'form-control cari_pelanggan',
                                 'id'          => 'cari_pelanggan',
@@ -137,7 +128,7 @@ $session  = \Config\Services::session();
                                 'type'     => 'button',
                             ]); ?>
                         </div>
-                        <div class="input-group mycustom form_kirimKe">
+                        <div class="input-group mycustom tambah-dalam form_kirimKe">
                             <?= form_input([
                                 'class'       => 'form-control cari_pelanggan kirimKe',
                                 'id'          => 'cari_kirimKe',
@@ -227,17 +218,14 @@ $session  = \Config\Services::session();
 
     <div class="col-12 mb-3">
         <div class="card mb-3 overflow-hidden rounded-kartu border-ink-200 shadow-kartu">
-            <div class="card-header border-ink-100 bg-ink-50/60">
-                <ul class="nav nav-tabs card-header-tabs">
-                    <li class="nav-item">
-                        <span class="nav-link active" aria-current="true">Orderan</span>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#!" class="nav-link" data-bs-toggle="modal" data-bs-target="#tambahProduk">
-                            <i class="fal fa-plus"></i>
-                        </a>
-                    </li>
-                </ul>
+            <div class="card-header border-ink-100 bg-ink-50/60 d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <div class="flex items-center gap-2.5">
+                    <span class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-[0.65rem] border border-brand-100 bg-white text-brand-500"><i class="fal fa-receipt text-xs"></i></span>
+                    <h6 class="mb-0 text-[0.78rem] font-bold uppercase tracking-[0.06em] text-ink-700">Orderan</h6>
+                </div>
+                <a href="#!" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#tambahProduk">
+                    <i class="fal fa-plus"></i> Tambah Orderan
+                </a>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
@@ -525,6 +513,7 @@ $session  = \Config\Services::session();
             </div>
             <?= form_open('', ['id' => 'nambahProduk']); ?>
             <div class="modal-body">
+                <?= stok_panel_form() ?>
                 <div class="row gx-2">
                     <div class="col col-sm-6 col-md-3">
                         <?= form_label('Kode Produk', 'kode_produk', ['class' => 'form-label']); ?>
@@ -631,7 +620,6 @@ $link_cari_pelanggan = site_url('pelanggan/cari');
 $link_invoice        = site_url('admin/invoices/lihat/');
 $link_post_pelanggan = site_url('pelanggan/baru');
 $link_data_pelanggan = rtrim(site_url('pelanggan/data'), '/') . '/';
-$link_api_notif      = site_url('api/notifikasi/');
 
 ?>
 <script>
@@ -642,6 +630,7 @@ $link_api_notif      = site_url('api/notifikasi/');
 <script defer src="<?= base_url('assets/js/anggota-form.js') ?>?v=<?= (int) @filemtime(FCPATH . 'assets/js/anggota-form.js') ?>"></script>
 <script defer src="<?= base_url('assets/js/cari-pelanggan.js') ?>?v=<?= (int) @filemtime(FCPATH . 'assets/js/cari-pelanggan.js') ?>"></script>
 <script defer src="<?= base_url('assets/js/foto-form.js') ?>?v=<?= (int) @filemtime(FCPATH . 'assets/js/foto-form.js') ?>"></script>
+<script defer src="<?= base_url('assets/js/ambil-stok.js') ?>?v=<?= (int) @filemtime(FCPATH . 'assets/js/ambil-stok.js') ?>"></script>
 
 <?php
 
@@ -673,101 +662,6 @@ $js = <<< JS
             });
         }
 
-    	// notifikasi
-
-    	function getNotif(page = 1, dibaca = 0){
-    		var id = {$current_user_id};
-    		$.getJSON('{$link_api_notif}' + 'get', { id: id, page: page, dibaca: dibaca }, function(b){
-    			var a=[],
-    				data = b.results;
-
-    			if (b.count > 0) {
-    				$('.btnSettingNotif').show();
-    				a.push('');
-
-    				$.each(data,function(c,b){
-    					a.push(`<div class="list-group-item list-group-item-action">
-    						<div class="d-flex">
-    							<div class="me-auto">
-    								<div class="text-muted small">`+b.created_at +`</div>
-    								<a class="d-block text-decoration-none" href="{$link_invoice}semua/semua?cari[kolom]=faktur&cari[q]=`+b.invoice+`">`+ b.notif+`</a>
-    							</div>
-    							<div class="d-flex justify-content-right flex-column actionNotif">
-    								<button data-id="`+b.id+`" class="markAs border-0 bg-transparent text-primary small" type="button"><i class="fal fa-circle"></i></button>
-    							</div>
-    						</div>
-    					</div>`);
-    				}),
-    				$(a.join('')).appendTo('#notifDisini');
-    				var next = '';
-
-    				if (b.next) {
-    					$('<button type="button" class="list-group-item list-group-item-action text-center lanjutNotif" data-page="'+ (b.page+1) +'">lanjut ...</button>').appendTo('#notifDisini');
-    				}
-    			}
-    			else {
-    				$('.btnSettingNotif').hide();
-
-    				$('<div class="d-flex justify-content-center align-items-center" style="height: 90vh"><i class="fal fa-bell-slash fa-5x"></i></div>').appendTo('#notifDisini');
-    			}
-    		});
-    	}
-
-    	$(document).on('click', '.lanjutNotif',function(){
-    		getNotif($(this).data('page'));
-    		$(this).attr('disabled', true).html(`<div class="text-center">
-    			<div class="spinner-border" role="status">
-    				<span class="visually-hidden">Loading...</span>
-    			</div>
-    		</div>`).remove();
-    	});
-
-    	var notifikasi = document.getElementById('notifikasi');
-        if(notifikasi) {
-            notifikasi.addEventListener('show.bs.offcanvas', function () {
-
-                var id = {$current_user_id};
-                $('#notifDisini').empty(),
-                getNotif();
-            });
-        }
-
-    	counter_notif();
-
-    	setInterval(function(){
-    		counter_notif();
-    	}, 10000);
-
-    	function counter_notif() {
-    		var id = {$current_user_id};
-    		$.getJSON('{$link_api_notif}' + 'get', { id: id }, function(b){
-    			$('.counter').text(b.count_text);
-    		});
-    	}
-
-    	$(document).on('click', '.actionNotif .markAs', function() { // markAs
-    		var action = '';
-
-    		if ($(this).hasClass( "text-primary" )) {
-    			$(this).removeClass('text-primary').addClass('text-muted');
-    			action = 'sudahBaca';
-    		}
-    		else {
-    			$(this).removeClass('text-muted').addClass('text-primary');
-    			action = 'belumBaca';
-    		}
-
-    		$.post( '{$link_api_notif}' + 'mark', { action: action, id: $(this).data('id') });
-    	});
-
-    	$('.tandaiSemuaTerbaca').on('click',function(){
-    		var id = {$current_user_id};
-
-    		$.post( '{$link_api_notif}' + 'mark_all', { id: id }, function() {
-    			//
-    			$('.actionNotif .markAs').removeClass('text-primary').addClass('text-muted');
-    		});
-    	});
 
     	// salin data cuma bisa dipakai setelah ada pemesan
     	function sinkronSalin() {
@@ -1282,8 +1176,10 @@ $js = <<< JS
     		return src;
     	}
 
-    	// satu baris orderan; dipakai lagi waktu edit supaya kuncinya (k) tetap sama
-    	function bikinBaris(k, d, a, e, b, rincian, jenis, nilai) {
+    	// satu baris orderan; dipakai lagi waktu edit supaya kuncinya (k) tetap sama.
+    	// `s` id_stok yang sedang terpakai di modal: ikut terkirim supaya nota bisa
+    	// mengambil foto produknya, dan tetap tidak ada kalau barangnya ditulis manual
+    	function bikinBaris(k, d, a, e, b, rincian, jenis, nilai, s) {
     		var label = d + ' ( ' + String(e).toUpperCase() + ' )',
     			bd = $('<button type="button" class="bg-transparent border-0 detail_row px-1" title="Detail"><i class="fal fa-eye h6 text-secondary"></i></button>'),
     			be = $('<button type="button" class="bg-transparent border-0 edit_row px-1" title="Ubah"><i class="fal fa-pen h6 text-primary"></i></button>'),
@@ -1299,7 +1195,8 @@ $js = <<< JS
     				.append($('<input/>', {'type':'hidden','name':'produk['+k+'][kode]','value':d}))
     				.append($('<input/>', {'type':'hidden','name':'produk['+k+'][harga]','value':a}))
     				.append($('<input/>', {'type':'hidden','name':'produk['+k+'][ukuran]','value':e}))
-    				.append($('<input/>', {'type':'hidden','name':'produk['+k+'][qty]','value':b})),
+    				.append($('<input/>', {'type':'hidden','name':'produk['+k+'][qty]','value':b}))
+    				.append(s ? $('<input/>', {'type':'hidden','name':'produk['+k+'][stok_id]','value':s}) : $()),
     			tr = $('<tr/>', {'data-kunci': k})
     				.append($('<td/>').append(t))
     				.append($('<td/>').append(f))
@@ -1345,6 +1242,7 @@ $js = <<< JS
     			a=fpro.find('[name="harga_satuan"]').val(),
     			e=fpro.find('[name="ukuran"]').val(),
     			b=fpro.find('[name="QTY"]').val(),
+    			s=window.STOK ? String(STOK.ambil() || '') : '',
     			rincian={},
     			nilai={},
     			jenis=$('#ukuranModal .uk-jenis').val() || '',
@@ -1365,7 +1263,7 @@ $js = <<< JS
     			}
     		});
 
-    		var tr = bikinBaris(k, d, a, e, b, rincian, jenis, nilai);
+    		var tr = bikinBaris(k, d, a, e, b, rincian, jenis, nilai, s);
 
     		if (rowEdit) {
     			rowEdit.replaceWith(tr);
@@ -1438,6 +1336,12 @@ $js = <<< JS
     				$(this).val(nilai[key]);
     			}
     		});
+
+    		// baris yang dulu diambil dari stok produk tetap tersambung ke stoknya,
+    		// jadi fotonya tidak hilang waktu orderannya disunting
+    		if (window.STOK) {
+    			STOK.tata(d.stok_id || 0);
+    		}
 
     		rowEdit = tr;
     		$('#tambahProdukLabel').text('Edit Orderan');

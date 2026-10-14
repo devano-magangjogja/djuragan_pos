@@ -7,13 +7,6 @@
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
         <div>
             <h1 class="h3 mb-1">Template Pesan WhatsApp CRM</h1>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb p-0 m-0">
-                    <li class="breadcrumb-item"><?= anchor('', 'Dasbor') ?></li>
-                    <li class="breadcrumb-item"><?= anchor('admin/crm', 'CRM') ?></li>
-                    <li class="breadcrumb-item active" aria-current="page">Template Pesan</li>
-                </ol>
-            </nav>
         </div>
         <div class="d-flex align-items-center gap-2">
             <?= $this->include('admin/crm/tombol_wa') ?>

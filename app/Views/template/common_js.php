@@ -2,10 +2,19 @@
 
 /**
  * JS bersama untuk halaman admin: pemanggil notifikasi. Dulu disalin mentah-mentah
- * di setiap view; dikumpulkan di sini supaya halaman baru tinggal include.
+ * di setiap view, lalu di-include tiga halaman saja sehingga lonceng mati di
+ * sisanya; sekarang dimuat dari template/main.php supaya notifikasi bisa dibuka
+ * dari halaman mana pun.
  */
-$current_user_id  = session()->get('id');
-$link_invoice     = site_url(base_user() . '/invoices/lihat/');
+helper('fungsi'); // base_user() dipakai di bawah, dan helper tidak di-autoload
+
+$current_user_id = (int) session()->get('id');
+
+// halaman tanpa sesi login tidak punya kotak notifikasi
+if ($current_user_id === 0) {
+    return;
+}
+
 $link_api_notif   = site_url('api/notifikasi/');
 
 $js = <<< JS
@@ -29,7 +38,7 @@ $js = <<< JS
     						<div class="d-flex">
     							<div class="me-auto">
     								<div class="text-muted small">`+b.created_at +`</div>
-    								<a class="d-block text-decoration-none" href="{$link_invoice}semua/semua?cari[kolom]=faktur&cari[q]=`+b.invoice+`">`+ b.notif+`</a>
+    								<a class="d-block text-decoration-none" href="`+(b.tautan || '#')+`">`+ b.notif+`</a>
     							</div>
     							<div class="d-flex justify-content-right flex-column actionNotif">
     								<button data-id="`+b.id+`" class="markAs border-0 bg-transparent text-primary small" type="button"><i class="fal fa-circle"></i></button>
@@ -47,7 +56,7 @@ $js = <<< JS
     			else {
     				$('.btnSettingNotif').hide();
 
-    				$('<div class="d-flex justify-content-center align-items-center" style="height: 90vh"><i class="fal fa-bell-slash fa-5x"></i></div>').appendTo('#notifDisini');
+    				$('<div class="notif-kosong"><i class="fal fa-bell-slash fa-2x"></i></div>').appendTo('#notifDisini');
     			}
     		});
     	}
@@ -62,14 +71,49 @@ $js = <<< JS
     	});
 
     	var notifikasi = document.getElementById('notifikasi');
-        if(notifikasi) {
-            notifikasi.addEventListener('show.bs.offcanvas', function () {
-
-                var id = {$current_user_id};
-                $('#notifDisini').empty(),
-                getNotif();
-            });
+        if (! notifikasi) {
+            return; // halaman ini tidak punya lonceng, tidak ada yang perlu diikat
         }
+
+        // lonceng tidak lagi menarik offcanvas dari samping: panelnya melayang
+        function tampilNotif() {
+            if (notifikasi.classList.contains('tampil')) {
+                return;
+            }
+
+            notifikasi.classList.add('tampil');
+            notifikasi.setAttribute('aria-hidden', 'false');
+            $('#notifDisini').empty();
+            getNotif();
+        }
+
+        function sembunyiNotif() {
+            notifikasi.classList.remove('tampil');
+            notifikasi.setAttribute('aria-hidden', 'true');
+        }
+
+        $(document).on('click', '[data-notif-toggle]', function (e) {
+            e.preventDefault();
+
+            if (notifikasi.classList.contains('tampil')) {
+                sembunyiNotif();
+            } else {
+                tampilNotif();
+            }
+        });
+
+        // klik di luar panel atau Esc menutupnya, seperti dropdown biasa
+        $(document).on('click', function (e) {
+            if ($(e.target).closest('#notifikasi, [data-notif-toggle]').length === 0) {
+                sembunyiNotif();
+            }
+        });
+
+        $(document).on('keydown', function (e) {
+            if (e.key === 'Escape') {
+                sembunyiNotif();
+            }
+        });
 
     	counter_notif();
 

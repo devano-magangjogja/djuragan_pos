@@ -569,9 +569,6 @@ body.has-app-sidebar {
     body.has-app-sidebar.sidebar-collapsed {
         padding-left: calc(var(--sidebar-rail-width) + (var(--sidebar-gap) * 2));
     }
-    .mobile-topbar {
-        display: none !important;
-    }
 }
 
 @media (max-width: 991.98px) {
@@ -649,9 +646,21 @@ body.has-app-sidebar {
         margin-right: 0;
         font-size: 1.02rem;
     }
+    /* Ikon lonceng di footer bukan .sidebar-link-icon, tapi ikut membawa
+       margin-right 0.7rem dari .sidebar-footer-link i. Di rail ikon margin itu
+       membuat lonceng bergeser ~11px ke kiri sehingga tidak sejajar dengan
+       kolom ikon di atasnya. */
+    body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-footer-link i {
+        margin-right: 0;
+    }
     body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-user-card {
         justify-content: center;
         padding: 0.4rem 0;
+        /* Kotak kartunya hanya dipakai di sidebar yang terbuka. Di rail ikon
+           tidak ada nama/tombol lagi, jadi kotak itu tinggal jadi garis kosong
+           di bawah avatar — hilangkan sampai sidebar-nya dibuka. */
+        background: transparent;
+        border-color: transparent;
     }
     body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-menu {
         padding-left: 0.5rem;
@@ -1010,6 +1019,17 @@ body.has-app-sidebar {
 .mobile-topbar .sidebar-brand-text-label {
     color: var(--sidebar-text-hover);
 }
+/* Jarak kiri bar. Tombol hamburger itu .btn.btn-sm, dan ".btn-sm" di bagian
+   Modern Buttons memakai !important, jadi utilitas p-1/p-0 di markup tidak
+   pernah menang: ikonnya berjarak 8px (px pada bar) + 11px (padding tombol)
+   = ~20px dari tepi layar. Padding kiri tombol di bar ini dinolkan supaya
+   ikonnya sejajar dengan isi halaman di bawahnya.
+   Hanya sisi KIRI yang dinolkan. Padding kanan avatar dibiarkan (.btn-sm =
+   11px) supaya lonceng dan avatar tetap mepet ke kanan tapi tidak menempel
+   di tepi layar: jaraknya jadi 8px (px-2 pada bar) + 11px = ~19px. */
+.mobile-topbar .btn.mobile-topbar-btn {
+    padding-left: 0 !important;
+}
 
 /* ==================================================================
    Tema Keseluruhan Website — Senada dengan Sidebar (Untitled UI / Modern SaaS)
@@ -1264,6 +1284,62 @@ a.rounded-3.border.border-ink-200:hover {
     font-size: 0.85rem !important;
     border-radius: 9px !important;
 }
+/* Kotak cari satu kolom saja. .input-group di sini terlihat jadi dua kotak
+   terpisah karena .form-control dan .input-group-text sama-sama dapat border +
+   radius sendiri, jadi ikonnya dipindah ke dalam field sebagai tombol submit. */
+.cari-merged {
+    position: relative;
+}
+.cari-merged .form-control {
+    padding-left: 2.1rem !important;
+}
+.cari-merged .cari-kirim {
+    position: absolute;
+    top: 50%;
+    left: 0.65rem;
+    transform: translateY(-50%);
+    border: 0;
+    background: transparent;
+    padding: 0;
+    line-height: 1;
+    cursor: pointer;
+    color: #667085;
+}
+.cari-merged .cari-kirim:hover {
+    color: #101828;
+}
+/* Versi tanpa tombol: kotaknya dicari lewat JS, jadi ikonnya hanya hiasan di
+   dalam field dan tidak boleh menangkap klik (pointer-events: none). */
+.cari-merged .cari-ikon {
+    position: absolute;
+    top: 50%;
+    left: 0.65rem;
+    transform: translateY(-50%);
+    line-height: 1;
+    color: #667085;
+    pointer-events: none;
+}
+/* Kolom cari pelanggan di form orderan. Sama seperti .cari-merged, .input-group
+   di sini terbaca jadi dua kotak karena field dan tombolnya punya border sendiri,
+   jadi tombol "+ Tambah" dipindah ke dalam field di sisi kanan. Dia ikut ditarik
+   sampai setinggi kolomnya dan hanya sisi kanannya yang melengkung (8px = radius
+   field 9px dikurangi border 1px), supaya pembatas hitam-putihnya jadi satu garis lurus. */
+.tambah-dalam {
+    position: relative;
+}
+.tambah-dalam .form-control {
+    padding-right: 6.4rem !important;
+}
+.tambah-dalam .btn {
+    position: absolute;
+    top: 1px;
+    right: 1px;
+    bottom: 1px;
+    height: auto;
+    border: 0;
+    padding: 0 0.7rem !important;
+    border-radius: 0 8px 8px 0 !important;
+}
 
 /* 8. Modern Buttons */
 .btn {
@@ -1304,6 +1380,21 @@ a.rounded-3.border.border-ink-200:hover {
     background-color: #f9fafb !important;
     border-color: #98a2b3 !important;
     color: #101828 !important;
+}
+/* Pil juragan di Pengaturan > Pengguna. Bootstrap memberi warna pil lewat
+   .btn-check:checked + .btn, tapi .btn-outline-secondary di atas dipaksa
+   !important sehingga pil yang sudah dicentang terlihat sama persis dengan yang
+   belum: penderitanya merasa hanya boleh memilih satu. Ditimpa balik dengan
+   aturan sama kerasnya, hanya di dalam wadah pilihan. */
+.gulir-pilihan .btn-check:checked + .btn {
+    background-color: #101828 !important;
+    border-color: #101828 !important;
+    color: #ffffff !important;
+}
+.gulir-pilihan .btn-check:checked + .btn:hover {
+    background-color: #1e293b !important;
+    border-color: #1e293b !important;
+    color: #ffffff !important;
 }
 .btn-sm {
     padding: 0.32rem 0.7rem !important;
@@ -1500,15 +1591,20 @@ a.rounded-3.border.border-ink-200:hover {
     z-index: 1020;
     pointer-events: none;
 }
-.fixed-bottom .container-xxl {
+.fixed-bottom > div {
     pointer-events: auto;
 }
+/* Tombol masukan cuma ikon headset (tanpa tulisan) dan duduk di pojok kanan
+   bawah layar, bukan di tepi container-xxl yang ikut terpusat di layar lebar.
+   Jadi kotak tombolnya dibuat bulat sempurna dengan lebar = tinggi. */
 .fixed-bottom button[data-bs-target="#feedbackModal"] {
     background: #101828 !important;
     border: 1px solid rgba(255, 255, 255, 0.15) !important;
     color: #ffffff !important;
     border-radius: 9999px !important;
-    padding: 0.45rem 1rem !important;
+    padding: 0 !important;
+    width: 2.6rem;
+    height: 2.6rem;
     font-size: 0.78rem !important;
     font-weight: 600 !important;
     margin-bottom: 1rem !important;
@@ -1519,6 +1615,19 @@ a.rounded-3.border.border-ink-200:hover {
     background: #1e293b !important;
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(16, 24, 40, 0.2) !important;
+}
+/* Tombol Live Chat ikut mengambang, ditumpuk tepat di atas tombol kirim masukan
+   (lingkaran 2.6rem + margin-bottom 1rem milik tombol itu, lalu jarak 0.7rem). */
+.wa-melayang {
+    bottom: 4.3rem;
+}
+.wa-melayang .btn {
+    border: 0;
+    border-radius: 9999px !important;
+    padding: 0 !important;
+    width: 2.6rem;
+    height: 2.6rem;
+    box-shadow: 0 4px 12px rgba(16, 24, 40, 0.15) !important;
 }
 
 /* 14. Modern Live Chat WA Container Harmonization */
@@ -1551,3 +1660,213 @@ a.rounded-3.border.border-ink-200:hover {
     border-left: 3px solid #101828 !important;
 }
 
+/* 15. Katalog Produk & Stok (kartu produk) */
+.produk-kartu:hover {
+    border-color: #d0d5dd !important;
+    box-shadow: 0 4px 12px rgba(16, 24, 40, 0.08), 0 1px 3px rgba(16, 24, 40, 0.05) !important;
+}
+.produk-sampul {
+    height: 9.5rem;
+    overflow: hidden;
+    background: linear-gradient(160deg, #f9fafb, #f2f4f7);
+}
+.produk-sampul img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.produk-inisial {
+    font-size: 1.9rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #d0d5dd;
+}
+/* tombol kamera di pojok sampul: satu-satunya jalan mengelola foto kartu */
+.produk-foto-btn {
+    width: 1.85rem;
+    height: 1.85rem;
+    padding: 0;
+    border: 1px solid #eaecf0;
+    background: rgba(255, 255, 255, 0.92);
+    color: #475467;
+    font-size: 0.8rem;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.1);
+    transition: color 0.12s ease, border-color 0.12s ease;
+}
+.produk-foto-btn:hover {
+    color: #da251d;
+    border-color: #d0d5dd;
+    background: #ffffff;
+}
+.produk-foto-btn span {
+    margin-left: 0.15rem;
+    font-size: 0.68rem;
+    font-weight: 600;
+}
+/* daftar varian per baris: ukuran dan stoknya terpisah jelas tapi tetap sekotak */
+.varian-daftar {
+    border: 1px solid #eaecf0;
+    overflow: hidden;
+}
+.varian-baris {
+    padding: 0.3rem 0.5rem;
+    border: 0;
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.12s ease;
+}
+.varian-baris + .varian-baris {
+    border-top: 1px solid #f2f4f7;
+}
+.varian-baris:hover {
+    background: #f9fafb;
+}
+.varian-ukuran {
+    background: #ffffff;
+    border: 1px solid #d0d5dd;
+    color: #344054;
+    font-weight: 600;
+}
+
+/* 16. Panel "Ambil dari stok produk" di modal tambah orderan */
+.stok-foto-kecil {
+    display: block;
+    width: 3.4rem;
+    height: 3.4rem;
+    object-fit: cover;
+    border: 1px solid #eaecf0;
+    border-radius: 0.6rem;
+}
+.saran-stok .list-group-item {
+    border: 0;
+    border-bottom: 1px solid #f2f4f7;
+    cursor: pointer;
+}
+.saran-stok .list-group-item:last-child {
+    border-bottom: 0;
+}
+.saran-stok .list-group-item:hover {
+    background: #f9fafb;
+}
+
+/* 17. Panel Notifikasi Melayang
+   Dulu offcanvas yang ditarik dari tepi kanan; sekarang kartu melayang yang
+   menempel di bawah topbar, dibuka dari lonceng mana pun. */
+.notif-panel {
+    display: none;
+    position: fixed;
+    top: 60px;
+    right: 0.9rem;
+    z-index: 1040;
+    flex-direction: column;
+    width: 22rem;
+    max-width: calc(100vw - 1.8rem);
+    background: #ffffff;
+    border: 1px solid var(--sidebar-border);
+    border-radius: 12px;
+    box-shadow: 0 12px 32px rgba(16, 24, 40, 0.16);
+    overflow: hidden;
+}
+.notif-panel.tampil {
+    display: flex;
+}
+.notif-panel__kepala {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.65rem 0.9rem;
+    background: #101828;
+    color: #ffffff;
+}
+.notif-panel__kepala .btn {
+    color: #d0d5dd !important;
+}
+.notif-panel__kepala .btn:hover {
+    color: #ffffff !important;
+}
+.notif-panel__isi {
+    max-height: 60vh;
+    overflow-y: auto;
+}
+.notif-panel__isi .list-group-item {
+    padding: 0.6rem 0.9rem;
+    border-color: #f2f4f7;
+}
+.notif-kosong {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 2.4rem 1rem;
+    color: #98a2b3;
+}
+.notif-panel__buntut {
+    display: block;
+    padding: 0.6rem;
+    text-align: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #344054;
+    text-decoration: none;
+    background: #f9fafb;
+    border-top: 1px solid #eaecf0;
+}
+.notif-panel__buntut:hover {
+    color: #101828;
+    background: #f2f4f7;
+}
+
+/* Lonceng desktop: melayang sendiri di pojok kanan atas, satu bahasa dengan
+   tombol mengambang di kanan bawah. Topbar tetap khusus layar kecil, jadi tidak
+   ada bar putih baru di halaman desktop. */
+.notif-melayang {
+    display: none;
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 1041;
+    width: 2.6rem;
+    height: 2.6rem;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--sidebar-border);
+    border-radius: 9999px;
+    background: #ffffff;
+    color: #667085;
+    box-shadow: 0 4px 12px rgba(16, 24, 40, 0.15);
+    text-decoration: none;
+}
+.notif-melayang:hover {
+    color: #101828;
+}
+.notif-melayang__angka {
+    position: absolute;
+    top: -3px;
+    right: -5px;
+    min-width: 1.1rem;
+    padding: 0 0.25rem;
+    border-radius: 9999px;
+    background: #ef4444;
+    color: #ffffff;
+    font-size: 0.62rem;
+    font-weight: 700;
+    line-height: 1.1rem;
+    text-align: center;
+}
+
+/* Panelnya menggantung tepat di bawah lonceng. */
+@media (min-width: 992px) {
+    .notif-melayang {
+        display: inline-flex;
+    }
+    .notif-panel {
+        top: 4rem;
+        right: 1rem;
+    }
+}

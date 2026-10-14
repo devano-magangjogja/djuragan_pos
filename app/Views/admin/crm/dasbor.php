@@ -23,9 +23,6 @@
                     </span>
                 <?php endif; ?>
             <?php endif; ?>
-            <a href="<?= site_url('admin/crm/pengaturan') ?>" class="btn btn-outline-secondary btn-sm">
-                <i class="fal fa-cog"></i>
-            </a>
         </div>
     </div>
 

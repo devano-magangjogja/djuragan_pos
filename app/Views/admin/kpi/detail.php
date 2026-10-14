@@ -108,13 +108,6 @@ $kembali = site_url('admin/kpi') . '?' . http_build_query(array_filter([
 
 <div class="container-xxl">
     <h1 class="h3 mt-5">Detail KPI &mdash; <?= esc($aturan['nama'] ?? $indikator) ?></h1>
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb p-0">
-            <li class="breadcrumb-item"><?= anchor('admin/dasbor', 'Dasbor') ?></li>
-            <li class="breadcrumb-item"><?= anchor('admin/kpi', 'KPI') ?></li>
-            <li class="breadcrumb-item active" aria-current="page"><?= esc($indikator) ?></li>
-        </ol>
-    </nav>
 
     <div class="alert alert-light border small">
         <div><strong>Definisi:</strong> <?= esc($aturan['definisi'] ?? 'Indikator ini tidak punya baris target, rumusnya mengikuti model.') ?></div>

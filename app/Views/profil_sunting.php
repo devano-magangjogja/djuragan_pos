@@ -13,12 +13,6 @@ $session = \Config\Services::session();
 <div class="container-xxl">
     <h1 class="h3 mt-5">Ubah Profil</h1>
 
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb p-0">
-            <li class="breadcrumb-item"><?= anchor('', 'Dasbor') ?></li>
-            <li class="breadcrumb-item active" aria-current="page">Profil</li>
-        </ol>
-    </nav>
 </div>
 
 <div class="container">

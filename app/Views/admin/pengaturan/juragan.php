@@ -63,22 +63,13 @@ $chip = static function (string $label, array $daftar): void { ?>
 
     <h1 class="h3 mt-5">Pengaturan Juragan</h1>
 
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb p-0">
-            <li class="breadcrumb-item"><?= anchor('', 'Dasbor') ?></li>
-            <li class="breadcrumb-item"><?= anchor('admin/settings', 'Pengaturan') ?></li>
-            <li class="breadcrumb-item active" aria-current="page">Juragan</li>
-        </ol>
-    </nav>
-
     <?php if (($sukses ?? null) !== null) { ?>
         <div class="alert alert-success py-2"><?= esc($sukses) ?></div>
     <?php } ?>
     <?php if (($gagal ?? null) !== null) { ?>
         <div class="alert alert-danger py-2"><?= esc($gagal) ?></div>
     <?php } ?>
-</div>
-<div class="container-xxl">
+
     <div class="card">
         <div class="card-body">
             <div class="d-flex align-items-center justify-content-between mb-3">
@@ -119,7 +110,7 @@ $chip = static function (string $label, array $daftar): void { ?>
                                 <?php $chip('Admin', $pg['admin']); ?>
                                 <?php $chip('CS', $pg['cs']); ?>
                                 <?php if (count($pg['admin']) > 1 || count($pg['cs']) > 1) { ?>
-                                    <div class="text-warning">lebih dari satu — tunjuk satu Admin dan satu CS</div>
+                                    <div style="color:#b42318">lebih dari satu — tunjuk satu Admin dan satu CS</div>
                                 <?php } ?>
                             </td>
                             <td class="text-end text-nowrap">
@@ -279,7 +270,6 @@ $chip = static function (string $label, array $daftar): void { ?>
 $current_user_id  = $session->get('id');
 $link_api_juragan = site_url('api/juragan/by_user/');
 $link_invoice     = site_url('admin/invoices/lihat/');
-$link_api_notif   = site_url('api/notifikasi/');
 $showModalTambah  = $tambah_err ? 'true' : 'false';
 
 $js = <<< JS
@@ -310,100 +300,6 @@ $js = <<< JS
             });
         }
 
-    	// notifikasi
-
-    	function getNotif(page = 1, dibaca = 0){
-    		var id = {$current_user_id};
-    		$.getJSON('{$link_api_notif}' + 'get', { id: id, page: page, dibaca: dibaca }, function(b){
-    			var a=[],
-    				data = b.results;
-
-    			if (b.count > 0) {
-    				$('.btnSettingNotif').show();
-    				a.push('');
-
-    				$.each(data,function(c,b){
-    					a.push(`<div class="list-group-item list-group-item-action">
-    						<div class="d-flex">
-    							<div class="me-auto">
-    								<div class="text-muted small">`+b.created_at +`</div>
-    								<a class="d-block text-decoration-none" href="{$link_invoice}semua/semua?cari[kolom]=faktur&cari[q]=`+b.invoice+`">`+ b.notif+`</a>
-    							</div>
-    							<div class="d-flex justify-content-right flex-column actionNotif">
-    								<button data-id="`+b.id+`" class="markAs border-0 bg-transparent text-primary small" type="button"><i class="fal fa-circle"></i></button>
-    							</div>
-    						</div>
-    					</div>`);
-    				}),
-    				$(a.join('')).appendTo('#notifDisini');
-    				var next = '';
-
-    				if (b.next) {
-    					$('<button type="button" class="list-group-item list-group-item-action text-center lanjutNotif" data-page="'+ (b.page+1) +'">lanjut ...</button>').appendTo('#notifDisini');
-    				}
-    			}
-    			else {
-    				$('.btnSettingNotif').hide();
-
-    				$('<div class="d-flex justify-content-center align-items-center" style="height: 90vh"><i class="fal fa-bell-slash fa-5x"></i></div>').appendTo('#notifDisini');
-    			}
-    		});
-    	}
-
-    	$(document).on('click', '.lanjutNotif',function(){
-    		getNotif($(this).data('page'));
-    		$(this).attr('disabled', true).html(`<div class="text-center">
-    			<div class="spinner-border" role="status">
-    				<span class="visually-hidden">Loading...</span>
-    			</div>
-    		</div>`).remove();
-    	});
-
-    	var notifikasi = document.getElementById('notifikasi');
-        if(notifikasi) {
-            notifikasi.addEventListener('show.bs.offcanvas', function () {
-
-                var id = {$current_user_id};
-                $('#notifDisini').empty(),
-                getNotif();
-            });
-        }
-    	counter_notif();
-
-    	setInterval(function(){
-    		counter_notif();
-    	}, 10000);
-
-    	function counter_notif() {
-    		var id = {$current_user_id};
-    		$.getJSON('{$link_api_notif}' + 'get', { id: id }, function(b){
-    			$('.counter').text(b.count_text);
-    		});
-    	}
-
-    	$(document).on('click', '.actionNotif .markAs', function() { // markAs
-    		var action = '';
-
-    		if ($(this).hasClass( "text-primary" )) {
-    			$(this).removeClass('text-primary').addClass('text-muted');
-    			action = 'sudahBaca';
-    		}
-    		else {
-    			$(this).removeClass('text-muted').addClass('text-primary');
-    			action = 'belumBaca';
-    		}
-
-    		$.post( '{$link_api_notif}' + 'mark', { action: action, id: $(this).data('id') });
-    	});
-
-    	$('.tandaiSemuaTerbaca').on('click',function(){
-    		var id = {$current_user_id};
-
-    		$.post( '{$link_api_notif}' + 'mark_all', { id: id }, function() {
-    			//
-    			$('.actionNotif .markAs').removeClass('text-primary').addClass('text-muted');
-    		});
-    	});
 
     	var modalSuntingJuragan=document.getElementById('modalSuntingJuragan');
     	modalSuntingJuragan.addEventListener('show.bs.modal',function(event){

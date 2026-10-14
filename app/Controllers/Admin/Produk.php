@@ -3,7 +3,9 @@
 namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
+use App\Models\ProdukFotoModel;
 use App\Models\StokModel;
+use CodeIgniter\HTTP\Files\UploadedFile;
 
 /**
  * Pantau stok dan tambah barang per juragan.
@@ -39,11 +41,24 @@ class Produk extends BaseController
         $page  = max(1, (int) $this->request->getGet('page'));
         $offset = ($page - 1) * $limit;
 
-        $total = $stokModel->jumlah($ids, $juragan, $cari, $keadaan);
+        $total = $stokModel->kartu($ids, $juragan, $cari, $keadaan);
+
+        $katalog = $stokModel->katalog($ids, $juragan, $cari, $keadaan, $limit, $offset);
+
+        // foto diambil sekali query untuk seluruh kartu di halaman ini, per
+        // daftar varian (bukan per kartu) karena foto menempel di varian
+        $varian = array_map(
+            static fn (array $p): array => array_map(
+                static fn (array $b): int => (int) $b['id_stok'],
+                $p['varian']
+            ),
+            $katalog
+        );
 
         $data = [
             'title'     => 'Produk & Stok',
-            'stok'      => $stokModel->daftar($ids, $juragan, $cari, $keadaan, $limit, $offset),
+            'katalog'   => $katalog,
+            'fotonya'   => (new ProdukFotoModel())->perKartu($varian),
             'ringkas'   => $stokModel->ringkas($ids),
             'juragan'   => $juragan,
             'juragans'  => $this->juraganPilihan(),
@@ -103,7 +118,38 @@ class Produk extends BaseController
             'keterangan' => $this->keteranganPost(),
         ]);
 
-        return redirect()->to($this->alamatKembali())->with('sukses', 'Barang berhasil ditambahkan.');
+        // foto ikut form tambah, jadi varian yang baru ada sudah langsung punya
+        // contoh bentuk; pipa penyimpanannya sama dengan panel kelola foto
+        $pesan = 'Barang berhasil ditambahkan.';
+        $berkas = $this->berkasFoto();
+
+        if ($berkas !== []) {
+            $id_stok   = (int) $stokModel->getInsertID();
+            $fotoModel = new ProdukFotoModel();
+            $user_id   = (int) session()->get('id');
+            $masuk     = 0;
+            $ditolak   = [];
+
+            foreach ($berkas as $satu) {
+                [, $galat] = $fotoModel->terima($satu, $id_stok, $user_id);
+
+                if ($galat !== null) {
+                    $ditolak[] = $galat;
+
+                    continue;
+                }
+
+                $masuk++;
+            }
+
+            if ($ditolak !== []) {
+                $pesan = 'Barang berhasil ditambahkan, tetapi ' . count($ditolak) . ' foto ditolak: ' . $ditolak[0];
+            } elseif ($masuk > 0) {
+                $pesan = 'Barang berhasil ditambahkan bersama ' . $masuk . ' foto.';
+            }
+        }
+
+        return redirect()->to($this->alamatKembali())->with('sukses', $pesan);
     }
 
     /**
@@ -164,9 +210,89 @@ class Produk extends BaseController
             return redirect()->to($this->alamatKembali())->with('gagal', 'Barang tidak ditemukan.');
         }
 
+        // foto varian yang pergi pindah ke saudara sekartunya supaya kartu yang
+        // masih hidup tidak kehilangan contoh bentuknya
+        $saudara = array_values(array_diff(
+            $stokModel->sekartu((int) $baris->juragan_id, (string) $baris->kode),
+            [$id]
+        ));
+
+        $this->bereskanFoto($id, $saudara);
         $stokModel->delete($id);
 
         return redirect()->to($this->alamatKembali())->with('sukses', 'Barang berhasil dihapus.');
+    }
+
+    /**
+     * Hapus lunak satu kartu produk: semua variannya pergi bersama.
+     * Transaksi lama tetap utuh karena baris stok hanya ditandai terhapus.
+     *
+     * @return \CodeIgniter\HTTP\RedirectResponse
+     */
+    public function hapus_kartu()
+    {
+        $juragan_id = (int) $this->request->getPost('juragan_id');
+        $kode       = $this->kodePost();
+
+        if ($kode === '' || ! $this->bolehJuragan($juragan_id)) {
+            return redirect()->to($this->alamatKembali())->with('gagal', 'Barang tidak ditemukan.');
+        }
+
+        $stokModel = new StokModel();
+        $ids       = $stokModel->sekartu($juragan_id, $kode);
+
+        if ($ids === []) {
+            return redirect()->to($this->alamatKembali())->with('gagal', 'Barang tidak ditemukan.');
+        }
+
+        // kartu ikut habis, jadi tidak ada saudara tempat foto pindah
+        foreach ($ids as $id) {
+            $this->bereskanFoto($id, []);
+        }
+
+        $stokModel->delete($ids);
+
+        return redirect()->to($this->alamatKembali())
+            ->with('sukses', 'Barang ' . $kode . ' (' . count($ids) . ' varian) berhasil dihapus.');
+    }
+
+    /**
+     * Foto varian yang dihapus tidak boleh jadi yatim: pindah ke varian saudara
+     * kalau kartunya masih hidup, ikut terhapus bersama berkasnya kalau tidak.
+     *
+     * @param int[] $saudara
+     */
+    private function bereskanFoto(int $id_stok, array $saudara): void
+    {
+        $foto = new ProdukFotoModel();
+
+        if ($saudara === []) {
+            foreach ($foto->banyak([$id_stok])[$id_stok] ?? [] as $b) {
+                $foto->buang((int) $b['id_foto']);
+            }
+
+            return;
+        }
+
+        // builder, bukan Model::update(): argumen pertama update() model adalah
+        // id, jadi data saja di situ dianggap "tidak ada yang diperbarui"
+        $foto->builder()->where('stok_id', $id_stok)->update(['stok_id' => $saudara[0]]);
+    }
+
+    /** Berkas foto dari form tambah; nama field-nya `foto[]`. @return list<UploadedFile> */
+    private function berkasFoto(): array
+    {
+        $dapat = [];
+
+        foreach ($this->request->getFiles() as $kumpulan) {
+            foreach (is_array($kumpulan) ? $kumpulan : [$kumpulan] as $satu) {
+                if ($satu instanceof UploadedFile) {
+                    $dapat[] = $satu;
+                }
+            }
+        }
+
+        return $dapat;
     }
 
     /** Nama varian tidak boleh punya spasi ganda; huruf besar dibiarkan seperti ditulis. */

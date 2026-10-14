@@ -1,0 +1,264 @@
+/*
+ * Panel "Ambil dari stok produk" di modal tambah orderan.
+ *
+ * Ditulis satu kali karena modalnya sama di tiga halaman (Tulis admin, Tulis CS,
+ * Sunting admin) dan dipasang lewat stok_panel_form(). Yang dicarinya hanya varian
+ * stok milik toko yang sedang dipilih di form, polanya sengaja disamakan dengan
+ * cari-pelanggan.js: debounce, token permintaan supaya jawaban yang terlambat
+ * dibuang, dan saran dirender lewat .text() supaya nama barang tidak pernah jadi
+ * markup.
+ *
+ * Memilih varian mengisi kode, harga, dan ukuran kolom isian lalu menyimpan
+ * id_stok-nya di hidden [name="stok_produk"]; halaman pemanggil baris orderan
+ * membacanya lewat window.STOK.ambil() dan mengirimnya sebagai produk[k][stok_id].
+ * Kalau setelah itu pengguna mengubah kode/harga/ukuran sendiri, taunya ke stok
+ * dilepas lagi - barisnya sudah tidak menggambarkan varian itu.
+ */
+(function ($) {
+    'use strict';
+
+    var $panel = $('.stok-panel');
+
+    if ($panel.length === 0) {
+        return;
+    }
+
+    var $cari   = $panel.find('.stok-cari'),
+        $id     = $panel.find('.stok-id'),
+        $saran  = $panel.find('.saran-stok'),
+        $catatan = $panel.find('.stok-catatan'),
+        $acuan  = $panel.find('.foto-acuan'),
+        $isi    = $panel.find('.stok-foto-isi'),
+        $batal  = $panel.find('.stok-batal'),
+        alamatCari = $panel.data('cari'),
+        alamatBaca = $panel.data('baca'),
+        token   = 0,
+        dipilih = null;
+
+    function rupiah(n) {
+        return 'Rp ' + Number(n || 0).toLocaleString('id-ID');
+    }
+
+    function saranTampilkan(hasil, pesan) {
+        $saran.empty().removeClass('d-none');
+
+        if (pesan) {
+            $saran.append($('<div class="list-group-item text-muted small py-2"></div>').text(pesan));
+
+            return;
+        }
+
+        $.each(hasil, function (i, v) {
+            var $item = $('<button type="button" class="list-group-item list-group-item-action text-start py-2"></button>')
+                .data('stok', v),
+                $judul = $('<span class="d-block fw-bold"></span>').text(v.kode + ' ( ' + String(v.ukuran).toUpperCase() + ' )'),
+                $meta = $('<span class="d-block small"></span>').text(rupiah(v.harga) + ' · stok ' + v.stok + (v.keterangan ? ' · ' + v.keterangan : ''));
+
+            if (Number(v.stok) <= 0) {
+                $meta.append(' ').append($('<span class="badge bg-danger-subtle text-danger"></span>').text('habis'));
+            }
+
+            $item.append($judul).append($meta);
+            $saran.append($item);
+        });
+    }
+
+    function kosongkan() {
+        dipilih = null;
+        $id.val('');
+        $catatan.addClass('d-none').text('');
+        $acuan.addClass('d-none');
+        $isi.empty();
+        $batal.addClass('d-none');
+    }
+
+    function fotoMuat(id) {
+        $acuan.addClass('d-none');
+        $isi.empty();
+
+        if (! id) {
+            return;
+        }
+
+        var jalan = token;
+
+        $.getJSON(alamatBaca + '/' + id).done(function (b) {
+            // permintaan lain sudah menyusul: gambar lama jangan ditimpa telat
+            if (token !== jalan || Number($id.val()) !== Number(id)) {
+                return;
+            }
+
+            var foto = (b && b.foto) || [];
+
+            if (foto.length === 0) {
+                return;
+            }
+
+            $.each(foto, function (i, f) {
+                var $kotak = $('<span class="d-inline-flex"></span>'),
+                    $link  = $('<a target="_blank" rel="noopener"></a>').attr('href', f.alamat),
+                    $img   = $('<img alt="" loading="lazy" class="stok-foto-kecil">')
+                        .attr('src', f.alamat_kecil);
+
+                $kotak.append($link.append($img));
+                $isi.append($kotak);
+            });
+
+            $acuan.removeClass('d-none');
+        });
+    }
+
+    function isi(v) {
+        var $ukuran = $('#ukuran'),
+            nilai   = String(v.ukuran || ''),
+            $opsi   = $ukuran.find('option[value="' + nilai.replace(/"/g, '\\"') + '"]');
+
+        dipilih = v;
+        $id.val(v.id_stok);
+
+        $('#kode_produk').val(v.kode);
+        $('#harga_satuan').val(v.harga);
+
+        // ukuran stok bisa saja belum terdaftar di dropdown (barang baru), jadi
+        // pilihannya ditambahkan dulu supaya nilainya benar-benar kebaca
+        if (nilai !== '' && $opsi.length === 0) {
+            $('<option>').val(nilai).text(String(v.ukuran).toUpperCase()).appendTo($ukuran);
+        }
+
+        $ukuran.val(nilai).trigger('change');
+
+        var qty = $('#QTY');
+
+        if (qty.val() === '' || Number(qty.val()) < 1) {
+            qty.val(1);
+        }
+
+        $catatan.removeClass('d-none').text(
+            'Terisi dari stok: ' + v.kode + ' ( ' + String(v.ukuran).toUpperCase() + ' ) · ' + rupiah(v.harga)
+        );
+        $batal.removeClass('d-none');
+        $saran.addClass('d-none').empty();
+        $cari.val('');
+
+        fotoMuat(v.id_stok);
+    }
+
+    function cari() {
+        var q = $.trim($cari.val()),
+            juragan = parseInt($('select[name="juragan"]').val(), 10) || 0,
+            jalan = ++token;
+
+        if (q.length < 2) {
+            $saran.addClass('d-none').empty();
+
+            return;
+        }
+
+        if (juragan < 1) {
+            saranTampilkan([], 'Pilih juragan dulu ya.');
+
+            return;
+        }
+
+        $.getJSON(alamatCari, { q: q, juragan_id: juragan }).done(function (b) {
+            if (token !== jalan) {
+                return;
+            }
+
+            var hasil = (b && b.results) || [];
+
+            saranTampilkan(hasil, hasil.length === 0 ? 'Barang itu belum dipantau stoknya di toko ini.' : '');
+        }).fail(function () {
+            if (token !== jalan) {
+                return;
+            }
+
+            saranTampilkan([], 'Pencarian gagal, coba lagi.');
+        });
+    }
+
+    var saatKetik = (function () {
+        var timer;
+
+        return function () {
+            clearTimeout(timer);
+            timer = setTimeout(cari, 300);
+        };
+    }());
+
+    // mengubah identitas baris (kode atau ukuran) berarti taunya ke stok sudah
+    // tidak cocok lagi, jadi taunya dilepas; harga boleh dinegosiasikan per
+    // orderan tanpa memutuskan hubungan ke barang yang dipantau
+    $('#kode_produk').on('input', function () {
+        if (dipilih && $.trim($(this).val()) !== String(dipilih.kode)) {
+            kosongkan();
+        }
+    });
+
+    $('#ukuran').on('change', function () {
+        if (dipilih && $(this).val() !== String(dipilih.ukuran)) {
+            kosongkan();
+        }
+    });
+
+    $cari.on('input', saatKetik).on('focus', function () {
+        if ($.trim($cari.val()).length >= 2) {
+            cari();
+        }
+    });
+
+    $saran.on('click', 'button', function (e) {
+        e.preventDefault();
+
+        var v = $(this).data('stok');
+
+        if (v) {
+            isi(v);
+        }
+    });
+
+    $batal.on('click', kosongkan);
+
+    // baris baru selalu mulai bersih; edit memanggil STOK.tata() setelahnya
+    $('#tambahProduk').on('hidden.bs.modal', kosongkan);
+
+    $(document).on('mousedown', function (e) {
+        if ($(e.target).closest('.stok-panel').length === 0) {
+            $saran.addClass('d-none');
+        }
+    });
+
+    window.STOK = {
+        /** id_stok yang sedang terpakai di modal, '' kalau ditulis manual. */
+        ambil: function () {
+            return $id.val() || '';
+        },
+
+        /**
+         * Isi ulang panel untuk baris yang sedang disunting (0 = manual).
+         * Dipanggil sesudah halaman pengisi kolom, jadi keadaan form sekarang
+         * yang jadi patokan kalau-kalau pengguna mengubah barisnya.
+         */
+        tata: function (id) {
+            if (! id) {
+                kosongkan();
+
+                return;
+            }
+
+            ++token;
+
+            dipilih = {
+                id_stok: Number(id),
+                kode: $.trim($('#kode_produk').val() || ''),
+                ukuran: String($('#ukuran').val() || '')
+            };
+
+            $id.val(id);
+            $catatan.removeClass('d-none').text('Baris ini memakai stok produk.');
+            $batal.removeClass('d-none');
+
+            fotoMuat(id);
+        }
+    };
+}(jQuery));

@@ -47,7 +47,9 @@ class Notifikasi extends \CodeIgniter\Controller
         $x = $notifikasi->ambil($user_id, $dibaca, $limit, $offset)->get()->getResult();
 
         foreach ($x as $notif) {
-            $notifikasi = replacer(config('JuraganConfig')->notifikasi[$notif->type], ['invoice' => $notif->seri, 'nama' => $notif->name]);
+            // template dari config memang berisi markup ikon, jadi yang di-escape
+            // hanyalah nilai yang dimasukkan ke dalamnya
+            $notifikasi = replacer(config('JuraganConfig')->notifikasi[$notif->type], ['invoice' => esc((string) $notif->seri), 'nama' => esc((string) $notif->name)]);
             $tanggal    = Time::createFromTimestamp($notif->created_at)->setTimezone(config('App')->appTimezone);
 
             $res['results'][] = [
@@ -56,6 +58,7 @@ class Notifikasi extends \CodeIgniter\Controller
                 'created_at' => $tanggal->toLocalizedString('EEE, d MMM yyyy (HH:mm:ss)'),
                 'invoice'    => $notif->seri,
                 'juragan'    => $notif->juragan,
+                'tautan'     => tautan_invoice_notif($notif->seri, $notif->juragan),
             ];
         }
 

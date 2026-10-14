@@ -1,19 +1,32 @@
 <?= $this->extend('template/main') ?>
 
+<?= $this->section('css') ?>
+<style>
+/* ruang halaman dikecilkan. style.css memaksa padding-top/bottom container dengan
+   !important, jadi di sini pakai !important + selector yang lebih spesifik */
+body.has-app-sidebar > div.container-xxl.log-halaman {
+    padding-top: 0.75rem !important;
+    padding-right: 0.5rem !important;
+    padding-bottom: 1rem !important;
+    padding-left: 0.5rem !important;
+}
+.log-halaman .card-header {
+    padding: 0.5rem 0.75rem !important;
+}
+.log-halaman .table thead th,
+.log-halaman .table tbody td {
+    padding: 0.45rem 0.6rem !important;
+}
+</style>
+<?= $this->endSection() ?>
+
 <?= $this->section('content') ?>
 <?= $this->include('admin/navbar') ?>
 
-<div class="container-xxl py-4">
+<div class="container-xxl log-halaman">
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
         <div>
-            <h1 class="h3 mb-1">Riwayat Pengiriman Pesan WhatsApp</h1>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb p-0 m-0">
-                    <li class="breadcrumb-item"><?= anchor('', 'Dasbor') ?></li>
-                    <li class="breadcrumb-item"><?= anchor('admin/crm', 'CRM') ?></li>
-                    <li class="breadcrumb-item active" aria-current="page">Riwayat Pesan</li>
-                </ol>
-            </nav>
+            <h1 class="h3 mb-0">Riwayat Pengiriman Pesan WhatsApp</h1>
         </div>
         <div class="d-flex align-items-center gap-2">
             <?= $this->include('admin/crm/tombol_wa') ?>

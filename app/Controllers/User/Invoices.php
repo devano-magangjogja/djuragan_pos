@@ -3,6 +3,7 @@
 namespace App\Controllers\User;
 
 use App\Controllers\BaseController;
+use App\Models\FotoModel;
 use App\Models\InvoiceModel;
 use App\Models\JuraganModel;
 use App\Models\PembayaranModel;
@@ -89,7 +90,11 @@ class Invoices extends BaseController
 
                 // simpan produk, lalu ukuran terstruktur per item
                 $produk = produk_dibeli($this->request->getPost('produk'), $invoice_id);
-                $peta   = sinkron_dibeli($invoice_id, $produk['baris']);
+
+                // tautan stok diperiksa di server: id_stok datang dari peramban,
+                // jadi bisa saja milik toko lain atau memang tidak ada
+                $peta = sinkron_dibeli($invoice_id, tautkan_stok($produk['baris'], (int) $juragan_id));
+
                 $galat  = array_merge(
                     simpan_ukuran_produk($invoice_id, $peta, $produk['ukuran']),
                     simpan_anggota($invoice_id, $this->request->getPost('anggota_dikirim'), $this->request->getPost('anggota'))
@@ -127,6 +132,9 @@ class Invoices extends BaseController
             }
 
             $db->transCommit();
+
+            // sama seperti panel admin: catatan dari stok ikut membawa foto kartunya
+            (new FotoModel())->salin_dari_produk($invoice_id, (int) session()->get('id'));
 
             $juragan = $juraganModel->byInvoiceId($invoice_id)->getResult()[0]->juragan;
             $ret     = [

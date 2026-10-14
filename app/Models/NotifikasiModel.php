@@ -22,7 +22,12 @@ class NotifikasiModel extends Model
         $notif->join('user p', 'n.from = p.id', 'LEFT');
         $notif->join('juragan j', 'j.id_juragan = n.juragan_id', 'LEFT');
         $notif->where('n.for', $user_id);
-        if ($dibaca) {
+
+        // $dibaca === null berarti "semua": halaman daftar lengkap memang ingin
+        // melihat yang sudah terbaca sekaligus yang belum
+        if ($dibaca === null) {
+            // tanpa filter read_at
+        } elseif ($dibaca) {
             $notif->where('n.read_at !=', null);
         } else {
             $notif->where('n.read_at', null);

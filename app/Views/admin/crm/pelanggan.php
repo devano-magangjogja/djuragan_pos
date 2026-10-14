@@ -1,5 +1,98 @@
 <?= $this->extend('template/main') ?>
 
+<?= $this->section('css') ?>
+<style>
+/* ikon cari ikut di dalam field; radius sengaja tidak disentuh supaya bentuk
+   kotaknya tetap sama seperti sebelumnya */
+.form-control.crm-cari {
+    padding-left: 2.1rem !important;
+}
+/* dua tombol aksi di kolom paling kanan dibuat sama ukurannya. .btn di style.css
+   pakai inline-flex + gap, jadi cukup atur lebar minimumnya saja */
+td .btn.crm-aksi {
+    min-width: 84px;
+}
+/* Desktop: tabel ini lebih lebar dari wadahnya (judul kolom dipaksa nowrap di
+   style.css + kolom Customer punya min-width), sehingga .table-responsive
+   memunculkan scroll horizontal dan kolom Aksi terdorong keluar. table-layout
+   fixed membuat tabel tidak pernah melebar lebih dari kontainernya: kolom dibagi
+   dalam persen dan isinya yang turun baris, bukan tabelnya. */
+.crm-tabel {
+    table-layout: fixed;
+    width: 100%;
+}
+.crm-tabel th {
+    white-space: normal !important;
+}
+.crm-tabel td,
+.crm-tabel th {
+    overflow-wrap: anywhere;
+}
+/* padding harus memakai selector yang lebih spesifik dari
+   ".table tbody td" di style.css (paddingnya !important), kalau tidak
+   aturan ini kalah dan tiap sel tetap makan 1rem kiri-kanan */
+.crm-tabel tbody td {
+    padding-left: 0.6rem !important;
+    padding-right: 0.6rem !important;
+}
+/* Khusus mobile (<=768px): tiap baris ditumpuk jadi kartu. Desktop tidak diubah. */
+@media (max-width: 767.98px) {
+    /* Wadah tabel: bukan area geser, tapi juga tidak boleh meluber ke kanan
+       sampai melewati tepi layar (pakai hidden, bukan visible). */
+    div.table-responsive {
+        overflow: hidden !important;
+    }
+    .crm-tabel thead {
+        display: none;
+    }
+    .crm-tabel,
+    .crm-tabel tbody,
+    .crm-tabel td {
+        display: block;
+        width: 100%;
+    }
+    .crm-tabel tr {
+        display: grid;
+        /* minmax(0,1fr), bukan 1fr: batas bawah 1fr adalah "auto" sehingga satu
+           sel yang isinya panjang bisa melebar dan halaman jadi bisa digeser */
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        column-gap: 0.9rem;
+        border: 1px solid #eaecf0;
+        border-radius: 10px;
+        margin-bottom: 0.6rem;
+        padding: 0.15rem 0.7rem;
+    }
+    .crm-tabel td:nth-child(1),
+    .crm-tabel td:nth-child(8),
+    .crm-tabel td[colspan] {
+        grid-column: 1 / -1;
+    }
+    .crm-tabel tbody td {
+        padding: 0.5rem 0 !important;
+        border-bottom: 1px dashed #eaecf0;
+        box-shadow: none;
+        text-align: left !important;
+        white-space: normal !important;
+        overflow-wrap: anywhere;
+    }
+    .crm-tabel tr td:last-child {
+        border-bottom: 0;
+    }
+    .crm-tabel td::before {
+        content: attr(data-label);
+        display: block;
+        margin-bottom: 0.15rem;
+        font-size: 0.72rem !important;
+        font-weight: 600;
+        color: #98a2b3;
+    }
+    .crm-tabel td .btn {
+        margin-bottom: 0.25rem;
+    }
+}
+</style>
+<?= $this->endSection() ?>
+
 <?= $this->section('content') ?>
 <?= $this->include('admin/navbar') ?>
 
@@ -11,12 +104,7 @@
             </h4>
             <p class="text-muted small mb-0">Kelola profil customer, segmentasi perilaku, status interaksi, dan tag pelanggan.</p>
         </div>
-        <div class="d-flex gap-2">
-            <a href="<?= site_url('admin/crm/duplikat') ?>" class="btn btn-outline-danger btn-sm fw-semibold">
-                <i class="fal fa-clone me-1"></i> Cek Duplikat
-            </a>
-            <?= $this->include('admin/crm/tombol_wa') ?>
-        </div>
+        <?= $this->include('admin/crm/tombol_wa') ?>
     </div>
 
 
@@ -26,9 +114,9 @@
             <form method="get" action="<?= site_url('admin/crm/pelanggan') ?>" class="row g-2 align-items-center">
                 <!-- Search input -->
                 <div class="col-lg-3 col-md-6">
-                    <div class="input-group input-group-sm">
-                        <span class="input-group-text bg-white"><i class="fal fa-search text-muted"></i></span>
-                        <input type="text" name="cari" class="form-control" placeholder="Cari nama, WA, ID, atau kota..." value="<?= esc($cari) ?>">
+                    <div class="position-relative">
+                        <i class="fal fa-search text-muted position-absolute top-50 start-0 translate-middle-y ms-2"></i>
+                        <input type="text" name="cari" class="form-control form-control-sm crm-cari" placeholder="Cari nama, nomor WA, atau ID..." value="<?= esc($cari) ?>">
                     </div>
                 </div>
 
@@ -92,17 +180,17 @@
     <!-- Tabel Data Pelanggan -->
     <div class="card border-0 shadow-sm mb-4">
         <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
+            <table class="table table-hover align-middle mb-0 crm-tabel">
                 <thead class="table-light">
                     <tr>
-                        <th style="min-width: 220px;">Customer & Status</th>
-                        <th>Kontak WhatsApp</th>
-                        <th>Lokasi</th>
-                        <th class="text-center">Order POS</th>
-                        <th class="text-end">Total Belanja</th>
-                        <th class="text-end">Sisa Piutang</th>
-                        <th>Order Terakhir</th>
-                        <th class="text-center" style="width: 140px;">Aksi</th>
+                        <th style="width: 20%;">Customer &amp; Status</th>
+                        <th style="width: 13%;">Kontak WhatsApp</th>
+                        <th style="width: 9%;">Lokasi</th>
+                        <th class="text-center" style="width: 7%;">Order POS</th>
+                        <th class="text-end" style="width: 11%;">Total Belanja</th>
+                        <th class="text-end" style="width: 10%;">Sisa Piutang</th>
+                        <th style="width: 10%;">Order Terakhir</th>
+                        <th class="text-center" style="width: 20%;">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -116,7 +204,7 @@
                     <?php else : ?>
                         <?php foreach ($daftarPelanggan as $p) : ?>
                             <tr>
-                                <td>
+                                <td data-label="Customer">
                                     <div class="d-flex align-items-center">
                                         <div class="avatar-sm bg-primary bg-opacity-10 text-primary fw-bold rounded-circle d-flex align-items-center justify-content-center me-2 flex-shrink-0" style="width: 36px; height: 36px; font-size: 13px;">
                                             <?= strtoupper(substr($p['nama_pelanggan'], 0, 2)) ?>
@@ -150,7 +238,7 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td>
+                                <td data-label="Kontak WhatsApp">
                                     <?php if (!empty($p['nomor_utama'])): ?>
                                         <a href="https://wa.me/<?= preg_replace('/[^\d]/', '', $p['nomor_utama']) ?>" target="_blank" class="text-decoration-none text-success font-monospace fw-semibold small">
                                             <i class="fab fa-whatsapp me-1"></i><?= esc($p['nomor_utama']) ?>
@@ -159,17 +247,17 @@
                                         <span class="text-muted small fst-italic">Belum ada nomor</span>
                                     <?php endif; ?>
                                 </td>
-                                <td class="small text-muted">
+                                <td class="small text-muted" data-label="Lokasi">
                                     <?= esc($p['kota'] ?: ($p['provinsi'] ?: '-')) ?>
                                 </td>
-                                <td class="text-center">
+                                <td class="text-center" data-label="Order POS">
                                     <span class="fw-bold text-dark"><?= number_format($p['jumlah_order']) ?>x</span>
                                     <div class="text-muted small" style="font-size: 11px;">(<?= number_format($p['qty']) ?> pcs)</div>
                                 </td>
-                                <td class="text-end fw-semibold">
+                                <td class="text-end fw-semibold" data-label="Total Belanja">
                                     Rp <?= number_format($p['nilai'], 0, ',', '.') ?>
                                 </td>
-                                <td class="text-end">
+                                <td class="text-end" data-label="Sisa Piutang">
                                     <?php if ($p['sisa'] > 0) : ?>
                                         <span class="badge bg-danger">
                                             Rp <?= number_format($p['sisa'], 0, ',', '.') ?>
@@ -178,20 +266,18 @@
                                         <span class="badge bg-light text-success border">Lunas</span>
                                     <?php endif; ?>
                                 </td>
-                                <td class="small text-muted">
+                                <td class="small text-muted" data-label="Order Terakhir">
                                     <?= !empty($p['order_terakhir']) ? date('d M Y', strtotime($p['order_terakhir'])) : '<span class="text-muted fst-italic">Belum ada</span>' ?>
                                 </td>
-                                <td class="text-center">
-                                    <div class="btn-group btn-group-sm">
-                                        <a href="<?= site_url('admin/crm/pelanggan/' . $p['id_pelanggan']) ?>" class="btn btn-primary" title="Buka Profil Customer 360">
-                                            <i class="fal fa-id-card me-1"></i> 360°
+                                <td class="text-center" data-label="Aksi">
+                                    <a href="<?= site_url('admin/crm/pelanggan/' . $p['id_pelanggan']) ?>" class="btn btn-sm btn-primary crm-aksi me-2" title="Buka Profil Customer 360">
+                                        <i class="fal fa-id-card"></i> 360°
+                                    </a>
+                                    <?php if (!empty($p['nomor_utama'])): ?>
+                                        <a href="<?= site_url('admin/crm/chat?nomor=' . $p['nomor_utama']) ?>" class="btn btn-sm btn-outline-success crm-aksi" title="Chat WhatsApp">
+                                            <i class="fab fa-whatsapp"></i> Chat
                                         </a>
-                                        <?php if (!empty($p['nomor_utama'])): ?>
-                                            <a href="<?= site_url('admin/crm/chat?nomor=' . $p['nomor_utama']) ?>" class="btn btn-outline-success" title="Chat WhatsApp">
-                                                <i class="fab fa-whatsapp"></i>
-                                            </a>
-                                        <?php endif; ?>
-                                    </div>
+                                    <?php endif; ?>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

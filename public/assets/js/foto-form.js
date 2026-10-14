@@ -1,10 +1,11 @@
 /*
- * Panel "Foto Orderan" di form Tulis dan form Sunting.
+ * Panel "Foto Orderan" di form Tulis dan form Sunting, dan panel "Foto Produk"
+ * di modal katalog barang.
  *
  * Foto sengaja TIDAK ikut form.serialize(). Orderan baru belum punya id saat
  * form dibuka, jadi berkasnya ditahan dulu di peramban lalu diunggah sendiri ke
- * api/foto/unggah/<id> setelah orderannya tersimpan. Di form Sunting id-nya
- * sudah ada, jadi berkas langsung naik.
+ * api/foto/unggah/<id> setelah orderannya tersimpan. Di form Sunting dan di
+ * katalog id-nya sudah ada (data-pemilik), jadi berkas langsung naik.
  *
  * Peramban memperkecil dan menuliskan ulang gambar lewat canvas: kiriman jadi
  * ringan dan EXIF (termasuk koordinat HP) hilang sebelum meninggalkan mesin.
@@ -198,8 +199,8 @@
 
                 var satu = { kunci: k, blob: blob, nama: namai(f.name) };
 
-                if (Number($p.attr('data-invoice')) > 0) {
-                    kirim($p.attr('data-invoice'), [satu], $k);
+                if (Number($p.attr('data-pemilik')) > 0) {
+                    kirim($p.attr('data-pemilik'), [satu], $k);
 
                     return;
                 }
@@ -264,7 +265,7 @@
     function tinggal(id, url) {
         var $p = $panel();
 
-        $p.attr('data-invoice', id);
+        $p.attr('data-pemilik', id);
 
         var $b = $('#iForm').find('button[type="submit"]').first();
 

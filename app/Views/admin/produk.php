@@ -19,7 +19,7 @@ $tambah_err  = $pernahIsi && ! $dariSunting;
 $err_sunting = static fn (string $kolom): ?string => $sunting_err ? $err($kolom) : null;
 $err_tambah  = static fn (string $kolom): ?string => $tambah_err ? $err($kolom) : null;
 
-// badge warna untuk kolom stok
+// badge warna untuk keadaan stok satu varian
 $keadaan_baris = static function (int $stok) use ($ambangnya): array {
     if ($stok <= 0) {
         return ['danger', 'Habis'];
@@ -27,6 +27,20 @@ $keadaan_baris = static function (int $stok) use ($ambangnya): array {
 
     return $stok <= $ambangnya ? ['warning', 'Menipis'] : ['success', 'Aman'];
 };
+
+// data varian untuk modal sunting; esc() yang mengemas atributnya
+$barang = static fn (array $b): string => (string) esc(json_encode([
+    'id'         => (int) $b['id_stok'],
+    'kode'       => $b['kode'],
+    'ukuran'     => (string) ($b['ukuran'] ?? ''),
+    'harga'      => (int) $b['harga'],
+    'stok'       => (int) $b['stok'],
+    'keterangan' => (string) ($b['keterangan'] ?? ''),
+    'juragan'    => $b['nama_juragan'],
+]));
+
+// huruf pertama nama barang, dipakai waktu foto produk belum ada
+$inisial = static fn (string $kode): string => mb_strtoupper(mb_substr(trim($kode), 0, 2));
 ?>
 <?= $this->extend('template/main') ?>
 
@@ -35,18 +49,10 @@ $keadaan_baris = static function (int $stok) use ($ambangnya): array {
 
 <div class="container-xxl">
     <h1 class="h3 mt-5">Produk &amp; Stok</h1>
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb p-0">
-            <li class="breadcrumb-item">
-                <?= anchor('', 'Dasbor') ?>
-            </li>
-            <li class="breadcrumb-item active" aria-current="page">Produk</li>
-        </ol>
-    </nav>
 
     <div class="row gx-2 gy-3 mb-4">
         <?php
-        $kartu = [
+        $ringkasan = [
             ['Varian tercatat', (string) $ringkas['varian'], 'fa-shapes'],
             ['Total unit', (string) $ringkas['unit'], 'fa-boxes-stacked'],
             ['Nilai stok', 'Rp ' . formatRibuan($ringkas['nilai']), 'fa-coins'],
@@ -54,7 +60,7 @@ $keadaan_baris = static function (int $stok) use ($ambangnya): array {
             ['Habis', (string) $ringkas['habis'], 'fa-circle-xmark'],
         ];
 
-        foreach ($kartu as [$label, $nilai, $ikon]) { ?>
+        foreach ($ringkasan as [$label, $nilai, $ikon]) { ?>
             <div class="col-6 col-lg">
                 <div class="h-100 rounded-3 border border-ink-200 bg-white px-3 py-2">
                     <div class="text-muted small text-uppercase">
@@ -77,122 +83,167 @@ $keadaan_baris = static function (int $stok) use ($ambangnya): array {
 
             <div class="card">
                 <div class="card-body">
-                    <?= form_open('admin/produk', ['method' => 'get', 'class' => 'row g-2 align-items-end mb-3']) ?>
-                    <div class="col-6 col-md-3">
-                        <?= form_label('Juragan', 'juragan', ['class' => 'form-label small']) ?>
-                        <?= form_dropdown([
-                            'class'    => 'form-select form-select-sm',
-                            'name'     => 'juragan',
-                            'options'  => [0 => 'Semua juragan'] + $juragans,
-                            'selected' => $juragan,
-                        ]) ?>
-                    </div>
-                    <div class="col-6 col-md-3">
-                        <?= form_label('Keadaan', 'keadaan', ['class' => 'form-label small']) ?>
-                        <?= form_dropdown([
-                            'class'    => 'form-select form-select-sm',
-                            'name'     => 'keadaan',
-                            'options'  => [
-                                ''        => 'Semua',
-                                'ada'     => 'Stok aman',
-                                'menipis' => 'Menipis (≤ ' . $ambangnya . ')',
-                                'habis'   => 'Habis',
-                            ],
-                            'selected' => $keadaan,
-                        ]) ?>
-                    </div>
-                    <div class="col-12 col-md-4">
-                        <?= form_label('Cari', 'cari', ['class' => 'form-label small']) ?>
-                        <?= form_input([
-                            'class'       => 'form-control form-control-sm',
-                            'name'        => 'cari',
-                            'placeholder' => 'nama barang atau keterangan',
-                            'value'       => $cari,
-                        ]) ?>
-                    </div>
-                    <!-- Satu kolom untuk dua tombol: kalau dipisah, "Tambah Barang"
-                         meloncat ke baris kedua dan jatuh lebih rendah dari "Cari". -->
-                    <div class="col-auto ms-md-auto d-flex align-items-end gap-2">
-                        <button class="btn btn-sm btn-dark" type="submit"><i class="fal fa-search"></i> Cari</button>
-                        <button class="btn btn-sm btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#modalTambahBarang">
+                    <div class="d-flex flex-wrap gap-2 align-items-end mb-3">
+                        <?= form_open('admin/produk', ['method' => 'get', 'class' => 'row g-2 align-items-end mb-0 flex-grow-1']) ?>
+                        <div class="col-6 col-md-3">
+                            <?= form_label('Juragan', 'juragan', ['class' => 'form-label small']) ?>
+                            <?= form_dropdown([
+                                'class'    => 'form-select form-select-sm',
+                                'name'     => 'juragan',
+                                'options'  => [0 => 'Semua juragan'] + $juragans,
+                                'selected' => $juragan,
+                            ]) ?>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <?= form_label('Keadaan', 'keadaan', ['class' => 'form-label small']) ?>
+                            <?= form_dropdown([
+                                'class'    => 'form-select form-select-sm',
+                                'name'     => 'keadaan',
+                                'options'  => [
+                                    ''        => 'Semua',
+                                    'ada'     => 'Stok aman',
+                                    'menipis' => 'Menipis (≤ ' . $ambangnya . ')',
+                                    'habis'   => 'Habis',
+                                ],
+                                'selected' => $keadaan,
+                            ]) ?>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <?= form_label('Cari', 'cari', ['class' => 'form-label small']) ?>
+                            <?= form_input([
+                                'class'       => 'form-control form-control-sm',
+                                'name'        => 'cari',
+                                'placeholder' => 'nama barang atau keterangan',
+                                'value'       => $cari,
+                            ]) ?>
+                        </div>
+                        <div class="col-auto">
+                            <button class="btn btn-sm btn-dark" type="submit"><i class="fal fa-search"></i> Cari</button>
+                        </div>
+                        <?= form_close() ?>
+                        <button class="btn btn-sm btn-primary flex-shrink-0" type="button" data-bs-toggle="modal" data-bs-target="#modalTambahBarang">
                             <i class="fal fa-plus"></i> Tambah Barang
                         </button>
                     </div>
-                    <?= form_close() ?>
 
-                    <?php if ($stok === []) { ?>
+                    <?php if ($katalog === []) { ?>
                         <div class="text-center py-5 text-muted">
                             <i class="fal fa-box-open fa-3x mb-2 d-block"></i>
                             Belum ada barang yang dipantau<?= $cari !== '' ? ' untuk pencarian "' . esc($cari) . '"' : '' ?>.
                             Klik tombol <strong>Tambah Barang</strong> di atas untuk menambah varian.
                         </div>
                     <?php } else { ?>
-                        <div class="table-responsive">
-                            <table class="table table-sm align-middle mb-0">
-                                <thead>
-                                    <tr>
-                                        <th scope="col">Produk</th>
-                                        <th scope="col">Ukuran</th>
-                                        <?php if ($juragan === 0) { ?>
-                                            <th scope="col">Juragan</th>
-                                        <?php } ?>
-                                        <th scope="col" class="text-end">Stok</th>
-                                        <th scope="col" class="text-end">Harga</th>
-                                        <th scope="col" class="text-end">Terjual</th>
-                                        <th scope="col" class="text-end">&nbsp;</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php
-                                    foreach ($stok as $b) {
-                                        [$warna, $teks] = $keadaan_baris((int) $b['stok']);
-                                        $ukuran_baris = (string) ($b['ukuran'] ?? '');
-                                        ?>
-                                        <tr>
-                                            <td>
-                                                <div class="fw-semibold"><?= esc($b['kode']) ?></div>
-                                                <?php if (! empty($b['keterangan'])) { ?>
-                                                    <div class="text-muted small"><?= esc($b['keterangan']) ?></div>
-                                                <?php } ?>
-                                            </td>
-                                            <td><?= $ukuran_baris === '' ? '&mdash;' : esc($ukuran_baris) ?></td>
-                                            <?php if ($juragan === 0) { ?>
-                                                <td class="small"><?= esc($b['nama_juragan']) ?></td>
+                        <div class="grid grid-cols-[repeat(auto-fill,minmax(15rem,1fr))] gap-3">
+                            <?php foreach ($katalog as $i => $p) {
+                                $varian = $p['varian'];
+                                $jumlah   = count($varian);
+                                [, $teks] = $keadaan_baris((int) $p['total_stok']);
+                                $rentang = $p['harga_akhir'] > $p['harga_mulai'];
+
+                                // foto kartu = gabungan foto semua variannya, jadi
+                                // satu unggahan terlihat di semua ukuran
+                                $fotonya_kartu = $fotonya[$i] ?? [];
+                                $sampul        = $fotonya_kartu[0] ?? null;
+
+                                // satu keterangan saja yang perlu tampil di kartu
+                                $keterangan = '';
+
+                                foreach ($varian as $b) {
+                                    if (trim((string) ($b['keterangan'] ?? '')) !== '') {
+                                        $keterangan = (string) $b['keterangan'];
+
+                                        break;
+                                    }
+                                }
+
+                                // tanpa keterangan, nama tokonya yang mengisi baris itu
+                                if ($keterangan === '' && $juragan > 0) {
+                                    $keterangan = (string) $p['nama_juragan'];
+                                }
+                                ?>
+                                <div class="card produk-kartu h-100">
+                                    <div class="rounded-kartu overflow-hidden">
+                                        <div class="produk-sampul position-relative d-flex align-items-center justify-content-center">
+                                            <?php if ($sampul !== null) { ?>
+                                                <img src="<?= esc(\App\Models\ProdukFotoModel::alamat((int) $sampul['id_foto'], 480)) ?>"
+                                                    alt="Foto <?= esc($p['kode']) ?>" loading="lazy">
+                                            <?php } else { ?>
+                                                <span class="produk-inisial"><?= esc($inisial($p['kode'])) ?></span>
                                             <?php } ?>
-                                            <td class="text-end" title="<?= $teks ?>">
-                                                <span class="badge rounded-pill bg-<?= $warna ?>"><?= (int) $b['stok'] ?></span>
-                                            </td>
-                                            <td class="text-end">Rp <?= formatRibuan((int) $b['harga']) ?></td>
-                                            <td class="text-end"><?= (int) $b['terjual'] ?></td>
-                                            <td class="text-end text-nowrap">
-                                                <button type="button" class="btn btn-sm btn-outline-secondary" aria-label="Sunting barang"
-                                                    data-barang="<?= esc(json_encode([
-                                                        'id'         => (int) $b['id_stok'],
-                                                        'kode'       => $b['kode'],
-                                                        'ukuran'     => $ukuran_baris,
-                                                        'harga'      => (int) $b['harga'],
-                                                        'stok'       => (int) $b['stok'],
-                                                        'keterangan' => (string) ($b['keterangan'] ?? ''),
-                                                        'juragan'    => $b['nama_juragan'],
-                                                    ])) ?>"
+                                            <?php if ($juragan === 0) { ?>
+                                                <span class="badge position-absolute top-0 start-0 m-2 rounded-pill bg-white text-ink-700 border border-ink-200 text-uppercase">
+                                                    <?= esc($p['nama_juragan']) ?>
+                                                </span>
+                                            <?php } ?>
+                                            <button type="button" class="produk-foto-btn position-absolute top-0 end-0 m-2 rounded-circle d-flex align-items-center justify-content-center"
+                                                title="Kelola foto produk ini" aria-label="Kelola foto produk"
+                                                data-stok="<?= (int) $varian[0]['id_stok'] ?>"
+                                                data-nama="<?= esc($p['kode'], 'attr') ?>"
+                                                data-bs-toggle="modal" data-bs-target="#modalFotoProduk">
+                                                <i class="fal fa-camera"></i>
+                                                <?php if ($fotonya_kartu !== []) { ?>
+                                                    <span class="small fw-semibold"><?= count($fotonya_kartu) ?></span>
+                                                <?php } ?>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="card-body p-3 d-flex flex-column">
+                                        <div class="d-flex align-items-baseline justify-content-between gap-2">
+                                            <h2 class="h6 mb-0 text-truncate" title="<?= esc($p['kode']) ?>"><?= esc($p['kode']) ?></h2>
+                                            <div class="text-nowrap small">
+                                                <?php if ($rentang) { ?>
+                                                    <span class="text-muted">mulai</span>
+                                                <?php } ?>
+                                                <span class="fw-bold text-brand-600">Rp <?= formatRibuan($p['harga_mulai']) ?></span>
+                                            </div>
+                                        </div>
+
+                                        <div class="small text-muted text-truncate mb-2" title="<?= esc($keterangan) ?>">
+                                            <i class="fal fa-tag me-1"></i><?= $keterangan === '' ? '&mdash;' : esc($keterangan) ?>
+                                        </div>
+
+                                        <div class="varian-daftar rounded-3 mb-2">
+                                            <?php foreach ($varian as $b) {
+                                                $ukuran_baris = (string) ($b['ukuran'] ?? '');
+                                                [$vw, $label_keadaan] = $keadaan_baris((int) $b['stok']);
+                                                $warna_teks = $vw === 'warning' ? 'text-dark' : 'text-white';
+                                                ?>
+                                                <button type="button" class="varian-baris d-flex align-items-center justify-content-between gap-2 w-100"
+                                                    title="<?= esc($ukuran_baris === '' ? 'Tanpa ukuran' : 'Ukuran ' . $ukuran_baris) ?> · klik untuk sunting"
+                                                    data-barang="<?= $barang($b) ?>"
                                                     data-bs-toggle="modal" data-bs-target="#modalSuntingBarang">
-                                                    <i class="fal fa-pencil"></i>
+                                                    <span class="varian-ukuran badge rounded-pill text-uppercase"><?= $ukuran_baris === '' ? '&mdash;' : esc($ukuran_baris) ?></span>
+                                                    <span class="badge rounded-pill bg-<?= $vw ?> <?= $warna_teks ?>"><?= esc($label_keadaan) ?> · stok <?= (int) $b['stok'] ?></span>
                                                 </button>
-                                                <?= form_open('admin/produk/hapus', ['class' => 'd-inline']) ?>
-                                                <?= form_hidden('id_stok', (string) $b['id_stok']) ?>
-                                                <?= form_hidden('kembali_juragan', (string) $juragan) ?>
-                                                <?= form_hidden('kembali_keadaan', $keadaan) ?>
-                                                <?= form_hidden('kembali_cari', $cari) ?>
-                                                <button type="submit" class="btn btn-sm btn-outline-danger" aria-label="Hapus barang"
-                                                    onclick="return confirm('Hapus <?= esc($b['kode']) ?> <?= esc($ukuran_baris) ?> dari daftar stok?')">
-                                                    <i class="fal fa-trash"></i>
+                                            <?php } ?>
+                                        </div>
+
+                                        <div class="d-flex align-items-center justify-content-between gap-2 mt-auto pt-2 border-t border-ink-100">
+                                            <div class="small text-muted text-nowrap" title="<?= esc($teks) ?> · <?= $jumlah ?> varian">
+                                                <?= $jumlah ?> varian
+                                                <span class="mx-1">·</span>
+                                                <?= (int) $p['total_stok'] ?> stok
+                                                <span class="mx-1">·</span>
+                                                <?= (int) $p['terjual'] ?> terjual
+                                            </div>
+                                            <div class="d-flex align-items gap-2">
+                                                <button type="button" class="btn btn-sm btn-link text-decoration-none p-0 small text-nowrap text-danger"
+                                                    title="Hapus <?= esc($p['kode'], 'attr') ?> beserta semua variannya dari daftar stok"
+                                                    form="formHapusKartu"
+                                                    data-hapus-kartu="<?= (string) esc(json_encode(['kode' => $p['kode'], 'juragan' => (int) $p['juragan_id'], 'varian' => $jumlah])) ?>">
+                                                    <i class="fal fa-trash"></i> Hapus
                                                 </button>
-                                                <?= form_close() ?>
-                                            </td>
-                                        </tr>
-                                    <?php } ?>
-                                </tbody>
-                            </table>
+                                                <button type="button" class="btn btn-sm btn-link text-decoration-none p-0 small text-nowrap"
+                                                    data-tambah="<?= (string) esc(json_encode(['kode' => $p['kode'], 'juragan' => $p['juragan_id']])) ?>"
+                                                    data-bs-toggle="modal" data-bs-target="#modalTambahBarang">
+                                                    <i class="fal fa-plus"></i> Varian
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php } ?>
                         </div>
 
                         <div class="mt-3">
@@ -220,7 +271,7 @@ $keadaan_baris = static function (int $stok) use ($ambangnya): array {
 <?= $this->section('modal') ?>
 <div class="modal fade" id="modalTambahBarang" tabindex="-1" aria-labelledby="modalTambahBarangLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <?= form_open('admin/produk/save', ['class' => 'modal-content'], [
+        <?= form_open('admin/produk/save', ['class' => 'modal-content', 'enctype' => 'multipart/form-data'], [
             'kembali_juragan' => (string) $juragan,
             'kembali_keadaan' => $keadaan,
             'kembali_cari'    => $cari,
@@ -306,7 +357,7 @@ $keadaan_baris = static function (int $stok) use ($ambangnya): array {
                     <?php } ?>
                 </div>
             </div>
-            <div class="mb-0">
+            <div class="mb-3">
                 <?= form_label('Keterangan (opsional)', 'keterangan', ['class' => 'form-label']) ?>
                 <?= form_input([
                     'class'       => 'form-control',
@@ -315,6 +366,11 @@ $keadaan_baris = static function (int $stok) use ($ambangnya): array {
                     'max_length'  => 120,
                     'value'       => set_value('keterangan'),
                 ]) ?>
+            </div>
+            <div class="mb-0">
+                <?= form_label('Foto produk (opsional)', 'foto', ['class' => 'form-label']) ?>
+                <input type="file" class="form-control" id="foto" name="foto[]" multiple accept="image/jpeg,image/png,image/webp">
+                <div class="form-text">JPEG, PNG, atau WebP; maksimum 3 MB per foto dan 12 foto per barang. Foto menempel ke varian ini dan tampil di semua ukuran sekartunya.</div>
             </div>
         </div>
         <div class="modal-footer flex-nowrap p-0">
@@ -372,19 +428,61 @@ $keadaan_baris = static function (int $stok) use ($ambangnya): array {
         </div>
         <div class="modal-footer flex-nowrap p-0">
             <button type="button" data-bs-dismiss="modal" class="btn btn-lg btn-link fs-6 text-decoration-none col m-0 rounded-0">Batal</button>
+            <button type="submit" form="formHapusBarang" class="btn btn-lg btn-link fs-6 text-decoration-none col m-0 rounded-0 border-start text-danger"><i class="fal fa-trash"></i> Hapus</button>
             <button type="submit" class="btn btn-lg btn-link fs-6 text-decoration-none col m-0 rounded-0 border-start">Simpan</button>
         </div>
         <?= form_close() ?>
+    </div>
+</div>
+
+<?php
+// Dipakai tombol Hapus di modal sunting. Form-nya berdiri sendiri di luar modal
+// supaya tidak ada form yang bersarang, dan ditambatkan lewat atribut `form`.
+echo form_open('admin/produk/hapus', ['id' => 'formHapusBarang', 'class' => 'd-none'])
+    . form_hidden('id_stok')
+    . form_hidden('kembali_juragan', (string) $juragan)
+    . form_hidden('kembali_keadaan', $keadaan)
+    . form_hidden('kembali_cari', $cari)
+    . form_close();
+
+// Tombol hapus per kartu mengirim form ini; kode dan toko tujuan diisi JS
+// sesaat sebelum kirim, supaya kartu tidak perlu menyimpan satu form sendiri
+echo form_open('admin/produk/hapus-kartu', ['id' => 'formHapusKartu', 'class' => 'd-none'])
+    . form_hidden('kode')
+    . form_hidden('juragan_id')
+    . form_hidden('kembali_juragan', (string) $juragan)
+    . form_hidden('kembali_keadaan', $keadaan)
+    . form_hidden('kembali_cari', $cari)
+    . form_close();
+?>
+
+<?php
+// Panel fotonya tidak ikut ter-render untuk tiap kartu: 20 kartu x daftar foto
+// per halaman berat, dan yang dibuka cuma satu. Isinya dimuat saat tombolnya
+// ditekan (lihat js di bawah), memakai panel yang sama dengan form orderan.
+?>
+<div class="modal fade" id="modalFotoProduk" tabindex="-1" aria-labelledby="modalFotoProdukLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalFotoProdukLabel">Foto Produk</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body foto-muat">
+                <div class="text-center text-muted py-4"><i class="fal fa-spinner fa-spin me-2"></i>Fotonya dimuat...</div>
+            </div>
+        </div>
     </div>
 </div>
 <?= $this->endSection() ?>
 
 <?= $this->section('js') ?>
 <script defer src="https://kit.fontawesome.com/22a9d93fa2.js" data-auto-replace-svg="nest" crossorigin="anonymous"></script>
-<?= $this->include('template/common_js') ?>
+<script defer src="<?= base_url('assets/js/foto-form.js') ?>?v=<?= (int) @filemtime(FCPATH . 'assets/js/foto-form.js') ?>"></script>
 <?php
 $showModalSunting = $sunting_err ? 'true' : 'false';
 $showModalTambah  = $tambah_err ? 'true' : 'false';
+$alamat_foto      = site_url('api/produk-foto/kelola');
 $isiUlang         = $sunting_err ? json_encode([
     'id'         => (int) set_value('id_stok'),
     'kode'       => (string) set_value('kode'),
@@ -401,9 +499,13 @@ $js = <<< JS
 
         const suntingErr = {$showModalSunting};
         const tambahErr = {$showModalTambah};
+        const alamatFoto = '{$alamat_foto}';
         let suntingLama = {$isiUlang};
+        let namaHapus = '';
         const modalSunting = document.getElementById('modalSuntingBarang');
         const modalTambah = document.getElementById('modalTambahBarang');
+        const formHapus = document.getElementById('formHapusBarang');
+        const formHapusKartu = document.getElementById('formHapusKartu');
         const fields = {
             id_stok: modalSunting.querySelector('[name="id_stok"]'),
             kode: modalSunting.querySelector('[name="kode"]'),
@@ -422,10 +524,16 @@ $js = <<< JS
             fields.stok.value = data.stok;
             fields.keterangan.value = data.keterangan;
             fields.juragan.value = data.juragan;
+
+            // tombol Hapus di modal ini mengirim form sendiri
+            formHapus.querySelector('[name="id_stok"]').value = data.id;
+            namaHapus = (data.kode + ' ' + data.ukuran).trim();
         }
 
         modalSunting.addEventListener('show.bs.modal', event => {
             const button = event.relatedTarget;
+
+            namaHapus = '';
 
             // sunting yang gagal: nilai yang tadi diketik dipulihkan, bukan nilai lama
             if (suntingLama) {
@@ -442,6 +550,53 @@ $js = <<< JS
             isiForm(JSON.parse(button.getAttribute('data-barang')));
         });
 
+        // hapus diformalkan sekali per klik: kartu tidak lagi menyimpan satu form
+        // per varian, jadi nama variannya diambil dari modal yang sedang terbuka
+        document.querySelector('[form="formHapusBarang"]').addEventListener('click', event => {
+            if (namaHapus === '' || ! confirm('Hapus ' + namaHapus + ' dari daftar stok?')) {
+                event.preventDefault();
+            }
+        });
+
+        // hapus per kartu: satu produk pergi bersama semua variannya, jadi
+        // konfirmasinya menyebut jumlah varian supaya tidak terasa kejutan
+        document.querySelectorAll('[form="formHapusKartu"]').forEach(button => {
+            button.addEventListener('click', event => {
+                const data = JSON.parse(button.getAttribute('data-hapus-kartu'));
+
+                if (! confirm('Hapus ' + data.kode + ' (' + data.varian + ' varian) dari daftar stok? Transaksi lama tetap utuh.')) {
+                    event.preventDefault();
+
+                    return;
+                }
+
+                formHapusKartu.querySelector('[name="kode"]').value = data.kode;
+                formHapusKartu.querySelector('[name="juragan_id"]').value = data.juragan;
+            });
+        });
+
+        // "+ Varian" pada kartu membawa nama barang dan toko asalnya
+        modalTambah.addEventListener('show.bs.modal', event => {
+            const button = event.relatedTarget;
+
+            if (!button || !button.hasAttribute('data-tambah')) {
+                return;
+            }
+
+            const bawaan = JSON.parse(button.getAttribute('data-tambah'));
+            const juragan = modalTambah.querySelector('[name="juragan_id"]');
+
+            modalTambah.querySelector('[name="kode"]').value = bawaan.kode;
+
+            for (let i = 0; i < juragan.options.length; i++) {
+                if (juragan.options[i].value === String(bawaan.juragan)) {
+                    juragan.value = juragan.options[i].value;
+
+                    break;
+                }
+            }
+        });
+
         if (suntingErr) {
             bootstrap.Modal.getOrCreateInstance(modalSunting).show();
         }
@@ -450,6 +605,42 @@ $js = <<< JS
         if (tambahErr) {
             bootstrap.Modal.getOrCreateInstance(modalTambah).show();
         }
+
+        // Panel foto produk dimuat saat tombolnya ditekan: satu halaman bisa
+        // berisi 20 kartu dan hampir semuanya tidak dibuka, jadi fotonya tidak
+        // perlu ditarik semua. Isi lama dibuang tiap modal ditutup supaya kartu
+        // berikutnya tidak sempat menampilkan foto kartu sebelumnya.
+        const modalFoto = document.getElementById('modalFotoProduk');
+        const muatFoto = modalFoto.querySelector('.foto-muat');
+        const judulFoto = modalFoto.querySelector('.modal-title');
+
+        modalFoto.addEventListener('show.bs.modal', event => {
+            const tombol = event.relatedTarget;
+
+            if (!tombol || !tombol.hasAttribute('data-stok')) {
+                return;
+            }
+
+            judulFoto.textContent = 'Foto ' + tombol.getAttribute('data-nama');
+            muatFoto.innerHTML = '<div class="text-center text-muted py-4"><i class="fal fa-spinner fa-spin me-2"></i>Fotonya dimuat...</div>';
+
+            const id = tombol.getAttribute('data-stok');
+
+            $.get(alamatFoto + '/' + id)
+                .done(html => {
+                    // modal bisa sempat ditutup sebelum jawaban datang
+                    if (document.getElementById('modalFotoProduk') && modalFoto.classList.contains('show')) {
+                        muatFoto.innerHTML = html;
+                    }
+                })
+                .fail(() => {
+                    muatFoto.innerHTML = '<div class="alert alert-danger py-2 mb-0">Foto produk gagal dimuat, coba lagi ya.</div>';
+                });
+        });
+
+        modalFoto.addEventListener('hidden.bs.modal', () => {
+            muatFoto.innerHTML = '';
+        });
     });
     JS;
 

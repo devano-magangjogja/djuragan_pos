@@ -7,13 +7,6 @@
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
         <div>
             <h1 class="h3 mb-1">Notifikasi Resi Pengiriman</h1>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb p-0 m-0">
-                    <li class="breadcrumb-item"><?= anchor('', 'Dasbor') ?></li>
-                    <li class="breadcrumb-item"><?= anchor('admin/crm', 'CRM') ?></li>
-                    <li class="breadcrumb-item active" aria-current="page">Pengiriman</li>
-                </ol>
-            </nav>
         </div>
         <div class="d-flex align-items-center gap-2">
             <?= $this->include('admin/crm/tombol_wa') ?>
@@ -25,8 +18,8 @@
         <div class="card-body">
             <form method="get" action="<?= site_url('admin/crm/pengiriman') ?>" class="row g-2 align-items-center">
                 <div class="col-md-5">
-                    <div class="input-group">
-                        <span class="input-group-text bg-white"><i class="fal fa-search text-muted"></i></span>
+                    <div class="cari-merged">
+                        <button type="submit" class="cari-kirim" title="Cari"><i class="fal fa-search"></i></button>
                         <input type="text" name="cari" class="form-control" placeholder="Cari invoice, resi, kurir, nama pelanggan..." value="<?= esc($cari) ?>">
                     </div>
                 </div>
