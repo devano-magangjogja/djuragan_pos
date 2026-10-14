@@ -104,12 +104,7 @@ td .btn.crm-aksi {
             </h4>
             <p class="text-muted small mb-0">Kelola profil customer, segmentasi perilaku, status interaksi, dan tag pelanggan.</p>
         </div>
-        <div class="d-flex gap-2">
-            <a href="<?= site_url('admin/crm/duplikat') ?>" class="btn btn-outline-danger btn-sm fw-semibold">
-                <i class="fal fa-clone me-1"></i> Cek Duplikat
-            </a>
-            <?= $this->include('admin/crm/tombol_wa') ?>
-        </div>
+        <?= $this->include('admin/crm/tombol_wa') ?>
     </div>
 
 

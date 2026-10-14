@@ -19,6 +19,35 @@ $per_halaman = (int) config('Pager')->perPage;
 ?>
 <?= $this->extend('template/main') ?>
 
+<?= $this->section('css') ?>
+<style>
+/* Tombol mata dulu menempel sebagai kotak .input-group-text sendiri di samping
+   kolom kata sandi; sekarang dia melayang di dalam field, sisi kanan, supaya
+   kolomnya terbaca satu kesatuan seperti kolom cari. */
+.sandi-merged {
+    position: relative;
+}
+.sandi-merged .form-control {
+    padding-right: 2.35rem !important;
+}
+.sandi-merged .sandi-lihat {
+    position: absolute;
+    top: 50%;
+    right: 0.6rem;
+    transform: translateY(-50%);
+    border: 0;
+    background: transparent;
+    padding: 0;
+    line-height: 1;
+    cursor: pointer;
+    color: #667085;
+}
+.sandi-merged .sandi-lihat:hover {
+    color: #101828;
+}
+</style>
+<?= $this->endSection() ?>
+
 <?= $this->section('content') ?>
 <?= $this->include('admin/navbar') ?>
 
@@ -103,7 +132,7 @@ $per_halaman = (int) config('Pager')->perPage;
                     </div>
                     <div class="col-6">
                         <?= form_label('Password', 'password', ['class' => 'form-label']); ?>
-                        <div class="input-group">
+                        <div class="sandi-merged">
                             <?= form_password([
                                 'class'       => 'form-control' . ($err('password') ? ' is-invalid' : ''),
                                 'name'        => 'password',
@@ -111,7 +140,7 @@ $per_halaman = (int) config('Pager')->perPage;
                                 'required'    => '',
                                 'placeholder' => 'minimal 6 karakter',
                             ]); ?>
-                            <button class="btn btn-outline-secondary" type="button" data-lihat="password" aria-label="Tampilkan atau sembunyikan kata sandi"><i class="fal fa-eye"></i></button>
+                            <button type="button" class="sandi-lihat" data-lihat="password" aria-label="Tampilkan atau sembunyikan kata sandi"><i class="fal fa-eye"></i></button>
                         </div>
                         <?php if ($err('password')) { ?>
                             <div class="invalid-feedback d-block"><?= esc($err('password')) ?></div>
@@ -225,9 +254,9 @@ $per_halaman = (int) config('Pager')->perPage;
                     </div>
                     <div class="col-6">
                         <?= form_label('Password', 'password_', ['class' => 'form-label']); ?>
-                        <div class="input-group">
+                        <div class="sandi-merged">
                             <?= form_password('password', '', ['class' => 'form-control', 'id' => 'password_', 'placeholder' => 'password - isi jika diganti']); ?>
-                            <button class="btn btn-outline-secondary" type="button" data-lihat="password_" aria-label="Tampilkan atau sembunyikan kata sandi"><i class="fal fa-eye"></i></button>
+                            <button type="button" class="sandi-lihat" data-lihat="password_" aria-label="Tampilkan atau sembunyikan kata sandi"><i class="fal fa-eye"></i></button>
                         </div>
                     </div>
                 </div>
@@ -300,7 +329,6 @@ $link_api_juragan_all  = site_url('api/juragan/all/');
 $link_api_pengguna_all = site_url('api/pengguna/all/');
 $link_api_relasi       = site_url('api/juragan/by_user');
 $link_invoice          = site_url('admin/invoices/lihat/');
-$link_api_notif        = site_url('api/notifikasi/');
 
 $js = <<< JS
     $(function() {
@@ -330,101 +358,6 @@ $js = <<< JS
             });
         }
 
-    	// notifikasi
-
-    	function getNotif(page = 1, dibaca = 0){
-    		var id = {$current_user_id};
-    		$.getJSON('{$link_api_notif}' + 'get', { id: id, page: page, dibaca: dibaca }, function(b){
-    			var a=[],
-    				data = b.results;
-
-    			if (b.count > 0) {
-    				$('.btnSettingNotif').show();
-    				a.push('');
-
-    				$.each(data,function(c,b){
-    					a.push(`<div class="list-group-item list-group-item-action">
-    						<div class="d-flex">
-    							<div class="me-auto">
-    								<div class="text-muted small">`+b.created_at +`</div>
-    								<a class="d-block text-decoration-none" href="{$link_invoice}semua/semua?cari[kolom]=faktur&cari[q]=`+b.invoice+`">`+ b.notif+`</a>
-    							</div>
-    							<div class="d-flex justify-content-right flex-column actionNotif">
-    								<button data-id="`+b.id+`" class="markAs border-0 bg-transparent text-primary small" type="button"><i class="fal fa-circle"></i></button>
-    							</div>
-    						</div>
-    					</div>`);
-    				}),
-    				$(a.join('')).appendTo('#notifDisini');
-    				var next = '';
-
-    				if (b.next) {
-    					$('<button type="button" class="list-group-item list-group-item-action text-center lanjutNotif" data-page="'+ (b.page+1) +'">lanjut ...</button>').appendTo('#notifDisini');
-    				}
-    			}
-    			else {
-    				$('.btnSettingNotif').hide();
-
-    				$('<div class="d-flex justify-content-center align-items-center" style="height: 90vh"><i class="fal fa-bell-slash fa-5x"></i></div>').appendTo('#notifDisini');
-    			}
-    		});
-    	}
-
-    	$(document).on('click', '.lanjutNotif',function(){
-    		getNotif($(this).data('page'));
-    		$(this).attr('disabled', true).html(`<div class="text-center">
-    			<div class="spinner-border" role="status">
-    				<span class="visually-hidden">Loading...</span>
-    			</div>
-    		</div>`).remove();
-    	});
-
-    	var notifikasi = document.getElementById('notifikasi');
-        if(notifikasi) {
-            notifikasi.addEventListener('show.bs.offcanvas', function () {
-
-                var id = {$current_user_id};
-                $('#notifDisini').empty(),
-                getNotif();
-            });
-        }
-
-    	counter_notif();
-
-    	setInterval(function(){
-    		counter_notif();
-    	}, 10000);
-
-    	function counter_notif() {
-    		var id = {$current_user_id};
-    		$.getJSON('{$link_api_notif}' + 'get', { id: id }, function(b){
-    			$('.counter').text(b.count_text);
-    		});
-    	}
-
-    	$(document).on('click', '.actionNotif .markAs', function() { // markAs
-    		var action = '';
-
-    		if ($(this).hasClass( "text-primary" )) {
-    			$(this).removeClass('text-primary').addClass('text-muted');
-    			action = 'sudahBaca';
-    		}
-    		else {
-    			$(this).removeClass('text-muted').addClass('text-primary');
-    			action = 'belumBaca';
-    		}
-
-    		$.post( '{$link_api_notif}' + 'mark', { action: action, id: $(this).data('id') });
-    	});
-
-    	$('.tandaiSemuaTerbaca').on('click',function(){
-    		var id = {$current_user_id};
-
-    		$.post( '{$link_api_notif}' + 'mark_all', { id: id }, function() {
-    			//
-    			$('.actionNotif .markAs').removeClass('text-primary').addClass('text-muted');
-    		});
-    	});
 
     	// daftar penuh sudah dikirim sekali, jadi pencarian dan pagination cukup di sini
     	var semuaPengguna = [];
@@ -647,6 +580,27 @@ $js = <<< JS
     	if (popupTambah.getAttribute('data-buka') === '1') {
     		bootstrap.Modal.getOrCreateInstance(popupTambah).show();
     	}
+
+    	// ditutup = mulai dari nol. Dulu isian percobaan sebelumnya (dan pil juragan
+    	// yang sudah dicentang) tertinggal di dalam popup, jadi tombol Tambah
+    	// Pengguna berikutnya membuka form yang masih terisi.
+    	popupTambah.addEventListener('hidden.bs.modal', function () {
+    			var form = popupTambah.querySelector('form');
+
+    			// reset() mengembalikan tiap kontrol ke keadaan bawaan HTML, dan pil
+    			// yang ikut ter-render membawa atribut checked, jadi centangnya harus
+    			// dilepas sendiri setelahnya
+    			if (form) { form.reset(); }
+
+    			var centang = popupTambah.querySelectorAll('#pilihJuragan input:checked');
+    			for (var i = 0; i < centang.length; i++) { centang[i].checked = false; }
+
+    			$('#pilihJuragan').attr('data-juragan', '[]');
+    			sinkronHintLevel(popupTambah);
+
+    			var salah = popupTambah.querySelectorAll('.is-invalid');
+    			for (var j = 0; j < salah.length; j++) { salah[j].classList.remove('is-invalid'); }
+    	});
 
     	var mP=document.getElementById('modalSuntingPengguna');
     	mP.addEventListener('show.bs.modal',function(o){

@@ -49,14 +49,6 @@ $inisial = static fn (string $kode): string => mb_strtoupper(mb_substr(trim($kod
 
 <div class="container-xxl">
     <h1 class="h3 mt-5">Produk &amp; Stok</h1>
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb p-0">
-            <li class="breadcrumb-item">
-                <?= anchor('', 'Dasbor') ?>
-            </li>
-            <li class="breadcrumb-item active" aria-current="page">Produk</li>
-        </ol>
-    </nav>
 
     <div class="row gx-2 gy-3 mb-4">
         <?php
@@ -486,7 +478,6 @@ echo form_open('admin/produk/hapus-kartu', ['id' => 'formHapusKartu', 'class' =>
 
 <?= $this->section('js') ?>
 <script defer src="https://kit.fontawesome.com/22a9d93fa2.js" data-auto-replace-svg="nest" crossorigin="anonymous"></script>
-<?= $this->include('template/common_js') ?>
 <script defer src="<?= base_url('assets/js/foto-form.js') ?>?v=<?= (int) @filemtime(FCPATH . 'assets/js/foto-form.js') ?>"></script>
 <?php
 $showModalSunting = $sunting_err ? 'true' : 'false';

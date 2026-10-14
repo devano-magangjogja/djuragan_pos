@@ -432,11 +432,18 @@ class Crm extends BaseController
      */
     public function duplikat()
     {
-        $duplikatList = $this->crmModel->getDuplikatList();
+        $semuaDuplikat = $this->crmModel->getDuplikatList();
+        $perHalaman    = 25;
+        $totalDuplikat = count($semuaDuplikat);
+        $totalPages    = (int) ceil($totalDuplikat / $perHalaman);
+        $page          = max(1, min($totalPages, (int) ($this->request->getGet('page') ?: 1)));
 
         $data = [
-            'title'        => 'Deteksi & Penggabungan Akun Duplikat',
-            'duplikatList' => $duplikatList,
+            'title'         => 'Deteksi & Penggabungan Akun Duplikat',
+            'duplikatList'  => array_slice($semuaDuplikat, ($page - 1) * $perHalaman, $perHalaman),
+            'page'          => $page,
+            'totalPages'    => $totalPages,
+            'totalDuplikat' => $totalDuplikat,
         ];
 
         return view('admin/crm/duplikat', $data);

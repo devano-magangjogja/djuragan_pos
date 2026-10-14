@@ -55,10 +55,19 @@ $routes->get('auth/keluar', 'Auth::keluar', ['filter' => 'auth:admin,superadmin,
 $routes->group('user', ['filter' => 'auth:admin,superadmin,user'], static function ($routes) {
     $routes->get('sunting', 'Profil::sunting');
     $routes->post('sunting', 'Profil::simpan');
+
+    // daftar lengkap notifikasi; halaman yang dituju tombol "Lihat semua" di panel lonceng
+    $routes->get('notifikasi', 'Notifikasi::index');
+    $routes->get('notifikasi/(:segment)', 'Notifikasi::index/$1');
 });
 
 // admin
 $routes->group('admin', static function ($routes) {
+    $routes->group('notifikasi', ['filter' => 'auth:admin,superadmin'], static function ($routes) {
+        $routes->get('/', 'Notifikasi::index');
+        $routes->get('(:segment)', 'Notifikasi::index/$1');
+    });
+
     $routes->group('invoices', ['filter' => 'auth:admin,superadmin'], static function ($routes) {
         $routes->get('/', 'Admin\Invoices::lihat', ['as' => 'hal.admin']);
         $routes->get('tulis', 'Admin\Invoices::tulis');

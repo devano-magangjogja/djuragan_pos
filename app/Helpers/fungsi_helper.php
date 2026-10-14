@@ -1618,9 +1618,9 @@ if (! function_exists('deadline_iso')) {
 
 if (! function_exists('label_deadline')) {
     /**
-     * Deadline jadi [teks, kelas badge] untuk dasbor. Jaraknya dihitung dari hari
-     * ini supaya admin cukup membaca badge, bukan menghitung tanggal. 'kelas' kosong
-     * berarti tanggalnya masih jauh dan cukup ditulis polos.
+     * Deadline jadi [teks, kelas badge]: tanggal yang sudah lewat merah, sisanya
+     * hijau, tanpa kata "terlewat" karena warnanya yang bicara. 'kelas' kosong
+     * hanya untuk tanggal yang gagal dibaca, itu ditulis polos.
      */
     function label_deadline(?string $deadline): array
     {
@@ -1639,22 +1639,22 @@ if (! function_exists('label_deadline')) {
         $tertulis = tanggal_rincian($deadline);
 
         if ($selisih < 0) {
-            return ['teks' => $tertulis . ' · terlewat', 'kelas' => 'danger'];
+            return ['teks' => $tertulis, 'kelas' => 'danger'];
         }
 
         if ($selisih === 0) {
-            return ['teks' => 'Hari ini', 'kelas' => 'danger'];
+            return ['teks' => 'Hari ini', 'kelas' => 'success'];
         }
 
         if ($selisih === 1) {
-            return ['teks' => 'Besok', 'kelas' => 'warning'];
+            return ['teks' => 'Besok', 'kelas' => 'success'];
         }
 
         if ($selisih <= 3) {
-            return ['teks' => $selisih . ' hari lagi', 'kelas' => 'warning'];
+            return ['teks' => $selisih . ' hari lagi', 'kelas' => 'success'];
         }
 
-        return ['teks' => $tertulis, 'kelas' => ''];
+        return ['teks' => $tertulis, 'kelas' => 'success'];
     }
 }
 
@@ -1989,5 +1989,31 @@ if (! function_exists('simpan_anggota')) {
         }
 
         return simpan_ukuran_anggota($invoice_id, $hasil['peta'], $anggota['ukuran']);
+    }
+}
+
+if (! function_exists('tautan_invoice_notif')) {
+    /**
+     * Tujuan klik satu notifikasi: tab Semua tempat nota itu berada. Admin bebas
+     * lintas juragan, CS hanya lewat slug juragan milik notanya sendiri supaya
+     * tautannya tidak menembus toko lain (dipakai panel lonceng dan halaman daftar).
+     */
+    function tautan_invoice_notif($seri, $slug_juragan): string
+    {
+        if (empty($seri)) {
+            return '';
+        }
+
+        $kueri = http_build_query(['cari' => ['kolom' => 'faktur', 'q' => $seri]]);
+
+        if (in_array(session()->get('level'), ['admin', 'superadmin'], true)) {
+            return site_url('admin/invoices/lihat/semua/semua?' . $kueri);
+        }
+
+        if (empty($slug_juragan)) {
+            return site_url('user/invoices');
+        }
+
+        return site_url('user/invoices/lihat/' . rawurlencode($slug_juragan) . '/semua?' . $kueri);
     }
 }
