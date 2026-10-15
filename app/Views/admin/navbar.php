@@ -7,12 +7,20 @@ $namaInisial = strtoupper(mb_substr($namaSesi, 0, 1));
 
 // Deteksi menu induk aktif
 $isDasborAktif   = url_is('admin/dasbor*') || $di_halaman === 'admin';
-$isTrxAktif      = url_is('admin/invoices*');
+$isTrxAktif      = url_is('admin/invoices*') || url_is('admin/cod*');
 $isProdukAktif   = url_is('admin/produk*');
 $isCrmAktif      = url_is('admin/crm*');
 $isKpiAktif      = url_is('admin/kpi*');
 $isLaporanAktif  = url_is('admin/laporan*');
 $isSettingsAktif = url_is('admin/settings*');
+
+// Submenu Transaksi
+// 'invoices' tetap satu halaman dengan 'cod': yang pertama dipakai untuk orderan
+// yang jadi nota, yang kedua untuk kunjungan customer yang tidak jadi orderan
+$transaksiSubmenu = [
+    ['admin/invoices/lihat/semua/semua', 'Tracking Transaksi', 'fa-receipt', $di_halaman === 'admin/invoices' || str_starts_with($di_halaman, 'admin/invoices/')],
+    ['admin/cod', 'Pencatatan COD', 'fa-truck-fast', str_starts_with($di_halaman, 'admin/cod')],
+];
 
 // Submenu KPI
 $kpiSubmenu = [
@@ -61,6 +69,28 @@ $settingsSubmenu = [
 ];
 ?>
 
+<style>
+    /* Lingkaran merah di topbar layar kecil: titik kecil berkedip yang menempel di
+       ujung kanan-atas lonceng. Angkanya tidak ditampilkan lagi. Kelas Bootstrap
+       (top-0 / start-100 / translate-middle / .badge) semuanya memakai !important,
+       jadi posisi dan ukurannya juga harus !important. */
+    .mobile-topbar .counter {
+        font-size: 0 !important;
+        padding: 0 !important;
+        width: 6px !important;
+        height: 6px !important;
+        top: 6px !important;
+        right: 5px !important;
+        left: auto !important;
+        transform: none !important;
+        animation: notif-kedip 1.2s ease-in-out infinite;
+    }
+
+    @keyframes notif-kedip {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.2; }
+    }
+</style>
 <!-- Topbar khusus layar kecil; di desktop lonceng notifikasi melayang sendiri
      (lihat .notif-melayang di template/notif_bar.php), bukan bar penuh. -->
 <header class="mobile-topbar d-flex d-lg-none align-items-center justify-content-between px-2 sticky-top">
@@ -78,7 +108,7 @@ $settingsSubmenu = [
     <div class="d-flex align-items-center gap-2">
         <a class="mobile-topbar-btn text-decoration-none position-relative p-2" data-notif-toggle="1" href="#notifikasi" role="button" aria-label="Notifikasi" title="Notifikasi">
             <i class="fal fa-bell fs-5"></i>
-            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger counter" style="font-size: 0.65rem;"></span>
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger counter"></span>
         </a>
         <div class="dropdown">
             <button class="btn btn-sm btn-link mobile-topbar-btn p-0 text-decoration-none" type="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -138,10 +168,23 @@ $settingsSubmenu = [
                 </a>
             </li>
             <li class="nav-item">
-                <a class="sidebar-link <?= $isTrxAktif ? 'active' : '' ?>" href="<?= site_url('admin/invoices/lihat/semua/semua') ?>">
+                <a class="sidebar-link <?= $isTrxAktif ? 'active' : '' ?>" data-bs-toggle="collapse" href="#submenuTransaksi" role="button" aria-expanded="<?= $isTrxAktif ? 'true' : 'false' ?>" aria-controls="submenuTransaksi">
                     <i class="sidebar-link-icon fal fa-receipt"></i>
                     <span>Transaksi</span>
+                    <i class="fal fa-chevron-down sidebar-chevron"></i>
                 </a>
+                <div class="collapse <?= $isTrxAktif ? 'show' : '' ?>" id="submenuTransaksi">
+                    <ul class="sidebar-submenu">
+                        <?php foreach ($transaksiSubmenu as [$url, $label, $ikon, $aktif]) : ?>
+                            <li class="submenu-item">
+                                <a class="sidebar-submenu-link <?= $aktif ? 'active' : '' ?>" href="<?= site_url($url) ?>">
+                                    <i class="fal <?= $ikon ?>"></i>
+                                    <span><?= esc($label) ?></span>
+                                </a>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                </div>
             </li>
             <li class="nav-item">
                 <a class="sidebar-link <?= $isProdukAktif ? 'active' : '' ?>" href="<?= site_url('admin/produk') ?>">

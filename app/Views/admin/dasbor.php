@@ -45,9 +45,8 @@ $tautan_transaksi = static function (string $slug, string $seri): string {
 
 <?= $this->section('css') ?>
 <style>
-    /* Kartu Transaksi terbaru hanya selebar col-lg-8, jadi selnya dirapatkan dan
-       teks panjang dipotong "…" supaya kolom Status tidak terdorong keluar kartu.
-       Padding aslinya memakai !important di style.css, jadi di sini juga !important. */
+    /* Kartu Transaksi terbaru hanya selebar col-lg-8. Selnya dirapatkan, dan
+       padding aslinya memakai !important di style.css, jadi di sini juga !important. */
     .tabel-ringkas thead th {
         padding: 0.5rem 0.55rem !important;
     }
@@ -57,12 +56,26 @@ $tautan_transaksi = static function (string $slug, string $seri): string {
         font-size: 0.8rem !important;
     }
 
+    /* Nama dan produk tidak dipotong "…" lagi: selnya ikut melebar dan tabelnya
+       bisa digeser mendatar, jadi kolom Deadline sampai Status tetap terbaca. */
     .tabel-ringkas .potong {
         display: block;
-        max-width: 8rem;
-        overflow: hidden;
-        text-overflow: ellipsis;
         white-space: nowrap;
+    }
+
+    /* style.css mengunci .table-responsive dengan overflow: hidden, jadi tabel yang
+       lebih lebar dari kartunya terpotong diam-diam tanpa bisa digeser. auto
+       menambahkan scroll mendatar dan tetap memotong sudut kartu; jangan visible,
+       itu membuat seluruh halaman ikut melebar dan menyeret topbar. */
+    .table-responsive.tabel-lebar {
+        overflow-x: auto;
+        overflow-y: hidden;
+    }
+
+    /* tombol "Lihat semua transaksi" digeser mendekat ke tepi kanan kartu;
+       padding aslinya 1.25rem dan memakai !important di style.css */
+    .card-footer {
+        padding-right: 0.5rem !important;
     }
 </style>
 <?= $this->endSection() ?>
@@ -188,7 +201,7 @@ $tautan_transaksi = static function (string $slug, string $seri): string {
                 <div class="card-header bg-white">
                     <h2 class="h6 mb-0">Transaksi terbaru</h2>
                 </div>
-                <div class="table-responsive">
+                <div class="table-responsive tabel-lebar">
                     <table class="table table-hover align-middle mb-0 tabel-ringkas">
                         <thead class="small text-muted text-uppercase">
                             <tr>

@@ -39,7 +39,7 @@
                     <?php endif; ?>
                 </div>
                 <div class="col text-end text-muted small">
-                    Ditemukan <strong><?= count($invoices) ?></strong> pesanan belum lunas
+                    Ditemukan <strong><?= number_format($totalTagihan) ?></strong> pesanan belum lunas
                 </div>
             </form>
         </div>
@@ -116,6 +116,81 @@
                 </tbody>
             </table>
         </div>
+        <?php if ($totalPages > 1) : ?>
+            <?php
+            $akhir = (int) $totalPages;
+
+            // kunci pencarian ikut dibawa, kalau tidak halaman 2 diam-diam kembali
+            // menampilkan daftar tanpa filter
+            $tautanHalaman = static function (int $n) use ($cari): string {
+                $query = ['page' => $n];
+
+                if ($cari !== '') {
+                    $query['cari'] = $cari;
+                }
+
+                return site_url('admin/crm/tagihan?' . http_build_query($query));
+            };
+
+            // Jendela 5 nomor di sekitar halaman aktif, plus halaman pertama/terakhir
+            // dengan penanda "..." supaya halaman terjauh tetap bisa diklik.
+            $dari   = max(1, min($page - 2, $akhir - 4));
+            $sampai = min($akhir, $dari + 4);
+
+            $nomorHalaman = [];
+            if ($dari > 1) {
+                $nomorHalaman[] = 1;
+                if ($dari > 2) {
+                    $nomorHalaman[] = null;
+                }
+            }
+            for ($n = $dari; $n <= $sampai; $n++) {
+                $nomorHalaman[] = $n;
+            }
+            if ($sampai < $akhir) {
+                if ($sampai < $akhir - 1) {
+                    $nomorHalaman[] = null;
+                }
+                $nomorHalaman[] = $akhir;
+            }
+            ?>
+            <div class="card-footer bg-white d-flex justify-content-between align-items-center py-3">
+                <div class="small text-muted">
+                    Halaman <?= $page ?> dari <?= $akhir ?> (Total <?= number_format($totalTagihan) ?> pesanan)
+                </div>
+                <ul class="pagination pagination-sm mb-0">
+                    <?php if ($page > 1) : ?>
+                        <li class="page-item">
+                            <a class="page-link" href="<?= $tautanHalaman($page - 1) ?>">&laquo; Sebelumnya</a>
+                        </li>
+                    <?php else : ?>
+                        <li class="page-item disabled">
+                            <span class="page-link">&laquo; Sebelumnya</span>
+                        </li>
+                    <?php endif; ?>
+
+                    <?php foreach ($nomorHalaman as $n) : ?>
+                        <?php if ($n === null) : ?>
+                            <li class="page-item disabled"><span class="page-link">&hellip;</span></li>
+                        <?php elseif ($n === $page) : ?>
+                            <li class="page-item active" aria-current="page"><span class="page-link"><?= $n ?></span></li>
+                        <?php else : ?>
+                            <li class="page-item"><a class="page-link" href="<?= $tautanHalaman($n) ?>"><?= $n ?></a></li>
+                        <?php endif; ?>
+                    <?php endforeach; ?>
+
+                    <?php if ($page < $akhir) : ?>
+                        <li class="page-item">
+                            <a class="page-link" href="<?= $tautanHalaman($page + 1) ?>">Berikutnya &raquo;</a>
+                        </li>
+                    <?php else : ?>
+                        <li class="page-item disabled">
+                            <span class="page-link">Berikutnya &raquo;</span>
+                        </li>
+                    <?php endif; ?>
+                </ul>
+            </div>
+        <?php endif; ?>
     </div>
 </div>
 
