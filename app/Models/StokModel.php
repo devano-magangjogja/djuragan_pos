@@ -130,9 +130,12 @@ class StokModel extends Model
     }
 
     /**
-     * Varian sekartu produk: juragan dan nama barang yang sama. Foto produk
-     * memang menempel pada satu varian, tapi kartu katalog dan form orderan
-     * menampilkan gabungan foto sekartu supaya satu foto cukup diunggah sekali.
+     * Varian sekartu produk yang masih hidup: juragan dan nama barang yang sama.
+     * Foto produk memang menempel pada satu varian, tapi kartu katalog dan form
+     * orderan menampilkan gabungan foto sekartu supaya satu foto cukup diunggah
+     * sekali. Varian yang dihapus lunak dibuang di sini karena `get()` tidak
+     * menyaringnya, sementara `find()` iya — campuran keduanya bikin harga
+     * warisan menunjuk baris yang sudah mati.
      *
      * @return int[]
      */
@@ -145,6 +148,7 @@ class StokModel extends Model
         $baris = $this->select('id_stok')
             ->where('juragan_id', $juragan_id)
             ->where('kode', $kode)
+            ->where('deleted_at', null)
             ->orderBy('id_stok', 'ASC')
             ->get()
             ->getResultArray();
