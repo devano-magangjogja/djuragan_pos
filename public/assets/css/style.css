@@ -502,6 +502,22 @@
     .foto-buang { opacity: 1; }
 }
 
+/* tile foto produk yang dijanjikan panel Foto Orderan: ikut jatah, tidak bisa dihapus */
+.foto-bawaan .foto-kotak { border-style: dashed; }
+.foto-bawaan-label {
+    position: absolute;
+    left: 0.25rem;
+    bottom: 0.25rem;
+    z-index: 2;
+    padding: 0.05rem 0.4rem;
+    border-radius: 999px;
+    background: rgba(16, 24, 40, 0.78);
+    color: #fff;
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
 .foto-tunggu {
     position: absolute;
     inset: 0;
@@ -1661,20 +1677,53 @@ a.rounded-3.border.border-ink-200:hover {
 }
 
 /* 15. Katalog Produk & Stok (kartu produk) */
+.produk-kartu {
+    cursor: pointer;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
 .produk-kartu:hover {
     border-color: #d0d5dd !important;
-    box-shadow: 0 4px 12px rgba(16, 24, 40, 0.08), 0 1px 3px rgba(16, 24, 40, 0.05) !important;
+    box-shadow: 0 6px 18px rgba(16, 24, 40, 0.08) !important;
+    transform: translateY(-2px);
 }
+.produk-kartu:focus-visible {
+    outline: 2px solid #da251d;
+    outline-offset: 2px;
+}
+/* 4:3, tidak selebar 16:9; aspect-ratio cuma pelapis, tinggi tetap ada
+   untuk peramban yang tidak mengenalinya */
 .produk-sampul {
     height: 9.5rem;
+    aspect-ratio: 4 / 3;
     overflow: hidden;
     background: linear-gradient(160deg, #f9fafb, #f2f4f7);
+}
+@supports (aspect-ratio: 4 / 3) {
+    .produk-sampul {
+        height: auto;
+    }
+}
+/* sampul menempel lurus ke badan kartu; hanya sudut atas yang ikut membulat */
+.produk-kartu > .rounded-kartu {
+    border-radius: var(--radius-kartu) var(--radius-kartu) 0 0;
+}
+/* chip nama toko di sampul: tipis atas-bawah supaya tidak menutupi foto.
+   Kelasnya (bg-white border border-ink-200) menabrak aturan kartu KPI
+   ".border.border-ink-200.bg-white" yang memasang padding 0.95rem !important,
+   jadi harus lebih spesifik dan sama kerasnya */
+.produk-kartu .produk-sampul .badge {
+    padding-top: 4px !important;
+    padding-bottom: 4px !important;
 }
 .produk-sampul img {
     display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: transform 0.25s ease;
+}
+.produk-kartu:hover .produk-sampul img {
+    transform: scale(1.04);
 }
 .produk-inisial {
     font-size: 1.9rem;
@@ -1702,35 +1751,186 @@ a.rounded-3.border.border-ink-200:hover {
     border-color: #d0d5dd;
     background: #ffffff;
 }
-.produk-foto-btn span {
-    margin-left: 0.15rem;
-    font-size: 0.68rem;
-    font-weight: 600;
-}
-/* daftar varian per baris: ukuran dan stoknya terpisah jelas tapi tetap sekotak */
+/* daftar varian: kisi dua kolom; tiap chip = titik keadaan + ukuran + stok,
+   jadi keadaan terbaca sekilas tanpa memenuhi kartu */
 .varian-daftar {
-    border: 1px solid #eaecf0;
-    overflow: hidden;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.3rem;
 }
-.varian-baris {
-    padding: 0.3rem 0.5rem;
-    border: 0;
-    background: transparent;
+.varian-chip {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    min-width: 0;
+    padding: 0.28rem 0.55rem;
+    border: 1px solid #eaecf0;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #344054;
+    font-size: 0.72rem;
+    font-weight: 600;
+    line-height: 1.4;
     text-align: left;
     cursor: pointer;
-    transition: background 0.12s ease;
+    transition: border-color 0.12s ease, background 0.12s ease;
 }
-.varian-baris + .varian-baris {
-    border-top: 1px solid #f2f4f7;
-}
-.varian-baris:hover {
+.varian-chip:hover {
+    border-color: #d0d5dd;
     background: #f9fafb;
 }
-.varian-ukuran {
-    background: #ffffff;
-    border: 1px solid #d0d5dd;
-    color: #344054;
+.varian-dot {
+    flex-shrink: 0;
+    width: 0.42rem;
+    height: 0.42rem;
+    border-radius: 999px;
+    background: #12b76a;
+}
+.varian-dot.warning {
+    background: #f79009;
+}
+.varian-dot.danger {
+    background: #f04438;
+}
+.varian-stok {
+    margin-left: auto;
+    color: #101828;
+    font-variant-numeric: tabular-nums;
+}
+/* ringkasan mini di bawah varian: garis rambut saja, tanpa pembatas berpetak */
+.produk-stat {
+    border-top: 1px solid #f2f4f7;
+}
+.produk-stat-label {
+    font-size: 0.65rem;
     font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #98a2b3;
+}
+.produk-stat-angka {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #101828;
+    line-height: 1.4;
+}
+/* baris aksi: tiga tombol ikon seukuran — tambah + sampah di kiri, pensil rata kanan */
+.produk-aksi {
+    gap: 0.4rem;
+    flex-shrink: 0;
+}
+.produk-aksi .btn {
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+.produk-aksi .btn .fal {
+    margin-right: 0;
+}
+.produk-aksi-ikon {
+    width: 2rem;
+    padding: 0.32rem 0 !important;
+    flex: 0 0 auto;
+}
+/* tombol "Detail" baru muncul saat sampul di-hover; kartu utuh memang bisa diklik */
+.produk-detail-btn {
+    width: 1.85rem;
+    height: 1.85rem;
+    border: 1px solid #eaecf0;
+    background: rgba(255, 255, 255, 0.92);
+    color: #475467;
+    font-size: 0.8rem;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.1);
+    opacity: 0;
+    transition: opacity 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+}
+.produk-kartu:hover .produk-detail-btn,
+.produk-detail-btn:focus-visible {
+    opacity: 1;
+}
+.produk-detail-btn:hover {
+    color: #da251d;
+    border-color: #d0d5dd;
+    background: #ffffff;
+}
+/* isi modal detail: dipindah dari cetakan tersembunyi di tiap kartu.
+   .card > * memberi flex-grow pada anak kartu, jadi d-none harus dipaksa */
+.card > .produk-rincian.d-none {
+    display: none !important;
+}
+.produk-ket {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 4;
+    overflow: hidden;
+    white-space: pre-line;
+}
+.foto-utama {
+    display: block;
+    aspect-ratio: 4 / 3;
+    background: #f9fafb;
+    cursor: zoom-in;
+    padding: 0;
+}
+.foto-utama img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.produk-inisial-kotak {
+    aspect-ratio: 4 / 3;
+    background: linear-gradient(160deg, #f9fafb, #f2f4f7);
+}
+.foto-galeri {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+.foto-thumbs {
+    width: 3.2rem;
+    height: 3.2rem;
+    padding: 0;
+    border: 1px solid #eaecf0;
+    border-radius: 0.55rem;
+    overflow: hidden;
+    background: #fff;
+    cursor: pointer;
+    opacity: 0.65;
+    transition: opacity 0.12s ease, border-color 0.12s ease;
+}
+.foto-thumbs img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.foto-thumbs:hover {
+    opacity: 1;
+}
+.foto-thumbs.aktif {
+    opacity: 1;
+    border-color: #da251d;
+}
+/* lapisan foto ukuran penuh di atas modal detail */
+.lightbox-produk {
+    position: fixed;
+    inset: 0;
+    z-index: 1080;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background: rgba(15, 23, 42, 0.85);
+    cursor: zoom-out;
+}
+.lightbox-produk.tampil {
+    display: flex;
+}
+.lightbox-produk img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 0.5rem;
 }
 
 /* 16. Panel "Ambil dari stok produk" di modal tambah orderan */
