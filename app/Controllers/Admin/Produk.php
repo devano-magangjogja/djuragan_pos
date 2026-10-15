@@ -108,12 +108,28 @@ class Produk extends BaseController
                 ->withInput()->with('gagal', 'Varian ' . $kode . ' ' . $ukuran . ' sudah terdaftar.');
         }
 
+        // "+ Varian" pada kartu tidak menanyakan harga: satu kartu dianggap punya
+        // harga yang sama, jadi nilainya diwarisi dari varian tertua sekartu
+        $harga = $this->hargaPost();
+
+        if ($harga === null) {
+            $saudara = $stokModel->sekartu($juragan_id, $kode);
+
+            if ($saudara === []) {
+                return redirect()->to($this->alamatKembali())->withInput()
+                    ->with('gagal', 'Belum ada varian ' . $kode . ' di toko ini, jadi harganya tidak bisa diwarisi. '
+                        . 'Tambahkan lewat tombol "Tambah Barang" di atas.');
+            }
+
+            $harga = (int) $stokModel->find($saudara[0])->harga;
+        }
+
         $stokModel->insert([
             'juragan_id' => $juragan_id,
             'produk_id'  => jamin_produk($kode),
             'kode'       => $kode,
             'ukuran'     => $ukuran,
-            'harga'      => (int) $this->request->getPost('harga'),
+            'harga'      => $harga,
             'stok'       => (int) $this->request->getPost('stok'),
             'keterangan' => $this->keteranganPost(),
         ]);
@@ -294,7 +310,9 @@ class Produk extends BaseController
 
         foreach ($this->request->getFiles() as $kumpulan) {
             foreach (is_array($kumpulan) ? $kumpulan : [$kumpulan] as $satu) {
-                if ($satu instanceof UploadedFile) {
+                // kolom file yang tidak disentuh pengguna ikut terkirim sebagai
+                // isian kosong; itu bukan foto yang gagal, jadi jangan dihitung
+                if ($satu instanceof UploadedFile && $satu->getError() !== UPLOAD_ERR_NO_FILE) {
                     $dapat[] = $satu;
                 }
             }
@@ -312,6 +330,14 @@ class Produk extends BaseController
     private function ukuranPost(): string
     {
         return mb_substr(trim((string) $this->request->getPost('ukuran')), 0, 6);
+    }
+
+    /** Harga kosong berarti varian baru warisan dari saudaranya; lihat simpan(). */
+    private function hargaPost(): ?int
+    {
+        $harga = trim((string) $this->request->getPost('harga'));
+
+        return $harga === '' ? null : (int) $harga;
     }
 
     private function keteranganPost(): ?string

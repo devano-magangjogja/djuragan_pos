@@ -19,6 +19,10 @@ $tambah_err  = $pernahIsi && ! $dariSunting;
 $err_sunting = static fn (string $kolom): ?string => $sunting_err ? $err($kolom) : null;
 $err_tambah  = static fn (string $kolom): ?string => $tambah_err ? $err($kolom) : null;
 
+// harga ditulis penuh (Rp 120.000), bukan ringkas: formatRibuan() milik laporan
+// dan nota memotong jadi 120K sehingga kolomnya tidak pernah muat penuh
+$rupiah = static fn (int $n): string => 'Rp ' . number_format($n, 0, ',', '.');
+
 // badge warna untuk keadaan stok satu varian
 $keadaan_baris = static function (int $stok) use ($ambangnya): array {
     if ($stok <= 0) {
@@ -28,17 +32,27 @@ $keadaan_baris = static function (int $stok) use ($ambangnya): array {
     return $stok <= $ambangnya ? ['warning', 'Menipis'] : ['success', 'Aman'];
 };
 
-// data varian untuk modal sunting; esc() yang mengemas atributnya
-$barang = static fn (array $b): string => (string) esc(json_encode([
+// data satu varian untuk modal sunting; esc() yang mengemas atributnya
+$barang = static fn (array $b): array => [
     'id'         => (int) $b['id_stok'],
-    'kode'       => $b['kode'],
+    'kode'       => (string) $b['kode'],
     'ukuran'     => (string) ($b['ukuran'] ?? ''),
     'harga'      => (int) $b['harga'],
     'stok'       => (int) $b['stok'],
     'keterangan' => (string) ($b['keterangan'] ?? ''),
-    'juragan'    => $b['nama_juragan'],
+    'juragan'    => (string) $b['nama_juragan'],
     'juragan_id' => (int) $b['juragan_id'],
-]));
+];
+
+// kartu utuh untuk tombol Edit: pemilih varian diisi dari daftar ini
+$kartu_barang = static function (array $p) use ($barang): string {
+    return (string) esc(json_encode([
+        'kode'       => $p['kode'],
+        'juragan_id' => (int) $p['juragan_id'],
+        'nama'       => (string) $p['nama_juragan'],
+        'varian'     => array_map($barang, $p['varian']),
+    ]));
+};
 
 // huruf pertama nama barang, dipakai waktu foto produk belum ada
 $inisial = static fn (string $kode): string => mb_strtoupper(mb_substr(trim($kode), 0, 2));
@@ -56,7 +70,7 @@ $inisial = static fn (string $kode): string => mb_strtoupper(mb_substr(trim($kod
         $ringkasan = [
             ['Varian tercatat', (string) $ringkas['varian'], 'fa-shapes'],
             ['Total unit', (string) $ringkas['unit'], 'fa-boxes-stacked'],
-            ['Nilai stok', 'Rp ' . formatRibuan($ringkas['nilai']), 'fa-coins'],
+            ['Nilai stok', $rupiah((int) $ringkas['nilai']), 'fa-coins'],
             ['Menipis', (string) $ringkas['menipis'], 'fa-triangle-exclamation'],
             ['Habis', (string) $ringkas['habis'], 'fa-circle-xmark'],
         ];
@@ -76,10 +90,10 @@ $inisial = static fn (string $kode): string => mb_strtoupper(mb_substr(trim($kod
     <div class="row gx-3">
         <div class="col-12 mb-4">
             <?php if ($sukses !== null) { ?>
-                <div class="alert alert-success py-2"><?= esc($sukses) ?></div>
+                <div class="alert alert-success py-2" data-flash><?= esc($sukses) ?></div>
             <?php } ?>
             <?php if ($gagal !== null) { ?>
-                <div class="alert alert-danger py-2"><?= esc($gagal) ?></div>
+                <div class="alert alert-danger py-2" data-flash><?= esc($gagal) ?></div>
             <?php } ?>
 
             <div class="card">
@@ -145,22 +159,6 @@ $inisial = static fn (string $kode): string => mb_strtoupper(mb_substr(trim($kod
                                 // satu unggahan terlihat di semua ukuran
                                 $fotonya_kartu = $fotonya[$i] ?? [];
                                 $sampul        = $fotonya_kartu[0] ?? null;
-
-                                // satu keterangan saja yang perlu tampil di kartu;
-                                // tanpa keterangan, nama tokonya yang mengisi baris itu
-                                $keterangan = '';
-
-                                foreach ($varian as $b) {
-                                    if (trim((string) ($b['keterangan'] ?? '')) !== '') {
-                                        $keterangan = (string) $b['keterangan'];
-
-                                        break;
-                                    }
-                                }
-
-                                if ($keterangan === '') {
-                                    $keterangan = (string) $p['nama_juragan'];
-                                }
                                 ?>
                                 <div class="card produk-kartu h-100" tabindex="0" role="button" aria-label="Lihat detail <?= esc($p['kode'], 'attr') ?>">
                                     <div class="rounded-kartu overflow-hidden">
@@ -183,29 +181,16 @@ $inisial = static fn (string $kode): string => mb_strtoupper(mb_substr(trim($kod
                                                 data-bs-toggle="modal" data-bs-target="#modalFotoProduk">
                                                 <i class="fal fa-camera"></i>
                                             </button>
-
-                                            <?php /* tombol Detail baru tampak saat kartu di-hover; seluruh kartu memang bisa diklik */ ?>
-                                            <button type="button" class="produk-detail-btn position-absolute bottom-0 end-0 m-2 rounded-circle d-flex align-items-center justify-content-center"
-                                                title="Lihat detail <?= esc($p['kode'], 'attr') ?>" aria-label="Lihat detail produk">
-                                                <i class="fal fa-expand"></i>
-                                            </button>
                                         </div>
                                     </div>
 
                                     <div class="card-body p-3 d-flex flex-column">
-                                        <div class="d-flex align-items-baseline justify-content-between gap-2">
-                                            <h2 class="h6 mb-0 text-truncate" title="<?= esc($p['kode']) ?>"><?= esc($p['kode']) ?></h2>
-                                            <div class="text-nowrap small">
-                                                <?php if ($rentang) { ?>
-                                                    <span class="text-muted">mulai</span>
-                                                <?php } ?>
-                                                <span class="fw-bold text-brand-600">Rp <?= formatRibuan($p['harga_mulai']) ?></span>
-                                            </div>
-                                        </div>
-
-                                        <div class="small text-muted text-truncate mb-2"
-                                            title="<?= esc($keterangan) ?> · <?= esc($p['nama_juragan']) ?>">
-                                            <i class="fal fa-tag me-1"></i><?= esc($keterangan) ?>
+                                        <h2 class="produk-nama mb-1 text-truncate" title="<?= esc($p['kode']) ?>"><?= esc($p['kode']) ?></h2>
+                                        <div class="produk-harga mb-2">
+                                            <?php if ($rentang) { ?>
+                                                <span class="produk-harga-mulai">mulai</span>
+                                            <?php } ?>
+                                            <span><?= $rupiah((int) $p['harga_mulai']) ?></span>
                                         </div>
 
                                         <div class="varian-daftar mb-2">
@@ -214,17 +199,15 @@ $inisial = static fn (string $kode): string => mb_strtoupper(mb_substr(trim($kod
                                                 [$vw, $label_keadaan] = $keadaan_baris((int) $b['stok']);
                                                 ?>
                                                 <button type="button" class="varian-chip"
-                                                    title="<?= esc($ukuran_baris === '' ? 'Tanpa ukuran' : 'Ukuran ' . $ukuran_baris) ?> · <?= esc($label_keadaan) ?> · klik untuk sunting"
-                                                    data-barang="<?= $barang($b) ?>"
-                                                    data-bs-toggle="modal" data-bs-target="#modalSuntingBarang">
+                                                    title="<?= esc($ukuran_baris === '' ? 'Tanpa ukuran' : 'Ukuran ' . $ukuran_baris) ?> · <?= esc($label_keadaan) ?> · klik untuk melihat detail"
+                                                    data-varian="<?= (int) $b['id_stok'] ?>">
                                                     <span class="varian-dot<?= $vw === 'success' ? '' : ' ' . $vw ?>"></span>
-                                                    <span class="text-truncate"><?= esc($ukuran_baris === '' ? 'Tanpa ukuran' : $ukuran_baris) ?></span>
-                                                    <span class="varian-stok"><?= (int) $b['stok'] ?></span>
+                                                    <span class="text-truncate"><?= esc($ukuran_baris === '' ? 'Tanpa ukuran' : $ukuran_baris) ?> (<?= (int) $b['stok'] ?>)</span>
                                                 </button>
                                             <?php } ?>
                                         </div>
 
-                                        <div class="d-flex produk-stat mt-auto mb-2 pt-2">
+                                        <div class="d-flex mt-auto mb-2 pt-2">
                                             <div class="flex-fill text-center">
                                                 <div class="produk-stat-label">Varian</div>
                                                 <div class="produk-stat-angka"><?= $jumlah ?></div>
@@ -239,31 +222,31 @@ $inisial = static fn (string $kode): string => mb_strtoupper(mb_substr(trim($kod
                                             </div>
                                         </div>
 
-                                        <div class="d-flex align-items-center gap-2 produk-aksi">
-                                            <button type="button" class="btn btn-sm btn-outline-secondary produk-aksi-ikon"
+                                        <div class="d-flex produk-aksi pt-2">
+                                            <button type="button" class="btn btn-sm produk-aksi-tombol"
                                                 title="Tambah varian untuk <?= esc($p['kode'], 'attr') ?>"
                                                 data-tambah="<?= (string) esc(json_encode(['kode' => $p['kode'], 'juragan' => $p['juragan_id']])) ?>"
                                                 data-bs-toggle="modal" data-bs-target="#modalTambahBarang">
-                                                <i class="fal fa-plus"></i><span class="visually-hidden">Tambah varian</span>
+                                                <i class="fal fa-plus"></i> Varian
                                             </button>
-                                            <button type="submit" class="btn btn-sm btn-outline-danger produk-aksi-ikon"
+                                            <button type="button" class="btn btn-sm produk-aksi-tombol"
+                                                title="Sunting <?= esc($p['kode'], 'attr') ?>"
+                                                data-kartu="<?= $kartu_barang($p) ?>"
+                                                data-bs-toggle="modal" data-bs-target="#modalSuntingBarang">
+                                                <i class="fal fa-pen"></i> Edit
+                                            </button>
+                                            <button type="submit" class="btn btn-sm produk-aksi-tombol"
                                                 title="Hapus <?= esc($p['kode'], 'attr') ?> beserta semua variannya dari daftar stok"
                                                 form="formHapusKartu"
                                                 data-hapus-kartu="<?= (string) esc(json_encode(['kode' => $p['kode'], 'juragan' => (int) $p['juragan_id'], 'varian' => $jumlah])) ?>">
-                                                <i class="fal fa-trash"></i><span class="visually-hidden">Hapus barang</span>
-                                            </button>
-                                            <button type="button" class="btn btn-sm btn-outline-secondary produk-aksi-ikon ms-auto"
-                                                title="Sunting <?= esc($varian[0]['ukuran'] !== '' && $varian[0]['ukuran'] !== null ? $p['kode'] . ' ' . (string) $varian[0]['ukuran'] : $p['kode']) ?>"
-                                                data-barang="<?= $barang($varian[0]) ?>"
-                                                data-bs-toggle="modal" data-bs-target="#modalSuntingBarang">
-                                                <i class="fal fa-pen"></i><span class="visually-hidden">Edit</span>
+                                                <i class="fal fa-trash"></i> Hapus
                                             </button>
                                         </div>
                                     </div>
 
                                     <?php
                                     // rangkapan detail kartu; baru dipindah ke modal saat kartunya dibuka
-                                    $harga_lain = $rentang ? ' – Rp ' . formatRibuan($p['harga_akhir']) : '';
+                                    $harga_lain = $rentang ? ' – ' . $rupiah((int) $p['harga_akhir']) : '';
                                     $foto_rinci = $fotonya_kartu;
                                     $utama      = $foto_rinci[0] ?? null;
                                     ?>
@@ -295,11 +278,12 @@ $inisial = static fn (string $kode): string => mb_strtoupper(mb_substr(trim($kod
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="fs-5 fw-bold"><?= esc($p['kode']) ?></div>
-                                                <div class="fw-bold text-brand-600">Rp <?= formatRibuan($p['harga_mulai']) ?><?= $harga_lain ?></div>
+                                                <div class="fw-bold text-brand-600"><?= $rupiah((int) $p['harga_mulai']) ?><?= $harga_lain ?></div>
                                                 <div class="small text-muted mt-1"><i class="fal fa-store me-1"></i><?= esc($p['nama_juragan']) ?></div>
-                                                <div class="small mt-2 produk-ket"><?= esc($keterangan) ?></div>
                                                 <div class="d-flex gap-2 mt-2">
-                                                    <span class="badge align-self-start bg-<?= $vw_kartu ?> <?= $vw_kartu === 'warning' ? 'text-dark' : 'text-white' ?>"><?= esc($teks) ?></span>
+                                                    <?php /* keadaan cukup dibaca dari warna titiknya */ ?>
+                                                    <span class="varian-dot<?= $vw_kartu === 'success' ? '' : ' ' . $vw_kartu ?> align-self-center"
+                                                        title="<?= esc($teks) ?>"></span>
                                                     <span class="small text-muted align-self-center"><?= (int) $p['terjual'] ?> terjual</span>
                                                 </div>
                                             </div>
@@ -308,7 +292,7 @@ $inisial = static fn (string $kode): string => mb_strtoupper(mb_substr(trim($kod
                                                     <thead>
                                                         <tr class="small text-muted">
                                                             <th>Ukuran</th>
-                                                            <th>Harga</th>
+                                                            <th class="text-nowrap">Harga</th>
                                                             <th>Stok</th>
                                                             <th class="d-none d-sm-table-cell">Keterangan</th>
                                                             <th class="w-1"></th>
@@ -320,13 +304,19 @@ $inisial = static fn (string $kode): string => mb_strtoupper(mb_substr(trim($kod
                                                             $ket_baris    = trim((string) ($b['keterangan'] ?? ''));
                                                             [$bw, $bteks]  = $keadaan_baris((int) $b['stok']);
                                                             ?>
-                                                            <tr>
+                                                            <tr data-varian="<?= (int) $b['id_stok'] ?>">
                                                                 <td><?= $ukuran_baris === '' ? 'Tanpa ukuran' : esc($ukuran_baris) ?></td>
-                                                                <td>Rp <?= formatRibuan((int) $b['harga']) ?></td>
+                                                                <td class="text-nowrap"><?= $rupiah((int) $b['harga']) ?></td>
                                                                 <td>
-                                                                    <span class="badge bg-<?= $bw ?> <?= $bw === 'warning' ? 'text-dark' : 'text-white' ?>"><?= (int) $b['stok'] ?> · <?= esc($bteks) ?></span>
+                                                                    <?php /* angkanya saja: warna badge-nya yang menyatakan aman/menipis/habis */ ?>
+                                                                    <span class="badge bg-<?= $bw ?> <?= $bw === 'warning' ? 'text-dark' : 'text-white' ?>"
+                                                        title="<?= esc($bteks) ?>"><?= (int) $b['stok'] ?></span>
                                                                 </td>
-                                                                <td class="small text-muted d-none d-sm-table-cell"><?= $ket_baris === '' ? '&mdash;' : esc($ket_baris) ?></td>
+                                                                <td class="small text-muted d-none d-sm-table-cell">
+                                                                    <?php /* catatannya sepanjang yang diketik (maks 500), jadi tingginya
+   dibatasi tiga baris dan tiap baris digulir sendiri-sendiri */ ?>
+                                                                    <div class="varian-ket"><?= $ket_baris === '' ? '&mdash;' : esc($ket_baris) ?></div>
+                                                                </td>
                                                                 <td class="text-end">
                                                                     <button type="submit" class="btn btn-sm btn-outline-danger produk-aksi-ikon varian-hapus"
                                                                         title="Hapus varian ini dari daftar stok"
@@ -378,13 +368,16 @@ $inisial = static fn (string $kode): string => mb_strtoupper(mb_substr(trim($kod
             'kembali_juragan' => (string) $juragan,
             'kembali_keadaan' => $keadaan,
             'kembali_cari'    => $cari,
+            // 1 = dibuka dari tombol "Varian" pada kartu: juragan dan harga ikut
+            // kartunya, jadi keduanya tidak ditanyakan lagi
+            'kartu'           => set_value('kartu', '0'),
         ]) ?>
         <div class="modal-header">
             <h5 class="modal-title" id="modalTambahBarangLabel">Tambah Barang</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-            <div class="mb-3">
+            <div class="mb-3 tambah-khusus-barang">
                 <?= form_label('Juragan', 'juragan_id', ['class' => 'form-label']) ?>
                 <?= form_dropdown([
                     'class'    => 'form-select' . ($err_tambah('juragan_id') ? ' is-invalid' : ''),
@@ -412,7 +405,6 @@ $inisial = static fn (string $kode): string => mb_strtoupper(mb_substr(trim($kod
                     <?php if ($err_tambah('kode')) { ?>
                         <div class="invalid-feedback d-block"><?= esc($err_tambah('kode')) ?></div>
                     <?php } ?>
-                    <div class="form-text">Boleh nama baru; nama yang sudah pernah dipakai muncul sebagai saran.</div>
                 </div>
                 <div class="col-6 mb-3">
                     <?= form_label('Ukuran', 'ukuran', ['class' => 'form-label']) ?>
@@ -430,7 +422,7 @@ $inisial = static fn (string $kode): string => mb_strtoupper(mb_substr(trim($kod
                 </div>
             </div>
             <div class="row gx-2">
-                <div class="col-6 mb-3">
+                <div class="col-6 mb-3 tambah-khusus-barang">
                     <?= form_label('Harga', 'harga', ['class' => 'form-label']) ?>
                     <?= form_input([
                         'class'       => 'form-control' . ($err_tambah('harga') ? ' is-invalid' : ''),
@@ -460,7 +452,7 @@ $inisial = static fn (string $kode): string => mb_strtoupper(mb_substr(trim($kod
                     <?php } ?>
                 </div>
             </div>
-            <div class="mb-3">
+            <div class="mb-3 tambah-khusus-barang">
                 <?= form_label('Catatan (opsional)', 'keterangan', ['class' => 'form-label']) ?>
                 <?= form_textarea([
                     'class'       => 'form-control',
@@ -470,11 +462,14 @@ $inisial = static fn (string $kode): string => mb_strtoupper(mb_substr(trim($kod
                     'placeholder' => 'mis. warna navy, bahan wool',
                     'value'       => set_value('keterangan'),
                 ]) ?>
+                <?php if ($err_tambah('keterangan')) { ?>
+                    <div class="invalid-feedback d-block"><?= esc($err_tambah('keterangan')) ?></div>
+                <?php } ?>
             </div>
             <div class="mb-0">
                 <?= form_label('Foto produk (opsional)', 'foto', ['class' => 'form-label']) ?>
                 <input type="file" class="form-control" id="foto" name="foto[]" multiple accept="image/jpeg,image/png,image/webp">
-                <div class="form-text">JPEG, PNG, atau WebP; maksimum 3 MB per foto dan 12 foto per barang. Foto menempel ke varian ini dan tampil di semua ukuran sekartunya.</div>
+                <div class="form-text">JPG, PNG, atau WebP - maks. 3 MB/foto - hingga 12 foto per barang</div>
             </div>
         </div>
         <div class="modal-footer flex-nowrap p-0">
@@ -498,50 +493,71 @@ $inisial = static fn (string $kode): string => mb_strtoupper(mb_substr(trim($kod
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
+            <?php /* varian dipilih dulu; inputannya baru muncul sesudah satu varian dipilih,
+   supaya tidak ada sunting yang diam-diam mengenai ukuran pertama kartu */ ?>
             <div class="mb-3">
-                <?= form_label('Juragan', 'sunting_juragan', ['class' => 'form-label']) ?>
-                <?= form_dropdown([
-                    'class'    => 'form-select' . ($err_sunting('juragan_id') ? ' is-invalid' : ''),
-                    'name'     => 'juragan_id',
-                    'id'       => 'sunting_juragan',
-                    'options'  => $juragans,
-                    'required' => '',
-                ]) ?>
-                <?php if ($err_sunting('juragan_id')) { ?>
-                    <div class="invalid-feedback d-block"><?= esc($err_sunting('juragan_id')) ?></div>
-                <?php } ?>
+                <span class="form-label d-block">Pilih varian</span>
+                <div class="varian-daftar" id="suntingVarian"></div>
             </div>
-            <div class="row gx-2">
-                <div class="col-6 mb-3">
-                    <?= form_label('Nama Barang', 'sunting_kode', ['class' => 'form-label']) ?>
-                    <?= form_input(['class' => 'form-control', 'name' => 'kode', 'id' => 'sunting_kode', 'list' => 'daftarKode', 'required' => '', 'max_length' => 20]) ?>
-                    <?php if ($err_sunting('kode')) { ?>
-                        <div class="text-danger small mt-1"><?= esc($err_sunting('kode')) ?></div>
+
+            <div class="sunting-detail d-none">
+                <div class="mb-3">
+                    <?= form_label('Juragan', 'sunting_juragan', ['class' => 'form-label']) ?>
+                    <?= form_dropdown([
+                        'class'    => 'form-select' . ($err_sunting('juragan_id') ? ' is-invalid' : ''),
+                        'name'     => 'juragan_id',
+                        'id'       => 'sunting_juragan',
+                        'options'  => $juragans,
+                        'required' => '',
+                    ]) ?>
+                    <?php if ($err_sunting('juragan_id')) { ?>
+                        <div class="invalid-feedback d-block"><?= esc($err_sunting('juragan_id')) ?></div>
                     <?php } ?>
                 </div>
-                <div class="col-6 mb-3">
-                    <?= form_label('Ukuran', 'sunting_ukuran', ['class' => 'form-label']) ?>
-                    <?= form_input(['class' => 'form-control', 'name' => 'ukuran', 'id' => 'sunting_ukuran', 'list' => 'daftarUkuran', 'max_length' => 6]) ?>
+                <div class="row gx-2">
+                    <div class="col-6 mb-3">
+                        <?= form_label('Nama Barang', 'sunting_kode', ['class' => 'form-label']) ?>
+                        <?= form_input(['class' => 'form-control', 'name' => 'kode', 'id' => 'sunting_kode', 'list' => 'daftarKode', 'required' => '', 'max_length' => 20]) ?>
+                        <?php if ($err_sunting('kode')) { ?>
+                            <div class="text-danger small mt-1"><?= esc($err_sunting('kode')) ?></div>
+                        <?php } ?>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <?= form_label('Ukuran', 'sunting_ukuran', ['class' => 'form-label']) ?>
+                        <?= form_input(['class' => 'form-control', 'name' => 'ukuran', 'id' => 'sunting_ukuran', 'list' => 'daftarUkuran', 'max_length' => 6]) ?>
+                        <?php if ($err_sunting('ukuran')) { ?>
+                            <div class="text-danger small mt-1"><?= esc($err_sunting('ukuran')) ?></div>
+                        <?php } ?>
+                    </div>
                 </div>
-            </div>
-            <div class="row gx-2">
-                <div class="col-6 mb-3">
-                    <?= form_label('Harga', 'sunting_harga', ['class' => 'form-label']) ?>
-                    <?= form_input(['class' => 'form-control', 'type' => 'number', 'name' => 'harga', 'id' => 'sunting_harga', 'min' => 0, 'required' => '']) ?>
+                <div class="row gx-2">
+                    <div class="col-6 mb-3">
+                        <?= form_label('Harga', 'sunting_harga', ['class' => 'form-label']) ?>
+                        <?= form_input(['class' => 'form-control', 'type' => 'number', 'name' => 'harga', 'id' => 'sunting_harga', 'min' => 0, 'required' => '']) ?>
+                        <?php if ($err_sunting('harga')) { ?>
+                            <div class="text-danger small mt-1"><?= esc($err_sunting('harga')) ?></div>
+                        <?php } ?>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <?= form_label('Stok', 'sunting_stok', ['class' => 'form-label']) ?>
+                        <?= form_input(['class' => 'form-control', 'type' => 'number', 'name' => 'stok', 'id' => 'sunting_stok', 'required' => '']) ?>
+                        <?php if ($err_sunting('stok')) { ?>
+                            <div class="text-danger small mt-1"><?= esc($err_sunting('stok')) ?></div>
+                        <?php } ?>
+                    </div>
                 </div>
-                <div class="col-6 mb-3">
-                    <?= form_label('Stok', 'sunting_stok', ['class' => 'form-label']) ?>
-                    <?= form_input(['class' => 'form-control', 'type' => 'number', 'name' => 'stok', 'id' => 'sunting_stok', 'required' => '']) ?>
+                <div class="mb-0">
+                    <?= form_label('Keterangan', 'sunting_keterangan', ['class' => 'form-label']) ?>
+                    <?= form_textarea(['class' => 'form-control', 'name' => 'keterangan', 'id' => 'sunting_keterangan', 'rows' => 3, 'maxlength' => 500, 'placeholder' => 'mis. warna navy, bahan wool, catatan stok...']) ?>
+                    <?php if ($err_sunting('keterangan')) { ?>
+                        <div class="text-danger small mt-1"><?= esc($err_sunting('keterangan')) ?></div>
+                    <?php } ?>
                 </div>
-            </div>
-            <div class="mb-0">
-                <?= form_label('Catatan', 'sunting_keterangan', ['class' => 'form-label']) ?>
-                <?= form_textarea(['class' => 'form-control', 'name' => 'keterangan', 'id' => 'sunting_keterangan', 'rows' => 3, 'maxlength' => 500, 'placeholder' => 'mis. warna navy, bahan wool, catatan stok...']) ?>
             </div>
         </div>
         <div class="modal-footer flex-nowrap p-0">
             <button type="button" data-bs-dismiss="modal" class="btn btn-lg btn-link fs-6 text-decoration-none col m-0 rounded-0">Batal</button>
-            <button type="submit" class="btn btn-lg btn-link fs-6 text-decoration-none col m-0 rounded-0 border-start">Simpan</button>
+            <button type="submit" id="suntingSimpan" class="btn btn-lg btn-link fs-6 text-decoration-none col m-0 rounded-0 border-start" disabled>Simpan</button>
         </div>
         <?= form_close() ?>
     </div>
@@ -607,6 +623,29 @@ echo form_open('admin/produk/hapus-kartu', ['id' => 'formHapusKartu', 'class' =>
     </div>
 </div>
 
+<?php
+/* konfirmasi hapus memakai modal sendiri: dialog bawaan browser tidak ikut
+   tema dan tidak bisa menjelaskan bahwa transaksi lama tetap utuh */
+?>
+<div class="modal fade" id="modalHapusProduk" tabindex="-1" aria-labelledby="modalHapusProdukLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content rounded-kartu">
+            <div class="modal-body p-4 text-center">
+                <div class="konfirmasi-tanda d-inline-flex align-items-center justify-content-center mb-3">
+                    <i class="fal fa-trash"></i>
+                </div>
+                <h5 class="konfirmasi-judul mb-1" id="modalHapusProdukLabel">Hapus dari daftar stok?</h5>
+                <p class="konfirmasi-objek mb-1" id="hapusObjek"></p>
+                <p class="small text-muted mb-4">Transaksi lama tetap utuh, dan stok bisa ditambahkan lagi kapan pun.</p>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-sm konfirmasi-batal flex-fill" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-sm konfirmasi-ya flex-fill" id="hapusYa">Hapus</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="lightbox-produk" id="lightboxProduk" aria-hidden="true">
     <img src="" alt="Foto ukuran penuh">
 </div>
@@ -618,6 +657,9 @@ echo form_open('admin/produk/hapus-kartu', ['id' => 'formHapusKartu', 'class' =>
 <?php
 $showModalSunting = $sunting_err ? 'true' : 'false';
 $showModalTambah  = $tambah_err ? 'true' : 'false';
+
+// gagal menambah varian: modal dibuka lagi dalam mode varian, bukan mode barang baru
+$tambah_varian = ($tambah_err && set_value('kartu') === '1') ? 'true' : 'false';
 $alamat_foto      = site_url('api/produk-foto/kelola');
 $isiUlang         = $sunting_err ? json_encode([
     'id'         => (int) set_value('id_stok'),
@@ -635,13 +677,20 @@ $js = <<< JS
     	'use strict';
 
         const suntingErr = {$showModalSunting};
-        const tambahErr = {$showModalTambah};
+        let gagalTambah = {$showModalTambah};
+        let varianLama = {$tambah_varian};
+        const ambang = {$ambangnya};
         const alamatFoto = '{$alamat_foto}';
         let suntingLama = {$isiUlang};
         const modalSunting = document.getElementById('modalSuntingBarang');
         const modalTambah = document.getElementById('modalTambahBarang');
         const formHapus = document.getElementById('formHapusBarang');
         const formHapusKartu = document.getElementById('formHapusKartu');
+        const judulSunting = document.getElementById('modalSuntingBarangLabel');
+        const judulTambah = document.getElementById('modalTambahBarangLabel');
+        const daftarVarian = document.getElementById('suntingVarian');
+        const detailSunting = modalSunting.querySelector('.sunting-detail');
+        const simpanSunting = document.getElementById('suntingSimpan');
         const fields = {
             id_stok: modalSunting.querySelector('[name="id_stok"]'),
             kode: modalSunting.querySelector('[name="kode"]'),
@@ -652,32 +701,133 @@ $js = <<< JS
             juragan: modalSunting.querySelector('[name="juragan_id"]'),
         };
 
-        function isiForm(data) {
-            fields.id_stok.value = data.id;
-            fields.kode.value = data.kode;
-            fields.ukuran.value = data.ukuran;
-            fields.harga.value = data.harga;
-            fields.stok.value = data.stok;
-            fields.keterangan.value = data.keterangan;
-            fields.juragan.value = String(data.juragan_id);
+        // ---------- modal sunting: pilih varian dulu, baru inputannya muncul ----------
+
+        let suntingAktif = { kode: '', varian: [] };
+
+        function keadaan(stok) {
+            if (stok <= 0) {
+                return 'danger';
+            }
+
+            return stok <= ambang ? 'warning' : '';
         }
 
+        function sembunyikanDetail() {
+            detailSunting.classList.add('d-none');
+            simpanSunting.disabled = true;
+        }
+
+        function kosongSunting() {
+            suntingAktif = { kode: '', varian: [] };
+            daftarVarian.innerHTML = '';
+            judulSunting.textContent = 'Sunting Barang';
+            sembunyikanDetail();
+        }
+
+        function pilihVarian(varian) {
+            fields.id_stok.value = varian.id;
+            fields.kode.value = varian.kode;
+            fields.ukuran.value = varian.ukuran;
+            fields.harga.value = varian.harga;
+            fields.stok.value = varian.stok;
+            fields.keterangan.value = varian.keterangan;
+            fields.juragan.value = String(varian.juragan_id);
+
+            daftarVarian.querySelectorAll('.varian-chip').forEach(chip => {
+                chip.classList.toggle('aktif', chip.dataset.id === String(varian.id));
+            });
+
+            detailSunting.classList.remove('d-none');
+            simpanSunting.disabled = false;
+            judulSunting.textContent = 'Sunting ' + varian.kode + (varian.ukuran === '' ? '' : ' ' + varian.ukuran);
+        }
+
+        // chip pemilih dibangun ulang tiap modal dibuka: kartu yang satu tidak
+        // boleh meninggalkan varian milik kartu sebelumnya di dalam modal
+        function isiPemilih(daftar) {
+            daftarVarian.innerHTML = '';
+
+            daftar.forEach(varian => {
+                const chip = document.createElement('button');
+                const titik = document.createElement('span');
+                const teks = document.createElement('span');
+
+                chip.type = 'button';
+                chip.className = 'varian-chip';
+                chip.dataset.id = varian.id;
+                chip.title = (varian.keterangan === '' ? varian.ukuran : varian.keterangan) + ' · stok ' + varian.stok;
+
+                titik.className = 'varian-dot ' + keadaan(varian.stok);
+                teks.className = 'text-truncate';
+                teks.textContent = (varian.ukuran === '' ? 'Tanpa ukuran' : varian.ukuran) + ' (' + varian.stok + ')';
+
+                chip.append(titik, teks);
+                daftarVarian.append(chip);
+            });
+        }
+
+        daftarVarian.addEventListener('click', event => {
+            const chip = event.target.closest('.varian-chip');
+
+            if (chip) {
+                pilihVarian(suntingAktif.varian.find(v => String(v.id) === chip.dataset.id));
+            }
+        });
+
         modalSunting.addEventListener('show.bs.modal', event => {
-            const button = event.relatedTarget;
+            const tombol = event.relatedTarget;
 
             // sunting yang gagal: nilai yang tadi diketik dipulihkan, bukan nilai lama
             if (suntingLama) {
-                isiForm(suntingLama);
+                suntingAktif = { kode: suntingLama.kode, varian: [suntingLama] };
+                isiPemilih(suntingAktif.varian);
+                pilihVarian(suntingLama);
                 suntingLama = null;
 
                 return;
             }
 
-            if (!button || !button.hasAttribute('data-barang')) {
+            const kartu = tombol ? tombol.getAttribute('data-kartu') : null;
+
+            if (!kartu) {
+                kosongSunting();
+
                 return;
             }
 
-            isiForm(JSON.parse(button.getAttribute('data-barang')));
+            suntingAktif = JSON.parse(kartu);
+            isiPemilih(suntingAktif.varian);
+            judulSunting.textContent = 'Sunting ' + suntingAktif.kode;
+
+            // tombol Edit memaksa pengguna memilih varian dulu supaya tidak salah ukuran
+            sembunyikanDetail();
+        });
+
+        // hapus varian dan hapus kartu berbagi satu modal konfirmasi: pemicunya
+        // selalu mencegah submit lebih dulu, jadi bentukannya ikut dipakai tombol
+        // keyboard dan tidak ada jalan menghapus tanpa pertanyaan
+        const modalHapus = document.getElementById('modalHapusProduk');
+        const objekHapus = document.getElementById('hapusObjek');
+        const tombolHapus = document.getElementById('hapusYa');
+
+        let jadiHapus = null;
+
+        function tanyaHapus(objek, kirim) {
+            objekHapus.textContent = objek;
+            jadiHapus = kirim;
+            bootstrap.Modal.getOrCreateInstance(modalHapus).show();
+        }
+
+        tombolHapus.addEventListener('click', () => {
+            const kirim = jadiHapus;
+
+            jadiHapus = null;
+            bootstrap.Modal.getOrCreateInstance(modalHapus).hide();
+
+            if (kirim) {
+                kirim();
+            }
         });
 
         // hapus per varian: tombolnya hidup di tabel modal detail (klon per kartu),
@@ -685,13 +835,12 @@ $js = <<< JS
         $(document).on('click', '[form="formHapusBarang"]', function (event) {
             const data = JSON.parse($(this).attr('data-hapus-varian'));
 
-            if (! confirm('Hapus ' + data.label + ' dari daftar stok? Transaksi lama tetap utuh.')) {
-                event.preventDefault();
+            event.preventDefault();
 
-                return;
-            }
-
-            formHapus.querySelector('[name="id_stok"]').value = data.id;
+            tanyaHapus(data.label, () => {
+                formHapus.querySelector('[name="id_stok"]').value = data.id;
+                formHapus.submit();
+            });
         });
 
         // hapus per kartu: satu produk pergi bersama semua variannya, jadi
@@ -700,37 +849,91 @@ $js = <<< JS
             button.addEventListener('click', event => {
                 const data = JSON.parse(button.getAttribute('data-hapus-kartu'));
 
-                if (! confirm('Hapus ' + data.kode + ' (' + data.varian + ' varian) dari daftar stok? Transaksi lama tetap utuh.')) {
-                    event.preventDefault();
+                event.preventDefault();
 
-                    return;
-                }
-
-                formHapusKartu.querySelector('[name="kode"]').value = data.kode;
-                formHapusKartu.querySelector('[name="juragan_id"]').value = data.juragan;
+                tanyaHapus(data.kode + ' · ' + data.varian + ' varian', () => {
+                    formHapusKartu.querySelector('[name="kode"]').value = data.kode;
+                    formHapusKartu.querySelector('[name="juragan_id"]').value = data.juragan;
+                    formHapusKartu.submit();
+                });
             });
         });
 
-        // "+ Varian" pada kartu membawa nama barang dan toko asalnya
-        modalTambah.addEventListener('show.bs.modal', event => {
-            const button = event.relatedTarget;
+        // "+ Varian" pada kartu hanya menanyakan ukuran, stok, dan foto: nama
+        // barang dikunci ke kartunya, juragan dan harga ikut kartu. Tombol
+        // "Tambah Barang" di kepala daftar tetap form lengkap karena kartunya
+        // belum ada sama sekali. `bersih` menandai dibuka lewat tombol: isian
+        // lama dibuang supaya kartu terakhir tidak jadi bayangan di form
+        // berikutnya; pemulihan habis mengirim memanggil ini dengan `bersih`
+        // false agar nilai yang diketik tetap ada.
+        function tataTambah(kartu, bersih) {
+            const kode = modalTambah.querySelector('[name="kode"]');
+            const ukuran = modalTambah.querySelector('[name="ukuran"]');
+            const stok = modalTambah.querySelector('[name="stok"]');
+            const juragan = modalTambah.querySelector('[name="juragan_id"]');
+            const harga = modalTambah.querySelector('[name="harga"]');
+            const petunjuk = document.getElementById('tambahKodePetunjuk');
 
-            if (!button || !button.hasAttribute('data-tambah')) {
+            modalTambah.querySelectorAll('.tambah-khusus-barang').forEach(blok => {
+                blok.classList.toggle('d-none', kartu !== null);
+            });
+
+            kode.readOnly = kartu !== null;
+            harga.required = kartu === null;
+            modalTambah.querySelector('[name="kartu"]').value = kartu === null ? '0' : '1';
+
+            if (bersih) {
+                ukuran.value = '';
+                stok.value = '0';
+                harga.value = '';
+                modalTambah.querySelector('[name="keterangan"]').value = '';
+                kode.value = kartu === null ? '' : kartu.kode;
+            }
+
+            if (kartu === null) {
+                judulTambah.textContent = 'Tambah Barang';
                 return;
             }
 
-            const bawaan = JSON.parse(button.getAttribute('data-tambah'));
-            const juragan = modalTambah.querySelector('[name="juragan_id"]');
-
-            modalTambah.querySelector('[name="kode"]').value = bawaan.kode;
+            if (!bersih) {
+                kode.value = kartu.kode;
+            }
 
             for (let i = 0; i < juragan.options.length; i++) {
-                if (juragan.options[i].value === String(bawaan.juragan)) {
+                if (juragan.options[i].value === String(kartu.juragan)) {
                     juragan.value = juragan.options[i].value;
 
                     break;
                 }
             }
+
+            judulTambah.textContent = 'Tambah Varian ' + kartu.kode;
+            petunjuk.textContent = 'Nama barang mengikuti kartu ini; harganya diwarisi dari varian yang sudah ada dan bisa diubah lewat Edit.';
+        }
+
+        modalTambah.addEventListener('show.bs.modal', event => {
+            const tombol = event.relatedTarget;
+            const bawaan = tombol ? tombol.getAttribute('data-tambah') : null;
+
+            if (bawaan) {
+                tataTambah(JSON.parse(bawaan), true);
+
+                return;
+            }
+
+            // modal dibuka sendiri sesudah gagal simpan: modalitenya dipulihkan
+            // dari nilai yang masih ada di dalam form, isian tidak dibuang
+            if (gagalTambah) {
+                gagalTambah = false;
+                const kode = modalTambah.querySelector('[name="kode"]').value;
+                const juragan = modalTambah.querySelector('[name="juragan_id"]').value;
+
+                tataTambah(varianLama && kode !== '' ? { kode: kode, juragan: juragan } : null, false);
+
+                return;
+            }
+
+            tataTambah(null, true);
         });
 
         if (suntingErr) {
@@ -738,7 +941,7 @@ $js = <<< JS
         }
 
         // gagal menambah: modal dibuka lagi supaya isian tadi tidak perlu diketik ulang
-        if (tambahErr) {
+        if (gagalTambah) {
             bootstrap.Modal.getOrCreateInstance(modalTambah).show();
         }
 
@@ -778,11 +981,33 @@ $js = <<< JS
             muatFoto.innerHTML = '';
         });
 
-        // klik di mana pun pada kartu membuka rangkapan detailnya; tombol aksi,
-        // chip varian, dan tombol foto berhenti sendiri karena punya handler masing-masing
+        // klik di mana pun pada kartu membuka rangkapan detailnya; tombol aksi
+        // dan tombol foto berhenti sendiri karena punya handler masing-masing
         const modalDetail = document.getElementById('modalDetailProduk');
         const isiDetail = modalDetail.querySelector('.modal-body');
         const judulDetail = modalDetail.querySelector('.modal-title');
+
+        function bukaDetail(kartu, sorot) {
+            judulDetail.textContent = kartu.querySelector('h2').textContent.trim();
+            isiDetail.innerHTML = '';
+
+            const cetakan = kartu.querySelector('.produk-rincian').cloneNode(true);
+            cetakan.classList.remove('d-none');
+            isiDetail.appendChild(cetakan);
+
+            // ukuran yang tadi diklit ditandai barisnya di tabel supaya pengguna
+            // tahu varian mana yang dicarinya
+            if (sorot) {
+                const baris = isiDetail.querySelector('tr[data-varian="' + sorot + '"]');
+
+                if (baris) {
+                    baris.classList.add('varian-sorot');
+                    baris.scrollIntoView({ block: 'nearest' });
+                }
+            }
+
+            bootstrap.Modal.getOrCreateInstance(modalDetail).show();
+        }
 
         document.querySelectorAll('.produk-kartu').forEach(kartu => {
             kartu.addEventListener('click', event => {
@@ -795,14 +1020,15 @@ $js = <<< JS
                     return;
                 }
 
-                judulDetail.textContent = kartu.querySelector('h2').textContent.trim();
-                isiDetail.innerHTML = '';
+                bukaDetail(kartu);
+            });
+        });
 
-                const cetakan = kartu.querySelector('.produk-rincian').cloneNode(true);
-                cetakan.classList.remove('d-none');
-                isiDetail.appendChild(cetakan);
-
-                bootstrap.Modal.getOrCreateInstance(modalDetail).show();
+        // chip varian tidak lagi membuka form sunting per ukuran: ukuran hanya
+        // penanda, jadi klik membawa pengguna ke detail kartunya
+        document.querySelectorAll('.varian-chip[data-varian]').forEach(chip => {
+            chip.addEventListener('click', () => {
+                bukaDetail(chip.closest('.produk-kartu'), chip.getAttribute('data-varian'));
             });
         });
 

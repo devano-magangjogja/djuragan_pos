@@ -1751,11 +1751,28 @@ a.rounded-3.border.border-ink-200:hover {
     border-color: #d0d5dd;
     background: #ffffff;
 }
-/* daftar varian: kisi dua kolom; tiap chip = titik keadaan + ukuran + stok,
-   jadi keadaan terbaca sekilas tanpa memenuhi kartu */
+/* nama barang lebih besar dari harganya: nama yang dicari, harga hanya pelengkap */
+.produk-nama {
+    font-size: 1.1rem;
+    font-weight: 700;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    color: #101828;
+}
+.produk-harga {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #344054;
+}
+.produk-harga-mulai {
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: #98a2b3;
+}
+/* daftar varian: pil yang mengalir; tiap chip = titik keadaan + "ukuran (stok)" */
 .varian-daftar {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    display: flex;
+    flex-wrap: wrap;
     gap: 0.3rem;
 }
 .varian-chip {
@@ -1763,12 +1780,13 @@ a.rounded-3.border.border-ink-200:hover {
     align-items: center;
     gap: 0.45rem;
     min-width: 0;
-    padding: 0.28rem 0.55rem;
+    max-width: 100%;
+    padding: 0.28rem 0.6rem;
     border: 1px solid #eaecf0;
-    border-radius: 8px;
+    border-radius: 999px;
     background: #ffffff;
     color: #344054;
-    font-size: 0.72rem;
+    font-size: 0.75rem;
     font-weight: 600;
     line-height: 1.4;
     text-align: left;
@@ -1778,6 +1796,51 @@ a.rounded-3.border.border-ink-200:hover {
 .varian-chip:hover {
     border-color: #d0d5dd;
     background: #f9fafb;
+}
+/* varian yang sedang dibuka di modal sunting */
+.varian-chip.aktif {
+    border-color: #da251d;
+    background: #fef4f4;
+    color: #101828;
+}
+/* baris tabel detail yang baru dituju lewat klik chip ukuran */
+tr.varian-sorot td {
+    background: #fef4f4;
+}
+/* modal konfirmasi hapus: mengikuti kartu putih tema, bukan dialog browser */
+.konfirmasi-tanda {
+    width: 2.9rem;
+    height: 2.9rem;
+    border-radius: 999px;
+    background: #fff1f3;
+    color: #e11d48;
+    font-size: 1.05rem;
+}
+.konfirmasi-judul {
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: #101828;
+}
+.konfirmasi-objek {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: #344054;
+    overflow-wrap: anywhere;
+}
+.konfirmasi-ya {
+    border: 1px solid #da251d;
+    border-radius: 8px;
+    background: #da251d;
+    color: #ffffff;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+.konfirmasi-ya:hover,
+.konfirmasi-ya:focus {
+    border-color: #b81f18;
+    background: #b81f18;
+    color: #ffffff;
 }
 .varian-dot {
     flex-shrink: 0;
@@ -1791,11 +1854,6 @@ a.rounded-3.border.border-ink-200:hover {
 }
 .varian-dot.danger {
     background: #f04438;
-}
-.varian-stok {
-    margin-left: auto;
-    color: #101828;
-    font-variant-numeric: tabular-nums;
 }
 /* ringkasan mini di bawah varian: garis rambut saja, tanpa pembatas berpetak */
 .produk-stat {
@@ -1814,17 +1872,38 @@ a.rounded-3.border.border-ink-200:hover {
     color: #101828;
     line-height: 1.4;
 }
-/* baris aksi: tiga tombol ikon seukuran — tambah + sampah di kiri, pensil rata kanan */
+/* baris aksi: tiga tombol berlabel sama lebar — Varian, Edit, Hapus */
 .produk-aksi {
     gap: 0.4rem;
     flex-shrink: 0;
 }
-.produk-aksi .btn {
+.produk-aksi-tombol,
+.konfirmasi-batal {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 0.34rem 0.2rem;
+    border: 1px solid #eaecf0;
+    border-radius: 8px;
+    background: #f9fafb;
+    color: #344054;
     font-size: 0.78rem;
     font-weight: 600;
+    white-space: nowrap;
+    transition: border-color 0.12s ease, background 0.12s ease, color 0.12s ease;
 }
-.produk-aksi .btn .fal {
-    margin-right: 0;
+.produk-aksi-tombol:hover,
+.konfirmasi-batal:hover {
+    border-color: #d0d5dd;
+    background: #f2f4f7;
+    color: #101828;
+}
+.produk-aksi-tombol .fal {
+    margin-right: 0.25rem;
+}
+.produk-aksi-tombol:last-child:hover {
+    border-color: #fda4af;
+    background: #fff1f3;
+    color: #e11d48;
 }
 .produk-aksi-ikon {
     width: 2rem;
@@ -1859,12 +1938,13 @@ a.rounded-3.border.border-ink-200:hover {
 .card > .produk-rincian.d-none {
     display: none !important;
 }
-.produk-ket {
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 4;
-    overflow: hidden;
+/* catatan varian di tabel detail: tiga baris lalu digulir sendiri supaya satu
+   varian yang catatannya panjang tidak melebarkan baris lainnya */
+.varian-ket {
+    max-height: 4.5em;
+    overflow-y: auto;
     white-space: pre-line;
+    overflow-wrap: anywhere;
 }
 .foto-utama {
     display: block;

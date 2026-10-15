@@ -172,7 +172,9 @@ class Validation extends BaseConfig
         'juragan_id' => 'required|integer',
         'kode'       => 'required|max_length[20]',
         'ukuran'     => 'permit_empty|max_length[6]',
-        'harga'      => 'required|integer',
+        // harga boleh kosong: tombol "+ Varian" pada kartu tidak menanyakannya,
+        // nilainya diwarisi dari saudara sekartu oleh controller
+        'harga'      => 'permit_empty|integer',
         // stok boleh negatif supaya salah hitung gudang bisa langsung dikoreksi
         'stok'       => 'required|integer',
         'keterangan' => 'permit_empty|max_length[500]',
