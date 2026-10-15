@@ -38,6 +38,24 @@ class Validation extends BaseConfig
         'single' => 'CodeIgniter\Validation\Views\single',
     ];
 
+    /**
+     * setRuleGroup() menukar seluruh pesan kustom dengan pesan milik grup yang
+     * dipanggil, bukan menambahkannya di atas pesan grup lain. Karena grup
+     * sunting COD hanya berbeda di bagian id, pesan grup tambah dipakai lebih
+     * dulu lalu dilengkapi pesan id_cod di sini.
+     */
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->updateCod_errors = [
+            'id_cod' => [
+                'required' => 'Catatan yang akan diubah tidak dikenali.',
+                'integer'  => 'Catatan yang akan diubah tidak dikenali.',
+            ],
+        ] + $this->addCod_errors;
+    }
+
     //--------------------------------------------------------------------
     // Rules
     //--------------------------------------------------------------------
@@ -185,4 +203,57 @@ class Validation extends BaseConfig
         'stok'       => 'required|integer',
         'keterangan' => 'permit_empty|max_length[120]',
     ];
+
+    // Pencatatan COD: keperluan, status, nama CS, dan sumber informasi boleh
+    // ditambah baru lewat pensil di dropdown, jadi yang diuji di sini
+    // panjangnya saja; kata-katanya ikut tersimpan sebagai pilihan baru.
+    public $addCod = [
+        'tanggal'       => 'required|valid_date',
+        'jam'           => 'required|regex_match[/^([01][0-9]|2[0-3]):[0-5][0-9]$/]',
+        'nama_customer' => 'required|max_length[100]|alpha_space',
+        'no_hp'         => 'required|numeric|max_length[13]',
+        'keperluan'     => 'required|max_length[80]',
+        'status'        => 'required|max_length[80]',
+        'catatan'       => 'required|max_length[5000]',
+        'cs'            => 'required|max_length[80]',
+        'sumber'        => 'required|max_length[80]',
+    ];
+    public $updateCod = [
+        'id_cod'        => 'required|integer',
+        'tanggal'       => 'required|valid_date',
+        'jam'           => 'required|regex_match[/^([01][0-9]|2[0-3]):[0-5][0-9]$/]',
+        'nama_customer' => 'required|max_length[100]|alpha_space',
+        'no_hp'         => 'required|numeric|max_length[13]',
+        'keperluan'     => 'required|max_length[80]',
+        'status'        => 'required|max_length[80]',
+        'catatan'       => 'required|max_length[5000]',
+        'cs'            => 'required|max_length[80]',
+        'sumber'        => 'required|max_length[80]',
+    ];
+    // lok api masih 'en', jadi pesan aturan di atas dibahasakan agar tidak
+    // mencolok di form
+    public $addCod_errors = [
+        'tanggal'       => ['required' => 'Tanggal wajib diisi.', 'valid_date' => 'Tanggal tidak berlaku.'],
+        'jam'           => [
+            'required'    => 'Jam datang wajib diisi.',
+            'regex_match' => 'Jam memakai format 24 jam, contoh 14:30.',
+        ],
+        'nama_customer' => [
+            'required'    => 'Nama customer wajib diisi.',
+            'max_length'  => 'Nama customer maksimal 100 huruf.',
+            'alpha_space' => 'Nama customer hanya boleh huruf dan spasi.',
+        ],
+        'no_hp' => [
+            'required'    => 'Nomor HP wajib diisi.',
+            'max_length'  => 'Nomor HP maksimal 13 angka.',
+            'numeric'     => 'Nomor HP hanya boleh angka.',
+        ],
+        'keperluan' => ['required' => 'Keperluan wajib diisi.', 'max_length' => 'Keperluan maksimal 80 huruf.'],
+        'status'    => ['required' => 'Status transaksi wajib diisi.', 'max_length' => 'Status maksimal 80 huruf.'],
+        'catatan'   => ['required' => 'Catatan wajib diisi.', 'max_length' => 'Catatan terlalu panjang.'],
+        'cs'        => ['required' => 'Nama CS yang handle wajib diisi.', 'max_length' => 'Nama CS maksimal 80 huruf.'],
+        'sumber'    => ['required' => 'Sumber informasi wajib diisi.', 'max_length' => 'Sumber informasi maksimal 80 huruf.'],
+    ];
+    // grup sunting memakai pesan grup tambah; lihat penyatuan di konstruktor
+    public $updateCod_errors = [];
 }
