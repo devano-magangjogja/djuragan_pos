@@ -153,7 +153,7 @@ class Produk extends BaseController
     }
 
     /**
-     * Perbarui harga, stok, atau keterangan satu varian.
+     * Perbarui harga, stok, keterangan, atau juragan satu varian.
      *
      * @return \CodeIgniter\HTTP\RedirectResponse
      */
@@ -175,15 +175,23 @@ class Produk extends BaseController
             return redirect()->to($this->alamatKembali())->with('gagal', 'Barang tidak ditemukan.');
         }
 
+        // varian boleh dipindah antar toko, tapi kedua ujung harus milik user
+        $juragan_baru = (int) $this->request->getPost('juragan_id');
+
+        if (! $this->bolehJuragan($juragan_baru)) {
+            return redirect()->to($this->alamatKembali())->with('gagal', 'Juragan ini tidak bisa diakses.');
+        }
+
         $kode   = $this->kodePost();
         $ukuran = $this->ukuranPost();
 
-        if ($stokModel->kembar($id, (int) $baris->juragan_id, $kode, $ukuran)) {
+        if ($stokModel->kembar($id, $juragan_baru, $kode, $ukuran)) {
             return redirect()->to($this->alamatKembali())
-                ->with('gagal', 'Varian ' . $kode . ' ' . $ukuran . ' sudah terdaftar.');
+                ->with('gagal', 'Varian ' . $kode . ' ' . $ukuran . ' sudah terdaftar di toko itu.');
         }
 
         $stokModel->update($id, [
+            'juragan_id' => $juragan_baru,
             'produk_id'  => jamin_produk($kode),
             'kode'       => $kode,
             'ukuran'     => $ukuran,
@@ -310,7 +318,7 @@ class Produk extends BaseController
     {
         $keterangan = trim((string) $this->request->getPost('keterangan'));
 
-        return $keterangan === '' ? null : mb_substr($keterangan, 0, 120);
+        return $keterangan === '' ? null : mb_substr($keterangan, 0, 500);
     }
 
     private function bolehJuragan(int $juragan_id): bool

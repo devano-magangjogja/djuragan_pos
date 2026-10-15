@@ -175,14 +175,15 @@ class Validation extends BaseConfig
         'harga'      => 'required|integer',
         // stok boleh negatif supaya salah hitung gudang bisa langsung dikoreksi
         'stok'       => 'required|integer',
-        'keterangan' => 'permit_empty|max_length[120]',
+        'keterangan' => 'permit_empty|max_length[500]',
     ];
     public $updateStok = [
+        'juragan_id' => 'required|integer',
         'id_stok'    => 'required|integer',
         'kode'       => 'required|max_length[20]',
         'ukuran'     => 'permit_empty|max_length[6]',
         'harga'      => 'required|integer',
         'stok'       => 'required|integer',
-        'keterangan' => 'permit_empty|max_length[120]',
+        'keterangan' => 'permit_empty|max_length[500]',
     ];
 }

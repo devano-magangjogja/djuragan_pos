@@ -68,7 +68,7 @@ class Juragan extends BaseController
 
         // simpan ke tabel relasi (juragan-bank)
         if ($db->affectedRows() > 0) {
-            foreach ($banks as $bank) {
+            foreach ((array) $banks as $bank) {
                 $relasiModel->insert([
                     'table'      => 2, // juragan-bank
                     'juragan_id' => $id,
@@ -117,7 +117,7 @@ class Juragan extends BaseController
 
         // simpan ulang semua data relasi
         if ($db->affectedRows() > -1) {
-            foreach ($banks as $bank) {
+            foreach ((array) $banks as $bank) {
                 $relasiModel->insert([
                     'table'      => 2, // juragan-bank
                     'juragan_id' => $id_juragan,
