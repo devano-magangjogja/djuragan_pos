@@ -1,3 +1,20 @@
+<?php
+/**
+ * Variables injected at runtime by \App\Controllers\Admin\Crm::pelanggan()
+ * via view('admin/crm/pelanggan', $data). Declared here so static analyzers
+ * (Intelephense P1008) do not flag them as undefined.
+ *
+ * @var string $segmen          Behavioural segment filter (from GET ?segmen)
+ * @var string $status          CRM status filter (from GET ?status)
+ * @var int    $tagId           Tag filter id (from GET ?tag_id)
+ * @var string $cari            Search keyword (from GET ?cari)
+ * @var int    $page            Active page number (1-based)
+ * @var float  $totalPages      Total number of pages
+ * @var int    $totalData       Total customers matching the filters
+ * @var array  $daftarPelanggan List of customer rows for the current page
+ * @var array  $allTags         All available tags for the filter dropdown
+ */
+?>
 <?= $this->extend('template/main') ?>
 
 <?= $this->section('css') ?>

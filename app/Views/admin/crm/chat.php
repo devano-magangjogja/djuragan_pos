@@ -1,5 +1,14 @@
 <?= $this->extend('template/main') ?>
 
+<?php
+// $templates dikirim Crm::chat() lewat view('admin/crm/chat', $data). CI4
+// meng-inject-nya dengan extract() di dalam View::render(), jadi tidak ada
+// assignment yang terlihat oleh static analysis. Fallback di sini sekaligus
+// menjaga view tetap aman bila dirender dari jalur lain tanpa data itu
+// ($activeId di bagian js sudah lebih dulu diberi pola sama: $activeId ?? 0).
+$templates ??= [];
+?>
+
 <?= $this->section('css') ?>
 <style>
 .chat-container {

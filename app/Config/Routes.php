@@ -101,12 +101,22 @@ $routes->group('admin', static function ($routes) {
     });
 
     // pantau stok & tambah barang
-    $routes->group('produk', ['filter' => 'auth:admin,superadmin'], static function ($routes) {
-        $routes->get('/', 'Admin\Produk::index');
-        $routes->post('save', 'Admin\Produk::simpan');
-        $routes->post('update', 'Admin\Produk::perbarui');
-        $routes->post('hapus', 'Admin\Produk::hapus');
-        $routes->post('hapus-kartu', 'Admin\Produk::hapus_kartu');
+    // CS boleh membuka daftar produk, tetapi hanya membaca; aksi tulis dipagari
+    // lebih sempit di dalam, dan pengaturan poin produk khusus Superadmin.
+    $routes->group('produk', ['filter' => 'auth:admin,superadmin,cs'], static function ($routes) {
+        $routes->get('/', 'Admin\Produk::index', ['as' => 'hal.produk']);
+
+        $routes->group('', ['filter' => 'auth:admin,superadmin'], static function ($routes) {
+            $routes->post('save', 'Admin\Produk::simpan');
+            $routes->post('update', 'Admin\Produk::perbarui');
+            $routes->post('hapus', 'Admin\Produk::hapus');
+            $routes->post('hapus-kartu', 'Admin\Produk::hapus_kartu');
+        });
+    });
+
+    // laporan akumulasi poin gaji (khusus Superadmin)
+    $routes->group('poin', ['filter' => 'auth:superadmin'], static function ($routes) {
+        $routes->get('/', 'Admin\Poin::index', ['as' => 'hal.poin']);
     });
 
     // laporan per jenis: pesanan, pendapatan, pembayaran, piutang, produksi, produk, pelanggan

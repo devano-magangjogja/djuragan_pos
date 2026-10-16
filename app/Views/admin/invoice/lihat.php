@@ -1,5 +1,24 @@
 <?php
 
+/**
+ * Variabel berikut dikirim Admin\Invoices::lihat() lewat view() lalu di-extract
+ * CI4 saat render, sehingga tidak terlihat oleh analis statis (Intelephense P1008).
+ *
+ * @var string       $title             judul halaman
+ * @var array        $orderan           daftar invoice pada tab aktif
+ * @var string       $juragan           slug toko aktif atau 'semua'
+ * @var int          $juragan_id        id toko aktif (0 = semua juragan)
+ * @var string       $nama_toko         nama toko aktif
+ * @var array        $daftar_toko       pilihan toko: [slug => nama]
+ * @var array|string $cari              kata kunci pencarian dari query string
+ * @var string       $hal               tab/route segmen halaman aktif
+ * @var string       $kategori          saringan kategori pembayaran
+ * @var array        $kategori_pembayaran master kategori: [slug => ['label' => ...]]
+ * @var array        $jumlah_kategori   jumlah transaksi per kategori: [slug => int]
+ * @var int          $limit             jumlah baris per halaman
+ * @var int          $page              nomor halaman aktif
+ */
+
 use App\Libraries\Ongkir;
 use CodeIgniter\I18n\Time;
 

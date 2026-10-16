@@ -1,4 +1,20 @@
 <?php
+/**
+ * Variabel di bawah ini diisi dari Admin\Settings\Juragan::index() lewat view('admin/pengaturan/juragan', $data).
+ * CodeIgniter memanggil extract() di dalam system/View/View.php, jadi analyzers tidak
+ * bisa menelusuri asal variabelnya; blok @var ini hanya memberi tahu Intelephense.
+ *
+ * @var string       $title     Judul halaman
+ * @var ?string      $sukses    Flash message sukses
+ * @var ?string      $gagal     Flash message gagal
+ * @var list<object> $juragan   Daftar toko (JuraganModel::findAll): id_juragan, juragan, nama_juragan
+ * @var list<object> $banks     Daftar rekening (BankModel::findAll): id_bank, nama_bank, rekening, atas_nama, tipe_bank
+ * @var array<int, array<string, list<array{id: int, nama: string}>>> $pengelola Penanggung jawab per toko: id_juragan => ['admin' => [...], 'cs' => [...]]
+ * @var array<int, int> $orderan Jumlah nota per toko: id_juragan => jumlah
+ * @var list<array{id: int, nama: string, username: string, level: string}> $admins  Akun level admin
+ * @var list<array{id: int, nama: string, username: string, level: string}> $cs_list Akun level cs
+ */
+
 $pager   = \Config\Services::pager();
 $session = \Config\Services::session();
 
@@ -180,7 +196,7 @@ $chip = static function (string $label, array $daftar): void { ?>
                 <div class="mb-0">
                     <span class="form-label d-block">Rekening Bank / EDC</span>
                     <div class="border rounded px-2 py-1" style="max-height: 180px; overflow-y: auto;">
-                        <?= $kotak_rekening($opsi_bank, $pilihan_bank, 'tambah_rek'); ?>
+                        <?php $kotak_rekening($opsi_bank, $pilihan_bank, 'tambah_rek'); ?>
                     </div>
                     <div class="form-text">centang semua rekening yang dipakai toko ini</div>
                 </div>
@@ -213,7 +229,7 @@ $chip = static function (string $label, array $daftar): void { ?>
                 <div class="mb-3">
                     <span class="form-label d-block">Rekening Bank</span>
                     <div class="border rounded px-2 py-1" style="max-height: 180px; overflow-y: auto;">
-                        <?= $kotak_rekening($opsi_bank, [], 'sunting_rek'); ?>
+                        <?php $kotak_rekening($opsi_bank, [], 'sunting_rek'); ?>
                     </div>
                     <div class="form-text">centang semua rekening yang dipakai toko ini</div>
                 </div>

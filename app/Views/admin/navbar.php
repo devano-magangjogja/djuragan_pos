@@ -8,7 +8,7 @@ $namaInisial = strtoupper(mb_substr($namaSesi, 0, 1));
 // Deteksi menu induk aktif
 $isDasborAktif   = url_is('admin/dasbor*') || $di_halaman === 'admin';
 $isTrxAktif      = url_is('admin/invoices*') || url_is('admin/cod*');
-$isProdukAktif   = url_is('admin/produk*');
+$isProdukAktif   = url_is('admin/produk*') || url_is('admin/poin*');
 $isCrmAktif      = url_is('admin/crm*');
 $isKpiAktif      = url_is('admin/kpi*');
 $isLaporanAktif  = url_is('admin/laporan*');
@@ -21,6 +21,15 @@ $transaksiSubmenu = [
     ['admin/invoices/lihat/semua/semua', 'Tracking Transaksi', 'fa-receipt', $di_halaman === 'admin/invoices' || str_starts_with($di_halaman, 'admin/invoices/')],
     ['admin/cod', 'Pencatatan COD', 'fa-truck-fast', str_starts_with($di_halaman, 'admin/cod')],
 ];
+
+// Submenu Produk: daftar stok selalu ada; laporan poin gaji khusus Superadmin.
+$produkSubmenu = [
+    ['admin/produk', 'Produk & Stok', 'fa-box-alt', $di_halaman === 'admin/produk' || str_starts_with($di_halaman, 'admin/produk/')],
+];
+
+if ($levelSesi === 'superadmin') {
+    $produkSubmenu[] = ['admin/poin', 'Laporan Poin', 'fa-coins', str_starts_with($di_halaman, 'admin/poin')];
+}
 
 // Submenu KPI
 $kpiSubmenu = [
@@ -187,10 +196,23 @@ $settingsSubmenu = [
                 </div>
             </li>
             <li class="nav-item">
-                <a class="sidebar-link <?= $isProdukAktif ? 'active' : '' ?>" href="<?= site_url('admin/produk') ?>">
+                <a class="sidebar-link <?= $isProdukAktif ? 'active' : '' ?>" data-bs-toggle="collapse" href="#submenuProduk" role="button" aria-expanded="<?= $isProdukAktif ? 'true' : 'false' ?>" aria-controls="submenuProduk">
                     <i class="sidebar-link-icon fal fa-tshirt"></i>
                     <span>Produk</span>
+                    <i class="fal fa-chevron-down sidebar-chevron"></i>
                 </a>
+                <div class="collapse <?= $isProdukAktif ? 'show' : '' ?>" id="submenuProduk">
+                    <ul class="sidebar-submenu">
+                        <?php foreach ($produkSubmenu as [$url, $label, $ikon, $aktif]) : ?>
+                            <li class="submenu-item">
+                                <a class="sidebar-submenu-link <?= $aktif ? 'active' : '' ?>" href="<?= site_url($url) ?>">
+                                    <i class="fal <?= $ikon ?>"></i>
+                                    <span><?= esc($label) ?></span>
+                                </a>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                </div>
             </li>
         </ul>
 

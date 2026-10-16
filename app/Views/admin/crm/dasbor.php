@@ -1,3 +1,15 @@
+<?php
+/**
+ * Variabel di bawah ini diisi oleh Admin\Crm::index() lewat view('admin/crm/dasbor', $data).
+ * CodeIgniter meng-extract array tersebut saat render (View::render -> extract()), jadi tidak ada
+ * assignment di file ini. Blok komentar ini hanya penanda tipe untuk IntelliSense, bukan untuk dijalankan.
+ *
+ * @var array  $ringkasan  metrik KPI dari CrmModel::getRingkasan()
+ * @var array  $reminders  jadwal follow-up dari CrmModel::getReminders()
+ * @var string $provider   nama gateway WA aktif (kapso/fonnte)
+ * @var int    $isSandbox  1 bila mode sandbox Kapso aktif
+ */
+?>
 <?= $this->extend('template/main') ?>
 
 <?= $this->section('content') ?>

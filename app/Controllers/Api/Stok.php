@@ -42,7 +42,10 @@ class Stok extends BaseController
                 'kode'      => (string) $b['kode'],
                 'ukuran'    => (string) ($b['ukuran'] ?? ''),
                 'harga'     => (int) $b['harga'],
-                'stok'      => (int) $b['stok'],
+                // yang ditawarkan ke form orderan adalah unit yang masih bisa
+                // diambil, bukan angka gudang: barang yang sedang keluar di nota
+                // Selesai tidak bisa dijual dua kali
+                'stok'      => (int) $b['tersedia'],
                 'keterangan' => (string) ($b['keterangan'] ?? ''),
             ];
         }

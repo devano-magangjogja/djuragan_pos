@@ -1,3 +1,18 @@
+<?php
+/**
+ * Variabel di bawah disuntik runtime oleh view() lewat extract() di framework;
+ * dideklarasikan di sini agar analyzer (Intelephense P1008) tidak salah lapor.
+ *
+ * @var string $cari        kata kunci pencarian dari query string
+ * @var array  $invoices    daftar invoice belum lunas (satu halaman)
+ * @var int    $totalTagihan total seluruh pesanan belum lunas
+ * @var int    $page        nomor halaman aktif (1-based)
+ * @var int    $totalPages  jumlah halaman
+ * @var string $template    isi pesan template WhatsApp
+ * @var string $provider    nama provider WA aktif
+ * @var int    $isSandbox   1 bila mode sandbox aktif
+ */
+?>
 <?= $this->extend('template/main') ?>
 
 <?= $this->section('css') ?>

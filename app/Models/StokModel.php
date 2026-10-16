@@ -56,6 +56,7 @@ class StokModel extends Model
                 'nama_juragan' => (string) $b['nama_juragan'],
                 'harga_mulai' => (int) $b['harga'],
                 'harga_akhir' => (int) $b['harga'],
+                'poin'        => (int) ($b['poin_produk'] ?? 0),
                 'total_stok'  => 0,
                 'terjual'     => 0,
                 'varian'      => [],
@@ -63,7 +64,9 @@ class StokModel extends Model
 
             $t['harga_mulai'] = min($t['harga_mulai'], (int) $b['harga']);
             $t['harga_akhir'] = max($t['harga_akhir'], (int) $b['harga']);
-            $t['total_stok'] += (int) $b['stok'];
+            // poin satu produk: sama untuk semua ukuran, ambil apa adanya
+            $t['poin']        = (int) ($b['poin_produk'] ?? 0);
+            $t['total_stok'] += (int) $b['tersedia'];
             $t['terjual']    += (int) $b['terjual'];
             $t['varian'][]    = $b;
 
@@ -89,22 +92,168 @@ class StokModel extends Model
     }
 
     /**
+     * Kondisi "sewa yang sudah harus kembali": tipenya sewa, tanggal kembalinya
+     * diisi, dan tanggalnya sudah lewat. Baris orderan seperti ini tidak lagi
+     * mengurangi stok, jadi barang sewaan pulih di rak sendiri tanpa ada yang
+     * perlu mengingatnya. Sewa tanpa tanggal kembali dianggap masih dipinjam.
+     */
+    private static function sudahKembali(): string
+    {
+        return "JSON_UNQUOTE(JSON_EXTRACT(o.rincian, '$.tipe')) = 'sewa'"
+            . " AND COALESCE(JSON_UNQUOTE(JSON_EXTRACT(o.rincian, '$.kembali')), '') <> ''"
+            . ' AND DATE(JSON_UNQUOTE(JSON_EXTRACT(o.rincian, \'$.kembali\'))) < CURDATE()';
+    }
+
+    /**
+     * Ungkapan SQL: stok gudang dikurangi unit yang sedang keluar, yaitu qty dari
+     * nota yang sudah masuk tab Selesai (status_pengiriman 3), tidak dibatalkan,
+     * dan tidak dihapus. Dipakai katalog, saringan keadaan, saran form order, dan
+     * kartu ringkasan supaya angka stok di mana-mana berarti "masih bisa diambil".
+     *
+     * Ekspresi ini mentah (tidak di-escape builder), jadi tabel stok harus
+     * ditulis dengan prefix aslinya seperti pada klausa FROM-nya.
+     */
+    private function klausaTersedia(): string
+    {
+        $stok    = '`' . $this->db->prefixTable('stok') . '`';
+        $dibeli  = $this->db->prefixTable('dibeli');
+        $invoice = $this->db->prefixTable('invoice');
+
+        return '(CAST(' . $stok . '.stok AS SIGNED) - (SELECT IFNULL(SUM(d.qty), 0)'
+            . ' FROM `' . $dibeli . '` d'
+            . ' JOIN `' . $invoice . '` o ON o.id_invoice = d.invoice_id'
+            . ' WHERE d.stok_id = ' . $stok . '.id_stok'
+            . ' AND o.deleted_at IS NULL'
+            . " AND o.status_pengiriman = '3'"
+            . " AND o.status_pesanan <> '3'"
+            . ' AND NOT (' . self::sudahKembali() . ')))';
+    }
+
+    /**
+     * Unit yang sedang keluar per varian. Sama aturannya dengan `klausaTersedia()`,
+     * hanya saja bentuknya peta PHP supaya jalur tulis bisa memeriksa dulu.
+     *
+     * @return array<int, int> id_stok => qty yang keluar
+     */
+    public function keluar(array $stok_ids, int $kecuali_invoice = 0): array
+    {
+        $ids = array_values(array_unique(array_filter(array_map('intval', $stok_ids))));
+
+        if ($ids === []) {
+            return [];
+        }
+
+        $dibeli  = $this->db->prefixTable('dibeli');
+        $invoice = $this->db->prefixTable('invoice');
+
+        $sql = 'SELECT d.stok_id, IFNULL(SUM(d.qty), 0) AS keluar'
+            . ' FROM `' . $dibeli . '` d'
+            . ' JOIN `' . $invoice . '` o ON o.id_invoice = d.invoice_id'
+            . ' WHERE d.stok_id IN (' . implode(',', $ids) . ')'
+            . ' AND o.deleted_at IS NULL'
+            . " AND o.status_pengiriman = '3'"
+            . " AND o.status_pesanan <> '3'"
+            . ' AND NOT (' . self::sudahKembali() . ')';
+
+        if ($kecuali_invoice > 0) {
+            $sql .= ' AND o.id_invoice <> ' . $kecuali_invoice;
+        }
+
+        $sql .= ' GROUP BY d.stok_id';
+
+        $hasil = [];
+
+        foreach ($this->db->query($sql)->getResultArray() as $b) {
+            $hasil[(int) $b['stok_id']] = (int) $b['keluar'];
+        }
+
+        return $hasil;
+    }
+
+    /**
+     * Baris orderan yang mengambil lebih banyak unit daripada stok yang tersedia.
+     * Pemakaian nota yang sedang disimpan tidak ikut dihitung, jadi menyunting
+     * nota yang sudah keluar tetap boleh selama qty-nya tidak bertambah melewati
+     * sisa rak.
+     *
+     * @param array<string|int, array> $baris hasil `tautkan_stok()`
+     *
+     * @return array<string, string> kunci form => pesan galat
+     */
+    public function lebih(array $baris, int $kecuali_invoice = 0): array
+    {
+        $perlu = [];
+
+        foreach ($baris as $k => $v) {
+            $id = (int) ($v['stok_id'] ?? 0);
+
+            if ($id > 0) {
+                $perlu[$k] = [
+                    'id'     => $id,
+                    'qty'    => max(0, (int) ($v['qty'] ?? 0)),
+                    'label'  => trim((string) ($v['kode'] ?? '') . ' ' . (string) ($v['ukuran'] ?? '')),
+                ];
+            }
+        }
+
+        if ($perlu === []) {
+            return [];
+        }
+
+        $punya = [];
+
+        foreach ($this->whereIn('id_stok', array_column($perlu, 'id'))->get()->getResultArray() as $b) {
+            $punya[(int) $b['id_stok']] = (int) $b['stok'];
+        }
+
+        $keluar = $this->keluar(array_keys($punya), $kecuali_invoice);
+        $dipaki = [];
+        $galat  = [];
+
+        foreach ($perlu as $k => $v) {
+            $sisa     = ($punya[$v['id']] ?? 0) - ($keluar[$v['id']] ?? 0);
+            $dipaki[$v['id']] = ($dipaki[$v['id']] ?? 0) + $v['qty'];
+
+            if ($dipaki[$v['id']] > $sisa) {
+                $galat['produk[' . $k . '][stok]'] = 'Stok ' . ($v['label'] === '' ? 'barang ini' : $v['label'])
+                    . ' tinggal ' . $sisa . ', tidak bisa mengambil ' . $dipaki[$v['id']] . ' unit.';
+            }
+        }
+
+        return $galat;
+    }
+
+    /**
      * Angka untuk kartu ringkasan: varian, total unit, nilai stok, menipis, habis.
      *
      * @return array{varian:int,unit:int,nilai:int,menipis:int,habis:int}
      */
     public function ringkas(array $juragan_ids): array
     {
-        $tabel  = $this->db->prefixTable('stok');
-        $klausul = $this->klausulJuragan($juragan_ids);
+        $tabel    = $this->db->prefixTable('stok');
+        $tersedia = $this->klausaTersedia();
 
-        $row = $this->db->query('SELECT COUNT(*) AS varian, COALESCE(SUM(stok), 0) AS unit,'
-            . ' COALESCE(SUM(stok * harga), 0) AS nilai,'
-            . ' COALESCE(SUM(stok > 0 AND stok <= ' . self::AMBANG_MENIPIS . '), 0) AS menipis,'
-            . ' COALESCE(SUM(stok <= 0), 0) AS habis'
-            . ' FROM `' . $tabel . '` WHERE deleted_at IS NULL AND ' . $klausul)->getFirstRow();
+        $baris = $this->db->query('SELECT ' . $tersedia . ' AS tersedia, harga'
+            . ' FROM `' . $tabel . '` WHERE deleted_at IS NULL AND ' . $this->klausulJuragan($juragan_ids))
+            ->getResultArray();
 
-        return array_map('intval', (array) $row);
+        $hasil = ['varian' => 0, 'unit' => 0, 'nilai' => 0, 'menipis' => 0, 'habis' => 0];
+
+        foreach ($baris as $b) {
+            $unit = (int) $b['tersedia'];
+
+            $hasil['varian']++;
+            $hasil['unit']   += $unit;
+            $hasil['nilai']  += $unit * (int) $b['harga'];
+
+            if ($unit <= 0) {
+                $hasil['habis']++;
+            } elseif ($unit <= self::AMBANG_MENIPIS) {
+                $hasil['menipis']++;
+            }
+        }
+
+        return $hasil;
     }
 
     /**
@@ -199,9 +348,11 @@ class StokModel extends Model
     {
         // `ukuran` diberi alias: ekspresi di dalam COALESCE tidak ikut diberi
         // prefix tabel oleh query builder, jadi nama aslinya (order_ukuran) tidak dikenal.
-        $builder = $this->select('stok.*, juragan.nama_juragan, COALESCE(u.urutan, 255) AS urutan')
+        $builder = $this->select('stok.*, juragan.nama_juragan, COALESCE(u.urutan, 255) AS urutan, IFNULL(pr.poin, 0) AS poin_produk')
+            ->select($this->klausaTersedia() . ' AS tersedia', false)
             ->join('juragan', 'juragan.id_juragan = stok.juragan_id')
-            ->join('ukuran u', 'u.kode = stok.ukuran', 'left');
+            ->join('ukuran u', 'u.kode = stok.ukuran', 'left')
+            ->join('produk pr', 'pr.id_produk = stok.produk_id', 'left');
 
         return $this->pagar($builder, $juragan_ids, $juragan_id, $cari, $keadaan);
     }
@@ -231,17 +382,22 @@ class StokModel extends Model
                 ->groupEnd();
         }
 
+        // keadaan dibaca dari stok yang masih tersedia, bukan angka gudang:
+        // barang yang sedang keluar di nota Selesai tidak bisa dijual lagi
+        $tersedia = $this->klausaTersedia();
+
         switch ($keadaan) {
             case 'menipis':
-                $builder->where('stok.stok >', 0)->where('stok.stok <=', self::AMBANG_MENIPIS);
+                $builder->where($tersedia . ' > 0', null, false)
+                    ->where($tersedia . ' <= ' . self::AMBANG_MENIPIS, null, false);
                 break;
 
             case 'habis':
-                $builder->where('stok.stok <=', 0);
+                $builder->where($tersedia . ' <= 0', null, false);
                 break;
 
             case 'ada':
-                $builder->where('stok.stok >', self::AMBANG_MENIPIS);
+                $builder->where($tersedia . ' > ' . self::AMBANG_MENIPIS, null, false);
                 break;
         }
 

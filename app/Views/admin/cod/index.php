@@ -1,4 +1,30 @@
 <?php
+/**
+ * Variabel di bawah disuntik runtime oleh Admin\Cod::index() lewat
+ * view('admin/cod/index', $data). CI4 meng-extract array itu saat render
+ * (View::render -> extract()), jadi tidak ada assignment di file ini dan
+ * Intelephense (P1008) menyangkanya tak terdefinisi. Blok @var ini hanya
+ * penanda tipe untuk analyzer, bukan kode yang dijalankan.
+ *
+ * @var array      $catatan          baris catatan COD halaman aktif
+ * @var int        $total            jumlah catatan sesuai filter
+ * @var int        $total_semua      jumlah catatan tanpa filter status (tab "Semua")
+ * @var array      $status_counts    jumlah catatan per id status
+ * @var int        $page             nomor halaman aktif (1-based)
+ * @var int        $halaman          jumlah halaman
+ * @var int        $per_halaman      jumlah kartu per halaman
+ * @var array      $pilihan          master pilihan: ['keperluan'|'status'|'cs' => [['id','label'], ...]]
+ * @var bool       $boleh_hapus      pengguna boleh menghapus pilihan (admin/superadmin)
+ * @var array      $dipakai          [id pilihan => ['tampil' => int, 'hapus' => int]]
+ * @var string     $hari_ini         tanggal hari ini (Y-m-d)
+ * @var array      $f                nilai filter GET: cari, status, cs, keperluan, dari, sampai, periode
+ * @var bool       $ada_filter         ada filter yang aktif
+ * @var bool       $ada_filter_modal   ringkasan filter siap ditampilkan
+ * @var string     $ringkasan_filter   teks ringkasan filter
+ * @var array      $errors           pesan validasi flashdata: ['kolom' => 'pesan', ...]
+ * @var string|null $sukses          pesan berhasil flashdata
+ * @var string|null $gagal           pesan gagal flashdata
+ */
 
 use CodeIgniter\I18n\Time;
 

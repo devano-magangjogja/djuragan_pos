@@ -7,6 +7,7 @@ use App\Models\FotoModel;
 use App\Models\InvoiceModel;
 use App\Models\JuraganModel;
 use App\Models\PembayaranModel;
+use App\Models\StokModel;
 use App\Models\UkuranKomponenModel;
 use App\Models\UserModel;
 use CodeIgniter\I18n\Time;
@@ -93,9 +94,13 @@ class Invoices extends BaseController
 
                 // tautan stok diperiksa di server: id_stok datang dari peramban,
                 // jadi bisa saja milik toko lain atau memang tidak ada
-                $peta = sinkron_dibeli($invoice_id, tautkan_stok($produk['baris'], (int) $juragan_id));
+                $taut = tautkan_stok($produk['baris'], (int) $juragan_id);
+                $peta = sinkron_dibeli($invoice_id, $taut);
 
+                // sama seperti admin: qty yang melebihi unit tersedia membatalkan
+                // seluruh tulisan orderan
                 $galat  = array_merge(
+                    (new StokModel())->lebih($taut, $invoice_id),
                     simpan_ukuran_produk($invoice_id, $peta, $produk['ukuran']),
                     simpan_anggota($invoice_id, $this->request->getPost('anggota_dikirim'), $this->request->getPost('anggota'))
                 );

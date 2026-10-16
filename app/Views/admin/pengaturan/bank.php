@@ -1,4 +1,16 @@
 <?php
+/**
+ * Variabel di bawah ini diisi dari Admin\Settings\Bank::index() lewat view('admin/pengaturan/bank', $data).
+ * CodeIgniter memanggil extract() di dalam system/View/View.php, jadi analyzers tidak
+ * bisa menelusuri asal variabelnya; blok @var ini hanya memberi tahu Intelephense.
+ *
+ * @var string                                        $title      Judul halaman
+ * @var list<object>                                  $banks      Daftar rekening (BankModel::findAll): id_bank, nama_bank, rekening, atas_nama, tipe_bank
+ * @var array<string, int>                            $pemakaian  Jumlah pembayaran per rekening: id_bank => jumlah
+ * @var \CodeIgniter\Validation\Validation             $validation Hasil validasi dari request sebelumnya
+ * @var ?string                                       $sukses     Flash message sukses
+ * @var ?string                                       $gagal      Flash message gagal
+ */
 
 // daftar tipe akun dipakai dua kali: form tambah dan form sunting
 $jenis_akun = [

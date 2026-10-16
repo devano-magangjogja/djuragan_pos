@@ -1,3 +1,18 @@
+<?php
+/**
+ * Variabel di bawah ini diisi dari Notifikasi::index() lewat view('notifikasi', $data).
+ * CodeIgniter memanggil extract() di dalam system/View/View.php, jadi analyzers tidak
+ * bisa menelusuri asal variabelnya; blok @var ini hanya memberi tahu Intelephense.
+ *
+ * @var string                                             $title         Judul halaman
+ * @var list<array{id: int, pesan: string, juragan: ?string, seri: ?string, dibaca: bool, waktu: string, tautan: ?string}> $daftar  Baris notifikasi per halaman
+ * @var string                                             $tab           Tab aktif: 'belum' atau 'semua'
+ * @var int                                                $jumlah_belum  Jumlah notifikasi belum dibaca
+ * @var int                                                $jumlah_semua  Total seluruh notifikasi
+ * @var int                                                $halaman       Nomor halaman saat ini
+ * @var int                                                $halaman_akhir Total halaman
+ */
+?>
 <?= $this->extend('template/main') ?>
 
 <?= $this->section('css') ?>

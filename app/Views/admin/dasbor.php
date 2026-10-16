@@ -1,4 +1,27 @@
 <?php
+/**
+ * Variabel di bawah ini diisi dari Admin\Dasbor::index() lewat view('admin/dasbor', $data).
+ * CodeIgniter memanggil extract() di dalam system/View/View.php, jadi analyzers tidak
+ * bisa menelusuri asal variabelnya; blok @var ini hanya memberi tahu Intelephense.
+ *
+ * @var string                                     $title        Judul halaman
+ * @var array<string, int|float>                   $hari         Ringkasan transaksi satu hari (orderan, pelanggan, total, dibayar, lunas)
+ * @var list<array<string, int|string>>            $tren         Ringkasan per bulan untuk grafik, baris 'bulan' => 'YYYY-MM' plus orderan/total/dibayar
+ * @var array<string, array<string, int>>          $bulan         Ringkasan tren bulan ini dan bulan lalu, kuncinya label 'YYYY-MM'
+ * @var string                                     $bulan_ini     Kunci $bulan untuk bulan berjalan, mis. '2026-10'
+ * @var string                                     $bulan_lalu    Kunci $bulan untuk bulan sebelumnya
+ * @var array<string, int|float>                   $aksi          Pembayaran yang menunggu dicek (perlu_dicek, transfer, belum_bayar, nominal)
+ * @var array<string, int>                         $saringan      Jumlah order per saringan, mis. 'pesan-hari-ini', 'belum-lunas'
+ * @var list<array<string, int|string>>            $produksi      Sebaran antrean kerja per tahap (ikon, label, jumlah)
+ * @var int                                        $sisa         Total sisa tagihan dalam rupiah
+ * @var array<string, int|float>                   $stok         Ringkasan stok (menipis, habis, varian, nilai)
+ * @var list<array<string, int|string>>            $produk        Produk terlaris 3 bulan (produk, qty, nilai)
+ * @var list<array<string, int|string>>            $transaksi     Transaksi terbaru untuk tabel
+ * @var int                                        $jum_juragan   Jumlah juragan yang dipantau akun ini
+ * @var int                                        $ambangnya      Ambang stok menipis (StokModel::AMBANG_MENIPIS)
+ * @var string                                     $sasaran       Slug tujuan tautan daftar transaksi: slug juragan atau 'semua'
+ * @var list<string>                               $nama_juragan  Nama toko yang dipantau (cadangan teks sapaan)
+ */
 
 $nama_hari = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
 $nama_bulan = [1 => 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli',

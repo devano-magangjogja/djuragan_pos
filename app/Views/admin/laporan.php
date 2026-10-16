@@ -1,4 +1,24 @@
 <?php
+/*
+ * Halaman laporan dibaca dari data yang disuntik Admin\Laporan::index() lewat
+ * view('admin/laporan', $data). CodeIgniter memanggil extract() di dalam
+ * system/View/View.php, jadi tidak ada assignment di file ini dan analyzer tidak
+ * bisa menelusuri asal variabelnya; Intelephense (P1008) menyangkanya tak terdefinisi.
+ */
+
+/**
+ * Blok @var di bawah hanya penanda tipe untuk analyzer, bukan kode yang dijalankan.
+ *
+ * @var string                                        $title     Judul halaman (= label jenis laporan)
+ * @var string                                        $jenis     Slug laporan: pesanan|pendapatan|pembayaran|piutang|produksi|produk|customer
+ * @var array<string, array<string, mixed>>           $pil_jenis Semua jenis laporan: slug => label, ikon, catatan, uang, sumbu
+ * @var array{awal:string, akhir:string, grup:string, juragan:int, kode:string, tahap:int, bayar:string, nama:string} $f Isian filter yang sudah dibersihkan
+ * @var array<string, mixed>                          $hasil     Isi laporan: periode, baris, ringkas, plus umur/lama sesuai jenisnya
+ * @var array<int, string>                            $juragans  Pilihan toko milik akun ini: id => nama
+ * @var array<int, array{0:string, 1:string, 2:string}> $tahap   Tahap produksi: no => ikon, label, slug
+ * @var array<string, array<string, mixed>>           $kategori  Status pembayaran: slug => label, ikon, mendesak, status, catatan
+ * @var list<string>                                  $kode     Kode produk yang pernah dipesan (untuk datalist)
+ */
 
 use App\Models\LaporanModel;
 

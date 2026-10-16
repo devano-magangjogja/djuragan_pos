@@ -73,6 +73,9 @@ class Produk extends BaseController
             'gagal'     => session('gagal'),
             'errors'    => session('errors') ?: [],
             'ambangnya' => StokModel::AMBANG_MENIPIS,
+            // CS hanya membaca daftar; Superadmin yang menata poin varian
+            'bacaSaja'  => (string) session()->get('level') === 'cs',
+            'bisaPoin'  => (string) session()->get('level') === 'superadmin',
         ];
 
         return view('admin/produk', $data);
@@ -124,15 +127,22 @@ class Produk extends BaseController
             $harga = (int) $stokModel->find($saudara[0])->harga;
         }
 
+        $produk_id = jamin_produk($kode);
+
         $stokModel->insert([
             'juragan_id' => $juragan_id,
-            'produk_id'  => jamin_produk($kode),
+            'produk_id'  => $produk_id,
             'kode'       => $kode,
             'ukuran'     => $ukuran,
             'harga'      => $harga,
             'stok'       => (int) $this->request->getPost('stok'),
             'keterangan' => $this->keteranganPost(),
         ]);
+
+        // poin menempel di master produk (satu nilai untuk semua ukuran), khusus Superadmin
+        if ($produk_id !== null) {
+            $this->simpanPoinProduk((int) $produk_id);
+        }
 
         // foto ikut form tambah, jadi varian yang baru ada sudah langsung punya
         // contoh bentuk; pipa penyimpanannya sama dengan panel kelola foto
@@ -206,17 +216,45 @@ class Produk extends BaseController
                 ->with('gagal', 'Varian ' . $kode . ' ' . $ukuran . ' sudah terdaftar di toko itu.');
         }
 
-        $stokModel->update($id, [
+        $produk_id = jamin_produk($kode);
+
+        $data = [
             'juragan_id' => $juragan_baru,
-            'produk_id'  => jamin_produk($kode),
+            'produk_id'  => $produk_id,
             'kode'       => $kode,
             'ukuran'     => $ukuran,
             'harga'      => (int) $this->request->getPost('harga'),
             'stok'       => (int) $this->request->getPost('stok'),
             'keterangan' => $this->keteranganPost(),
-        ]);
+        ];
+
+        $stokModel->update($id, $data);
+
+        // poin per produk ditulis ke master (superadmin saja); Admin tidak menyentuhnya
+        if ($produk_id !== null) {
+            $this->simpanPoinProduk((int) $produk_id);
+        }
 
         return redirect()->to($this->alamatKembali())->with('sukses', 'Barang berhasil diperbarui.');
+    }
+
+    /**
+     * Tulis poin ke master produk. Hanya Superadmin yang boleh menentukan angka;
+     * level lain tidak mengubah apa pun sehingga poin yang sudah ada tetap utuh.
+     */
+    private function simpanPoinProduk(int $produk_id): void
+    {
+        if ((string) session()->get('level') !== 'superadmin') {
+            return;
+        }
+
+        $poin = trim((string) $this->request->getPost('poin'));
+        $poin = $poin === '' ? 0 : max(0, (int) $poin);
+
+        \Config\Database::connect()
+            ->table('produk')
+            ->where('id_produk', $produk_id)
+            ->update(['poin' => $poin, 'updated_at' => time()]);
     }
 
     /**
