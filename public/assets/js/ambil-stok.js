@@ -33,7 +33,9 @@
         alamatCari = $panel.data('cari'),
         alamatBaca = $panel.data('baca'),
         token   = 0,
-        dipilih = null;
+        dipilih = null,
+        bawaan  = {},
+        dimintak = {};
 
     function rupiah(n) {
         return 'Rp ' + Number(n || 0).toLocaleString('id-ID');
@@ -106,6 +108,63 @@
 
             $acuan.removeClass('d-none');
         });
+    }
+
+    /*
+     * Foto produk ikut muncul di panel "Foto Orderan" begitu barisnya diambil
+     * dari stok. Kuncinya kode barang, bukan id_stok: fotonya menempel sekartu,
+     * jadi dua ukuran dari kartu yang sama tidak boleh tampil dobel.
+     */
+    function stokTerpakai() {
+        var aktif = {};
+
+        $('#iForm input[name^="produk["][name$="[stok_id]"]').each(function () {
+            var id = parseInt(this.value, 10);
+
+            if (! id) {
+                return;
+            }
+
+            var kode = $.trim($(this).closest('tr').find('input[name$="[kode]"]').val() || '');
+
+            if (kode !== '') {
+                aktif[kode] = id;
+            }
+        });
+
+        return aktif;
+    }
+
+    function bawaanSinkron() {
+        if (! window.FOTO || typeof window.FOTO.bawaan_sedia !== 'function') {
+            return;
+        }
+
+        var siap = {};
+
+        $.each(stokTerpakai(), function (kode, id) {
+            if (bawaan[kode]) {
+                siap[kode] = bawaan[kode];
+
+                return;
+            }
+
+            if (dimintak[id]) {
+                return;
+            }
+
+            dimintak[id] = true;
+
+            $.getJSON(alamatBaca + '/' + id).done(function (b) {
+                bawaan[String(b.kode || kode)] = (b && b.foto) || [];
+                bawaanSinkron();
+            }).fail(function () {
+                // jangan mengunci kode ini selamanya; percobaan berikutnya boleh lewat
+                delete dimintak[id];
+            });
+        });
+
+        window.FOTO.bawaan_sedia(siap);
     }
 
     function isi(v) {
@@ -220,7 +279,15 @@
     $batal.on('click', kosongkan);
 
     // baris baru selalu mulai bersih; edit memanggil STOK.tata() setelahnya
-    $('#tambahProduk').on('hidden.bs.modal', kosongkan);
+    $('#tambahProduk').on('hidden.bs.modal', function () {
+        kosongkan();
+        bawaanSinkron();
+    });
+
+    // baris yang dibuang membawa serta janji fotonya
+    $(document).on('click', '.hapus_row.orderan', function () {
+        setTimeout(bawaanSinkron, 0);
+    });
 
     $(document).on('mousedown', function (e) {
         if ($(e.target).closest('.stok-panel').length === 0) {

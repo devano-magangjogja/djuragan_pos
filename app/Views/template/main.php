@@ -49,6 +49,22 @@
             sessionStorage.setItem('csrf_muat_ulang', String(Date.now()));
             window.location.reload();
         });
+
+        // Pesan flash (sukses/gagal di bagian atas halaman) hanya perlu dibaca
+        // sekali, jadi ia hilang sendiri. Yang ikut cuma alert bertanda `flash`:
+        // banner info di halaman lain dibiarkan menempel, dan alert di dalam modal
+        // adalah bagian dari form yang sedang diisi, bukan laporan.
+        $(function() {
+            $('[data-flash]').each(function() {
+                var pesan = this;
+
+                window.setTimeout(function() {
+                    $(pesan).fadeOut(400, function() {
+                        $(pesan).remove();
+                    });
+                }, 5000);
+            });
+        });
     </script>
     <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js"></script>
 

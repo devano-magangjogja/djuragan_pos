@@ -108,12 +108,28 @@ class Produk extends BaseController
                 ->withInput()->with('gagal', 'Varian ' . $kode . ' ' . $ukuran . ' sudah terdaftar.');
         }
 
+        // "+ Varian" pada kartu tidak menanyakan harga: satu kartu dianggap punya
+        // harga yang sama, jadi nilainya diwarisi dari varian tertua sekartu
+        $harga = $this->hargaPost();
+
+        if ($harga === null) {
+            $saudara = $stokModel->sekartu($juragan_id, $kode);
+
+            if ($saudara === []) {
+                return redirect()->to($this->alamatKembali())->withInput()
+                    ->with('gagal', 'Belum ada varian ' . $kode . ' di toko ini, jadi harganya tidak bisa diwarisi. '
+                        . 'Tambahkan lewat tombol "Tambah Barang" di atas.');
+            }
+
+            $harga = (int) $stokModel->find($saudara[0])->harga;
+        }
+
         $stokModel->insert([
             'juragan_id' => $juragan_id,
             'produk_id'  => jamin_produk($kode),
             'kode'       => $kode,
             'ukuran'     => $ukuran,
-            'harga'      => (int) $this->request->getPost('harga'),
+            'harga'      => $harga,
             'stok'       => (int) $this->request->getPost('stok'),
             'keterangan' => $this->keteranganPost(),
         ]);
@@ -153,7 +169,7 @@ class Produk extends BaseController
     }
 
     /**
-     * Perbarui harga, stok, atau keterangan satu varian.
+     * Perbarui harga, stok, keterangan, atau juragan satu varian.
      *
      * @return \CodeIgniter\HTTP\RedirectResponse
      */
@@ -175,15 +191,23 @@ class Produk extends BaseController
             return redirect()->to($this->alamatKembali())->with('gagal', 'Barang tidak ditemukan.');
         }
 
+        // varian boleh dipindah antar toko, tapi kedua ujung harus milik user
+        $juragan_baru = (int) $this->request->getPost('juragan_id');
+
+        if (! $this->bolehJuragan($juragan_baru)) {
+            return redirect()->to($this->alamatKembali())->with('gagal', 'Juragan ini tidak bisa diakses.');
+        }
+
         $kode   = $this->kodePost();
         $ukuran = $this->ukuranPost();
 
-        if ($stokModel->kembar($id, (int) $baris->juragan_id, $kode, $ukuran)) {
+        if ($stokModel->kembar($id, $juragan_baru, $kode, $ukuran)) {
             return redirect()->to($this->alamatKembali())
-                ->with('gagal', 'Varian ' . $kode . ' ' . $ukuran . ' sudah terdaftar.');
+                ->with('gagal', 'Varian ' . $kode . ' ' . $ukuran . ' sudah terdaftar di toko itu.');
         }
 
         $stokModel->update($id, [
+            'juragan_id' => $juragan_baru,
             'produk_id'  => jamin_produk($kode),
             'kode'       => $kode,
             'ukuran'     => $ukuran,
@@ -286,7 +310,9 @@ class Produk extends BaseController
 
         foreach ($this->request->getFiles() as $kumpulan) {
             foreach (is_array($kumpulan) ? $kumpulan : [$kumpulan] as $satu) {
-                if ($satu instanceof UploadedFile) {
+                // kolom file yang tidak disentuh pengguna ikut terkirim sebagai
+                // isian kosong; itu bukan foto yang gagal, jadi jangan dihitung
+                if ($satu instanceof UploadedFile && $satu->getError() !== UPLOAD_ERR_NO_FILE) {
                     $dapat[] = $satu;
                 }
             }
@@ -306,11 +332,19 @@ class Produk extends BaseController
         return mb_substr(trim((string) $this->request->getPost('ukuran')), 0, 6);
     }
 
+    /** Harga kosong berarti varian baru warisan dari saudaranya; lihat simpan(). */
+    private function hargaPost(): ?int
+    {
+        $harga = trim((string) $this->request->getPost('harga'));
+
+        return $harga === '' ? null : (int) $harga;
+    }
+
     private function keteranganPost(): ?string
     {
         $keterangan = trim((string) $this->request->getPost('keterangan'));
 
-        return $keterangan === '' ? null : mb_substr($keterangan, 0, 120);
+        return $keterangan === '' ? null : mb_substr($keterangan, 0, 500);
     }
 
     private function bolehJuragan(int $juragan_id): bool

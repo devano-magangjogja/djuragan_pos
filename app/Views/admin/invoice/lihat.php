@@ -874,6 +874,10 @@ $session  = \Config\Services::session();
                         <div class="col-6 form-group mb-3">
                             <?= form_label('Tujuan Bayar', 'tujuan', ['class' => 'form-label']) ?>
                             <?= form_dropdown('sumber_dana', [], '', ['class' => 'form-select', 'required' => '', 'id' => 'tujuan']) ?>
+                            <div class="small text-danger mt-1 d-none" id="tujuan-galat">
+                                Toko ini belum punya rekening pembayaran. Tambahkan dulu di
+                                <a href="<?= esc(site_url('admin/settings/juragan')) ?>">Pengaturan › Juragan</a>.
+                            </div>
                         </div>
                         <div class="col-6 form-group mb-3">
                             <?= form_label('Tanggal Bayar', 'tanggal_bayar', ['class' => 'form-label']) ?>
@@ -1358,12 +1362,21 @@ $js = <<< JS
 
     		// set dropdown sumber_dana
     		$.getJSON('{$link_api_get_bank}', function(data){
-    			var banks = data[juragan].bank;
-    			var apnd = '<option value="">Pilih Tujuan</option>';
+    			var banks = (data[juragan] || {}).bank || {},
+    				apnd = '<option value="">Pilih Tujuan</option>',
+    				kosong = Object.keys(banks).length === 0;
+
     			for (var i in banks) {
     				apnd += "<option value = '" + banks[i].id + " '>" + banks[i].nama.toUpperCase() + ' (' + banks[i].atas_nama + ')' + " </option>";
     			}
+
     			$("#modalTambahBayar #tujuan").empty().append(apnd);
+
+    			// toko tanpa rekening: pilihannya dulu diam-diam kosong saja, jadi
+    			// pengguna mengira fitur pembayarannya yang rusak
+    			$("#modalTambahBayar #tujuan").prop('disabled', kosong);
+    			$("#modalTambahBayar #tujuan-galat").toggleClass('d-none', !kosong);
+    			$("#tambahPembayaran button[type=submit]").prop('disabled', kosong);
     		});
     	});
 

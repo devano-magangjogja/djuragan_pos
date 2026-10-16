@@ -371,10 +371,94 @@
         hitung();
     });
 
+    /** Tile foto produk: ikut memakan jatah karena memang ikut tersalin ke nota. */
+    function kartu_bawaan(f, kode) {
+        var nama = namai(f.nama);
+
+        return $('<div class="col-4 col-sm-3 col-md-2 foto-kartu foto-bawaan"></div>')
+            .attr('data-kode', kode)
+            .append(
+                $('<div class="foto-kotak"></div>').append(
+                    $('<a class="foto-buka" target="_blank" rel="noopener"></a>')
+                        .attr('href', f.alamat)
+                        .append(
+                            $('<img class="foto-gambar" alt="Foto produk" loading="lazy">')
+                                .attr('src', f.alamat_kecil || f.alamat)
+                        ),
+                    $('<span class="foto-bawaan-label">dari produk</span>')
+                ),
+                $('<div class="foto-nama small"></div>').text(nama).attr('title', nama)
+            );
+    }
+
+    function panel_buka() {
+        var $card = $panel(),
+            $isi = $card.find('.foto-isi').first();
+
+        if ($isi.length === 0) {
+            return;
+        }
+
+        $isi.removeClass('d-none');
+        $card.find('.buka-foto').attr('aria-expanded', 'true');
+        $card.find('.ikon-panah-foto').addClass('rotate-180');
+    }
+
     window.FOTO = {
         ada: function () {
             return $panel().length > 0 && ANTRE.length > 0;
         },
-        kirim: selesai
+        kirim: selesai,
+
+        /**
+         * Tempel foto produk ke panel Foto Orderan untuk tiap baris yang diambil
+         * dari stok. `peta` = { kode barang: [foto] } kiriman ambil-stok.js.
+         *
+         * Server yang menyalin berkasnya waktu orderan disimpan, jadi tile ini
+         * hanya janji: tidak bisa dihapus dari sini dan tidak ikut diunggah.
+         * Form Sunting dilewati - di sana nota sudah punya id dan penyalinan hanya
+         * berjalan untuk orderan baru.
+         */
+        bawaan_sedia: function (peta) {
+            var $p = $panel();
+
+            if ($p.length === 0 || Number($p.attr('data-pemilik')) > 0) {
+                return;
+            }
+
+            var $daftar = $p.find('.foto-daftar'),
+                jatah = Number($p.attr('data-maks'));
+
+            $daftar.children('.foto-bawaan')
+                .filter(function () { return ! peta[$(this).attr('data-kode')]; })
+                .remove();
+
+            var punya = {};
+
+            $daftar.children('.foto-bawaan').each(function () {
+                punya[$(this).attr('data-kode')] = true;
+            });
+
+            $.each(peta, function (kode, daftar) {
+                if (punya[kode]) {
+                    return;
+                }
+
+                (daftar || []).forEach(function (f) {
+                    if (jatah <= 0) {
+                        return;
+                    }
+
+                    jatah--;
+                    $daftar.append(kartu_bawaan(f, kode));
+                });
+            });
+
+            hitung();
+
+            if ($daftar.children('.foto-bawaan').length > 0) {
+                panel_buka();
+            }
+        }
     };
 }(jQuery));
