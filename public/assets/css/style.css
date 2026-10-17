@@ -138,13 +138,33 @@
     /* rapet: selebar isinya, bukan melebar memenuhi kartu */
     width: max-content;
     max-width: 100%;
-    /* rata kanan terhadap pembungkusnya; jangan pakai justify-content:flex-end
-       karena langkah pertama jadi tidak terjangkau saat ul-nya di-scroll */
+    /* rata kanan terhadap pembungkusnya di layout desktop */
     margin-left: auto;
     /* kalau tetap tidak muat (langkah banyak / layar sempit) geser, bukan menabrak */
     overflow-x: auto;
     overscroll-behavior-x: contain;
     scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
+}
+.timeliner::-webkit-scrollbar {
+    height: 4px;
+}
+.timeliner::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 999px;
+}
+.timeliner::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 999px;
+}
+.timeliner::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+@media (max-width: 1023.98px) {
+    .timeliner {
+        margin-left: 0 !important;
+        margin-right: auto;
+    }
 }
 .timeliner > li {
     /* 0 0 auto: lebar li = lebar labelnya, tidak pernah menyusut lagi */
@@ -574,8 +594,15 @@
     --sidebar-tile-color: #ffffff;
 }
 
+html {
+    max-width: 100%;
+    overflow-x: clip;
+}
+
 body.has-app-sidebar {
     min-height: 100vh;
+    max-width: 100%;
+    overflow-x: clip;
     background-color: #f9fafb;
     transition: padding-left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -1016,6 +1043,8 @@ body.has-app-sidebar {
 
 /* Mobile Topbar — permukaan putih, ikon gelap */
 .mobile-topbar {
+    width: 100%;
+    max-width: 100%;
     background: var(--sidebar-bg);
     border-bottom: 1px solid var(--sidebar-border);
     height: 52px;
@@ -1063,6 +1092,7 @@ body.has-app-sidebar > .container-xxl,
 body.has-app-sidebar > .container,
 body.has-app-sidebar > .container-fluid,
 body.has-app-sidebar > div.container-xxl {
+    max-width: 100%;
     padding-top: 1.75rem !important;
     padding-bottom: 2.5rem !important;
 }
@@ -1073,6 +1103,8 @@ body.has-app-sidebar > div.container-xxl {
     body.has-app-sidebar > .container-fluid,
     body.has-app-sidebar > div.container-xxl {
         padding-top: 1.25rem !important;
+        padding-left: 0.75rem !important;
+        padding-right: 0.75rem !important;
     }
 }
 
@@ -1093,6 +1125,15 @@ body.has-app-sidebar .h3.mt-5 {
     letter-spacing: -0.025em !important;
     color: #101828 !important;
     line-height: 1.25 !important;
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+@media (max-width: 575.98px) {
+    body.has-app-sidebar h1.h3.mt-5,
+    body.has-app-sidebar .h3.mt-5 {
+        font-size: 1.25rem !important;
+    }
 }
 
 body.has-app-sidebar h1.h3.mt-5:not(:has(+ nav)):not(:has(+ .breadcrumb)) {
@@ -1690,6 +1731,9 @@ a.rounded-3.border.border-ink-200:hover {
     .toolbar-transaksi__aksi {
         flex: 1 1 100%;
         margin-left: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
     }
     .toolbar-transaksi__aksi > .dropdown {
         flex: 1 1 auto;
@@ -1697,6 +1741,10 @@ a.rounded-3.border.border-ink-200:hover {
     }
     .toolbar-transaksi__aksi > .dropdown .btn {
         width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        text-align: left;
     }
 }
 

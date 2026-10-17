@@ -101,6 +101,47 @@ $kueriTab = array_filter([
 ?>
 <?= $this->extend('template/main') ?>
 
+<?= $this->section('css') ?>
+<style>
+    /* galeri thumbnail di modal detail: dulu flex-wrap biasa, jadi baris terakhir
+       yang isinya sedikit tidak ikut menyusut dan kotaknya terlihat lebih besar
+       dari baris di atasnya; grid membuat tiap kolom sama lebar dan barisnya
+       sejajar, dan aspect-ratio menjaga kotaknya tetap persegi */
+    .foto-galeri {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(3.2rem, 1fr));
+    }
+
+    .foto-thumbs {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 1 / 1;
+    }
+
+    /* popus foto produk di layar sempit: kalau fotonya banyak, daftar kotaknya
+       digulir di dalam dirinya sendiri supaya popusnya tidak terus memanjang ke
+       bawah — kepala popus, petunjuk, dan kotak "Pilih foto" tetap terlihat */
+    @media (max-width: 767.98px) {
+        #modalFotoProduk .foto-daftar {
+            max-height: 14rem;
+            overflow-y: auto;
+            /* .row membawa margin negatif; tanpa ini gulir vertikalnya ikut
+               memunculkan gulir mendatar */
+            overflow-x: hidden;
+        }
+    }
+
+    /* "Tambah Barang" memenuhi lebar kartu di layar sempit; dulu ia cuma
+       seukuran tulisannya dan berdempetan dengan baris filter, padahal itu
+       tombol utama halaman ini */
+    @media (max-width: 767.98px) {
+        .toolbar-produk > .btn {
+            width: 100%;
+        }
+    }
+</style>
+<?= $this->endSection() ?>
+
 <?= $this->section('content') ?>
 <?= $this->include('admin/navbar') ?>
 
@@ -161,7 +202,7 @@ $kueriTab = array_filter([
 
             <div class="card">
                 <div class="card-body">
-                    <div class="d-flex flex-wrap gap-2 align-items-end mb-3">
+                    <div class="d-flex flex-wrap gap-2 align-items-end mb-3 toolbar-produk">
                         <?= form_open('admin/produk', ['method' => 'get', 'class' => 'row g-2 align-items-end mb-0 flex-grow-1']) ?>
                         <?php /* form GET: kolom isian yang tidak dipakai tetap ikut
    terbawa sebagai ?, jadi tab yang sedang dibuka tidak hilang saat menyaring */ ?>
@@ -190,7 +231,7 @@ $kueriTab = array_filter([
                                 'selected' => $keadaan,
                             ]) ?>
                         </div>
-                        <div class="col-12 col-md-4">
+                        <div class="col-8 col-md-4">
                             <?= form_label('Cari', 'cari', ['class' => 'form-label small']) ?>
                             <?= form_input([
                                 'class'       => 'form-control form-control-sm',
@@ -199,8 +240,11 @@ $kueriTab = array_filter([
                                 'value'       => $cari,
                             ]) ?>
                         </div>
-                        <div class="col-auto">
-                            <button class="btn btn-sm btn-dark" type="submit"><i class="fal fa-search"></i> Cari</button>
+                        <?php /* tombolnya duduk di samping kolom carinya di semua lebar;
+                                dulu kolom cari col-12 sehingga tombolnya turun sendiri
+                                ke baris berikutnya di layar sempit */ ?>
+                        <div class="col-4 col-md-auto">
+                            <button class="btn btn-sm btn-dark w-100" type="submit"><i class="fal fa-search"></i> Cari</button>
                         </div>
                         <?= form_close() ?>
                         <?php if (! $bacaSaja) { ?>

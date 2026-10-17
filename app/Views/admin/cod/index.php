@@ -334,6 +334,61 @@ $kotak_pilihan = static function (string $nama, string $id, array $daftar, strin
         max-width: 40rem;
     }
 
+    /* Form catatannya sembilan isian sehingga lebih tinggi dari layar. Selain
+       isian yang pendek dipasangkan satu baris (col-6 di markup) dan isiannya
+       digulir di dalam pop-up (modal-dialog-scrollable), ruang yang ada dipakai
+       lebih rapat: label ditempel ke fieldnya, jarak antar isian, padding body,
+       dan jarak pop-up ke tepi di layar sempit ikut dikecilkan. Bootstrap dan
+       style.css mengunci .mb-3 serta .form-label dengan !important, jadi
+       pengaturannya ikut !important. */
+    .modal-cod .modal-body {
+        padding: 0.8rem 0.95rem;
+    }
+
+    .modal-cod .modal-body > .row > div {
+        margin-bottom: 0.5rem !important;
+    }
+
+    .modal-cod .modal-body .form-label {
+        margin-bottom: 0.15rem !important;
+    }
+
+    /* padding kiri-kanan bawaan Bootstrap memakan hampir seperempat lebar
+       kolom yang dibagi dua, jadi hanya isian di kolom berpasangan yang dirapatkan */
+    .modal-cod .modal-body > .row > .col-6 .form-control {
+        padding-left: 0.55rem;
+        padding-right: 0.55rem;
+    }
+
+    @media (max-width: 767.98px) {
+        .modal-cod {
+            --bs-modal-margin: 0.7rem;
+        }
+
+        /* .modal-dialog-scrollable membuat dialognya setinggi layar, jadi popusnya
+           selalu terlihat "memenuhi layar". Yang dibatasi bukan dialognya (dialog
+           tetap full-height supaya modal-dialog-centered masih menengahkan isinya)
+           tapi kartunya: kepala + kaki tetap terbaca dan isian sisanya digulir di
+           dalam body, yang memang sudah overflow-y:auto. */
+        .modal-cod.modal-dialog .modal-content {
+            max-height: 72vh;
+        }
+    }
+
+    /* di ponsel kecil dua isian berbagi satu kolom, jadi parit antar kolom dan
+       padding kiri-kanan fieldnya ditipiskan; tanpa ini teks pilihan kepotong
+       cuma karena beberapa piksel */
+    @media (max-width: 400px) {
+        .modal-cod .modal-body > .row {
+            --bs-gutter-x: 0.5rem;
+        }
+
+        .modal-cod .modal-body > .row > .col-6 .form-control {
+            padding-left: 0.45rem;
+            padding-right: 0.45rem;
+        }
+    }
+
     /* Toolbar transaksi: tab status di kiri, aksi Cari & Tambah di kanan */
     .toolbar-transaksi {
         display: flex;
@@ -347,6 +402,49 @@ $kotak_pilihan = static function (string $nama, string $id, array $daftar, strin
         gap: 0.35rem;
         flex: 1 1 auto;
         min-width: 0;
+        /* pil yang tidak muat digeser lewat tombol panah, jadi wadahnya selalu bisa
+           digulir mendatar di semua lebar: tombol panahnya sendiri muncul hanya
+           kalau scrollWidth lebih besar dari clientWidth, dan itu hanya bisa
+           diketahui kalau overflow-x-nya terpasang sejak awal, bukan di layar
+           sempit saja. Gulir rodanya ditutup karena sudah ada tombolnya. */
+        overflow-x: auto;
+        scrollbar-width: none;
+        overscroll-behavior-x: contain;
+    }
+    .toolbar-transaksi__tab::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* Tombol geser strip pil, sama seperti strip tab di halaman semua transaksi. */
+    .toolbar-transaksi__geser {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+    .geser-tab {
+        display: none;
+        flex: 0 0 auto;
+        width: 1.9rem;
+        height: 1.9rem;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        border: 1px solid #eaecf0;
+        border-radius: 999px;
+        background: #ffffff;
+        color: #344054;
+        box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06);
+        font-size: 0.8rem;
+        line-height: 1;
+    }
+    .toolbar-transaksi__geser.bisa-geser .geser-tab {
+        display: inline-flex;
+    }
+    .geser-tab:disabled {
+        opacity: 0.35;
+        box-shadow: none;
     }
     .toolbar-transaksi__aksi {
         display: flex;
@@ -365,14 +463,14 @@ $kotak_pilihan = static function (string $nama, string $id, array $daftar, strin
     }
 
     @media (max-width: 767.98px) {
-        .toolbar-transaksi__tab {
+        /* yang turun ke baris penuh adalah pembungkusnya, bukan strip pilnya:
+           strip tetap berbagi baris dengan kedua tombol panah */
+        .toolbar-transaksi__geser {
             flex: 1 1 100%;
-            overflow-x: auto;
-            scrollbar-width: none;
-            padding-bottom: 0.15rem;
+            min-width: 0;
         }
-        .toolbar-transaksi__tab::-webkit-scrollbar {
-            display: none;
+        .toolbar-transaksi__tab {
+            padding-bottom: 0.15rem;
         }
         .toolbar-transaksi__tab .btn {
             flex: 0 0 auto;
@@ -380,6 +478,11 @@ $kotak_pilihan = static function (string $nama, string $id, array $daftar, strin
         .toolbar-transaksi__aksi {
             flex: 1 1 100%;
             margin-left: 0;
+        }
+        /* tombolnya ikut melebar ke tepi kartu; dulu ia menggantung seukuran
+           tulisannya saja sehingga baris di bawah strip pil terlihat kosong */
+        .toolbar-transaksi__aksi > .btn {
+            width: 100%;
         }
     }
 </style>
@@ -393,7 +496,10 @@ $kotak_pilihan = static function (string $nama, string $id, array $daftar, strin
     <h1 class="h3 mt-5">Pencatatan COD</h1>
 
     <div class="toolbar-transaksi mb-4">
-        <div class="toolbar-transaksi__tab">
+        <div class="toolbar-transaksi__geser">
+            <button type="button" class="geser-tab" data-geser="-1" aria-label="Geser daftar status ke kiri" title="Geser daftar status ke kiri"><i class="fal fa-chevron-left"></i></button>
+
+            <div class="toolbar-transaksi__tab">
             <?php
             $kueri_lain = array_filter([
                 'cari'      => $f['cari'] ?: null,
@@ -420,6 +526,9 @@ $kotak_pilihan = static function (string $nama, string $id, array $daftar, strin
                     </span>
                 </a>
             <?php endforeach; ?>
+            </div>
+
+            <button type="button" class="geser-tab" data-geser="1" aria-label="Geser daftar status ke kanan" title="Geser daftar status ke kanan"><i class="fal fa-chevron-right"></i></button>
         </div>
 
         <div class="toolbar-transaksi__aksi">
@@ -468,7 +577,7 @@ $kotak_pilihan = static function (string $nama, string $id, array $daftar, strin
             </select>
         </div>
 
-        <div class="col-6 col-lg">
+        <div class="col-12 col-lg">
             <select class="form-select form-select-sm" name="periode" id="filter_periode" aria-label="Periode tanggal">
                 <option value="" <?= $f['periode'] === '' && $f['dari'] === '' ? 'selected' : '' ?>>Semua Tanggal</option>
                 <option value="hari_ini" <?= $f['periode'] === 'hari_ini' ? 'selected' : '' ?>>Hari Ini</option>
@@ -569,27 +678,26 @@ $kotak_pilihan = static function (string $nama, string $id, array $daftar, strin
                             </div>
 
                             <div class="row g-1 mt-2 text-sm text-ink-600">
-                                <div class="col-12 col-sm-5">
-                                    <span class="inline-flex min-w-0 items-center gap-1 [&>.fal]:text-[0.85rem] [&>.fal]:text-ink-400">
+                                <div class="col-12 col-sm-7">
+                                    <div class="flex min-w-0 items-center gap-1 [&>.fal]:text-[0.85rem] [&>.fal]:text-ink-400">
                                         <i class="fal fa-mobile-screen"></i>
                                         <span class="text-ink-500">No. Hp:</span> <?= esc($catat['no_hp']) ?>
-                                    </span>
-                                </div>
-                                <div class="col-12 col-sm-7">
-                                    <!-- namanya dirapatkan ke tepi kanan kartu supaya baris ini
-                                       tidak terlihat menggantung di tengah -->
-                                    <span class="d-flex min-w-0 items-center justify-content-end gap-1 [&>.fal]:text-[0.85rem] [&>.fal]:text-ink-400">
+                                    </div>
+                                    <!-- nama CS duduk di kolom yang sama, persis di bawah
+                                         nomor HP; dulu ia didorong ke tepi kanan kartu
+                                         sehingga terlihat menggantung sendiri -->
+                                    <div class="flex min-w-0 items-center gap-1 [&>.fal]:text-[0.85rem] [&>.fal]:text-ink-400">
                                         <i class="fal fa-headset"></i>
                                         <span class="text-ink-500">Cs Yang Handle:</span>
                                         <?= ($catat['cs'] ?? '') !== '' ? esc($catat['cs']) : '<span class="text-ink-400">belum diisi</span>' ?>
-                                    </span>
+                                    </div>
                                 </div>
-                                <div class="col-12">
-                                    <span class="inline-flex min-w-0 items-center gap-1 [&>.fal]:text-[0.85rem] [&>.fal]:text-ink-400">
+                                <div class="col-12 col-sm-5">
+                                    <div class="flex min-w-0 items-center gap-1 [&>.fal]:text-[0.85rem] [&>.fal]:text-ink-400">
                                         <i class="fal fa-share-from-square"></i>
                                         <span class="text-ink-500">Sumber Info:</span>
                                         <?= ($catat['sumber'] ?? '') !== '' ? esc($catat['sumber']) : '<span class="text-ink-400">belum diisi</span>' ?>
-                                    </span>
+                                    </div>
                                 </div>
                             </div>
 
@@ -648,7 +756,7 @@ $kotak_pilihan = static function (string $nama, string $id, array $daftar, strin
 <?= $this->section('modal') ?>
 <!-- Tambah catatan -->
 <div class="modal fade" id="modalTambahCod" tabindex="-1" aria-labelledby="modalTambahCodLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-cod">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-cod">
         <?= form_open('admin/cod/simpan', ['class' => 'modal-content form-kartu']) ?>
         <div class="modal-header">
             <h5 class="modal-title" id="modalTambahCodLabel">Tambah Pencatatan COD</h5>
@@ -693,7 +801,7 @@ $kotak_pilihan = static function (string $nama, string $id, array $daftar, strin
                     <?php endif; ?>
                 </div>
 
-                <div class="col-12 col-sm-6 mb-3">
+                <div class="col-6 mb-3">
                     <?= form_label('Tanggal', 'tanggal_tambah', ['class' => 'form-label']) ?>
                     <?= form_input([
                         'class'    => 'form-control' . ($err_tambah('tanggal') ? ' is-invalid' : ''),
@@ -709,7 +817,7 @@ $kotak_pilihan = static function (string $nama, string $id, array $daftar, strin
                     <?php endif; ?>
                 </div>
 
-                <div class="col-12 col-sm-6 mb-3">
+                <div class="col-6 mb-3">
                     <?= form_label('Jam Datang', 'jam_tambah', ['class' => 'form-label']) ?>
                     <?= form_input([
                         'class'    => 'form-control' . ($err_tambah('jam') ? ' is-invalid' : ''),
@@ -724,14 +832,14 @@ $kotak_pilihan = static function (string $nama, string $id, array $daftar, strin
                     <?php endif; ?>
                 </div>
 
-                <div class="col-12 col-sm-6 mb-3">
+                <div class="col-6 mb-3">
                     <?= form_label('Keperluan', 'keperluan_tambah', ['class' => 'form-label']) ?>
-                    <?= $kotak_pilihan('keperluan', 'keperluan_tambah', $pilihan['keperluan'], (string) set_value('keperluan'), (string) $err_tambah('keperluan'), 'Pilih keperluan') ?>
+                    <?= $kotak_pilihan('keperluan', 'keperluan_tambah', $pilihan['keperluan'], (string) set_value('keperluan'), (string) $err_tambah('keperluan'), 'Pilih') ?>
                 </div>
 
-                <div class="col-12 col-sm-6 mb-3">
+                <div class="col-6 mb-3">
                     <?= form_label('Status Transaksi', 'status_tambah', ['class' => 'form-label']) ?>
-                    <?= $kotak_pilihan('status', 'status_tambah', $pilihan['status'], (string) set_value('status'), (string) $err_tambah('status'), 'Pilih status transaksi', false) ?>
+                    <?= $kotak_pilihan('status', 'status_tambah', $pilihan['status'], (string) set_value('status'), (string) $err_tambah('status'), 'Pilih', false) ?>
                 </div>
 
                 <div class="col-12 col-sm-6 mb-3">
@@ -761,7 +869,7 @@ $kotak_pilihan = static function (string $nama, string $id, array $daftar, strin
                         'class'       => 'form-control' . ($err_tambah('catatan') ? ' is-invalid' : ''),
                         'name'        => 'catatan',
                         'id'          => 'catatan_tambah',
-                        'rows'        => 4,
+                        'rows'        => 3,
                         'placeholder' => 'Yang dibicarakan, yang dijanjikan, atau alasan cancel',
                         'required'    => '',
                         'maxlength'   => 5000,
@@ -782,7 +890,7 @@ $kotak_pilihan = static function (string $nama, string $id, array $daftar, strin
 
 <!-- Sunting catatan -->
 <div class="modal fade" id="modalSuntingCod" tabindex="-1" aria-labelledby="modalSuntingCodLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-cod">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-cod">
         <?= form_open('admin/cod/sunting', ['class' => 'modal-content form-kartu']) ?>
         <?= form_hidden('id_cod', (string) set_value('id_cod')) ?>
         <div class="modal-header">
@@ -828,7 +936,7 @@ $kotak_pilihan = static function (string $nama, string $id, array $daftar, strin
                     <?php endif; ?>
                 </div>
 
-                <div class="col-12 col-sm-6 mb-3">
+                <div class="col-6 mb-3">
                     <?= form_label('Tanggal', 'tanggal_sunting', ['class' => 'form-label']) ?>
                     <?= form_input([
                         'class'    => 'form-control' . ($err_sunting('tanggal') ? ' is-invalid' : ''),
@@ -844,7 +952,7 @@ $kotak_pilihan = static function (string $nama, string $id, array $daftar, strin
                     <?php endif; ?>
                 </div>
 
-                <div class="col-12 col-sm-6 mb-3">
+                <div class="col-6 mb-3">
                     <?= form_label('Jam Datang', 'jam_sunting', ['class' => 'form-label']) ?>
                     <?= form_input([
                         'class'    => 'form-control' . ($err_sunting('jam') ? ' is-invalid' : ''),
@@ -859,14 +967,14 @@ $kotak_pilihan = static function (string $nama, string $id, array $daftar, strin
                     <?php endif; ?>
                 </div>
 
-                <div class="col-12 col-sm-6 mb-3">
+                <div class="col-6 mb-3">
                     <?= form_label('Keperluan', 'keperluan_sunting', ['class' => 'form-label']) ?>
-                    <?= $kotak_pilihan('keperluan', 'keperluan_sunting', $pilihan['keperluan'], $gagal_sunting ? (string) set_value('keperluan') : '', (string) $err_sunting('keperluan'), 'Pilih keperluan') ?>
+                    <?= $kotak_pilihan('keperluan', 'keperluan_sunting', $pilihan['keperluan'], $gagal_sunting ? (string) set_value('keperluan') : '', (string) $err_sunting('keperluan'), 'Pilih') ?>
                 </div>
 
-                <div class="col-12 col-sm-6 mb-3">
+                <div class="col-6 mb-3">
                     <?= form_label('Status Transaksi', 'status_sunting', ['class' => 'form-label']) ?>
-                    <?= $kotak_pilihan('status', 'status_sunting', $pilihan['status'], $gagal_sunting ? (string) set_value('status') : '', (string) $err_sunting('status'), 'Pilih status transaksi', false) ?>
+                    <?= $kotak_pilihan('status', 'status_sunting', $pilihan['status'], $gagal_sunting ? (string) set_value('status') : '', (string) $err_sunting('status'), 'Pilih', false) ?>
                 </div>
 
                 <div class="col-12 col-sm-6 mb-3">
@@ -896,7 +1004,7 @@ $kotak_pilihan = static function (string $nama, string $id, array $daftar, strin
                         'class'      => 'form-control' . ($err_sunting('catatan') ? ' is-invalid' : ''),
                         'name'       => 'catatan',
                         'id'         => 'catatan_sunting',
-                        'rows'       => 4,
+                        'rows'       => 3,
                         'required'   => '',
                         'maxlength' => 5000,
                     ]) ?>
@@ -1467,6 +1575,93 @@ $js = <<< JS
                 this.form.submit();
             });
         });
+
+        // ---- Tombol geser strip pil status, pola yang sama dengan strip tab di
+        //      halaman semua transaksi juragan: panahnya hanya tampil kalau pilnya
+        //      memang lebih lebar dari wadahnya (class .bisa-geser dipasang di
+        //      sini) dan ikut mati begitu mentok di ujung.
+        var wadahPil = document.querySelector('.toolbar-transaksi__geser');
+
+        if (wadahPil) {
+            var jalurPil  = wadahPil.querySelector('.toolbar-transaksi__tab');
+            var pilKiri   = wadahPil.querySelector('[data-geser="-1"]');
+            var pilKanan  = wadahPil.querySelector('[data-geser="1"]');
+            var kunciPos  = 'cod_pil_status_pos';
+
+            function ukurPil() {
+                wadahPil.classList.toggle('bisa-geser', jalurPil.scrollWidth - jalurPil.clientWidth > 2);
+                pilKiri.disabled = jalurPil.scrollLeft <= 2;
+                pilKanan.disabled = jalurPil.scrollLeft + jalurPil.clientWidth >= jalurPil.scrollWidth - 2;
+            }
+
+            function geserPil(arah) {
+                var langkah = Math.max(120, Math.round(jalurPil.clientWidth * 0.75));
+
+                jalurPil.scrollBy({ left: langkah * arah, behavior: 'smooth' });
+            }
+
+            // Klik pil memuat halaman ulang dan strip yang sedang digeser jatuh
+            // kembali ke nol, sehingga pil yang baru aktif terlihat melompat.
+            // Posisi strip disimpan tepat sebelum berpindah lalu dipasang lagi di
+            // halaman berikutnya, jadi strip tinggal di tempatnya.
+            jalurPil.addEventListener('click', function (event) {
+                if (event.target.closest('a.btn')) {
+                    try { window.sessionStorage.setItem(kunciPos, String(jalurPil.scrollLeft)); } catch (err) {}
+                }
+            });
+
+            function pulihkanPil() {
+                var simpanan = null;
+
+                try {
+                    simpanan = window.sessionStorage.getItem(kunciPos);
+                    window.sessionStorage.removeItem(kunciPos);
+                } catch (err) {}
+
+                if (simpanan === null || isNaN(parseFloat(simpanan))) {
+                    return;
+                }
+
+                jalurPil.scrollLeft = parseFloat(simpanan);
+            }
+
+            // hanya digeser kalau pil yang sedang aktif benar-benar tidak terlihat;
+            // halaman yang dimuat ulang tidak pernah menggeser strip yang masih pas
+            function tampilkanPilAktif() {
+                var aktif = jalurPil.querySelector('.btn-primary');
+
+                if (! aktif) {
+                    return;
+                }
+
+                var wadah = jalurPil.getBoundingClientRect();
+                var pil   = aktif.getBoundingClientRect();
+
+                if (pil.left >= wadah.left + 8 && pil.right <= wadah.right - 8) {
+                    return;
+                }
+
+                var tengah = (pil.left - wadah.left) + jalurPil.scrollLeft + pil.width / 2;
+                var maks   = jalurPil.scrollWidth - jalurPil.clientWidth;
+
+                jalurPil.scrollLeft = Math.max(0, Math.min(tengah - jalurPil.clientWidth / 2, maks));
+            }
+
+            pilKiri.addEventListener('click', function () { geserPil(-1); });
+            pilKanan.addEventListener('click', function () { geserPil(1); });
+            jalurPil.addEventListener('scroll', ukurPil, { passive: true });
+            window.addEventListener('resize', ukurPil);
+            window.addEventListener('load', ukurPil);
+
+            // urutannya penting: ukurPil() dulu supaya kedua panah ikut tampil dan
+            // memakan tempatnya sendiri, baru posisi disimpan dipasang. Kalau tidak,
+            // strip masih terhitung selebar penuh sehingga scrollLeft yang dipulihkan
+            // ikut dipotong ke batas yang salah (180 -> 150 di layar 390px).
+            ukurPil();
+            pulihkanPil();
+            tampilkanPilAktif();
+            ukurPil();
+        }
 
         if (bukaTambah) {
             bootstrap.Modal.getOrCreateInstance(modalTambah).show();
