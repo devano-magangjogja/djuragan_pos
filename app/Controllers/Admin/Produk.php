@@ -58,20 +58,35 @@ class Produk extends BaseController
             $katalog
         );
 
+        $juragans = $this->juraganPilihan();
+
+        // penjelasan cakupan untuk pesan daftar kosong: Admin dan CS hanya
+        // melihat toko yang melekat di akunnya, Superadmin melihat semuanya
+        if ($juragan > 0) {
+            $cakupan = 'toko ' . ($juragans[$juragan] ?? '-');
+        } elseif (count($juragans) === 1) {
+            $cakupan = 'toko ' . reset($juragans);
+        } elseif ($juragans === []) {
+            $cakupan = 'toko mana pun yang kamu pegang';
+        } elseif ((string) session()->get('level') === 'superadmin') {
+            $cakupan = 'semua toko (' . count($juragans) . ')';
+        } else {
+            $cakupan = count($juragans) . ' toko yang kamu pegang';
+        }
+
         $data = [
             'title'     => 'Produk & Stok',
             'katalog'   => $katalog,
             'fotonya'   => (new ProdukFotoModel())->perKartu($varian),
             'ringkas'   => $stokModel->ringkas($ids, $kolam),
             'juragan'   => $juragan,
-            'juragans'  => $this->juraganPilihan(),
+            'juragans'  => $juragans,
+            'cakupan'   => $cakupan,
             'cari'      => $cari,
             'keadaan'   => $keadaan,
             // tab kolam aktif + labelnya, dipakai view untuk judul kolom dan tautan tab
             'kolam'     => $kolam,
             'kolams'    => StokModel::KOLAM,
-            'kolamStok' => StokModel::kolomKolam($kolam)[0],
-            'kolamHarga' => StokModel::kolomKolam($kolam)[1],
             'ukuran'    => $stokModel->daftarUkuran(),
             'kode'      => $stokModel->daftarKode(),
             'total'     => $total,
@@ -116,19 +131,20 @@ class Produk extends BaseController
 
         $stokModel = new StokModel();
 
-        if ($stokModel->kembar(0, $juragan_id, $kode, $ukuran)) {
+        if ($stokModel->kembar(0, $juragan_id, $kode, $ukuran, $kolam)) {
             return redirect()->to($this->alamatKembali())
-                ->withInput()->with('gagal', 'Varian ' . $kode . ' ' . $ukuran . ' sudah terdaftar.');
+                ->withInput()->with('gagal', 'Varian ' . $kode . ' ' . $ukuran . ' sudah terdaftar di kolam ' . $kolam . '.');
         }
 
         // "+ Varian" pada kartu tidak menanyakan harga: satu kartu dianggap punya
         // harga yang sama, jadi nilainya diwarisi dari varian tertua sekartu
+        // satu kolam
         $harga   = $this->hargaPost();
-        $saudara = $stokModel->sekartu($juragan_id, $kode);
+        $saudara = $stokModel->sekartu($juragan_id, $kode, $kolam);
 
         if ($harga === null && $saudara === []) {
             return redirect()->to($this->alamatKembali())->withInput()
-                ->with('gagal', 'Belum ada varian ' . $kode . ' di toko ini, jadi harganya tidak bisa diwarisi. '
+                ->with('gagal', 'Belum ada varian ' . $kode . ' kolam ' . $kolam . ' di toko ini, jadi harganya tidak bisa diwarisi. '
                     . 'Tambahkan lewat tombol "Tambah Barang" di atas.');
         }
 
@@ -141,13 +157,11 @@ class Produk extends BaseController
             'produk_id'  => $produk_id,
             'kode'       => $kode,
             'ukuran'     => $ukuran,
-            // hanya kolam tab yang dibuka yang diisi; harga kolam satunya diwarisi
-            // dari saudara sekartu supaya satu barang tidak berubah harga hanya
-            // karena ukuran baru ditambah lewat tab lain
-            'harga'      => $kolam === 'jual' ? ($harga ?? (int) $lain->harga) : (int) ($lain->harga ?? 0),
-            'harga_sewa' => $kolam === 'sewa' ? ($harga ?? (int) $lain->harga_sewa) : (int) ($lain->harga_sewa ?? 0),
-            'stok'       => $kolam === 'jual' ? $stokPost : 0,
-            'stok_sewa'  => $kolam === 'sewa' ? $stokPost : 0,
+            // varian ini hanya hidup di kolam tab yang dibuka, dan angkanya
+            // memang milik kolam itu
+            'kolam'      => $kolam,
+            'harga'      => $harga ?? (int) $lain->harga,
+            'stok'       => $stokPost,
             'keterangan' => $this->keteranganPost(),
         ]);
 
@@ -223,16 +237,12 @@ class Produk extends BaseController
         $kode   = $this->kodePost();
         $ukuran = $this->ukuranPost();
 
-        if ($stokModel->kembar($id, $juragan_baru, $kode, $ukuran)) {
+        if ($stokModel->kembar($id, $juragan_baru, $kode, $ukuran, (string) $baris->kolam)) {
             return redirect()->to($this->alamatKembali())
                 ->with('gagal', 'Varian ' . $kode . ' ' . $ukuran . ' sudah terdaftar di toko itu.');
         }
 
         $produk_id = jamin_produk($kode);
-
-        // sunting hanya menyentuh kolam tab yang dibuka; kolam satunya dibiarkan
-        // apa adanya supaya pindah tab tidak pernah mengubah angka yang lain
-        [$kolomStok, $kolomHarga] = StokModel::kolomKolam(StokModel::kolam((string) $this->request->getPost('kolam')));
 
         $data = [
             'juragan_id' => $juragan_baru,
@@ -240,8 +250,10 @@ class Produk extends BaseController
             'kode'       => $kode,
             'ukuran'     => $ukuran,
             'keterangan' => $this->keteranganPost(),
-            $kolomHarga  => (int) $this->request->getPost('harga'),
-            $kolomStok   => (int) $this->request->getPost('stok'),
+            // kolam baris tidak pernah berubah lewat sunting, jadi isian harga
+            // dan stok memang menulis angka kolam barisnya sendiri
+            'harga'      => (int) $this->request->getPost('harga'),
+            'stok'       => (int) $this->request->getPost('stok'),
         ];
 
         $stokModel->update($id, $data);
@@ -317,15 +329,21 @@ class Produk extends BaseController
         }
 
         $stokModel = new StokModel();
-        $ids       = $stokModel->sekartu($juragan_id, $kode);
+        // kartu = varian satu kolam; varian kolam satunya punya kartunya sendiri
+        $kolam = StokModel::kolam((string) $this->request->getPost('kolam'));
+        $ids   = $stokModel->sekartu($juragan_id, $kode, $kolam);
 
         if ($ids === []) {
             return redirect()->to($this->alamatKembali())->with('gagal', 'Barang tidak ditemukan.');
         }
 
-        // kartu ikut habis, jadi tidak ada saudara tempat foto pindah
+        // foto dibagi lintas kolam, jadi foto varian yang pergi berpindah ke
+        // varian mana pun yang masih hidup; kalau tidak ada yang tersisa, ikut
+        // terhapus bersama berkasnya
+        $sisa = array_values(array_diff($stokModel->sekartu($juragan_id, $kode), $ids));
+
         foreach ($ids as $id) {
-            $this->bereskanFoto($id, []);
+            $this->bereskanFoto($id, $sisa);
         }
 
         $stokModel->delete($ids);

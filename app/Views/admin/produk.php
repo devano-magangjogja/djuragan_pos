@@ -6,15 +6,14 @@
  *
  * @var array<int, array<string, mixed>> $katalog   Kartu produk beserta daftar varian tiap kartu (StokModel::katalog)
  * @var array<int, list<array<string, mixed>>> $fotonya Gabungan foto varian, dikunci urutan kartu (ProdukFotoModel::perKartu)
- * @var array<string, int> $ringkas   Ringkasan stok: varian, unit, nilai, menipis, habis (StokModel::ringkas)
+ * @var array<string, int> $ringkas   Ringkasan stok: varian, unit, nilai, menipis, habis, belum berpoin
  * @var int $juragan      Filter toko terpilih, 0 artinya semua toko
  * @var array<int, string> $juragans  Pilihan toko pada filter (BaseController::juraganPilihan)
+ * @var string $cakupan   Toko yang sedang dibaca, dipakai pesan daftar kosong
  * @var string $cari         Kata kunci pencarian yang sedang dipakai
  * @var string $keadaan   Filter keadaan stok yang sedang dipakai
  * @var string $kolam      Kolam tab aktif: 'jual' atau 'sewa' (StokModel::kolam)
  * @var array<string, string> $kolams  Label tab per kolam (StokModel::KOLAM)
- * @var string $kolamStok  Nama kolom stok milik kolam aktif (StokModel::kolomKolam)
- * @var string $kolamHarga Nama kolom harga milik kolam aktif (StokModel::kolomKolam)
  * @var array<int, array<string, string>> $ukuran Master ukuran: kode, label, kelompok (StokModel::daftarUkuran)
  * @var array<int, array<string, string>> $kode   Master kode barang: kolom kode (StokModel::daftarKode)
  * @var int $total        Jumlah kartu hasil penyaringan
@@ -61,15 +60,15 @@ $keadaan_baris = static function (int $stok) use ($ambangnya): array {
 };
 
 // data satu varian untuk modal sunting; esc() yang mengemas atributnya.
-// Harga dan stok yang dibawa adalah angka kolam yang sedang dibuka, karena
-// form sunting juga menulis ke kolam itu saja.
-$barang = static function (array $b) use ($kolamStok, $kolamHarga): array {
+// Harga dan stok baris memang angka kolamnya sendiri, karena satu varian
+// hanya hidup di satu kolam.
+$barang = static function (array $b): array {
     return [
         'id'         => (int) $b['id_stok'],
         'kode'       => (string) $b['kode'],
         'ukuran'     => (string) ($b['ukuran'] ?? ''),
-        'harga'      => (int) $b[$kolamHarga],
-        'stok'       => (int) $b[$kolamStok],
+        'harga'      => (int) $b['harga'],
+        'stok'       => (int) $b['stok'],
         'keterangan' => (string) ($b['keterangan'] ?? ''),
         'juragan'    => (string) $b['nama_juragan'],
         'juragan_id' => (int) $b['juragan_id'],
@@ -122,21 +121,30 @@ $kueriTab = array_filter([
 
     <div class="row gx-2 gy-3 mb-4">
         <?php
+        // elemen keempat: kelas warna untuk angka + ikonya, dipakai penanda poin
         $ringkasan = [
-            ['Varian tercatat', (string) $ringkas['varian'], 'fa-shapes'],
-            ['Total unit ' . $kataKolam, (string) $ringkas['unit'], 'fa-boxes-stacked'],
-            ['Nilai stok ' . $kataKolam, $rupiah((int) $ringkas['nilai']), 'fa-coins'],
-            ['Menipis', (string) $ringkas['menipis'], 'fa-triangle-exclamation'],
-            ['Habis', (string) $ringkas['habis'], 'fa-circle-xmark'],
+            ['Varian tercatat', (string) $ringkas['varian'], 'fa-shapes', ''],
+            ['Total unit ' . $kataKolam, (string) $ringkas['unit'], 'fa-boxes-stacked', ''],
+            ['Nilai stok ' . $kataKolam, $rupiah((int) $ringkas['nilai']), 'fa-coins', ''],
+            ['Menipis', (string) $ringkas['menipis'], 'fa-triangle-exclamation', ''],
+            ['Habis', (string) $ringkas['habis'], 'fa-circle-xmark', ''],
+            // poin gaji hanya boleh diisi Superadmin: angka ini mengingatkan
+            // Admin dan CS bahwa ada barang yang belum bisa dihitung gajinya
+            [
+                'Belum berpoin',
+                (string) $ringkas['belum_poin'],
+                'fa-coins',
+                $ringkas['belum_poin'] > 0 ? 'text-amber-800' : '',
+            ],
         ];
 
-        foreach ($ringkasan as [$label, $nilai, $ikon]) { ?>
+        foreach ($ringkasan as [$label, $nilai, $ikon, $warna]) { ?>
             <div class="col-6 col-lg">
                 <div class="h-100 rounded-3 border border-ink-200 bg-white px-3 py-2">
-                    <div class="text-muted small text-uppercase">
+                    <div class="text-muted small text-uppercase <?= esc($warna) ?>">
                         <i class="fal <?= $ikon ?>"></i> <?= esc($label) ?>
                     </div>
-                    <div class="fs-4 fw-bold"><?= esc($nilai) ?></div>
+                    <div class="fs-4 fw-bold <?= esc($warna) ?>"><?= esc($nilai) ?></div>
                 </div>
             </div>
         <?php } ?>
@@ -216,6 +224,9 @@ $kueriTab = array_filter([
                             <?php } else { ?>
                                 Belum ada barang yang dipantau<?= $cari !== '' ? ' untuk pencarian "' . esc($cari) . '"' : '' ?>.
                             <?php } ?>
+                            <?php /* Admin/CS hanya dibatasi ke tokonya sendiri, jadi daftar yang
+                              kosong sering terlihat seperti bug — sebutkan cakupan yang dibaca. */ ?>
+                            Yang dibaca di halaman ini hanya barang dari <strong><?= esc($cakupan) ?></strong>.
                             <?php if (! $bacaSaja) { ?>Klik tombol <strong>Tambah Barang</strong> di atas untuk menambah varian.<?php } ?>
                         </div>
                     <?php } else { ?>
@@ -265,11 +276,22 @@ $kueriTab = array_filter([
                                             <?php } ?>
                                             <span><?= $rupiah((int) $p['harga_mulai']) ?></span>
                                         </div>
-                                        <?php if ($bisaPoin) { ?>
+                                        <?php if (($p['poin'] ?? 0) > 0) { ?>
+                                            <?php if ($bisaPoin) { ?>
                                             <div class="produk-poin mb-2 small">
                                                 <i class="fal fa-coins text-brand-600"></i>
                                                 <span class="text-muted">Poin</span>
-                                                <span class="fw-semibold text-ink-700"><?= number_format((int) ($p['poin'] ?? 0), 0, ',', '.') ?></span>
+                                                <span class="fw-semibold text-ink-700"><?= number_format((int) $p['poin'], 0, ',', '.') ?></span>
+                                            </div>
+                                            <?php } ?>
+                                        <?php } else { ?>
+                                            <?php /* penanda untuk semua role: Admin dan CS boleh membaca daftar
+                                               ini tapi hanya Superadmin yang bisa mengisi poin gajinya */ ?>
+                                            <div class="produk-poin mb-2 small">
+                                                <span class="badge rounded-pill bg-warning text-dark"
+                                                    title="Poin gaji <?= esc($p['kode'], 'attr') ?> belum diisi. Hanya Superadmin yang bisa menentukannya.">
+                                                    <i class="fal fa-coins me-1"></i>Poin belum diisi
+                                                </span>
                                             </div>
                                         <?php } ?>
 
@@ -362,8 +384,17 @@ $kueriTab = array_filter([
                                                 <div class="fs-5 fw-bold"><?= esc($p['kode']) ?></div>
                                                 <div class="fw-bold text-brand-600"><?= $rupiah((int) $p['harga_mulai']) ?><?= $harga_lain ?></div>
                                                 <div class="small text-muted mt-1"><i class="fal fa-store me-1"></i><?= esc($p['nama_juragan']) ?></div>
-                                                <?php if ($bisaPoin) { ?>
-                                                    <div class="small mt-1"><i class="fal fa-coins text-brand-600 me-1"></i>Poin: <span class="fw-semibold text-ink-700"><?= number_format((int) ($p['poin'] ?? 0), 0, ',', '.') ?></span></div>
+                                                <?php if (($p['poin'] ?? 0) > 0) { ?>
+                                                    <?php if ($bisaPoin) { ?>
+                                                    <div class="small mt-1"><i class="fal fa-coins text-brand-600 me-1"></i>Poin: <span class="fw-semibold text-ink-700"><?= number_format((int) $p['poin'], 0, ',', '.') ?></span></div>
+                                                    <?php } ?>
+                                                <?php } else { ?>
+                                                    <div class="small mt-1">
+                                                        <span class="badge rounded-pill bg-warning text-dark"
+                                                            title="Poin gaji <?= esc($p['kode'], 'attr') ?> belum diisi. Hanya Superadmin yang bisa menentukannya.">
+                                                            <i class="fal fa-coins me-1"></i>Poin belum diisi
+                                                        </span>
+                                                    </div>
                                                 <?php } ?>
                                                 <div class="d-flex gap-2 mt-2">
                                                     <?php /* keadaan cukup dibaca dari warna titiknya */ ?>
@@ -391,7 +422,7 @@ $kueriTab = array_filter([
                                                             ?>
                                                             <tr data-varian="<?= (int) $b['id_stok'] ?>">
                                                                 <td><?= $ukuran_baris === '' ? 'Tanpa ukuran' : esc($ukuran_baris) ?></td>
-                                                                <td class="text-nowrap"><?= $rupiah((int) $b[$kolamHarga]) ?></td>
+                                                                <td class="text-nowrap"><?= $rupiah((int) $b['harga']) ?></td>
                                                                 <td>
                                                                     <?php /* angkanya saja: warna badge-nya yang menyatakan aman/menipis/habis */ ?>
                                                                     <span class="badge bg-<?= $bw ?> <?= $bw === 'warning' ? 'text-dark' : 'text-white' ?>"

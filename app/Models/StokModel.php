@@ -5,7 +5,10 @@ namespace App\Models;
 use CodeIgniter\Model;
 
 /**
- * Master stok per juragan: satu baris untuk tiap kombinasi juragan + kode + ukuran.
+ * Master stok per juragan: satu baris untuk tiap kombinasi juragan + kode +
+ * ukuran + kolam. Kolam jual dan sewa punya barisnya sendiri-sendiri, jadi
+ * ukuran yang hanya disewakan tidak pernah muncul sebagai varian di katalog
+ * barang jual.
  */
 class StokModel extends Model
 {
@@ -19,7 +22,7 @@ class StokModel extends Model
     protected $primaryKey     = 'id_stok';
     protected $returnType     = 'object';
     protected $useSoftDeletes = true;
-    protected $allowedFields  = ['juragan_id', 'produk_id', 'kode', 'ukuran', 'harga', 'harga_sewa', 'stok', 'stok_sewa', 'keterangan'];
+    protected $allowedFields  = ['juragan_id', 'produk_id', 'kode', 'ukuran', 'kolam', 'harga', 'stok', 'keterangan'];
     protected $useTimestamps  = true;
     protected $createdField   = 'created_at';
     protected $updatedField   = 'updated_at';
@@ -42,29 +45,23 @@ class StokModel extends Model
         return (string) $tipe === 'sewa' ? 'sewa' : 'jual';
     }
 
-    /** Kolom stok dan kolom harga milik satu kolam. */
-    public static function kolomKolam(string $kolam): array
-    {
-        return $kolam === 'sewa' ? ['stok_sewa', 'harga_sewa'] : ['stok', 'harga'];
-    }
-
     /**
      * Katalog untuk kartu produk: satu kartu merangkum semua varian yang nama
-     * barangnya sama di satu juragan. Halaman dihitung per kartu, bukan per
-     * varian, karena yang dicari pengguna adalah "barang apa", bukan "ukuran apa".
+     * barangnya sama di satu juragan dan satu kolam. Halaman dihitung per kartu,
+     * bukan per varian, karena yang dicari pengguna adalah "barang apa", bukan
+     * "ukuran apa".
      *
      * @param array  $juragan_ids ID juragan yang boleh dilihat pengguna
      * @param int    $juragan_id  0 = semua dari $juragan_ids
      * @param string $cari        Dicocokkan dengan kode atau keterangan
      * @param string $keadaan     '', 'ada', 'menipis', 'habis'
-     * @param string $kolam       'jual' atau 'sewa': stok dan harga mana yang dibaca
+     * @param string $kolam       'jual' atau 'sewa': kartu hanya memuat varian kolam ini
      *
      * @return list<array<string, mixed>>
      */
     public function katalog(array $juragan_ids, int $juragan_id = 0, string $cari = '', string $keadaan = '', int $limit = 20, int $offset = 0, string $kolam = 'jual'): array
     {
         $kolam  = self::kolam($kolam);
-        $kolom  = self::kolomKolam($kolam);
         $kunci  = $this->kunci($juragan_ids, $juragan_id, $cari, $keadaan, $limit, $offset, $kolam);
 
         if ($kunci === []) {
@@ -82,16 +79,16 @@ class StokModel extends Model
                 'produk_id'   => (int) $b['produk_id'],
                 'kode'        => (string) $b['kode'],
                 'nama_juragan' => (string) $b['nama_juragan'],
-                'harga_mulai' => (int) $b[$kolom[1]],
-                'harga_akhir' => (int) $b[$kolom[1]],
+                'harga_mulai' => (int) $b['harga'],
+                'harga_akhir' => (int) $b['harga'],
                 'poin'        => (int) ($b['poin_produk'] ?? 0),
                 'total_stok'  => 0,
                 'terjual'     => 0,
                 'varian'      => [],
             ];
 
-            $t['harga_mulai'] = min($t['harga_mulai'], (int) $b[$kolom[1]]);
-            $t['harga_akhir'] = max($t['harga_akhir'], (int) $b[$kolom[1]]);
+            $t['harga_mulai'] = min($t['harga_mulai'], (int) $b['harga']);
+            $t['harga_akhir'] = max($t['harga_akhir'], (int) $b['harga']);
             // poin satu produk: sama untuk semua ukuran, ambil apa adanya
             $t['poin']        = (int) ($b['poin_produk'] ?? 0);
             $t['total_stok'] += (int) $b['tersedia'];
@@ -154,6 +151,10 @@ class StokModel extends Model
      * form order, dan kartu ringkasan supaya angka stok berarti "masih bisa
      * diambil" untuk kolam yang sedang dibuka.
      *
+     * Satu baris stok hanya milik satu kolam, jadi kolomnya selalu `stok`;
+     * saringan nota bertipe sekadar menjaga nota lama yang sempat menaut
+     * baris ini sebelum kolamnya dipisah.
+     *
      * Ekspresi ini mentah (tidak di-escape builder), jadi tabel stok harus
      * ditulis dengan prefix aslinya seperti pada klausa FROM-nya.
      */
@@ -164,7 +165,7 @@ class StokModel extends Model
         $dibeli  = $this->db->prefixTable('dibeli');
         $invoice = $this->db->prefixTable('invoice');
 
-        return '(CAST(' . $stok . '.' . self::kolomKolam($kolam)[0] . ' AS SIGNED) - (SELECT IFNULL(SUM(d.qty), 0)'
+        return '(CAST(' . $stok . '.stok AS SIGNED) - (SELECT IFNULL(SUM(d.qty), 0)'
             . ' FROM `' . $dibeli . '` d'
             . ' JOIN `' . $invoice . '` o ON o.id_invoice = d.invoice_id'
             . ' WHERE d.stok_id = ' . $stok . '.id_stok'
@@ -250,8 +251,9 @@ class StokModel extends Model
 
         $punya = [];
 
-        foreach ($this->whereIn('id_stok', array_column($perlu, 'id'))->get()->getResultArray() as $b) {
-            $punya[(int) $b['id_stok']] = (int) $b[self::kolomKolam($kolam)[0]];
+        foreach ($this->select('id_stok, stok, kolam')
+            ->whereIn('id_stok', array_column($perlu, 'id'))->get()->getResultArray() as $b) {
+            $punya[(int) $b['id_stok']] = ['stok' => (int) $b['stok'], 'kolam' => (string) $b['kolam']];
         }
 
         $keluar = $this->keluar(array_keys($punya), $kolam, $kecuali_invoice);
@@ -259,7 +261,18 @@ class StokModel extends Model
         $galat  = [];
 
         foreach ($perlu as $k => $v) {
-            $sisa = ($punya[$v['id']] ?? 0) - ($keluar[$v['id']] ?? 0);
+            $ada = $punya[$v['id']] ?? null;
+
+            // nota hanya boleh mengambil varian kolamnya sendiri: tipe jual
+            // tidak boleh meminjam baris sewa, begitu juga sebaliknya
+            if ($ada === null || $ada['kolam'] !== $kolam) {
+                $galat['produk[' . $k . '][stok]'] = 'Varian ' . ($v['label'] === '' ? 'ini' : $v['label'])
+                    . ' bukan barang ' . mb_strtolower(self::KOLAM[$kolam]) . '.';
+
+                continue;
+            }
+
+            $sisa = $ada['stok'] - ($keluar[$v['id']] ?? 0);
             $dipaki[$v['id']] = ($dipaki[$v['id']] ?? 0) + $v['qty'];
 
             if ($dipaki[$v['id']] > $sisa) {
@@ -273,23 +286,33 @@ class StokModel extends Model
 
     /**
      * Angka untuk kartu ringkasan satu kolam: varian, total unit, nilai stok,
-     * menipis, habis. "Varian" dihitung semua baris yang hidup, tapi unit dan
-     * nilainya hanya dari kolam yang dibuka.
+     * menipis, habis, dan berapa barang yang belum diberi poin gaji. Semua
+     * angkanya hanya membaca baris kolam yang dibuka.
      *
-     * @return array{varian:int,unit:int,nilai:int,menipis:int,habis:int}
+     * Poin menempel di master produk (order_produk), bukan di baris stok, jadi
+     * angka 'belum_poin' dihitung per barang — satu nama barang dengan tiga
+     * ukuran tetap dihitung sekali kalau poinnya belum diisi.
+     *
+     * @return array{varian:int,unit:int,nilai:int,menipis:int,habis:int,belum_poin:int}
      */
     public function ringkas(array $juragan_ids, string $kolam = 'jual'): array
     {
         $kolam    = self::kolam($kolam);
         $tabel    = $this->db->prefixTable('stok');
-        $harga    = self::kolomKolam($kolam)[1];
+        $produk   = $this->db->prefixTable('produk');
         $tersedia = $this->klausaTersedia($kolam);
 
-        $baris = $this->db->query('SELECT ' . $tersedia . ' AS tersedia, `' . $tabel . '`.' . $harga . ' AS harga'
-            . ' FROM `' . $tabel . '` WHERE deleted_at IS NULL AND ' . $this->klausulJuragan($juragan_ids))
+        $baris = $this->db->query('SELECT ' . $tersedia . ' AS tersedia, `' . $tabel . '`.harga AS harga,'
+            . ' `' . $tabel . '`.juragan_id AS juragan, `' . $tabel . '`.kode AS nama,'
+            . ' `' . $tabel . '`.produk_id AS master, IFNULL(`' . $produk . '`.poin, 0) AS poin'
+            . ' FROM `' . $tabel . '`'
+            . ' LEFT JOIN `' . $produk . '` ON `' . $produk . '`.id_produk = `' . $tabel . '`.produk_id'
+            . ' WHERE `' . $tabel . '`.deleted_at IS NULL AND `' . $tabel . '`.kolam = ' . $this->db->escape($kolam)
+            . ' AND ' . $this->klausulJuragan($juragan_ids))
             ->getResultArray();
 
-        $hasil = ['varian' => 0, 'unit' => 0, 'nilai' => 0, 'menipis' => 0, 'habis' => 0];
+        $hasil  = ['varian' => 0, 'unit' => 0, 'nilai' => 0, 'menipis' => 0, 'habis' => 0, 'belum_poin' => 0];
+        $kosong = [];
 
         foreach ($baris as $b) {
             $unit = (int) $b['tersedia'];
@@ -303,19 +326,29 @@ class StokModel extends Model
             } elseif ($unit <= self::AMBANG_MENIPIS) {
                 $hasil['menipis']++;
             }
+
+            if ((int) $b['poin'] <= 0) {
+                $kosong[$this->tanda((int) $b['juragan'], $b['master'], (string) $b['nama'])] = true;
+            }
         }
+
+        $hasil['belum_poin'] = count($kosong);
 
         return $hasil;
     }
 
     /**
-     * Sudah ada baris stok dengan juragan + kode + ukuran yang sama? Tanpa unique
-     * index, karena baris yang dihapus lunak tidak boleh memblokir nama yang sama
-     * dibuat ulang.
+     * Sudah ada baris stok dengan juragan + kode + ukuran + kolam yang sama?
+     * Nama yang sama boleh dipakai sekali di tiap kolam, jadi ukuran khusus
+     * sewa tidak menghalangi ukuran yang sama didaftarkan untuk dijual. Tanpa
+     * unique index, karena baris yang dihapus lunak tidak boleh memblokir nama
+     * yang sama dibuat ulang.
      */
-    public function kembar(int $id, int $juragan_id, string $kode, ?string $ukuran): bool
+    public function kembar(int $id, int $juragan_id, string $kode, ?string $ukuran, string $kolam = 'jual'): bool
     {
-        $builder = $this->where('juragan_id', $juragan_id)->where('kode', $kode);
+        $builder = $this->where('juragan_id', $juragan_id)
+            ->where('kode', $kode)
+            ->where('kolam', self::kolam($kolam));
 
         if ($ukuran === null || $ukuran === '') {
             $builder->groupStart()->where('ukuran', null)->orWhere('ukuran', '')->groupEnd();
@@ -334,13 +367,15 @@ class StokModel extends Model
      * Varian sekartu produk yang masih hidup: juragan dan nama barang yang sama.
      * Foto produk memang menempel pada satu varian, tapi kartu katalog dan form
      * orderan menampilkan gabungan foto sekartu supaya satu foto cukup diunggah
-     * sekali. Varian yang dihapus lunak dibuang di sini karena `get()` tidak
-     * menyaringnya, sementara `find()` iya — campuran keduanya bikin harga
-     * warisan menunjuk baris yang sudah mati.
+     * sekali — untuk itu kolamnya tidak dipilah (null). Pemanggil yang perlu
+     * saudara satu kolam, seperti warisan harga "+ Varian" dan hapus kartu,
+     * mengirim kolamnya. Varian yang dihapus lunak dibuang di sini karena
+     * `get()` tidak menyaringnya, sementara `find()` iya — campuran keduanya
+     * bikin harga warisan menunjuk baris yang sudah mati.
      *
      * @return int[]
      */
-    public function sekartu(int $juragan_id, string $kode): array
+    public function sekartu(int $juragan_id, string $kode, ?string $kolam = null): array
     {
         if ($juragan_id <= 0 || $kode === '') {
             return [];
@@ -349,8 +384,13 @@ class StokModel extends Model
         $baris = $this->select('id_stok')
             ->where('juragan_id', $juragan_id)
             ->where('kode', $kode)
-            ->where('deleted_at', null)
-            ->orderBy('id_stok', 'ASC')
+            ->where('deleted_at', null);
+
+        if ($kolam !== null) {
+            $baris->where('kolam', self::kolam($kolam));
+        }
+
+        $baris = $baris->orderBy('id_stok', 'ASC')
             ->get()
             ->getResultArray();
 
@@ -381,7 +421,7 @@ class StokModel extends Model
             ->get()
             ->getResultArray();
 
-        return self::pilihKolam($baris, $kolam);
+        return $baris;
     }
 
     /** Nama produk dari master, untuk saran di kolom isian. */
@@ -402,16 +442,17 @@ class StokModel extends Model
 
     private function saring(array $juragan_ids, int $juragan_id, string $cari, string $keadaan, string $kolam = 'jual')
     {
+        $kolam = self::kolam($kolam);
+
         // `ukuran` diberi alias: ekspresi di dalam COALESCE tidak ikut diberi
         // prefix tabel oleh query builder, jadi nama aslinya (order_ukuran) tidak dikenal.
         $builder = $this->select('stok.*, juragan.nama_juragan, COALESCE(u.urutan, 255) AS urutan, IFNULL(pr.poin, 0) AS poin_produk')
-            ->select($this->klausaTersedia('jual') . ' AS tersedia_jual, '
-                . $this->klausaTersedia('sewa') . ' AS tersedia_sewa', false)
+            ->select($this->klausaTersedia($kolam) . ' AS tersedia', false)
             ->join('juragan', 'juragan.id_juragan = stok.juragan_id')
             ->join('ukuran u', 'u.kode = stok.ukuran', 'left')
             ->join('produk pr', 'pr.id_produk = stok.produk_id', 'left');
 
-        return $this->pagar($builder, $juragan_ids, $juragan_id, $cari, $keadaan, self::kolam($kolam));
+        return $this->pagar($builder, $juragan_ids, $juragan_id, $cari, $keadaan, $kolam);
     }
 
     /**
@@ -424,6 +465,10 @@ class StokModel extends Model
         // hasilnya diambil lewat get(), yang menembus query builder tanpa
         // scope soft delete yang biasa dipakai find()/findAll()
         $builder->where('stok.deleted_at', null);
+
+        // tab hanya memuat baris kolamnya sendiri: varian jual dan sewa adalah
+        // dua baris yang berbeda meski nama barang dan ukurannya sama
+        $builder->where('stok.kolam', $kolam);
 
         if ($juragan_id > 0) {
             $builder->where('stok.juragan_id', $juragan_id);
@@ -533,19 +578,7 @@ class StokModel extends Model
             ->get()
             ->getResultArray();
 
-        return $this->pasangTerjual(self::pilihKolam($baris, $kolam));
-    }
-
-    /** Angka kolam yang sedang dibuka dijadikan `tersedia`, supaya pemanggil cukup satu nama. */
-    private static function pilihKolam(array $baris, string $kolam): array
-    {
-        $sumber = $kolam === 'sewa' ? 'tersedia_sewa' : 'tersedia_jual';
-
-        foreach ($baris as $i => $b) {
-            $baris[$i]['tersedia'] = (int) ($b[$sumber] ?? 0);
-        }
-
-        return $baris;
+        return $this->pasangTerjual($baris);
     }
 
     /** Penanda kartu di PHP; harus sama cara membulatnya dengan kunci() dan varian(). */

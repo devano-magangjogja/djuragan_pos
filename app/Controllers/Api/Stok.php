@@ -21,15 +21,14 @@ class Stok extends BaseController
      * Jawaban sengaja formasinya sama dengan pencarian pelanggan
      * (query + results) supaya JS di form tidak perlu dua pola baca.
      *
-     * Tipe pesanan memilih kolam stok: harga dan unit yang ditawarkan adalah
-     * harga jual + stok jual, atau harga sewa + stok sewa.
+     * Tipe pesanan memilih kolam stok: hanya varian kolam itu yang ditawarkan,
+     * lengkap dengan harganya dan unitnya yang masih bisa diambil.
      */
     public function cari()
     {
         $cari    = trim((string) $this->request->getGet('q'));
         $juragan = (int) $this->request->getGet('juragan_id');
         $kolam   = StokModel::kolamDariTipe($this->request->getGet('tipe'));
-        $harga   = StokModel::kolomKolam($kolam)[1];
         $ids     = $this->juraganIds();
 
         // orderan ditulis untuk satu toko, jadi tokonya harus dipilih dulu dan
@@ -46,7 +45,7 @@ class Stok extends BaseController
                 'juragan_id' => (int) $b['juragan_id'],
                 'kode'      => (string) $b['kode'],
                 'ukuran'    => (string) ($b['ukuran'] ?? ''),
-                'harga'     => (int) $b[$harga],
+                'harga'     => (int) $b['harga'],
                 // yang ditawarkan ke form orderan adalah unit kolam ini yang masih
                 // bisa diambil, bukan angka gudang
                 'stok'      => (int) $b['tersedia'],
