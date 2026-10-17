@@ -75,6 +75,8 @@
 .fal.fa-camera::before          { content: "\f030"; } /* camera (free)         */
 .fal.fa-image::before           { content: "\f03e"; } /* image (free)          */
 .fal.fa-spinner::before         { content: "\f110"; } /* spinner (free)        */
+/* penanda poin gaji di kartu Produk (FA6 Free memakai nama yang sama) */
+.fal.fa-coins::before           { content: "\f52e"; } /* coins (free)          */
 /* FA6 Free tidak punya glyf "webhook" (Pro only) — dipinjam "link" supaya
    tombol tidak lagi melebar di kiri hanya karena margin ikonnya. */
 .fal.fa-webhook::before         { content: "\f0c1"; } /* link (free)           */
