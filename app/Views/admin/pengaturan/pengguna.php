@@ -223,7 +223,15 @@ $per_halaman = (int) config('Pager')->perPage;
                     </div>
                 </div>
                 <div class="mb-3">
-                    <?= form_label('Juragan', 'pilihJuragan', ['class' => 'form-label']); ?>
+                    <div class="d-flex align-items-center gap-3 mb-1">
+                        <?= form_label('Juragan', 'pilihJuragan', ['class' => 'form-label mb-0']); ?>
+                        <span class="ms-auto d-flex gap-3">
+                            <button type="button" class="btn btn-sm btn-link p-0 small fw-semibold text-nowrap"
+                                data-pilih-semua="pilihJuragan" title="Centang semua juragan tanpa terkecuali">Pilih semua juragan</button>
+                            <button type="button" class="btn btn-sm btn-link p-0 small text-muted text-nowrap"
+                                data-kosongkan="pilihJuragan" title="Buang semua centang">Kosongkan</button>
+                        </span>
+                    </div>
                     <div class="gulir-pilihan border rounded-3 p-2 d-flex flex-wrap gap-2<?= $err('juragan') ? ' border-danger' : '' ?>" id="pilihJuragan" data-juragan="<?= $juragan_isi ?>">
                         <div class="text-muted small p-1">memuat daftar juragan ...</div>
                     </div>
@@ -308,7 +316,15 @@ $per_halaman = (int) config('Pager')->perPage;
                     </div>
                 </div>
                 <div class="mb-3">
-                    <?= form_label('Juragan', 'pilihJuraganSunting', ['class' => 'form-label']); ?>
+                    <div class="d-flex align-items-center gap-3 mb-1">
+                        <?= form_label('Juragan', 'pilihJuraganSunting', ['class' => 'form-label mb-0']); ?>
+                        <span class="ms-auto d-flex gap-3">
+                            <button type="button" class="btn btn-sm btn-link p-0 small fw-semibold text-nowrap"
+                                data-pilih-semua="pilihJuraganSunting" title="Centang semua juragan tanpa terkecuali">Pilih semua juragan</button>
+                            <button type="button" class="btn btn-sm btn-link p-0 small text-muted text-nowrap"
+                                data-kosongkan="pilihJuraganSunting" title="Buang semua centang">Kosongkan</button>
+                        </span>
+                    </div>
                     <div class="gulir-pilihan border rounded-3 p-2 d-flex flex-wrap gap-2" id="pilihJuraganSunting">
                         <div class="text-muted small p-1">memuat daftar juragan ...</div>
                     </div>
@@ -416,16 +432,20 @@ $js = <<< JS
     	}
 
     	// satu pil = satu <input name="juragan[]">: jalur simpan controller tidak berubah,
-    	// dan kelas btn-check dari Bootstrap yang mewarnai pilnya jadi tidak perlu tombol CTRL
-    	function pilJuragan(item, terpilih) {
-    			var id = 'pil-juragan-' + item.id;
+    	// dan kelas btn-check dari Bootstrap yang mewarnai pilnya jadi tidak perlu tombol CTRL.
+    	// awalan dipakai di id supaya dua pemilih di halaman ini (tambah & sunting) tidak
+    	// berebut id yang sama — label[for] hanya menunjuk elemen pertama di dokumen, jadi
+    	// tanpa pembeda ini pil di modal sunting mengklik checkbox modal tambah dan pilnya
+    	// sendiri tidak pernah berubah keadaan.
+    	function pilJuragan(item, terpilih, awalan) {
+    			var id = 'pil-' + awalan + '-' + item.id;
 
     			return '<input class="btn-check" type="checkbox" name="juragan[]" value="' + aman(item.id) + '"'
     				+ ' id="' + id + '" autocomplete="off"' + (terpilih ? ' checked' : '') + '>'
     				+ '<label class="btn btn-sm rounded-pill btn-outline-secondary" for="' + id + '">' + aman(item.nama) + '</label>';
     	}
 
-    	function gambarJuragan(wadah, punya) {
+    	function gambarJuragan(wadah, punya, awalan) {
     			var daftar = semuaJuragan.slice();
 
     			// juragan milik akun yang sudah tidak ada di daftar master tetap ikut ditampilkan,
@@ -436,7 +456,7 @@ $js = <<< JS
 
     			var html = [];
     			for (var k = 0; k < daftar.length; k++) {
-    					html.push(pilJuragan(daftar[k], punyaId(punya, daftar[k].id)));
+    					html.push(pilJuragan(daftar[k], punyaId(punya, daftar[k].id), awalan));
     			}
 
     			wadah.html(html.length ? html.join('') : '<div class="text-muted small p-1">belum ada juragan</div>');
@@ -450,7 +470,18 @@ $js = <<< JS
     			var punya   = [];
     			for (var i = 0; i < dipilih.length; i++) { punya.push({ id: dipilih[i], nama: '' }); }
 
-    			gambarJuragan($('#pilihJuragan'), punya);
+    			gambarJuragan($('#pilihJuragan'), punya, 'tambah');
+    	});
+
+    	// daftar tokonya bisa berpuluh pil; tombol ini mencontreng (atau mengosongkan)
+    	// seluruh isi satu wadah supaya tidak perlu klik satu-satu. Name field-nya tetap
+    	// juragan[], jadi jalur simpan controller tidak ikut berubah.
+    	$(document).on('click', '[data-pilih-semua]', function () {
+    			$('#' + $(this).data('pilih-semua')).find('input[type="checkbox"]').prop('checked', true);
+    	});
+
+    	$(document).on('click', '[data-kosongkan]', function () {
+    			$('#' + $(this).data('kosongkan')).find('input[type="checkbox"]').prop('checked', false);
     	});
 
     	function saringPengguna() {
@@ -641,7 +672,7 @@ $js = <<< JS
     		}).done(function(a){
     				var punya = keDaftar((a[b] && a[b].juragan) || []);
 
-    				gambarJuragan($('#pilihJuraganSunting'), punya);
+    				gambarJuragan($('#pilihJuraganSunting'), punya, 'sunting');
     		});
     	});
     });
