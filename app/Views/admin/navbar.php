@@ -86,6 +86,13 @@ $settingsSubmenu = [
         animation: notif-kedip 1.2s ease-in-out infinite;
     }
 
+    /* Loncengnya duduk 1px lebih tinggi dari hamburger, logo, dan avatar (kotak
+       <a>-nya pakai p-2 sedangkan tombol lain p-1/p-0), jadi geser 1px ke bawah
+       supaya sebaris. Titik merangnya ikut karena posisinya di dalam <a> ini. */
+    .mobile-topbar a[data-notif-toggle="1"] {
+        top: 1px;
+    }
+
     @keyframes notif-kedip {
         0%, 100% { opacity: 1; }
         50% { opacity: 0.2; }

@@ -11,6 +11,24 @@ $session  = \Config\Services::session();
 ?>
 <?= $this->extend('template/main') ?>
 
+<?= $this->section('css') ?>
+<style>
+.meta-transaksi a,
+.aksi-kepala a {
+    text-decoration: none;
+}
+
+/* sama seperti halaman admin: kotak filter pembayaran dulu cuma selebar
+   isinya sehingga kanan kartu menganggur; ia memanjang mengisi sisanya dan di
+   layar sempit naik ke barisnya sendiri sambil melebar sampai tepi kartu */
+@media (max-width: 575.98px) {
+    #filterKategori {
+        width: 100%;
+    }
+}
+</style>
+<?= $this->endSection() ?>
+
 <?= $this->section('content') ?>
 <?= $this->include('user/navbar') ?>
 
@@ -70,8 +88,8 @@ $session  = \Config\Services::session();
                 'data-bs-target' => '#modalCari',
                 'data-bs-toggle' => 'modal',
             ]) ?>
-            <?= anchor('user/invoices/tulis', '<i class="fal fa-pen-nib"></i> Tulis Orderan', [
-                'class' => 'btn rounded-pill border-0 bg-brand-500 font-semibold text-white hover:bg-brand-600',
+            <?= anchor('user/invoices/tulis', '<i class="fal fa-pen-nib"></i> <span class="hidden sm:inline">Tulis Orderan</span>', [
+                'class' => 'btn rounded-pill border-0 bg-brand-500 font-semibold text-white hover:bg-brand-600 shrink-0',
                 'title' => 'Buat transaksi baru',
             ]) ?>
         </div>
@@ -100,7 +118,7 @@ $session  = \Config\Services::session();
                 <label class="text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500" for="filterKategori"><?= esc($label_filter) ?></label>
 
                 <?= form_dropdown('kategori', $opsi_kategori, $kategori, [
-                    'class'       => 'form-select form-select-sm w-auto',
+                    'class'       => 'form-select form-select-sm w-auto flex-fill min-w-0',
                     'id'          => 'filterKategori',
                     'data-tautan' => site_url('user/invoices/lihat/' . $juragan . '/' . $hal),
                 ]) ?>
@@ -169,17 +187,17 @@ $session  = \Config\Services::session();
         }
 
         $wajib_bayar = $harga_barang;
+        $time        = Time::createFromFormat('Y-m-d', $pesanan->tanggal_pesan);
         ?>
-        <div class="kartu-invoice mb-4 rounded-[1.5rem] border border-ink-200 bg-white shadow-sm">
-            <div class="p-3 lg:p-4">
-                <div class="flex flex-col sm:flex-row justify-between items-start gap-4">
-                    <div class="min-w-0">
-                        <?php $time = Time::createFromFormat('Y-m-d', $pesanan->tanggal_pesan); ?>
-                        <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
-                            <span class="inline-flex h-[2.6rem] w-[2.6rem] shrink-0 items-center justify-center rounded-[0.9rem] border border-brand-100 bg-brand-50 text-lg text-brand-500"><i class="fal fa-receipt"></i></span>
+        <div class="kartu-invoice mb-4 rounded-2xl sm:rounded-[1.5rem] border border-ink-200 bg-white shadow-sm transition hover:shadow-md">
+            <div class="p-3.5 sm:p-5">
+                <div class="flex flex-col lg:flex-row justify-between items-start gap-3 lg:gap-4">
+                    <div class="min-w-0 w-full lg:w-auto">
+                        <div class="flex flex-wrap items-center gap-2 sm:gap-x-3 sm:gap-y-2">
+                            <span class="inline-flex h-[2.6rem] w-[2.6rem] shrink-0 items-center justify-center rounded-[0.9rem] border border-brand-100 bg-brand-50 text-lg text-brand-500 shadow-xs"><i class="fal fa-receipt"></i></span>
 
                             <div class="min-w-0">
-                                <h5 class="text-[1.15rem] font-extrabold tracking-[-0.01em] mb-0">#<?= esc($pesanan->seri) ?></h5>
+                                <h5 class="text-[1.15rem] font-extrabold tracking-[-0.01em] text-ink-900 mb-0">#<?= esc($pesanan->seri) ?></h5>
                                 <p class="text-ink-500 text-xs mb-0">( <?= $time->toLocalizedString('EEEE, d MMMM yyyy') ?> )</p>
                             </div>
 
@@ -195,25 +213,25 @@ $session  = \Config\Services::session();
                                 $pil_dead = $dead['kelas'] === ''
                                     ? 'border border-ink-200 bg-ink-50 text-ink-700'
                                     : $pil[$dead['kelas']]['pill']; ?>
-                                <span class="rounded-full px-3 py-1 text-xs font-semibold <?= $pil_dead ?>" title="Tenggat: <?= esc($dead['teks']) ?>">
-                                    <i class="fal fa-clock me-1"></i><?= esc($dead['teks']) ?>
-                                </span>
-                            <?php endif; ?>
+                                    <span class="rounded-full px-2.5 py-0.5 text-xs font-semibold <?= $pil_dead ?>" title="Tenggat: <?= esc($dead['teks']) ?>">
+                                        <i class="fal fa-clock me-1"></i><?= esc($dead['teks']) ?>
+                                    </span>
+                                <?php endif; ?>
 
-                            <div class="ms-auto flex items-center gap-1 max-sm:ms-0">
+                            <div class="aksi-kepala flex items-center gap-1">
                                 <a class="inline-flex cursor-pointer items-center gap-1 rounded-[0.7rem] border border-ink-200 bg-ink-50 px-2.5 py-1 text-sm text-ink-700 transition hover:bg-ink-100 hover:text-ink-900" href="<?= site_url('download/penjahit/' . $pesanan->seri) ?>" target="_blank" rel="noopener" title="Cetak lembar kerja penjahit (tanpa harga)">
-                                    <i class="fal fa-cut"></i> <span class="hidden md:inline">Penjahit</span>
+                                    <i class="fal fa-cut text-ink-500"></i> <span class="hidden md:inline">Penjahit</span>
                                 </a>
                                 <a class="inline-flex cursor-pointer items-center gap-1 rounded-[0.7rem] border border-ink-200 bg-ink-50 px-2.5 py-1 text-sm text-ink-700 transition hover:bg-ink-100 hover:text-ink-900" href="<?= site_url('download/invoice/' . $pesanan->seri) ?>" target="_blank" rel="noopener" title="Cetak invoice untuk pelanggan">
-                                    <i class="fal fa-print"></i> <span class="hidden md:inline">Invoice</span>
+                                    <i class="fal fa-print text-ink-500"></i> <span class="hidden md:inline">Invoice</span>
                                 </a>
-                                <button type="button" class="inline-flex cursor-pointer items-center gap-1 rounded-[0.7rem] border border-ink-200 bg-ink-50 px-2.5 py-1 text-sm text-ink-700 transition hover:bg-ink-100 hover:text-ink-900 salinTautan" data-link="<?= esc(site_url('download/invoice/' . $pesanan->seri), 'attr') ?>" title="Salin tautan invoice">
-                                    <i class="fal fa-copy"></i><span class="sr-only">Salin tautan</span>
+                                <button type="button" class="inline-flex cursor-pointer items-center gap-1 rounded-[0.7rem] border border-ink-200 bg-ink-50 px-2 py-1 text-sm text-ink-700 transition hover:bg-ink-100 hover:text-ink-900 salinTautan" data-link="<?= esc(site_url('download/invoice/' . $pesanan->seri), 'attr') ?>" title="Salin tautan invoice">
+                                    <i class="fal fa-copy text-ink-500"></i><span class="sr-only">Salin tautan</span>
                                 </button>
                             </div>
                         </div>
 
-                        <div class="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-sm text-ink-600">
+                        <div class="meta-transaksi mt-2 flex flex-wrap gap-x-5 gap-y-1 text-sm text-ink-600">
                             <span class="inline-flex min-w-0 items-center gap-1 [&>.fal]:text-[0.85rem] [&>.fal]:text-ink-400">
                                 <i class="fal fa-store"></i>
                                 <span class="text-lowercase text-ink-500">Juragan:</span> <?= anchor('user/invoices/lihat/' . $pesanan->juragan->slug, esc($pesanan->juragan->nama)) ?>
@@ -225,8 +243,8 @@ $session  = \Config\Services::session();
                         </div>
                     </div>
 
-                    <div class="min-w-0 shrink grow basis-40">
-                        <ul class="list-inline mb-0 timeliner">
+                    <div class="min-w-0 shrink grow lg:basis-40 max-lg:w-full max-lg:overflow-x-auto pb-1">
+                        <ul class="list-inline mb-0 timeliner max-lg:!ms-0">
                             <?= timeline_langkah('start full', 'plus-circle', 'Buat', $time, 'Pesanan Ditambahkan') ?>
 
                             <?= status_pembayaran($pesanan->pembayaran, $pesanan->status_pembayaran) ?>
@@ -271,11 +289,12 @@ $session  = \Config\Services::session();
                         </ul>
                     </div>
                 </div>
-                <hr class="my-1 border-0 border-t border-ink-200 opacity-100" />
 
-                <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-12 lg:gap-6">
-                    <section class="col-span-full lg:col-span-6">
-                        <div class="blok h-full rounded-2xl border border-ink-200 bg-[#fcfdfe] px-[1.15rem] py-4">
+                <hr class="my-3 border-0 border-t border-ink-200 opacity-100" />
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-5">
+                    <section class="col-span-1">
+                        <div class="blok h-full rounded-2xl border border-ink-200 bg-[#fcfdfe] p-3.5 sm:p-4">
                             <h6 class="mb-2 flex items-center gap-1.5 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500 [&_.fal]:text-[0.95rem] [&_.fal]:text-ink-400">
                                 <i class="fal fa-user-circle"></i>
                                 <?= ($pesanan->kirimKepada_id === $pesanan->pemesan_id ? 'Pemesan / Kirim Kepada' : 'Pemesan') ?>
@@ -354,8 +373,8 @@ $session  = \Config\Services::session();
                         </div>
                     </section>
 
-                    <section class="col-span-full md:col-span-1 lg:col-span-6">
-                        <div class="blok h-full rounded-2xl border border-ink-200 bg-[#fcfdfe] px-[1.15rem] py-4">
+                    <section class="col-span-1">
+                        <div class="blok h-full rounded-2xl border border-ink-200 bg-[#fcfdfe] p-3.5 sm:p-4">
                             <h6 class="mb-2 flex items-center gap-1.5 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500 [&_.fal]:text-[0.95rem] [&_.fal]:text-ink-400"><i class="fal fa-receipt"></i> Info Biaya</h6>
 
                             <?php
@@ -587,13 +606,13 @@ $session  = \Config\Services::session();
                 $isi_keterangan  = trim((string) $pesanan->keterangan);
                 ?>
                 <?php if ($rincian_pesanan !== []) { ?>
-                    <div class="blok rounded-2xl border border-ink-200 border-l-[3px] border-l-proses bg-[#fcfdfe] px-[1.15rem] py-4 mt-4">
-                        <h6 class="mb-2 flex items-center gap-1.5 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500 [&_.fal]:text-[0.95rem] [&_.fal]:text-ink-400"><i class="fal fa-list-check"></i> Detail Pesanan</h6>
-                        <div class="grid grid-cols-[repeat(auto-fit,minmax(12rem,1fr))] gap-x-4 gap-y-2.5">
+                    <div class="blok rounded-2xl border border-ink-200 border-l-[3px] border-l-proses bg-[#fcfdfe] p-3.5 sm:p-4 mt-4">
+                        <h6 class="mb-2.5 flex items-center gap-1.5 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500 [&_.fal]:text-[0.95rem] [&_.fal]:text-ink-400"><i class="fal fa-list-check"></i> Detail Pesanan</h6>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 sm:gap-3">
                             <?php foreach ($rincian_pesanan as $item) { ?>
-                                <div class="min-w-0">
-                                    <span class="block text-[0.7rem] font-bold uppercase tracking-[0.08em] text-ink-500 [&_.fal]:mr-1 [&_.fal]:text-ink-400"><i class="fal <?= $item['ikon'] ?>"></i> <?= esc($item['label']) ?></span>
-                                    <span class="mt-[0.1rem] block break-words text-[0.92rem] font-semibold leading-normal <?= $item['nilai'] === null ? 'text-ink-400' : 'text-ink-900' ?>"><?= $item['nilai'] === null ? '-' : esc($item['nilai']) ?></span>
+                                <div class="min-w-0 rounded-xl bg-ink-50/70 p-2 sm:p-2.5 border border-ink-100">
+                                    <span class="block text-[0.68rem] font-bold uppercase tracking-[0.08em] text-ink-500 truncate"><i class="fal <?= $item['ikon'] ?> me-1 text-ink-400"></i> <?= esc($item['label']) ?></span>
+                                    <span class="mt-0.5 block break-words text-xs sm:text-sm font-semibold leading-snug <?= $item['nilai'] === null ? 'text-ink-400' : 'text-ink-900' ?>"><?= $item['nilai'] === null ? '-' : esc($item['nilai']) ?></span>
                                 </div>
                             <?php } ?>
                         </div>
@@ -634,12 +653,12 @@ $session  = \Config\Services::session();
                     </div>
                 <?php } ?>
 
-                <hr class="my-2 border-0 border-t border-ink-200 opacity-100" />
+                <hr class="my-3 border-0 border-t border-ink-200 opacity-100" />
 
-                <div class="aksi flex flex-wrap items-center gap-1">
+                <div class="aksi flex flex-wrap items-center gap-1.5 sm:gap-2">
                     <?php if (! $sudah_lunas) : ?>
                         <?= form_button([
-                            'class'          => 'btn btn-outline-secondary tambahBayar',
+                            'class'          => 'btn btn-sm rounded-lg btn-outline-secondary tambahBayar',
                             'content'        => '<i class="fal fa-plus-circle"></i> Tambah Pembayaran',
                             'data-invoice'   => $pesanan->id_invoice,
                             'data-juragan'   => $pesanan->juragan_id,
@@ -654,7 +673,7 @@ $session  = \Config\Services::session();
                         // tombol cek pembayaran
                         // hanya tampil jika ada pembayaran yang perlu dicek
                         echo form_button([
-                            'class'          => 'btn btn-warning pesanBayar',
+                            'class'          => 'btn btn-sm rounded-lg btn-warning pesanBayar',
                             'content'        => '<i class="fal fa-wallet"></i> Cek Pembayaran',
                             'data-invoice'   => $pesanan->id_invoice,
                             'data-juragan'   => $pesanan->juragan_id,

@@ -1,13 +1,63 @@
 <?= $this->extend('template/main') ?>
 
+<?= $this->section('css') ?>
+<style>
+    /* Hanya untuk tampilan responsif: tanggal ditarik ke tepi kanan barisnya
+       supaya baris badge + tanggal terpakai penuh. Di atas 992px tidak ada
+       satu pun yang berubah dari susunan aslinya. */
+    @media (max-width: 991.98px) {
+        .pengingat-waktu {
+            justify-content: space-between;
+        }
+    }
+
+    /* Kartu KPI di layar sempit hanya kebagian setengah lebar (134px ruang
+       isinya), sementara angkanya ditulis penuh: "Rp 8.328.184.447" butuh
+       159px pada ukuran h4 bawaan sehingga jatuh ke baris kedua dan kartunya
+       jadi lebih tinggi dari tetangganya. Angkanya dikecilkan ke 1,05rem
+       (butuh 124px, sisa 10px) dan labelnya ke 0,72rem supaya "Follow-up
+       Tagihan" tidak belah dua. Desktop tidak disentuh. */
+    @media (max-width: 767.98px) {
+        .card h3.fw-bold,
+        .card h4.fw-bold {
+            font-size: 1.05rem;
+        }
+
+        .card span.text-muted.small.fw-semibold {
+            font-size: 0.72rem;
+        }
+
+        /* grup kartu kedua tidak memakai h-100 seperti grup pertama; hanya di
+           layar sempit tingginya disamakan supaya dua kartu sekolom tidak beda */
+        .kartu-kpi-sejajar {
+            height: 100%;
+        }
+    }
+
+    /* Judul halaman di layar sempit ikut ukuran judul halaman lain: rumus h3
+       Bootstrap, sama seperti <h1 class="h3"> di Produk / Pencatatan COD.
+       Desktop tidak disentuh, tetap ukuran h4 bawaannya. */
+    @media (max-width: 991.98px) {
+        .judul-dasbor {
+            font-size: calc(1.3rem + 0.6vw);
+        }
+    }
+</style>
+<?= $this->endSection() ?>
+
 <?= $this->section('content') ?>
 <?= $this->include('admin/navbar') ?>
 
 <div class="container-xxl py-4">
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
         <div>
-            <h4 class="mb-0 fw-bold">
-                <i class="fal fa-chart-pie text-primary me-2"></i> Dashboard CRM &amp; WhatsApp Center
+            <h4 class="mb-0 fw-bold judul-dasbor">
+                <i class="fal fa-chart-pie text-primary me-2 d-none d-lg-inline"></i>
+                <?php /* desktop persis seperti semula (ikon + judul penuh); di bawah
+                        breakpoint kolomnya (992px) ikon dan "& WhatsApp Center"
+                        dilepas supaya judulnya muat satu baris */ ?>
+                <span class="d-lg-none">Dashboard CRM</span>
+                <span class="d-none d-lg-inline">Dashboard CRM &amp; WhatsApp Center</span>
             </h4>
         </div>
         <div class="d-flex align-items-center gap-2 flex-nowrap">
@@ -130,29 +180,29 @@
     <!-- Ringkasan Akumulasi & Finansial -->
     <div class="row g-3 mb-4">
         <div class="col-md-3 col-6">
-            <div class="card border-0 shadow-sm bg-white p-3">
-                <span class="text-muted small fw-semibold">Total Pelanggan Terdaftar</span>
+            <div class="card border-0 shadow-sm bg-white p-3 kartu-kpi-sejajar">
+                <span class="text-muted small fw-semibold">Total Pelanggan<span class="d-none d-lg-inline"> Terdaftar</span></span>
                 <h4 class="fw-bold mb-0 text-dark mt-1"><?= number_format($ringkasan['total_pelanggan']) ?> customer</h4>
                 <div class="small text-muted" style="font-size: 11px;">database kontak & akun</div>
             </div>
         </div>
         <div class="col-md-3 col-6">
-            <div class="card border-0 shadow-sm bg-white p-3">
+            <div class="card border-0 shadow-sm bg-white p-3 kartu-kpi-sejajar">
                 <span class="text-muted small fw-semibold">Akumulasi Omset POS</span>
                 <h4 class="fw-bold mb-0 text-success mt-1">Rp <?= number_format($ringkasan['total_omset'], 0, ',', '.') ?></h4>
                 <div class="small text-muted" style="font-size: 11px;">seluruh riwayat transaksi</div>
             </div>
         </div>
         <div class="col-md-3 col-6">
-            <div class="card border-0 shadow-sm bg-white p-3">
-                <span class="text-muted small fw-semibold">Tagihan Belum Lunas</span>
+            <div class="card border-0 shadow-sm bg-white p-3 kartu-kpi-sejajar">
+                <span class="text-muted small fw-semibold"><span class="d-none d-lg-inline">Tagihan </span>Belum Lunas</span>
                 <h4 class="fw-bold mb-0 text-danger mt-1">Rp <?= number_format($ringkasan['total_piutang'], 0, ',', '.') ?></h4>
                 <div class="small text-muted" style="font-size: 11px;"><?= number_format($ringkasan['tagihan_pending']) ?> invoice pending</div>
             </div>
         </div>
         <div class="col-md-3 col-6">
-            <div class="card border-0 shadow-sm bg-white p-3">
-                <span class="text-muted small fw-semibold">Peluang Merge Akun Duplikat</span>
+            <div class="card border-0 shadow-sm bg-white p-3 kartu-kpi-sejajar">
+                <span class="text-muted small fw-semibold">Peluang Merge<span class="d-none d-lg-inline"> Akun Duplikat</span></span>
                 <h4 class="fw-bold mb-0 text-primary mt-1"><?= number_format($ringkasan['duplikat_terdeteksi']) ?> grup</h4>
                 <div class="small text-muted" style="font-size: 11px;"><a href="<?= site_url('admin/crm/duplikat') ?>" class="text-decoration-none">Periksa & gabungkan &rarr;</a></div>
             </div>
@@ -164,13 +214,16 @@
         <!-- Kolom Kiri: Reminder & Jadwal Penting Hari Ini -->
         <div class="col-lg-7">
             <div class="card border-0 shadow-sm h-100">
-                <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                <div class="card-header bg-white py-3 border-bottom d-lg-flex justify-content-between align-items-center">
                     <h6 class="fw-bold mb-0">
                         <i class="fal fa-bell text-warning me-2"></i> Pengingat & Tindakan Hari Ini
                     </h6>
-                    <a href="<?= site_url('admin/crm/followup?tab=reminder') ?>" class="small text-decoration-none">
-                        Lihat Semua Jadwal &rarr;
-                    </a>
+                    <?php /* desktop: tautannya satu baris dengan judulnya di sisi kanan */ ?>
+                    <div class="text-end d-none d-lg-block">
+                        <a href="<?= site_url('admin/crm/followup?tab=reminder') ?>" class="small text-decoration-none">
+                            Lihat Semua Jadwal &rarr;
+                        </a>
+                    </div>
                 </div>
                 <div class="card-body p-0">
                     <?php if (empty($reminders)): ?>
@@ -182,10 +235,14 @@
                         <div class="list-group list-group-flush">
                             <?php foreach ($reminders as $r): ?>
                                 <div class="list-group-item p-3 d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <div class="d-flex align-items-center gap-2 mb-1">
+                                    <?php /* pembungkus teksnya harus memanjang mengisi sisa
+                                            baris, kalau tidak baris badge + tanggal ikut
+                                            mengecil pas isi teksnya dan tanggalnya tidak
+                                            bisa digeser ke kanan */ ?>
+                                    <div class="flex-grow-1 min-w-0">
+                                        <div class="pengingat-waktu d-flex align-items-center gap-2 mb-1">
                                             <span class="badge bg-<?= esc($r['warna']) ?>"><?= esc($r['status_waktu']) ?></span>
-                                            <span class="text-muted small"><i class="fal fa-calendar-alt me-1"></i><?= date('d M Y', strtotime($r['tanggal'])) ?></span>
+                                            <span class="text-muted small text-nowrap"><i class="fal fa-calendar-alt me-1"></i><?= date('d M Y', strtotime($r['tanggal'])) ?></span>
                                         </div>
                                         <h6 class="mb-1 fw-bold text-dark"><?= esc($r['judul']) ?></h6>
                                         <p class="mb-0 text-muted small"><?= esc($r['deskripsi']) ?></p>
@@ -204,6 +261,14 @@
                             <?php endforeach; ?>
                         </div>
                     <?php endif; ?>
+                </div>
+                <?php /* layar sempit: tautannya masuk ke dalam kartu, di pojok kanan
+                        bawah daftar, jadi ia ikut turun kalau pengingatnya lebih
+                        dari satu; paddingnya mengikuti isian kartu (p-3) */ ?>
+                <div class="text-end px-3 pb-3 d-lg-none">
+                    <a href="<?= site_url('admin/crm/followup?tab=reminder') ?>" class="small text-decoration-none">
+                        Lihat Semua Jadwal &rarr;
+                    </a>
                 </div>
             </div>
         </div>
