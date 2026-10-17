@@ -297,9 +297,10 @@ class Invoices extends BaseController
                 $peta = sinkron_dibeli($invoice_id, $taut);
 
                 // qty dijaga terhadap unit yang masih tersedia; galat ini ikut
-                // menggulungkan seluruh tulisan orderan
+                // menggulungkan seluruh tulisan orderan. Kolam yang dipakai ikut
+                // tipe orderan supaya stok sewa tidak termakan order pembuatan.
                 $galat  = array_merge(
-                    (new StokModel())->lebih($taut, $invoice_id),
+                    (new StokModel())->lebih($taut, StokModel::kolamDariTipe($rincian['tipe'] ?? null), $invoice_id),
                     simpan_ukuran_produk($invoice_id, $peta, $produk['ukuran']),
                     simpan_anggota($invoice_id, $this->request->getPost('anggota_dikirim'), $this->request->getPost('anggota'))
                 );
@@ -434,7 +435,7 @@ class Invoices extends BaseController
             // pemakaian nota ini sendiri tidak dihitung ulang saat memeriksa sisa
             // rak, jadi menyunting nota yang sudah keluar tetap boleh
             $galat  = array_merge(
-                (new StokModel())->lebih($taut, $invoice_id),
+                (new StokModel())->lebih($taut, StokModel::kolamDariTipe(is_array($rincian_invoice) ? ($rincian_invoice['tipe'] ?? null) : null), $invoice_id),
                 simpan_ukuran_produk($invoice_id, $peta, $produk['ukuran']),
                 simpan_anggota($invoice_id, $this->request->getPost('anggota_dikirim'), $this->request->getPost('anggota'))
             );

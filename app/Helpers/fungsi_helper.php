@@ -996,11 +996,12 @@ if (! function_exists('baca_rincian')) {
 if (! function_exists('tipe_pesanan')) {
     /**
      * Jenis pesanan. Menentukan inputan jadwal yang muncul di form: deadline
-     * untuk pembuatan, tanggal ambil/kembali dan jaminan untuk sewa.
+     * untuk pembuatan, tanggal ambil/kembali dan jaminan untuk sewa. Sekalian
+     * menentukan kolam stok yang dipakai, jadi label jual ikut disebut.
      */
     function tipe_pesanan(): array
     {
-        return ['pembuatan' => 'Pembuatan', 'sewa' => 'Sewa'];
+        return ['pembuatan' => 'Pembuatan/Jual', 'sewa' => 'Sewa'];
     }
 }
 
