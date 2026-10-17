@@ -60,21 +60,17 @@ $keadaan_baris = static function (int $stok) use ($ambangnya): array {
     return $stok <= $ambangnya ? ['warning', 'Menipis'] : ['success', 'Aman'];
 };
 
-// data satu varian untuk modal sunting; esc() yang mengemas atributnya.
-// Harga dan stok yang dibawa adalah angka kolam yang sedang dibuka, karena
-// form sunting juga menulis ke kolam itu saja.
-$barang = static function (array $b) use ($kolamStok, $kolamHarga): array {
-    return [
-        'id'         => (int) $b['id_stok'],
-        'kode'       => (string) $b['kode'],
-        'ukuran'     => (string) ($b['ukuran'] ?? ''),
-        'harga'      => (int) $b[$kolamHarga],
-        'stok'       => (int) $b[$kolamStok],
-        'keterangan' => (string) ($b['keterangan'] ?? ''),
-        'juragan'    => (string) $b['nama_juragan'],
-        'juragan_id' => (int) $b['juragan_id'],
-    ];
-};
+// data satu varian untuk modal sunting; esc() yang mengemas atributnya
+$barang = static fn (array $b): array => [
+    'id'         => (int) $b['id_stok'],
+    'kode'       => (string) $b['kode'],
+    'ukuran'     => (string) ($b['ukuran'] ?? ''),
+    'harga'      => (int) $b['harga'],
+    'stok'       => (int) $b['stok'],
+    'keterangan' => (string) ($b['keterangan'] ?? ''),
+    'juragan'    => (string) $b['nama_juragan'],
+    'juragan_id' => (int) $b['juragan_id'],
+];
 
 // kartu utuh untuk tombol Edit: pemilih varian diisi dari daftar ini
 $kartu_barang = static function (array $p) use ($barang): string {
@@ -82,7 +78,6 @@ $kartu_barang = static function (array $p) use ($barang): string {
         'kode'       => $p['kode'],
         'juragan_id' => (int) $p['juragan_id'],
         'nama'       => (string) $p['nama_juragan'],
-        'poin'       => (int) ($p['poin'] ?? 0),
         'varian'     => array_map($barang, $p['varian']),
     ]));
 };
@@ -124,8 +119,8 @@ $kueriTab = array_filter([
         <?php
         $ringkasan = [
             ['Varian tercatat', (string) $ringkas['varian'], 'fa-shapes'],
-            ['Total unit ' . $kataKolam, (string) $ringkas['unit'], 'fa-boxes-stacked'],
-            ['Nilai stok ' . $kataKolam, $rupiah((int) $ringkas['nilai']), 'fa-coins'],
+            ['Total unit', (string) $ringkas['unit'], 'fa-boxes-stacked'],
+            ['Nilai stok', $rupiah((int) $ringkas['nilai']), 'fa-coins'],
             ['Menipis', (string) $ringkas['menipis'], 'fa-triangle-exclamation'],
             ['Habis', (string) $ringkas['habis'], 'fa-circle-xmark'],
         ];
@@ -276,13 +271,13 @@ $kueriTab = array_filter([
                                         <div class="varian-daftar mb-2">
                                             <?php foreach ($varian as $b) {
                                                 $ukuran_baris = (string) ($b['ukuran'] ?? '');
-                                                [$vw, $label_keadaan] = $keadaan_baris((int) $b['tersedia']);
+                                                [$vw, $label_keadaan] = $keadaan_baris((int) $b['stok']);
                                                 ?>
                                                 <button type="button" class="varian-chip"
                                                     title="<?= esc($ukuran_baris === '' ? 'Tanpa ukuran' : 'Ukuran ' . $ukuran_baris) ?> · <?= esc($label_keadaan) ?> · klik untuk melihat detail"
                                                     data-varian="<?= (int) $b['id_stok'] ?>">
                                                     <span class="varian-dot<?= $vw === 'success' ? '' : ' ' . $vw ?>"></span>
-                                                    <span class="text-truncate"><?= esc($ukuran_baris === '' ? 'Tanpa ukuran' : $ukuran_baris) ?> (<?= (int) $b['tersedia'] ?>)</span>
+                                                    <span class="text-truncate"><?= esc($ukuran_baris === '' ? 'Tanpa ukuran' : $ukuran_baris) ?> (<?= (int) $b['stok'] ?>)</span>
                                                 </button>
                                             <?php } ?>
                                         </div>
@@ -302,11 +297,10 @@ $kueriTab = array_filter([
                                             </div>
                                         </div>
 
-                                        <?php if (! $bacaSaja) { ?>
                                         <div class="d-flex produk-aksi pt-2">
                                             <button type="button" class="btn btn-sm produk-aksi-tombol"
                                                 title="Tambah varian untuk <?= esc($p['kode'], 'attr') ?>"
-                                                data-tambah="<?= (string) esc(json_encode(['kode' => $p['kode'], 'juragan' => $p['juragan_id'], 'poin' => (int) ($p['poin'] ?? 0)])) ?>"
+                                                data-tambah="<?= (string) esc(json_encode(['kode' => $p['kode'], 'juragan' => $p['juragan_id']])) ?>"
                                                 data-bs-toggle="modal" data-bs-target="#modalTambahBarang">
                                                 <i class="fal fa-plus"></i> Varian
                                             </button>
@@ -323,7 +317,6 @@ $kueriTab = array_filter([
                                                 <i class="fal fa-trash"></i> Hapus
                                             </button>
                                         </div>
-                                        <?php } ?>
                                     </div>
 
                                     <?php
@@ -362,9 +355,6 @@ $kueriTab = array_filter([
                                                 <div class="fs-5 fw-bold"><?= esc($p['kode']) ?></div>
                                                 <div class="fw-bold text-brand-600"><?= $rupiah((int) $p['harga_mulai']) ?><?= $harga_lain ?></div>
                                                 <div class="small text-muted mt-1"><i class="fal fa-store me-1"></i><?= esc($p['nama_juragan']) ?></div>
-                                                <?php if ($bisaPoin) { ?>
-                                                    <div class="small mt-1"><i class="fal fa-coins text-brand-600 me-1"></i>Poin: <span class="fw-semibold text-ink-700"><?= number_format((int) ($p['poin'] ?? 0), 0, ',', '.') ?></span></div>
-                                                <?php } ?>
                                                 <div class="d-flex gap-2 mt-2">
                                                     <?php /* keadaan cukup dibaca dari warna titiknya */ ?>
                                                     <span class="varian-dot<?= $vw_kartu === 'success' ? '' : ' ' . $vw_kartu ?> align-self-center"
@@ -380,29 +370,28 @@ $kueriTab = array_filter([
                                                             <th class="text-nowrap">Harga</th>
                                                             <th>Stok</th>
                                                             <th class="d-none d-sm-table-cell">Keterangan</th>
-                                                            <?php if (! $bacaSaja) { ?><th class="w-1"></th><?php } ?>
+                                                            <th class="w-1"></th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
                                                         <?php foreach ($varian as $b) {
                                                             $ukuran_baris = (string) ($b['ukuran'] ?? '');
                                                             $ket_baris    = trim((string) ($b['keterangan'] ?? ''));
-                                                            [$bw, $bteks]  = $keadaan_baris((int) $b['tersedia']);
+                                                            [$bw, $bteks]  = $keadaan_baris((int) $b['stok']);
                                                             ?>
                                                             <tr data-varian="<?= (int) $b['id_stok'] ?>">
                                                                 <td><?= $ukuran_baris === '' ? 'Tanpa ukuran' : esc($ukuran_baris) ?></td>
-                                                                <td class="text-nowrap"><?= $rupiah((int) $b[$kolamHarga]) ?></td>
+                                                                <td class="text-nowrap"><?= $rupiah((int) $b['harga']) ?></td>
                                                                 <td>
                                                                     <?php /* angkanya saja: warna badge-nya yang menyatakan aman/menipis/habis */ ?>
                                                                     <span class="badge bg-<?= $bw ?> <?= $bw === 'warning' ? 'text-dark' : 'text-white' ?>"
-                                                        title="<?= esc($bteks) ?>"><?= (int) $b['tersedia'] ?></span>
+                                                        title="<?= esc($bteks) ?>"><?= (int) $b['stok'] ?></span>
                                                                 </td>
                                                                 <td class="small text-muted d-none d-sm-table-cell">
                                                                     <?php /* catatannya sepanjang yang diketik (maks 500), jadi tingginya
    dibatasi tiga baris dan tiap baris digulir sendiri-sendiri */ ?>
                                                                     <div class="varian-ket"><?= $ket_baris === '' ? '&mdash;' : esc($ket_baris) ?></div>
                                                                 </td>
-                                                                <?php if (! $bacaSaja) { ?>
                                                                 <td class="text-end">
                                                                     <button type="submit" class="btn btn-sm btn-outline-danger produk-aksi-ikon varian-hapus"
                                                                         title="Hapus varian ini dari daftar stok"
@@ -414,7 +403,6 @@ $kueriTab = array_filter([
                                                                         <i class="fal fa-trash"></i><span class="visually-hidden">Hapus varian</span>
                                                                     </button>
                                                                 </td>
-                                                                <?php } ?>
                                                             </tr>
                                                         <?php } ?>
                                                     </tbody>
@@ -458,8 +446,6 @@ $kueriTab = array_filter([
             // 1 = dibuka dari tombol "Varian" pada kartu: juragan dan harga ikut
             // kartunya, jadi keduanya tidak ditanyakan lagi
             'kartu'           => set_value('kartu', '0'),
-            // isian stok/harga form ini masuk ke kolam tab yang dibuka
-            'kolam'           => $kolam,
         ]) ?>
         <div class="modal-header">
             <h5 class="modal-title" id="modalTambahBarangLabel">Tambah Barang</h5>
@@ -512,7 +498,7 @@ $kueriTab = array_filter([
             </div>
             <div class="row gx-2">
                 <div class="col-6 mb-3 tambah-khusus-barang">
-                    <?= form_label('Harga ' . $kataKolam, 'harga', ['class' => 'form-label']) ?>
+                    <?= form_label('Harga', 'harga', ['class' => 'form-label']) ?>
                     <?= form_input([
                         'class'       => 'form-control' . ($err_tambah('harga') ? ' is-invalid' : ''),
                         'type'        => 'number',
@@ -541,26 +527,6 @@ $kueriTab = array_filter([
                     <?php } ?>
                 </div>
             </div>
-            <?php if ($bisaPoin) { ?>
-            <div class="row gx-2">
-                <div class="col-6 mb-3">
-                    <?= form_label('Poin Gaji', 'poin', ['class' => 'form-label']) ?>
-                    <?= form_input([
-                        'class'       => 'form-control' . ($err_tambah('poin') ? ' is-invalid' : ''),
-                        'type'        => 'number',
-                        'name'        => 'poin',
-                        'min'         => 0,
-                        'step'        => 1,
-                        'placeholder' => 'mis. 1000',
-                        'value'       => set_value('poin', '0'),
-                    ]) ?>
-                    <?php if ($err_tambah('poin')) { ?>
-                        <div class="invalid-feedback d-block"><?= esc($err_tambah('poin')) ?></div>
-                    <?php } ?>
-                    <div class="form-text">Isi 0 kalau produk ini tidak menghasilkan poin.</div>
-                </div>
-            </div>
-            <?php } ?>
             <div class="mb-3 tambah-khusus-barang">
                 <?= form_label('Catatan (opsional)', 'keterangan', ['class' => 'form-label']) ?>
                 <?= form_textarea([
@@ -643,27 +609,20 @@ $kueriTab = array_filter([
                 </div>
                 <div class="row gx-2">
                     <div class="col-6 mb-3">
-                        <?= form_label('Harga ' . $kataKolam, 'sunting_harga', ['class' => 'form-label']) ?>
+                        <?= form_label('Harga', 'sunting_harga', ['class' => 'form-label']) ?>
                         <?= form_input(['class' => 'form-control', 'type' => 'number', 'name' => 'harga', 'id' => 'sunting_harga', 'min' => 0, 'required' => '']) ?>
                         <?php if ($err_sunting('harga')) { ?>
                             <div class="text-danger small mt-1"><?= esc($err_sunting('harga')) ?></div>
                         <?php } ?>
                     </div>
                     <div class="col-6 mb-3">
-                        <?= form_label('Stok ' . $kataKolam, 'sunting_stok', ['class' => 'form-label']) ?>
+                        <?= form_label('Stok', 'sunting_stok', ['class' => 'form-label']) ?>
                         <?= form_input(['class' => 'form-control', 'type' => 'number', 'name' => 'stok', 'id' => 'sunting_stok', 'required' => '']) ?>
                         <?php if ($err_sunting('stok')) { ?>
                             <div class="text-danger small mt-1"><?= esc($err_sunting('stok')) ?></div>
                         <?php } ?>
                     </div>
                 </div>
-                <?php if ($bisaPoin) { ?>
-                <div class="mb-3">
-                    <?= form_label('Poin Gaji', 'sunting_poin', ['class' => 'form-label']) ?>
-                    <?= form_input(['class' => 'form-control', 'type' => 'number', 'name' => 'poin', 'id' => 'sunting_poin', 'min' => 0, 'step' => 1, 'placeholder' => 'mis. 1000']) ?>
-                    <div class="form-text">Poin per produk (sama untuk semua ukuran); 0 = tanpa poin.</div>
-                </div>
-                <?php } ?>
                 <div class="mb-0">
                     <?= form_label('Keterangan', 'sunting_keterangan', ['class' => 'form-label']) ?>
                     <?= form_textarea(['class' => 'form-control', 'name' => 'keterangan', 'id' => 'sunting_keterangan', 'rows' => 3, 'maxlength' => 500, 'placeholder' => 'mis. warna navy, bahan wool, catatan stok...']) ?>
@@ -902,14 +861,9 @@ $js = <<< JS
 
             // sunting yang gagal: nilai yang tadi diketik dipulihkan, bukan nilai lama
             if (suntingLama) {
-                suntingAktif = { kode: suntingLama.kode, varian: [suntingLama], poin: suntingLama.poin };
+                suntingAktif = { kode: suntingLama.kode, varian: [suntingLama] };
                 isiPemilih(suntingAktif.varian);
                 pilihVarian(suntingLama);
-
-                if (fields.poin) {
-                    fields.poin.value = suntingLama.poin || 0;
-                }
-
                 suntingLama = null;
 
                 return;
@@ -926,11 +880,6 @@ $js = <<< JS
             suntingAktif = JSON.parse(kartu);
             isiPemilih(suntingAktif.varian);
             judulSunting.textContent = 'Sunting ' + suntingAktif.kode;
-
-            // poin milik produk (satu nilai untuk semua ukuran): diisi sekali saat kartu dibuka
-            if (fields.poin) {
-                fields.poin.value = suntingAktif.poin || 0;
-            }
 
             // tombol Edit memaksa pengguna memilih varian dulu supaya tidak salah ukuran
             sembunyikanDetail();
@@ -1020,12 +969,6 @@ $js = <<< JS
                 harga.value = '';
                 modalTambah.querySelector('[name="keterangan"]').value = '';
                 kode.value = kartu === null ? '' : kartu.kode;
-
-                const poinTambah = modalTambah.querySelector('[name="poin"]');
-
-                if (poinTambah) {
-                    poinTambah.value = kartu ? (kartu.poin || 0) : '0';
-                }
             }
 
             if (kartu === null) {

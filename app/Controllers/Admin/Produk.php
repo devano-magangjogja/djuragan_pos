@@ -123,31 +123,27 @@ class Produk extends BaseController
 
         // "+ Varian" pada kartu tidak menanyakan harga: satu kartu dianggap punya
         // harga yang sama, jadi nilainya diwarisi dari varian tertua sekartu
-        $harga   = $this->hargaPost();
-        $saudara = $stokModel->sekartu($juragan_id, $kode);
+        $harga = $this->hargaPost();
 
-        if ($harga === null && $saudara === []) {
-            return redirect()->to($this->alamatKembali())->withInput()
-                ->with('gagal', 'Belum ada varian ' . $kode . ' di toko ini, jadi harganya tidak bisa diwarisi. '
-                    . 'Tambahkan lewat tombol "Tambah Barang" di atas.');
+        if ($harga === null) {
+            $saudara = $stokModel->sekartu($juragan_id, $kode);
+
+            if ($saudara === []) {
+                return redirect()->to($this->alamatKembali())->withInput()
+                    ->with('gagal', 'Belum ada varian ' . $kode . ' di toko ini, jadi harganya tidak bisa diwarisi. '
+                        . 'Tambahkan lewat tombol "Tambah Barang" di atas.');
+            }
+
+            $harga = (int) $stokModel->find($saudara[0])->harga;
         }
-
-        $lain = $saudara === [] ? null : $stokModel->find($saudara[0]);
-
-        $produk_id = jamin_produk($kode);
 
         $stokModel->insert([
             'juragan_id' => $juragan_id,
             'produk_id'  => $produk_id,
             'kode'       => $kode,
             'ukuran'     => $ukuran,
-            // hanya kolam tab yang dibuka yang diisi; harga kolam satunya diwarisi
-            // dari saudara sekartu supaya satu barang tidak berubah harga hanya
-            // karena ukuran baru ditambah lewat tab lain
-            'harga'      => $kolam === 'jual' ? ($harga ?? (int) $lain->harga) : (int) ($lain->harga ?? 0),
-            'harga_sewa' => $kolam === 'sewa' ? ($harga ?? (int) $lain->harga_sewa) : (int) ($lain->harga_sewa ?? 0),
-            'stok'       => $kolam === 'jual' ? $stokPost : 0,
-            'stok_sewa'  => $kolam === 'sewa' ? $stokPost : 0,
+            'harga'      => $harga,
+            'stok'       => (int) $this->request->getPost('stok'),
             'keterangan' => $this->keteranganPost(),
         ]);
 
@@ -228,15 +224,9 @@ class Produk extends BaseController
                 ->with('gagal', 'Varian ' . $kode . ' ' . $ukuran . ' sudah terdaftar di toko itu.');
         }
 
-        $produk_id = jamin_produk($kode);
-
-        // sunting hanya menyentuh kolam tab yang dibuka; kolam satunya dibiarkan
-        // apa adanya supaya pindah tab tidak pernah mengubah angka yang lain
-        [$kolomStok, $kolomHarga] = StokModel::kolomKolam(StokModel::kolam((string) $this->request->getPost('kolam')));
-
-        $data = [
+        $stokModel->update($id, [
             'juragan_id' => $juragan_baru,
-            'produk_id'  => $produk_id,
+            'produk_id'  => jamin_produk($kode),
             'kode'       => $kode,
             'ukuran'     => $ukuran,
             'keterangan' => $this->keteranganPost(),
