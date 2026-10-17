@@ -9,6 +9,8 @@ use App\Models\InvoiceModel;
 use App\Models\JuraganModel;
 use App\Models\NilaiUkuranModel;
 use App\Models\PembayaranModel;
+use App\Models\PoinPenjualanModel;
+use App\Models\StokModel;
 use App\Models\UkuranKomponenModel;
 use App\Models\UserModel;
 use CodeIgniter\I18n\Time;
@@ -212,6 +214,9 @@ class Invoices extends BaseController
             // simpan notif
             simpan_notif(3, $nota->juragan_id, $invoice_id);
 
+            // nota batal tidak boleh menyumbang poin gaji lagi
+            (new PoinPenjualanModel())->cabut($invoice_id);
+
             return $this->response->setJSON(['status' => 'Orderan dihapus', 'url' => site_url('admin/invoices')]);
         }
 
@@ -288,9 +293,14 @@ class Invoices extends BaseController
 
                 // tautan stok diperiksa di server: id_stok datang dari peramban,
                 // jadi bisa saja milik toko lain atau tidak ada sama sekali
-                $peta = sinkron_dibeli($invoice_id, tautkan_stok($produk['baris'], (int) $juragan_id));
+                $taut = tautkan_stok($produk['baris'], (int) $juragan_id);
+                $peta = sinkron_dibeli($invoice_id, $taut);
 
+                // qty dijaga terhadap unit yang masih tersedia; galat ini ikut
+                // menggulungkan seluruh tulisan orderan. Kolam yang dipakai ikut
+                // tipe orderan supaya stok sewa tidak termakan order pembuatan.
                 $galat  = array_merge(
+                    (new StokModel())->lebih($taut, StokModel::kolamDariTipe($rincian['tipe'] ?? null), $invoice_id),
                     simpan_ukuran_produk($invoice_id, $peta, $produk['ukuran']),
                     simpan_anggota($invoice_id, $this->request->getPost('anggota_dikirim'), $this->request->getPost('anggota'))
                 );
@@ -419,8 +429,13 @@ class Invoices extends BaseController
 
             // tokonya sudah dipastikan milik akun ini di atas; tautan stok yang
             // bukan barang toko itu dilepas sebelum barisnya ditulis
-            $peta = sinkron_dibeli($invoice_id, tautkan_stok($produk['baris'], (int) $this->request->getPost('juragan')));
+            $taut = tautkan_stok($produk['baris'], (int) $this->request->getPost('juragan'));
+            $peta = sinkron_dibeli($invoice_id, $taut);
+
+            // pemakaian nota ini sendiri tidak dihitung ulang saat memeriksa sisa
+            // rak, jadi menyunting nota yang sudah keluar tetap boleh
             $galat  = array_merge(
+                (new StokModel())->lebih($taut, StokModel::kolamDariTipe(is_array($rincian_invoice) ? ($rincian_invoice['tipe'] ?? null) : null), $invoice_id),
                 simpan_ukuran_produk($invoice_id, $peta, $produk['ukuran']),
                 simpan_anggota($invoice_id, $this->request->getPost('anggota_dikirim'), $this->request->getPost('anggota'))
             );

@@ -682,6 +682,10 @@ class InvoiceModel extends Model
             'status_pembayaran' => $status,
         ]);
 
+        // nota yang baru lunas menyumbang poin gaji, yang balik belum lunas
+        // dicabut lagi; sinkron() memutuskan sendiri arah yang benar.
+        (new PoinPenjualanModel())->sinkron((int) $invoice_id);
+
         return $status;
     }
 

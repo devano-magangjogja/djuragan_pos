@@ -1,3 +1,15 @@
+<?php
+/**
+ * Variables injected at runtime by App\Controllers\Admin\Crm::pengiriman() via view().
+ * Declared here to resolve Intelephense P1008 false positives (CI4 uses extract()).
+ *
+ * @var array  $invoices   List of shipped invoices (getInvoicePengiriman)
+ * @var string $cari       Search keyword from query string
+ * @var string $template   WhatsApp message template body
+ * @var string $provider   Active WhatsApp gateway name
+ * @var int    $isSandbox  Kapso sandbox mode flag (0/1)
+ */
+?>
 <?= $this->extend('template/main') ?>
 
 <?= $this->section('content') ?>

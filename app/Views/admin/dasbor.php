@@ -1,4 +1,27 @@
 <?php
+/**
+ * Variabel di bawah ini diisi dari Admin\Dasbor::index() lewat view('admin/dasbor', $data).
+ * CodeIgniter memanggil extract() di dalam system/View/View.php, jadi analyzers tidak
+ * bisa menelusuri asal variabelnya; blok @var ini hanya memberi tahu Intelephense.
+ *
+ * @var string                                     $title        Judul halaman
+ * @var array<string, int|float>                   $hari         Ringkasan transaksi satu hari (orderan, pelanggan, total, dibayar, lunas)
+ * @var list<array<string, int|string>>            $tren         Ringkasan per bulan untuk grafik, baris 'bulan' => 'YYYY-MM' plus orderan/total/dibayar
+ * @var array<string, array<string, int>>          $bulan         Ringkasan tren bulan ini dan bulan lalu, kuncinya label 'YYYY-MM'
+ * @var string                                     $bulan_ini     Kunci $bulan untuk bulan berjalan, mis. '2026-10'
+ * @var string                                     $bulan_lalu    Kunci $bulan untuk bulan sebelumnya
+ * @var array<string, int|float>                   $aksi          Pembayaran yang menunggu dicek (perlu_dicek, transfer, belum_bayar, nominal)
+ * @var array<string, int>                         $saringan      Jumlah order per saringan, mis. 'pesan-hari-ini', 'belum-lunas'
+ * @var list<array<string, int|string>>            $produksi      Sebaran antrean kerja per tahap (ikon, label, jumlah)
+ * @var int                                        $sisa         Total sisa tagihan dalam rupiah
+ * @var array<string, int|float>                   $stok         Ringkasan stok (menipis, habis, varian, nilai)
+ * @var list<array<string, int|string>>            $produk        Produk terlaris 3 bulan (produk, qty, nilai)
+ * @var list<array<string, int|string>>            $transaksi     Transaksi terbaru untuk tabel
+ * @var int                                        $jum_juragan   Jumlah juragan yang dipantau akun ini
+ * @var int                                        $ambangnya      Ambang stok menipis (StokModel::AMBANG_MENIPIS)
+ * @var string                                     $sasaran       Slug tujuan tautan daftar transaksi: slug juragan atau 'semua'
+ * @var list<string>                               $nama_juragan  Nama toko yang dipantau (cadangan teks sapaan)
+ */
 
 $nama_hari = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
 $nama_bulan = [1 => 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli',
@@ -45,9 +68,8 @@ $tautan_transaksi = static function (string $slug, string $seri): string {
 
 <?= $this->section('css') ?>
 <style>
-    /* Kartu Transaksi terbaru hanya selebar col-lg-8, jadi selnya dirapatkan dan
-       teks panjang dipotong "…" supaya kolom Status tidak terdorong keluar kartu.
-       Padding aslinya memakai !important di style.css, jadi di sini juga !important. */
+    /* Kartu Transaksi terbaru hanya selebar col-lg-8. Selnya dirapatkan, dan
+       padding aslinya memakai !important di style.css, jadi di sini juga !important. */
     .tabel-ringkas thead th {
         padding: 0.5rem 0.55rem !important;
     }
@@ -57,12 +79,26 @@ $tautan_transaksi = static function (string $slug, string $seri): string {
         font-size: 0.8rem !important;
     }
 
+    /* Nama dan produk tidak dipotong "…" lagi: selnya ikut melebar dan tabelnya
+       bisa digeser mendatar, jadi kolom Deadline sampai Status tetap terbaca. */
     .tabel-ringkas .potong {
         display: block;
-        max-width: 8rem;
-        overflow: hidden;
-        text-overflow: ellipsis;
         white-space: nowrap;
+    }
+
+    /* style.css mengunci .table-responsive dengan overflow: hidden, jadi tabel yang
+       lebih lebar dari kartunya terpotong diam-diam tanpa bisa digeser. auto
+       menambahkan scroll mendatar dan tetap memotong sudut kartu; jangan visible,
+       itu membuat seluruh halaman ikut melebar dan menyeret topbar. */
+    .table-responsive.tabel-lebar {
+        overflow-x: auto;
+        overflow-y: hidden;
+    }
+
+    /* tombol "Lihat semua transaksi" digeser mendekat ke tepi kanan kartu;
+       padding aslinya 1.25rem dan memakai !important di style.css */
+    .card-footer {
+        padding-right: 0.5rem !important;
     }
 </style>
 <?= $this->endSection() ?>
@@ -188,7 +224,7 @@ $tautan_transaksi = static function (string $slug, string $seri): string {
                 <div class="card-header bg-white">
                     <h2 class="h6 mb-0">Transaksi terbaru</h2>
                 </div>
-                <div class="table-responsive">
+                <div class="table-responsive tabel-lebar">
                     <table class="table table-hover align-middle mb-0 tabel-ringkas">
                         <thead class="small text-muted text-uppercase">
                             <tr>

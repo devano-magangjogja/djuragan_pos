@@ -88,13 +88,35 @@ $routes->group('admin', static function ($routes) {
     // dasbor: ringkasan transaksi, pembayaran, dan stok
     $routes->get('dasbor', 'Admin\Dasbor::index', ['filter' => 'auth:admin,superadmin', 'as' => 'hal.dasbor']);
 
+    // pencatatan COD: kunjungan customer yang tidak berhenti jadi orderan
+    $routes->group('cod', ['filter' => 'auth:admin,superadmin'], static function ($routes) {
+        $routes->get('/', 'Admin\Cod::index', ['as' => 'hal.cod']);
+        $routes->post('simpan', 'Admin\Cod::simpan');
+        $routes->post('sunting', 'Admin\Cod::sunting');
+        // hapus lunak: barisnya tetap ada, hanya hilang dari daftar kartu
+        $routes->post('hapus', 'Admin\Cod::hapus');
+        // aksi berikut khusus superadmin; diperiksa di controller, dan dropdownnya
+        // memang tidak merender tombolnya untuk admin biasa
+        $routes->post('hapus-pilihan', 'Admin\Cod::hapusPilihan');
+    });
+
     // pantau stok & tambah barang
-    $routes->group('produk', ['filter' => 'auth:admin,superadmin'], static function ($routes) {
-        $routes->get('/', 'Admin\Produk::index');
-        $routes->post('save', 'Admin\Produk::simpan');
-        $routes->post('update', 'Admin\Produk::perbarui');
-        $routes->post('hapus', 'Admin\Produk::hapus');
-        $routes->post('hapus-kartu', 'Admin\Produk::hapus_kartu');
+    // CS boleh membuka daftar produk, tetapi hanya membaca; aksi tulis dipagari
+    // lebih sempit di dalam, dan pengaturan poin produk khusus Superadmin.
+    $routes->group('produk', ['filter' => 'auth:admin,superadmin,cs'], static function ($routes) {
+        $routes->get('/', 'Admin\Produk::index', ['as' => 'hal.produk']);
+
+        $routes->group('', ['filter' => 'auth:admin,superadmin'], static function ($routes) {
+            $routes->post('save', 'Admin\Produk::simpan');
+            $routes->post('update', 'Admin\Produk::perbarui');
+            $routes->post('hapus', 'Admin\Produk::hapus');
+            $routes->post('hapus-kartu', 'Admin\Produk::hapus_kartu');
+        });
+    });
+
+    // laporan akumulasi poin gaji (khusus Superadmin)
+    $routes->group('poin', ['filter' => 'auth:superadmin'], static function ($routes) {
+        $routes->get('/', 'Admin\Poin::index', ['as' => 'hal.poin']);
     });
 
     // laporan per jenis: pesanan, pendapatan, pembayaran, piutang, produksi, produk, pelanggan

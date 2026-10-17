@@ -1,4 +1,11 @@
 <?php
+/**
+ * @var string      $title  Halaman judul
+ * @var ?string     $sukses Flash-message keberhasilan
+ * @var ?string     $gagal  Flash-message kegagalan
+ * @var array       $errors Validasi errors (kolom => pesan)
+ * @var array       $isian  Nilai form sebelumnya
+ */
 $pager   = \Config\Services::pager();
 $session = \Config\Services::session();
 

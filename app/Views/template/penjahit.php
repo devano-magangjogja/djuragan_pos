@@ -6,6 +6,13 @@
  * alamat/HP pelanggan. Ukuran rombongan justru lengkap di sini karena itu yang dikerjakan.
  */
 
+/**
+ * Var di bawah disuntik runtime oleh view() lewat extract() di framework;
+ * dideklarasikan terpisah agar analyzer (Intelephense P1008) tidak salah lapor.
+ *
+ * @var object $invoice  satu baris nota dari InvoiceModel::getAll()
+ */
+
 $tahap    = tahap_produksi();
 $terakhir = tahap_terakhir($invoice->status ?? []);
 $tenggat  = label_deadline(($invoice->deadline ?? '') ?: deadline_iso($invoice->rincian ?? null));

@@ -2,6 +2,13 @@
 
 use App\Libraries\Ongkir;
 
+/**
+ * Variabel di bawah disuntik runtime oleh view() lewat extract() di framework;
+ * dideklarasikan di sini agar analyzer (Intelephense P1008) tidak salah lapor.
+ *
+ * @var object $invoice  satu baris nota dari InvoiceModel::getAll()
+ */
+
 $html_logo = '<img src="' . str_replace('\\', '/', rtrim(FCPATH, '/\\')) . '/assets/img/logo-invoice.png" width="92" height="92" />';
 ?>
 <!doctype html>

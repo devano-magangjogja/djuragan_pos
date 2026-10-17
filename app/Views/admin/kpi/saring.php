@@ -6,6 +6,20 @@
  * Yang sampai ke sini hanya data dari controller: $s, $periode, $peran, $pegawai,
  * $juragans. Alamat tujuan dan field tambahan dibaca sendiri dari URL, jadi form
  * ini tidak perlu disuapi ulang oleh tiap halaman.
+ *
+ * Kelimanya disuntik runtime: halaman induk memanggil $this->include('admin/kpi/saring')
+ * yang menyalin data view() milik controller lewat extract(), sehingga tidak ada
+ * assignment di file ini dan Intelephense (P1008) menyangkanya tak terdefinisi.
+ */
+
+/**
+ * Blok @var di bawah hanya penanda tipe untuk analyzer, bukan kode yang dijalankan.
+ *
+ * @var array $s         nilai saringan aktif: ['awal', 'akhir', 'periode', 'peran', 'user_id', 'juragan_id']
+ * @var array $periode   pilihan periode: [slug => label]
+ * @var array $peran     pilihan peran: [slug => label]
+ * @var array $pegawai   pilihan karyawan: [id => 'nama (level)']
+ * @var array $juragans  pilihan toko milik akun ini: [id => nama]
  */
 
 $aksi    = trim(uri_string(), '/');

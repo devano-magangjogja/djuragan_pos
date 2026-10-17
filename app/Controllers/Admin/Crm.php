@@ -538,19 +538,30 @@ class Crm extends BaseController
     public function tagihan()
     {
         $cari = trim($this->request->getGet('cari') ?? '');
-        $invoices = $this->crmModel->getInvoiceBelumLunas($cari, 50);
+
+        // daftar penuh tidak pernah dimuat sekaligus: 25 baris per halaman, dan
+        // angkanya diambil dari query COUNT terpisah supaya "Ditemukan ..." tetap
+        // berarti total, bukan banyaknya baris di halaman ini saja
+        $perHalaman    = 25;
+        $totalTagihan  = $this->crmModel->countInvoiceBelumLunas($cari);
+        $totalPages    = (int) ceil($totalTagihan / $perHalaman);
+        $page          = max(1, min(max($totalPages, 1), (int) ($this->request->getGet('page') ?: 1)));
+        $invoices      = $this->crmModel->getInvoiceBelumLunas($cari, $perHalaman, ($page - 1) * $perHalaman);
 
         // Ambil template tagihan
         $db = Database::connect();
         $template = $db->table('crm_template')->where('kode', 'tagihan_belum_lunas')->get()->getRowArray();
 
         $data = [
-            'title'     => 'Follow-up Tagihan Belum Lunas',
-            'invoices'  => $invoices,
-            'cari'      => $cari,
-            'template'  => $template['pesan'] ?? '',
-            'provider'  => $this->wa->getActiveProviderName(),
-            'isSandbox' => ($this->wa->getActiveProviderName() === 'kapso') ? (int) $this->wa->getSetting('kapso_sandbox_mode', '1') : 0,
+            'title'        => 'Follow-up Tagihan Belum Lunas',
+            'invoices'     => $invoices,
+            'cari'         => $cari,
+            'template'     => $template['pesan'] ?? '',
+            'provider'     => $this->wa->getActiveProviderName(),
+            'isSandbox'    => ($this->wa->getActiveProviderName() === 'kapso') ? (int) $this->wa->getSetting('kapso_sandbox_mode', '1') : 0,
+            'page'         => $page,
+            'totalPages'   => $totalPages,
+            'totalTagihan' => $totalTagihan,
         ];
 
         return view('admin/crm/tagihan', $data);

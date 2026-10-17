@@ -1,4 +1,32 @@
 <?php
+/**
+ * Variabel di bawah dilempar Admin\Produk::index() ke view() lalu di-extract()
+ * oleh CodeIgniter saat runtime, jadi tidak ada penugasan yang bisa dilihat
+ * Intelephense di file ini; blok @var hanya memberi tahu tipenya.
+ *
+ * @var array<int, array<string, mixed>> $katalog   Kartu produk beserta daftar varian tiap kartu (StokModel::katalog)
+ * @var array<int, list<array<string, mixed>>> $fotonya Gabungan foto varian, dikunci urutan kartu (ProdukFotoModel::perKartu)
+ * @var array<string, int> $ringkas   Ringkasan stok: varian, unit, nilai, menipis, habis (StokModel::ringkas)
+ * @var int $juragan      Filter toko terpilih, 0 artinya semua toko
+ * @var array<int, string> $juragans  Pilihan toko pada filter (BaseController::juraganPilihan)
+ * @var string $cari         Kata kunci pencarian yang sedang dipakai
+ * @var string $keadaan   Filter keadaan stok yang sedang dipakai
+ * @var string $kolam      Kolam tab aktif: 'jual' atau 'sewa' (StokModel::kolam)
+ * @var array<string, string> $kolams  Label tab per kolam (StokModel::KOLAM)
+ * @var string $kolamStok  Nama kolom stok milik kolam aktif (StokModel::kolomKolam)
+ * @var string $kolamHarga Nama kolom harga milik kolam aktif (StokModel::kolomKolam)
+ * @var array<int, array<string, string>> $ukuran Master ukuran: kode, label, kelompok (StokModel::daftarUkuran)
+ * @var array<int, array<string, string>> $kode   Master kode barang: kolom kode (StokModel::daftarKode)
+ * @var int $total        Jumlah kartu hasil penyaringan
+ * @var int $limit        Kartu per halaman
+ * @var int $page         Nomor halaman aktif
+ * @var ?string $sukses    Flash message berhasil, null saat tidak ada
+ * @var ?string $gagal     Flash message gagal, null saat tidak ada
+ * @var array<string, string> $errors Validasi flashdata: kolom => pesan
+ * @var int $ambangnya   Batas stok disebut menipis (StokModel::AMBANG_MENIPIS)
+ * @var bool $bacaSaja    CS hanya membaca, tombol ubah/hapus disembunyikan
+ * @var bool $bisaPoin    Superadmin boleh menata poin varian
+ */
 
 $pager = \Config\Services::pager();
 
@@ -56,6 +84,16 @@ $kartu_barang = static function (array $p) use ($barang): string {
 
 // huruf pertama nama barang, dipakai waktu foto produk belum ada
 $inisial = static fn (string $kode): string => mb_strtoupper(mb_substr(trim($kode), 0, 2));
+
+// satu kata untuk menyebut kolam yang sedang dibuka: "jual" atau "sewa"
+$kataKolam = $kolam === 'sewa' ? 'sewa' : 'jual';
+
+// tautan tab: saringan yang sedang dipakai ikut dibawa, hanya kolamnya yang ganti
+$kueriTab = array_filter([
+    'juragan' => $juragan > 0 ? (string) $juragan : '',
+    'keadaan' => $keadaan,
+    'cari'    => $cari,
+], static fn (string $v): bool => $v !== '');
 ?>
 <?= $this->extend('template/main') ?>
 
@@ -64,6 +102,18 @@ $inisial = static fn (string $kode): string => mb_strtoupper(mb_substr(trim($kod
 
 <div class="container-xxl">
     <h1 class="h3 mt-5">Produk &amp; Stok</h1>
+
+    <?php /* stok dipisah dua kolam: unit yang boleh dijual dan unit yang boleh
+       disewa; satu tab hanya menampilkan dan menyaring kolamnya sendiri */ ?>
+    <div class="d-flex flex-wrap gap-2 mb-4">
+        <?php foreach ($kolams as $slug => $label) {
+            $tautan = $kueriTab + ['kolam' => $slug];
+            ?>
+            <a class="btn rounded-pill <?= $kolam === $slug ? 'btn-primary' : 'btn-outline-secondary' ?>"
+                title="<?= $slug === 'sewa' ? 'Barang yang boleh disewa' : 'Barang yang boleh dibeli' ?>"
+                href="<?= site_url('admin/produk?' . http_build_query($tautan)) ?>"><?= esc($label) ?></a>
+        <?php } ?>
+    </div>
 
     <div class="row gx-2 gy-3 mb-4">
         <?php
@@ -100,6 +150,10 @@ $inisial = static fn (string $kode): string => mb_strtoupper(mb_substr(trim($kod
                 <div class="card-body">
                     <div class="d-flex flex-wrap gap-2 align-items-end mb-3">
                         <?= form_open('admin/produk', ['method' => 'get', 'class' => 'row g-2 align-items-end mb-0 flex-grow-1']) ?>
+                        <?php /* form GET: kolom isian yang tidak dipakai tetap ikut
+   terbawa sebagai ?, jadi tab yang sedang dibuka tidak hilang saat menyaring */ ?>
+                        <input type="hidden" name="kolam" value="<?= esc($kolam) ?>">
+                        <input type="hidden" name="page" value="">
                         <div class="col-6 col-md-3">
                             <?= form_label('Juragan', 'juragan', ['class' => 'form-label small']) ?>
                             <?= form_dropdown([
@@ -136,16 +190,28 @@ $inisial = static fn (string $kode): string => mb_strtoupper(mb_substr(trim($kod
                             <button class="btn btn-sm btn-dark" type="submit"><i class="fal fa-search"></i> Cari</button>
                         </div>
                         <?= form_close() ?>
+                        <?php if (! $bacaSaja) { ?>
                         <button class="btn btn-sm btn-primary flex-shrink-0" type="button" data-bs-toggle="modal" data-bs-target="#modalTambahBarang">
                             <i class="fal fa-plus"></i> Tambah Barang
                         </button>
+                        <?php } ?>
                     </div>
 
                     <?php if ($katalog === []) { ?>
                         <div class="text-center py-5 text-muted">
                             <i class="fal fa-box-open fa-3x mb-2 d-block"></i>
-                            Belum ada barang yang dipantau<?= $cari !== '' ? ' untuk pencarian "' . esc($cari) . '"' : '' ?>.
-                            Klik tombol <strong>Tambah Barang</strong> di atas untuk menambah varian.
+                            <?php if ($kolam === 'sewa') { ?>
+                                <?php /* tab sewa sengaja hanya memuat unit yang ada; yang masih kosong lewat saringan Habis */ ?>
+                                Belum ada barang dengan stok sewa yang tersisa<?= $cari !== '' ? ' untuk pencarian "' . esc($cari) . '"' : '' ?>.
+                                <?php if ($keadaan === '') { ?>
+                                    Lihat
+                                    <a href="<?= site_url('admin/produk?' . http_build_query($kueriTab + ['keadaan' => 'habis'])) ?>">saringan <strong>Habis</strong></a>
+                                    untuk barang yang stok sewanya belum diisi.
+                                <?php } ?>
+                            <?php } else { ?>
+                                Belum ada barang yang dipantau<?= $cari !== '' ? ' untuk pencarian "' . esc($cari) . '"' : '' ?>.
+                            <?php } ?>
+                            <?php if (! $bacaSaja) { ?>Klik tombol <strong>Tambah Barang</strong> di atas untuk menambah varian.<?php } ?>
                         </div>
                     <?php } else { ?>
                         <div class="grid grid-cols-[repeat(auto-fill,minmax(15rem,1fr))] gap-3">
@@ -174,6 +240,7 @@ $inisial = static fn (string $kode): string => mb_strtoupper(mb_substr(trim($kod
                                                     <?= esc($p['nama_juragan']) ?>
                                                 </span>
                                             <?php } ?>
+                                            <?php if (! $bacaSaja) { ?>
                                             <button type="button" class="produk-foto-btn position-absolute top-0 end-0 m-2 rounded-circle d-flex align-items-center justify-content-center"
                                                 title="Kelola foto produk ini" aria-label="Kelola foto produk"
                                                 data-stok="<?= (int) $varian[0]['id_stok'] ?>"
@@ -181,6 +248,7 @@ $inisial = static fn (string $kode): string => mb_strtoupper(mb_substr(trim($kod
                                                 data-bs-toggle="modal" data-bs-target="#modalFotoProduk">
                                                 <i class="fal fa-camera"></i>
                                             </button>
+                                            <?php } ?>
                                         </div>
                                     </div>
 
@@ -192,6 +260,13 @@ $inisial = static fn (string $kode): string => mb_strtoupper(mb_substr(trim($kod
                                             <?php } ?>
                                             <span><?= $rupiah((int) $p['harga_mulai']) ?></span>
                                         </div>
+                                        <?php if ($bisaPoin) { ?>
+                                            <div class="produk-poin mb-2 small">
+                                                <i class="fal fa-coins text-brand-600"></i>
+                                                <span class="text-muted">Poin</span>
+                                                <span class="fw-semibold text-ink-700"><?= number_format((int) ($p['poin'] ?? 0), 0, ',', '.') ?></span>
+                                            </div>
+                                        <?php } ?>
 
                                         <div class="varian-daftar mb-2">
                                             <?php foreach ($varian as $b) {
@@ -438,7 +513,7 @@ $inisial = static fn (string $kode): string => mb_strtoupper(mb_substr(trim($kod
                     <?php } ?>
                 </div>
                 <div class="col-6 mb-3">
-                    <?= form_label('Stok', 'stok', ['class' => 'form-label']) ?>
+                    <?= form_label('Stok ' . $kataKolam, 'stok', ['class' => 'form-label']) ?>
                     <?= form_input([
                         'class'       => 'form-control' . ($err_tambah('stok') ? ' is-invalid' : ''),
                         'type'        => 'number',
@@ -487,6 +562,8 @@ $inisial = static fn (string $kode): string => mb_strtoupper(mb_substr(trim($kod
             'kembali_juragan' => (string) $juragan,
             'kembali_keadaan' => $keadaan,
             'kembali_cari'    => $cari,
+            // sunting hanya menulis kolam tab yang dibuka
+            'kolam'           => $kolam,
         ]) ?>
         <div class="modal-header">
             <h5 class="modal-title" id="modalSuntingBarangLabel">Sunting Barang</h5>
@@ -572,6 +649,7 @@ echo form_open('admin/produk/hapus', ['id' => 'formHapusBarang', 'class' => 'd-n
     . form_hidden('kembali_juragan', (string) $juragan)
     . form_hidden('kembali_keadaan', $keadaan)
     . form_hidden('kembali_cari', $cari)
+    . form_hidden('kolam', $kolam)
     . form_close();
 
 // Tombol hapus per kartu mengirim form ini; kode dan toko tujuan diisi JS
@@ -582,6 +660,7 @@ echo form_open('admin/produk/hapus-kartu', ['id' => 'formHapusKartu', 'class' =>
     . form_hidden('kembali_juragan', (string) $juragan)
     . form_hidden('kembali_keadaan', $keadaan)
     . form_hidden('kembali_cari', $cari)
+    . form_hidden('kolam', $kolam)
     . form_close();
 ?>
 
@@ -666,6 +745,7 @@ $isiUlang         = $sunting_err ? json_encode([
     'kode'       => (string) set_value('kode'),
     'ukuran'     => (string) set_value('ukuran'),
     'harga'      => (string) set_value('harga'),
+    'poin'       => (string) set_value('poin'),
     'stok'       => (string) set_value('stok'),
     'keterangan' => (string) set_value('keterangan'),
     'juragan'    => '',
@@ -697,6 +777,7 @@ $js = <<< JS
             ukuran: modalSunting.querySelector('[name="ukuran"]'),
             harga: modalSunting.querySelector('[name="harga"]'),
             stok: modalSunting.querySelector('[name="stok"]'),
+            poin: modalSunting.querySelector('[name="poin"]'),
             keterangan: modalSunting.querySelector('[name="keterangan"]'),
             juragan: modalSunting.querySelector('[name="juragan_id"]'),
         };

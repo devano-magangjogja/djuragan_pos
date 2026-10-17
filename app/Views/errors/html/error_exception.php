@@ -1,4 +1,16 @@
-<?php $error_id = uniqid('error', true); ?>
+<?php
+/**
+ * Variabel di bawah ini disuntik oleh framework melalui Exceptions::render()
+ * (view + extract), sehingga tidak terdeteksi oleh static analyzer.
+ *
+ * @var string                                       $title
+ * @var \Throwable                                   $exception
+ * @var string                                       $file
+ * @var int                                          $line
+ * @var array<int, array<string, mixed>>             $trace
+ */
+$error_id = uniqid('error', true);
+?>
 <!doctype html>
 <html>
 <head>
@@ -30,7 +42,7 @@
 
     <!-- Source -->
     <div class="container">
-        <p><b><?= esc(clean_path($file)) ?></b> at line <b><?= esc($line) ?></b></p>
+        <p><b><?= esc((string) clean_path($file)) ?></b> at line <b><?= esc((string) $line) ?></b></p>
 
         <?php if (is_file($file)) : ?>
             <div class="source">
@@ -189,13 +201,14 @@
 
             <!-- Request -->
             <div class="content" id="request">
+                <?php /** @var \CodeIgniter\HTTP\IncomingRequest $request */ ?>
                 <?php $request = \Config\Services::request(); ?>
 
                 <table>
                     <tbody>
                         <tr>
                             <td style="width: 10em">Path</td>
-                            <td><?= esc($request->getUri()) ?></td>
+                            <td><?= esc((string) $request->getUri()) ?></td>
                         </tr>
                         <tr>
                             <td>HTTP Method</td>
@@ -307,6 +320,7 @@
 
             <!-- Response -->
             <?php
+                /** @var \CodeIgniter\HTTP\Response $response */
                 $response = \Config\Services::response();
                 $response->setStatusCode(http_response_code());
             ?>

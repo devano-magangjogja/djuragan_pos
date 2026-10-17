@@ -37,13 +37,16 @@ class Produk extends BaseController
             $keadaan = '';
         }
 
+        // tab yang dibuka: unit untuk dijual atau unit untuk disewa
+        $kolam = StokModel::kolam((string) $this->request->getGet('kolam'));
+
         $limit = config('Pager')->perPage;
         $page  = max(1, (int) $this->request->getGet('page'));
         $offset = ($page - 1) * $limit;
 
-        $total = $stokModel->kartu($ids, $juragan, $cari, $keadaan);
+        $total = $stokModel->kartu($ids, $juragan, $cari, $keadaan, $kolam);
 
-        $katalog = $stokModel->katalog($ids, $juragan, $cari, $keadaan, $limit, $offset);
+        $katalog = $stokModel->katalog($ids, $juragan, $cari, $keadaan, $limit, $offset, $kolam);
 
         // foto diambil sekali query untuk seluruh kartu di halaman ini, per
         // daftar varian (bukan per kartu) karena foto menempel di varian
@@ -59,11 +62,16 @@ class Produk extends BaseController
             'title'     => 'Produk & Stok',
             'katalog'   => $katalog,
             'fotonya'   => (new ProdukFotoModel())->perKartu($varian),
-            'ringkas'   => $stokModel->ringkas($ids),
+            'ringkas'   => $stokModel->ringkas($ids, $kolam),
             'juragan'   => $juragan,
             'juragans'  => $this->juraganPilihan(),
             'cari'      => $cari,
             'keadaan'   => $keadaan,
+            // tab kolam aktif + labelnya, dipakai view untuk judul kolom dan tautan tab
+            'kolam'     => $kolam,
+            'kolams'    => StokModel::KOLAM,
+            'kolamStok' => StokModel::kolomKolam($kolam)[0],
+            'kolamHarga' => StokModel::kolomKolam($kolam)[1],
             'ukuran'    => $stokModel->daftarUkuran(),
             'kode'      => $stokModel->daftarKode(),
             'total'     => $total,
@@ -73,6 +81,9 @@ class Produk extends BaseController
             'gagal'     => session('gagal'),
             'errors'    => session('errors') ?: [],
             'ambangnya' => StokModel::AMBANG_MENIPIS,
+            // CS hanya membaca daftar; Superadmin yang menata poin varian
+            'bacaSaja'  => (string) session()->get('level') === 'cs',
+            'bisaPoin'  => (string) session()->get('level') === 'superadmin',
         ];
 
         return view('admin/produk', $data);
@@ -96,6 +107,8 @@ class Produk extends BaseController
         $juragan_id = (int) $this->request->getPost('juragan_id');
         $kode       = $this->kodePost();
         $ukuran     = $this->ukuranPost();
+        $kolam      = StokModel::kolam((string) $this->request->getPost('kolam'));
+        $stokPost   = (int) $this->request->getPost('stok');
 
         if (! $this->bolehJuragan($juragan_id)) {
             return redirect()->to($this->alamatKembali())->with('gagal', 'Juragan ini tidak bisa diakses.');
@@ -126,13 +139,18 @@ class Produk extends BaseController
 
         $stokModel->insert([
             'juragan_id' => $juragan_id,
-            'produk_id'  => jamin_produk($kode),
+            'produk_id'  => $produk_id,
             'kode'       => $kode,
             'ukuran'     => $ukuran,
             'harga'      => $harga,
             'stok'       => (int) $this->request->getPost('stok'),
             'keterangan' => $this->keteranganPost(),
         ]);
+
+        // poin menempel di master produk (satu nilai untuk semua ukuran), khusus Superadmin
+        if ($produk_id !== null) {
+            $this->simpanPoinProduk((int) $produk_id);
+        }
 
         // foto ikut form tambah, jadi varian yang baru ada sudah langsung punya
         // contoh bentuk; pipa penyimpanannya sama dengan panel kelola foto
@@ -211,12 +229,38 @@ class Produk extends BaseController
             'produk_id'  => jamin_produk($kode),
             'kode'       => $kode,
             'ukuran'     => $ukuran,
-            'harga'      => (int) $this->request->getPost('harga'),
-            'stok'       => (int) $this->request->getPost('stok'),
             'keterangan' => $this->keteranganPost(),
-        ]);
+            $kolomHarga  => (int) $this->request->getPost('harga'),
+            $kolomStok   => (int) $this->request->getPost('stok'),
+        ];
+
+        $stokModel->update($id, $data);
+
+        // poin per produk ditulis ke master (superadmin saja); Admin tidak menyentuhnya
+        if ($produk_id !== null) {
+            $this->simpanPoinProduk((int) $produk_id);
+        }
 
         return redirect()->to($this->alamatKembali())->with('sukses', 'Barang berhasil diperbarui.');
+    }
+
+    /**
+     * Tulis poin ke master produk. Hanya Superadmin yang boleh menentukan angka;
+     * level lain tidak mengubah apa pun sehingga poin yang sudah ada tetap utuh.
+     */
+    private function simpanPoinProduk(int $produk_id): void
+    {
+        if ((string) session()->get('level') !== 'superadmin') {
+            return;
+        }
+
+        $poin = trim((string) $this->request->getPost('poin'));
+        $poin = $poin === '' ? 0 : max(0, (int) $poin);
+
+        \Config\Database::connect()
+            ->table('produk')
+            ->where('id_produk', $produk_id)
+            ->update(['poin' => $poin, 'updated_at' => time()]);
     }
 
     /**
@@ -362,6 +406,8 @@ class Produk extends BaseController
             'juragan' => (int) $this->request->getPost('kembali_juragan'),
             'keadaan' => (string) $this->request->getPost('kembali_keadaan'),
             'cari'    => (string) $this->request->getPost('kembali_cari'),
+            // kembali ke tab kolam yang sedang dibuka
+            'kolam'   => StokModel::kolam((string) $this->request->getPost('kolam')),
         ], static fn ($v) => $v !== '' && $v !== 0);
 
         return site_url('admin/produk' . ($kueri === [] ? '' : '?' . http_build_query($kueri)));

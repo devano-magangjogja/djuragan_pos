@@ -54,7 +54,7 @@
             var $item = $('<button type="button" class="list-group-item list-group-item-action text-start py-2"></button>')
                 .data('stok', v),
                 $judul = $('<span class="d-block fw-bold"></span>').text(v.kode + ' ( ' + String(v.ukuran).toUpperCase() + ' )'),
-                $meta = $('<span class="d-block small"></span>').text(rupiah(v.harga) + ' · stok ' + v.stok + (v.keterangan ? ' · ' + v.keterangan : ''));
+                $meta = $('<span class="d-block small"></span>').text(rupiah(v.harga) + ' · stok ' + (v.kolam === 'sewa' ? 'sewa ' : '') + v.stok + (v.keterangan ? ' · ' + v.keterangan : ''));
 
             if (Number(v.stok) <= 0) {
                 $meta.append(' ').append($('<span class="badge bg-danger-subtle text-danger"></span>').text('habis'));
@@ -205,6 +205,8 @@
     function cari() {
         var q = $.trim($cari.val()),
             juragan = parseInt($('select[name="juragan"]').val(), 10) || 0,
+            // tipe pesanan menentukan kolam yang dicari: unit jual atau unit sewa
+            tipe = $('#tipe_pesanan').val() || '',
             jalan = ++token;
 
         if (q.length < 2) {
@@ -219,7 +221,7 @@
             return;
         }
 
-        $.getJSON(alamatCari, { q: q, juragan_id: juragan }).done(function (b) {
+        $.getJSON(alamatCari, { q: q, juragan_id: juragan, tipe: tipe }).done(function (b) {
             if (token !== jalan) {
                 return;
             }
@@ -256,6 +258,20 @@
 
     $('#ukuran').on('change', function () {
         if (dipilih && $(this).val() !== String(dipilih.ukuran)) {
+            kosongkan();
+        }
+    });
+
+    /*
+     * Tipe pesanan menentukan kolam stok yang dicari (unit jual atau unit sewa),
+     * jadi ganti tipe membuat semuanya basi: harga dan unit yang tadi diambil
+     * berasal dari kolam yang lama, dan saran yang masih terbuka menampilkan
+     * kolam yang salah.
+     */
+    $('#tipe_pesanan').on('change', function () {
+        $saran.addClass('d-none').empty();
+
+        if (dipilih) {
             kosongkan();
         }
     });

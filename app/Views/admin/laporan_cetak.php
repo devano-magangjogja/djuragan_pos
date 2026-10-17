@@ -5,6 +5,15 @@
  * Dibaca Dompdf lewat App\Libraries\LaporanEkspor::pdf(), jadi tidak memakai
  * template utama dan tidak punya aset dari luar. Nilainya diformat lewat library
  * yang sama dengan berkas Excel supaya keduanya menyebut angka yang sama.
+ *
+ * Variabel di bawah ini diisi dari App\Libraries\LaporanEkspor::pdf() lewat view('admin/laporan_cetak', $data).
+ * CodeIgniter memanggil extract() di dalam system/View/View.php, jadi analyzers tidak
+ * bisa menelusuri asal variabelnya; blok @var ini hanya memberi tahu Intelephense.
+ *
+ * @var string                                                                                          $judul    Judul laporan yang dicetak
+ * @var list<array{judul: string, kolom: list<array{0:string,1:string,2:string,3:string}>, baris: array, total: ?list}> $blok     Blok tabel laporan (ringkasan + detail)
+ * @var array<string, string>                                                                           $keteran  Filter yang aktif: label => nilai
+ * @var string                                                                                          $catatan  Catatan tambahan di bawah tabel
  */
 
 use App\Libraries\LaporanEkspor;

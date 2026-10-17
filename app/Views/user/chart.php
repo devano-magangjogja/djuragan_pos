@@ -2,6 +2,16 @@
 
 use CodeIgniter\I18n\Time;
 
+/**
+ * Variabel berikut dikirim User\Chart::index() lewat view() lalu di-extract
+ * CI4 saat render, sehingga tidak terlihat oleh analis statis. Blok @var ini
+ * memberi jenis sebenarnya ke Intelephense (P1008 untuk $title/$counter dan
+ * P1006 pada esc($title) yang ikut salah tebak jenis).
+ *
+* @var string             $title   judul halaman
+* @var array<int, object> $counter hasil InvoiceModel::counter_terkirim()
+ */
+
 $sekarang = new Time('now');
 $pager    = \Config\Services::pager();
 $session  = \Config\Services::session();

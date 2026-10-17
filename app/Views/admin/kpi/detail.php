@@ -1,12 +1,30 @@
 <?php
-/*
+/**
  * Daftar baris pembentuk satu angka KPI.
  *
  * Isi pesan WhatsApp dan nama pelanggan tidak ditampilkan di sini: yang dibutuhkan
  * hanya identitas singkat (nomor nota, 4 digit terakhir nomor WA, waktu) supaya
  * halaman ini bisa dibuka tanpa membocorkan percakapan.
+ *
+ * Variabel di bawah disuntik runtime oleh view() lewat extract() di framework;
+ * dideklarasikan di sini agar analyzer (Intelephense P1008) tidak salah lapor.
+ * Sumber: App\Controllers\Admin\Kpi::detail().
+ *
+ * @var string $title        judul tab browser, dipakai layout template/main
+ * @var array  $s            hasil saring(): awal, akhir, periode, peran, user_id, juragan_id, juragan_ids
+ * @var string $indikator    kode indikator pada segmen URL, mis. sla_fulfillment
+ * @var ?array $aturan       baris kpi_target untuk indikator ini, null bila belum ada
+ * @var int    $jumlah       total baris pencatat untuk indikator ini pada saringan aktif
+ * @var array  $baris        baris pembentuk angka, satu halaman: list<array<string, mixed>>
+ * @var int    $batas        baris per halaman (10, 25, atau 50)
+ * @var int    $halaman      nomor halaman berbasis nol
+ * @var array  $pegawai      pilihan karyawan: id => nama (level)
+ * @var array  $juragans     toko milik akun ini: id => nama
+ * @var array  $periode      pilihan periode: slug => label
+ * @var array  $peran        pilihan peran yang dinilai: slug => label
  */
-
+?>
+<?php
 $rp    = static fn ($n): string => 'Rp ' . number_format((int) $n, 0, ',', '.');
 $tw    = static fn ($v): string => ($v === null || $v === '') ? '&mdash;' : date('j M Y H:i', (int) $v);
 $th    = static fn ($v): string => ($v === null || $v === '') ? '&mdash;' : esc((string) $v);

@@ -1,5 +1,18 @@
 <?php
 
+/**
+ * Variabel yang di-inject controller Admin\Invoices::sunting() lewat extract().
+ *
+ * @var string  $title           Judul halaman
+ * @var array   $pesanan         Hasil InvoiceModel::getAll()['data'], baris pertama = orderan
+ * @var array   $jenis_produk    Peta jenis produk (UkuranKomponenModel::jenis())
+ * @var array   $template_ukuran Semua template ukuran (UkuranKomponenModel::semuaTemplate())
+ * @var array   $ukuran_item     Nilai ukuran per item produk, di-key id produk
+ * @var array   $jenis_item      Peta jenis ukuran per item produk, di-key id produk
+ * @var array   $anggota_item    Item anggota beserta jenis & nilai ukurannya
+ * @var array   $foto_sudah      Foto yang sudah terunggah untuk invoice ini
+ */
+
 use App\Libraries\Ongkir;
 use CodeIgniter\I18n\Time;
 
