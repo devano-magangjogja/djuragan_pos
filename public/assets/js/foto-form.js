@@ -307,6 +307,17 @@
     }
 
     $(document)
+        .on('click', '.buka-foto', function (e) {
+            e.preventDefault();
+
+            var $card = $(this).closest('.card'),
+                $isi = $card.find('.foto-isi').first(),
+                buka = $isi.hasClass('d-none');
+
+            $isi.toggleClass('d-none', !buka);
+            $(this).attr('aria-expanded', buka ? 'true' : 'false');
+            $card.find('.ikon-panah-foto').toggleClass('rotate-180', buka);
+        })
         .on('change', '.foto-input', function () {
             pilih(this.files);
         })
@@ -380,6 +391,19 @@
             );
     }
 
+    function panel_buka() {
+        var $card = $panel(),
+            $isi = $card.find('.foto-isi').first();
+
+        if ($isi.length === 0) {
+            return;
+        }
+
+        $isi.removeClass('d-none');
+        $card.find('.buka-foto').attr('aria-expanded', 'true');
+        $card.find('.ikon-panah-foto').addClass('rotate-180');
+    }
+
     window.FOTO = {
         ada: function () {
             return $panel().length > 0 && ANTRE.length > 0;
@@ -431,6 +455,10 @@
             });
 
             hitung();
+
+            if ($daftar.children('.foto-bawaan').length > 0) {
+                panel_buka();
+            }
         }
     };
 }(jQuery));
