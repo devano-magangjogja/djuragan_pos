@@ -3,6 +3,7 @@
 namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
+use App\Models\JuraganModel;
 use App\Models\ProdukFotoModel;
 use App\Models\StokModel;
 use CodeIgniter\HTTP\Files\UploadedFile;
@@ -37,13 +38,16 @@ class Produk extends BaseController
             $keadaan = '';
         }
 
+        // tab yang dibuka: unit untuk dijual atau unit untuk disewa
+        $kolam = StokModel::kolam((string) $this->request->getGet('kolam'));
+
         $limit = config('Pager')->perPage;
         $page  = max(1, (int) $this->request->getGet('page'));
         $offset = ($page - 1) * $limit;
 
-        $total = $stokModel->kartu($ids, $juragan, $cari, $keadaan);
+        $total = $stokModel->kartu($ids, $juragan, $cari, $keadaan, $kolam);
 
-        $katalog = $stokModel->katalog($ids, $juragan, $cari, $keadaan, $limit, $offset);
+        $katalog = $stokModel->katalog($ids, $juragan, $cari, $keadaan, $limit, $offset, $kolam);
 
         // foto diambil sekali query untuk seluruh kartu di halaman ini, per
         // daftar varian (bukan per kartu) karena foto menempel di varian
@@ -55,15 +59,53 @@ class Produk extends BaseController
             $katalog
         );
 
+        $juragans = $this->juraganPilihan();
+
+        // penjelasan cakupan untuk pesan daftar kosong: Admin dan CS hanya
+        // melihat toko yang melekat di akunnya, Superadmin melihat semuanya
+        if ($juragan > 0) {
+            $cakupan = 'toko ' . ($juragans[$juragan] ?? '-');
+        } elseif (count($juragans) === 1) {
+            $cakupan = 'toko ' . reset($juragans);
+        } elseif ($juragans === []) {
+            $cakupan = 'toko mana pun yang kamu pegang';
+        } elseif ((string) session()->get('level') === 'superadmin') {
+            $cakupan = 'semua toko (' . count($juragans) . ')';
+        } else {
+            $cakupan = count($juragans) . ' toko yang kamu pegang';
+        }
+
+        // pil "sedang disewa" di bawah kartu: unit sewa yang masih di tangan
+        // penyewa pada cakupan yang sedang dibuka + tautannya ke tab Masih
+        // Disewa di daftar transaksi. Panel CS tidak mengenal "semua juragan",
+        // jadi tokonya dijabarkan jadi slug konkret.
+        $disewa = $stokModel->sedangDisewa($juragan > 0 ? [$juragan] : $ids);
+        $slug   = 'semua';
+
+        if ($juragan > 0) {
+            $toko = (new JuraganModel())->find($juragan);
+            $slug = (string) ($toko->juragan ?? 'semua');
+        } elseif ((string) session()->get('level') === 'cs') {
+            $slug = (string) array_key_first($this->tokoPilihan());
+        }
+
+        $tautan_disewa = site_url(((string) session()->get('level') === 'cs' ? 'user/invoices/lihat/' : 'admin/invoices/lihat/') . $slug . '/masih-disewa');
+
         $data = [
             'title'     => 'Produk & Stok',
             'katalog'   => $katalog,
             'fotonya'   => (new ProdukFotoModel())->perKartu($varian),
-            'ringkas'   => $stokModel->ringkas($ids),
+            'ringkas'   => $stokModel->ringkas($ids, $kolam),
             'juragan'   => $juragan,
-            'juragans'  => $this->juraganPilihan(),
+            'juragans'  => $juragans,
+            'cakupan'   => $cakupan,
+            'disewa'    => $disewa,
+            'tautan_disewa' => $tautan_disewa,
             'cari'      => $cari,
             'keadaan'   => $keadaan,
+            // tab kolam aktif + labelnya, dipakai view untuk judul kolom dan tautan tab
+            'kolam'     => $kolam,
+            'kolams'    => StokModel::KOLAM,
             'ukuran'    => $stokModel->daftarUkuran(),
             'kode'      => $stokModel->daftarKode(),
             'total'     => $total,
@@ -73,6 +115,9 @@ class Produk extends BaseController
             'gagal'     => session('gagal'),
             'errors'    => session('errors') ?: [],
             'ambangnya' => StokModel::AMBANG_MENIPIS,
+            // CS hanya membaca daftar; Superadmin yang menata poin varian
+            'bacaSaja'  => (string) session()->get('level') === 'cs',
+            'bisaPoin'  => (string) session()->get('level') === 'superadmin',
         ];
 
         return view('admin/produk', $data);
@@ -96,6 +141,8 @@ class Produk extends BaseController
         $juragan_id = (int) $this->request->getPost('juragan_id');
         $kode       = $this->kodePost();
         $ukuran     = $this->ukuranPost();
+        $kolam      = StokModel::kolam((string) $this->request->getPost('kolam'));
+        $stokPost   = (int) $this->request->getPost('stok');
 
         if (! $this->bolehJuragan($juragan_id)) {
             return redirect()->to($this->alamatKembali())->with('gagal', 'Juragan ini tidak bisa diakses.');
@@ -103,36 +150,44 @@ class Produk extends BaseController
 
         $stokModel = new StokModel();
 
-        if ($stokModel->kembar(0, $juragan_id, $kode, $ukuran)) {
+        if ($stokModel->kembar(0, $juragan_id, $kode, $ukuran, $kolam)) {
             return redirect()->to($this->alamatKembali())
-                ->withInput()->with('gagal', 'Varian ' . $kode . ' ' . $ukuran . ' sudah terdaftar.');
+                ->withInput()->with('gagal', 'Varian ' . $kode . ' ' . $ukuran . ' sudah terdaftar di kolam ' . $kolam . '.');
         }
 
         // "+ Varian" pada kartu tidak menanyakan harga: satu kartu dianggap punya
         // harga yang sama, jadi nilainya diwarisi dari varian tertua sekartu
-        $harga = $this->hargaPost();
+        // satu kolam
+        $harga   = $this->hargaPost();
+        $saudara = $stokModel->sekartu($juragan_id, $kode, $kolam);
 
-        if ($harga === null) {
-            $saudara = $stokModel->sekartu($juragan_id, $kode);
-
-            if ($saudara === []) {
-                return redirect()->to($this->alamatKembali())->withInput()
-                    ->with('gagal', 'Belum ada varian ' . $kode . ' di toko ini, jadi harganya tidak bisa diwarisi. '
-                        . 'Tambahkan lewat tombol "Tambah Barang" di atas.');
-            }
-
-            $harga = (int) $stokModel->find($saudara[0])->harga;
+        if ($harga === null && $saudara === []) {
+            return redirect()->to($this->alamatKembali())->withInput()
+                ->with('gagal', 'Belum ada varian ' . $kode . ' kolam ' . $kolam . ' di toko ini, jadi harganya tidak bisa diwarisi. '
+                    . 'Tambahkan lewat tombol "Tambah Barang" di atas.');
         }
+
+        $lain = $saudara === [] ? null : $stokModel->find($saudara[0]);
+
+        $produk_id = jamin_produk($kode);
 
         $stokModel->insert([
             'juragan_id' => $juragan_id,
-            'produk_id'  => jamin_produk($kode),
+            'produk_id'  => $produk_id,
             'kode'       => $kode,
             'ukuran'     => $ukuran,
-            'harga'      => $harga,
-            'stok'       => (int) $this->request->getPost('stok'),
+            // varian ini hanya hidup di kolam tab yang dibuka, dan angkanya
+            // memang milik kolam itu
+            'kolam'      => $kolam,
+            'harga'      => $harga ?? (int) $lain->harga,
+            'stok'       => $stokPost,
             'keterangan' => $this->keteranganPost(),
         ]);
+
+        // poin menempel di master produk (satu nilai untuk semua ukuran), khusus Superadmin
+        if ($produk_id !== null) {
+            $this->simpanPoinProduk((int) $produk_id);
+        }
 
         // foto ikut form tambah, jadi varian yang baru ada sudah langsung punya
         // contoh bentuk; pipa penyimpanannya sama dengan panel kelola foto
@@ -201,22 +256,52 @@ class Produk extends BaseController
         $kode   = $this->kodePost();
         $ukuran = $this->ukuranPost();
 
-        if ($stokModel->kembar($id, $juragan_baru, $kode, $ukuran)) {
+        if ($stokModel->kembar($id, $juragan_baru, $kode, $ukuran, (string) $baris->kolam)) {
             return redirect()->to($this->alamatKembali())
                 ->with('gagal', 'Varian ' . $kode . ' ' . $ukuran . ' sudah terdaftar di toko itu.');
         }
 
-        $stokModel->update($id, [
+        $produk_id = jamin_produk($kode);
+
+        $data = [
             'juragan_id' => $juragan_baru,
-            'produk_id'  => jamin_produk($kode),
+            'produk_id'  => $produk_id,
             'kode'       => $kode,
             'ukuran'     => $ukuran,
+            'keterangan' => $this->keteranganPost(),
+            // kolam baris tidak pernah berubah lewat sunting, jadi isian harga
+            // dan stok memang menulis angka kolam barisnya sendiri
             'harga'      => (int) $this->request->getPost('harga'),
             'stok'       => (int) $this->request->getPost('stok'),
-            'keterangan' => $this->keteranganPost(),
-        ]);
+        ];
+
+        $stokModel->update($id, $data);
+
+        // poin per produk ditulis ke master (superadmin saja); Admin tidak menyentuhnya
+        if ($produk_id !== null) {
+            $this->simpanPoinProduk((int) $produk_id);
+        }
 
         return redirect()->to($this->alamatKembali())->with('sukses', 'Barang berhasil diperbarui.');
+    }
+
+    /**
+     * Tulis poin ke master produk. Hanya Superadmin yang boleh menentukan angka;
+     * level lain tidak mengubah apa pun sehingga poin yang sudah ada tetap utuh.
+     */
+    private function simpanPoinProduk(int $produk_id): void
+    {
+        if ((string) session()->get('level') !== 'superadmin') {
+            return;
+        }
+
+        $poin = trim((string) $this->request->getPost('poin'));
+        $poin = $poin === '' ? 0 : max(0, (int) $poin);
+
+        \Config\Database::connect()
+            ->table('produk')
+            ->where('id_produk', $produk_id)
+            ->update(['poin' => $poin, 'updated_at' => time()]);
     }
 
     /**
@@ -263,15 +348,21 @@ class Produk extends BaseController
         }
 
         $stokModel = new StokModel();
-        $ids       = $stokModel->sekartu($juragan_id, $kode);
+        // kartu = varian satu kolam; varian kolam satunya punya kartunya sendiri
+        $kolam = StokModel::kolam((string) $this->request->getPost('kolam'));
+        $ids   = $stokModel->sekartu($juragan_id, $kode, $kolam);
 
         if ($ids === []) {
             return redirect()->to($this->alamatKembali())->with('gagal', 'Barang tidak ditemukan.');
         }
 
-        // kartu ikut habis, jadi tidak ada saudara tempat foto pindah
+        // foto dibagi lintas kolam, jadi foto varian yang pergi berpindah ke
+        // varian mana pun yang masih hidup; kalau tidak ada yang tersisa, ikut
+        // terhapus bersama berkasnya
+        $sisa = array_values(array_diff($stokModel->sekartu($juragan_id, $kode), $ids));
+
         foreach ($ids as $id) {
-            $this->bereskanFoto($id, []);
+            $this->bereskanFoto($id, $sisa);
         }
 
         $stokModel->delete($ids);
@@ -362,6 +453,8 @@ class Produk extends BaseController
             'juragan' => (int) $this->request->getPost('kembali_juragan'),
             'keadaan' => (string) $this->request->getPost('kembali_keadaan'),
             'cari'    => (string) $this->request->getPost('kembali_cari'),
+            // kembali ke tab kolam yang sedang dibuka
+            'kolam'   => StokModel::kolam((string) $this->request->getPost('kolam')),
         ], static fn ($v) => $v !== '' && $v !== 0);
 
         return site_url('admin/produk' . ($kueri === [] ? '' : '?' . http_build_query($kueri)));

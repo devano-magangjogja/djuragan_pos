@@ -60,6 +60,14 @@ class Auth implements FilterInterface
                 }
             }
 
+            // halaman yang boleh dibuka CS namun hanya sebatas membaca (daftar
+            // produk). Aksi tulis tetap dipagari level lain di controller/rutenya.
+            if ($arguments === ['admin', 'cs', 'superadmin']) {
+                if (in_array(session()->get('level'), ['admin', 'superadmin', 'cs'], true)) {
+                    return;
+                }
+            }
+
             if ($arguments === ['superadmin']) { // superadmin only
                 if (session()->get('level') === 'superadmin') {
                     return;

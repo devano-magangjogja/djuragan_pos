@@ -2,6 +2,7 @@
 
 namespace Config;
 
+use App\Filters\Apitoken;
 use App\Filters\Auth;
 use CodeIgniter\Config\BaseConfig;
 use CodeIgniter\Config\Filters as BaseFilters;
@@ -45,6 +46,8 @@ class Filters extends BaseConfig
      */
     public $aliases = [
         'auth'          => Auth::class,
+        // pihak luar memanggil dengan X-API-Key, bukan sesi login
+        'apitoken'      => Apitoken::class,
         'csrf'          => CSRF::class,
         'honeypot'      => Honeypot::class,
         'invalidchars'  => InvalidChars::class,

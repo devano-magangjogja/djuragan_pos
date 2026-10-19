@@ -7,12 +7,29 @@ $namaInisial = strtoupper(mb_substr($namaSesi, 0, 1));
 
 // Deteksi menu induk aktif
 $isDasborAktif   = url_is('admin/dasbor*') || $di_halaman === 'admin';
-$isTrxAktif      = url_is('admin/invoices*');
-$isProdukAktif   = url_is('admin/produk*');
+$isTrxAktif      = url_is('admin/invoices*') || url_is('admin/cod*');
+$isProdukAktif   = url_is('admin/produk*') || url_is('admin/poin*');
 $isCrmAktif      = url_is('admin/crm*');
 $isKpiAktif      = url_is('admin/kpi*');
 $isLaporanAktif  = url_is('admin/laporan*');
 $isSettingsAktif = url_is('admin/settings*');
+
+// Submenu Transaksi
+// 'invoices' tetap satu halaman dengan 'cod': yang pertama dipakai untuk orderan
+// yang jadi nota, yang kedua untuk kunjungan customer yang tidak jadi orderan
+$transaksiSubmenu = [
+    ['admin/invoices/lihat/semua/semua', 'Tracking Transaksi', 'fa-receipt', $di_halaman === 'admin/invoices' || str_starts_with($di_halaman, 'admin/invoices/')],
+    ['admin/cod', 'Pencatatan COD', 'fa-truck-fast', str_starts_with($di_halaman, 'admin/cod')],
+];
+
+// Submenu Produk: daftar stok selalu ada; laporan poin gaji khusus Superadmin.
+$produkSubmenu = [
+    ['admin/produk', 'Produk & Stok', 'fa-box-alt', $di_halaman === 'admin/produk' || str_starts_with($di_halaman, 'admin/produk/')],
+];
+
+if ($levelSesi === 'superadmin') {
+    $produkSubmenu[] = ['admin/poin', 'Laporan Poin', 'fa-coins', str_starts_with($di_halaman, 'admin/poin')];
+}
 
 // Submenu KPI
 $kpiSubmenu = [
@@ -53,14 +70,58 @@ $laporanSubmenu = [
     ['admin/laporan/pelanggan', 'Laporan Customer', 'fa-user', $laporan_aktif('pelanggan')],
 ];
 
-// Submenu Pengaturan (Superadmin)
-$settingsSubmenu = [
-    ['admin/settings/bank', 'Atur Bank', 'fa-university', str_starts_with($di_halaman, 'admin/settings/bank')],
-    ['admin/settings/juragan', 'Atur Juragan', 'fa-store', str_starts_with($di_halaman, 'admin/settings/juragan')],
-    ['admin/settings/pengguna', 'Atur Pengguna', 'fa-users-cog', str_starts_with($di_halaman, 'admin/settings/pengguna')],
-];
+// Submenu Sistem. Kebersihan kotak notifikasi boleh dipakai Admin; rekening bank,
+// juragan, pengguna, dan kunci API tetap khusus Superadmin.
+$sistemSubmenu = [];
+
+if (in_array($levelSesi, ['admin', 'superadmin'], true)) {
+    $sistemSubmenu[] = [
+        'admin/settings/notifikasi',
+        'Pengaturan Notifikasi',
+        'fa-bell-slash',
+        str_starts_with($di_halaman, 'admin/settings/notifikasi'),
+    ];
+}
+
+if ($levelSesi === 'superadmin') {
+    $sistemSubmenu = array_merge($sistemSubmenu, [
+        ['admin/settings/bank', 'Atur Bank', 'fa-university', str_starts_with($di_halaman, 'admin/settings/bank')],
+        ['admin/settings/juragan', 'Atur Juragan', 'fa-store', str_starts_with($di_halaman, 'admin/settings/juragan')],
+        ['admin/settings/pengguna', 'Atur Pengguna', 'fa-users-cog', str_starts_with($di_halaman, 'admin/settings/pengguna')],
+        ['admin/settings/kunci-api', 'Kunci API', 'fa-key', str_starts_with($di_halaman, 'admin/settings/kunci-api')],
+    ]);
+}
 ?>
 
+<style>
+    /* Lingkaran merah di topbar layar kecil: titik kecil berkedip yang menempel di
+       ujung kanan-atas lonceng. Angkanya tidak ditampilkan lagi. Kelas Bootstrap
+       (top-0 / start-100 / translate-middle / .badge) semuanya memakai !important,
+       jadi posisi dan ukurannya juga harus !important. */
+    .mobile-topbar .counter {
+        font-size: 0 !important;
+        padding: 0 !important;
+        width: 6px !important;
+        height: 6px !important;
+        top: 6px !important;
+        right: 5px !important;
+        left: auto !important;
+        transform: none !important;
+        animation: notif-kedip 1.2s ease-in-out infinite;
+    }
+
+    /* Loncengnya duduk 1px lebih tinggi dari hamburger, logo, dan avatar (kotak
+       <a>-nya pakai p-2 sedangkan tombol lain p-1/p-0), jadi geser 1px ke bawah
+       supaya sebaris. Titik merangnya ikut karena posisinya di dalam <a> ini. */
+    .mobile-topbar a[data-notif-toggle="1"] {
+        top: 1px;
+    }
+
+    @keyframes notif-kedip {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.2; }
+    }
+</style>
 <!-- Topbar khusus layar kecil; di desktop lonceng notifikasi melayang sendiri
      (lihat .notif-melayang di template/notif_bar.php), bukan bar penuh. -->
 <header class="mobile-topbar d-flex d-lg-none align-items-center justify-content-between px-2 sticky-top">
@@ -78,7 +139,7 @@ $settingsSubmenu = [
     <div class="d-flex align-items-center gap-2">
         <a class="mobile-topbar-btn text-decoration-none position-relative p-2" data-notif-toggle="1" href="#notifikasi" role="button" aria-label="Notifikasi" title="Notifikasi">
             <i class="fal fa-bell fs-5"></i>
-            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger counter" style="font-size: 0.65rem;"></span>
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger counter"></span>
         </a>
         <div class="dropdown">
             <button class="btn btn-sm btn-link mobile-topbar-btn p-0 text-decoration-none" type="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -138,16 +199,42 @@ $settingsSubmenu = [
                 </a>
             </li>
             <li class="nav-item">
-                <a class="sidebar-link <?= $isTrxAktif ? 'active' : '' ?>" href="<?= site_url('admin/invoices/lihat/semua/semua') ?>">
+                <a class="sidebar-link <?= $isTrxAktif ? 'active' : '' ?>" data-bs-toggle="collapse" href="#submenuTransaksi" role="button" aria-expanded="<?= $isTrxAktif ? 'true' : 'false' ?>" aria-controls="submenuTransaksi">
                     <i class="sidebar-link-icon fal fa-receipt"></i>
                     <span>Transaksi</span>
+                    <i class="fal fa-chevron-down sidebar-chevron"></i>
                 </a>
+                <div class="collapse <?= $isTrxAktif ? 'show' : '' ?>" id="submenuTransaksi">
+                    <ul class="sidebar-submenu">
+                        <?php foreach ($transaksiSubmenu as [$url, $label, $ikon, $aktif]) : ?>
+                            <li class="submenu-item">
+                                <a class="sidebar-submenu-link <?= $aktif ? 'active' : '' ?>" href="<?= site_url($url) ?>">
+                                    <i class="fal <?= $ikon ?>"></i>
+                                    <span><?= esc($label) ?></span>
+                                </a>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                </div>
             </li>
             <li class="nav-item">
-                <a class="sidebar-link <?= $isProdukAktif ? 'active' : '' ?>" href="<?= site_url('admin/produk') ?>">
+                <a class="sidebar-link <?= $isProdukAktif ? 'active' : '' ?>" data-bs-toggle="collapse" href="#submenuProduk" role="button" aria-expanded="<?= $isProdukAktif ? 'true' : 'false' ?>" aria-controls="submenuProduk">
                     <i class="sidebar-link-icon fal fa-tshirt"></i>
                     <span>Produk</span>
+                    <i class="fal fa-chevron-down sidebar-chevron"></i>
                 </a>
+                <div class="collapse <?= $isProdukAktif ? 'show' : '' ?>" id="submenuProduk">
+                    <ul class="sidebar-submenu">
+                        <?php foreach ($produkSubmenu as [$url, $label, $ikon, $aktif]) : ?>
+                            <li class="submenu-item">
+                                <a class="sidebar-submenu-link <?= $aktif ? 'active' : '' ?>" href="<?= site_url($url) ?>">
+                                    <i class="fal <?= $ikon ?>"></i>
+                                    <span><?= esc($label) ?></span>
+                                </a>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                </div>
             </li>
         </ul>
 
@@ -225,7 +312,7 @@ $settingsSubmenu = [
             </li>
         </ul>
 
-        <?php if ($levelSesi === 'superadmin') : ?>
+        <?php if ($sistemSubmenu !== []) : ?>
             <div class="sidebar-heading mt-2">Sistem</div>
             <ul class="sidebar-nav">
                 <!-- Submenu Pengaturan -->
@@ -237,7 +324,7 @@ $settingsSubmenu = [
                     </a>
                     <div class="collapse <?= $isSettingsAktif ? 'show' : '' ?>" id="submenuSettings">
                         <ul class="sidebar-submenu">
-                            <?php foreach ($settingsSubmenu as [$url, $label, $ikon, $aktif]) : ?>
+                            <?php foreach ($sistemSubmenu as [$url, $label, $ikon, $aktif]) : ?>
                                 <li class="submenu-item">
                                     <a class="sidebar-submenu-link <?= $aktif ? 'active' : '' ?>" href="<?= site_url($url) ?>">
                                         <i class="fal <?= $ikon ?>"></i>

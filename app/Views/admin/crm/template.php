@@ -1,3 +1,8 @@
+<?php
+/**
+ * @var array $templates Daftar template pesan (crm_template), dikirim dari Crm::template()
+ */
+?>
 <?= $this->extend('template/main') ?>
 
 <?= $this->section('content') ?>

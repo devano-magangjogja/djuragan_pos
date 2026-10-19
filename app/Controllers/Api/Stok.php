@@ -16,15 +16,19 @@ use App\Models\StokModel;
 class Stok extends BaseController
 {
     /**
-     * GET api/stok/cari?q=<kata>&juragan_id=<id>
+     * GET api/stok/cari?q=<kata>&juragan_id=<id>&tipe=<pembuatan|sewa>
      *
      * Jawaban sengaja formasinya sama dengan pencarian pelanggan
      * (query + results) supaya JS di form tidak perlu dua pola baca.
+     *
+     * Tipe pesanan memilih kolam stok: hanya varian kolam itu yang ditawarkan,
+     * lengkap dengan harganya dan unitnya yang masih bisa diambil.
      */
     public function cari()
     {
         $cari    = trim((string) $this->request->getGet('q'));
         $juragan = (int) $this->request->getGet('juragan_id');
+        $kolam   = StokModel::kolamDariTipe($this->request->getGet('tipe'));
         $ids     = $this->juraganIds();
 
         // orderan ditulis untuk satu toko, jadi tokonya harus dipilih dulu dan
@@ -35,14 +39,17 @@ class Stok extends BaseController
 
         $hasil = [];
 
-        foreach ((new StokModel())->saran($ids, $juragan, $cari) as $b) {
+        foreach ((new StokModel())->saran($ids, $juragan, $cari, 12, $kolam) as $b) {
             $hasil[] = [
                 'id_stok'   => (int) $b['id_stok'],
                 'juragan_id' => (int) $b['juragan_id'],
                 'kode'      => (string) $b['kode'],
                 'ukuran'    => (string) ($b['ukuran'] ?? ''),
                 'harga'     => (int) $b['harga'],
-                'stok'      => (int) $b['stok'],
+                // yang ditawarkan ke form orderan adalah unit kolam ini yang masih
+                // bisa diambil, bukan angka gudang
+                'stok'      => (int) $b['tersedia'],
+                'kolam'     => $kolam,
                 'keterangan' => (string) ($b['keterangan'] ?? ''),
             ];
         }

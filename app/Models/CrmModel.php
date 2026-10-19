@@ -1026,6 +1026,7 @@ class CrmModel extends Model
             inv.seri,
             inv.rincian,
             inv.status_pesanan,
+            inv.sewa_kembali_at,
             inv.pemesan_id,
             pel.nama_pelanggan,
             COALESCE(kon.nomor, '') as nomor_wa
@@ -1061,7 +1062,7 @@ class CrmModel extends Model
                 }
             }
             // Cek jadwal kembali sewa
-            if (!empty($r['kembali'])) {
+            if (!empty($r['kembali']) && empty($inv['sewa_kembali_at'])) {
                 $tglKembali = $r['kembali'];
                 if (strtotime($tglKembali) >= strtotime('-3 days') && strtotime($tglKembali) <= strtotime('+7 days')) {
                     $terlambat = $tglKembali < $today;

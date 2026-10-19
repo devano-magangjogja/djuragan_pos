@@ -1,3 +1,14 @@
+<?php
+
+// Variabel berikut dikirim Auth::reset() lewat view() lalu di-extract CI4 saat
+// render, sehingga tidak terlihat oleh analis statis. Deklarasi di bawah memberi
+// jenis sebenarnya ke Intelephense (P1008 pada $validation & $id).
+
+/**
+ * @var \CodeIgniter\Validation\Validation $validation hasil \Config\Services::validation()
+ * @var int                                $id         id user dari token reset
+ */
+?>
 <?= $this->extend('template/auth') ?>
 
 <?= $this->section('authTitle') ?>

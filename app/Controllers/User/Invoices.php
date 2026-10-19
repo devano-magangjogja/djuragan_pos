@@ -7,6 +7,8 @@ use App\Models\FotoModel;
 use App\Models\InvoiceModel;
 use App\Models\JuraganModel;
 use App\Models\PembayaranModel;
+use App\Models\PoinPenjualanModel;
+use App\Models\StokModel;
 use App\Models\UkuranKomponenModel;
 use App\Models\UserModel;
 use CodeIgniter\I18n\Time;
@@ -93,9 +95,13 @@ class Invoices extends BaseController
 
                 // tautan stok diperiksa di server: id_stok datang dari peramban,
                 // jadi bisa saja milik toko lain atau memang tidak ada
-                $peta = sinkron_dibeli($invoice_id, tautkan_stok($produk['baris'], (int) $juragan_id));
+                $taut = tautkan_stok($produk['baris'], (int) $juragan_id);
+                $peta = sinkron_dibeli($invoice_id, $taut);
 
+                // sama seperti admin: qty yang melebihi unit tersedia membatalkan
+                // seluruh tulisan orderan, dan kolam stoknya ikut tipe orderan
                 $galat  = array_merge(
+                    (new StokModel())->lebih($taut, StokModel::kolamDariTipe($rincian['tipe'] ?? null), $invoice_id),
                     simpan_ukuran_produk($invoice_id, $peta, $produk['ukuran']),
                     simpan_anggota($invoice_id, $this->request->getPost('anggota_dikirim'), $this->request->getPost('anggota'))
                 );
@@ -151,7 +157,7 @@ class Invoices extends BaseController
     // menampilkan semua invoice
     public function lihat($juragan = '', $hal = 'dalam-proses', $kategori = '')
     {
-        if (! in_array($hal, ['semua', 'pembayaran', 'cek-bayar', 'dalam-proses', 'belum-proses', 'selesai', 'saring'], true)) {
+        if (! in_array($hal, ['semua', 'pembayaran', 'cek-bayar', 'dalam-proses', 'belum-proses', 'selesai', 'saring', 'masih-disewa'], true)) {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
 
@@ -301,6 +307,42 @@ class Invoices extends BaseController
         }
     }
 
+    /**
+     * Catat (atau tarik kembali) pengembalian barang sewaan dari sisi CS.
+     *
+     * CS yang menulis nota sewa dan yang menerima barangnya kembali di counter,
+     * jadi tombolnya ada di daftar transaksinya juga. Aturannya sama persis dengan
+     * versi admin: satu penanda dibaca oleh tab Selesai, stok kolam sewa, dan poin.
+     */
+    public function sewa_kembali()
+    {
+        if ($this->request->isAJAX()) {
+            $invoice_id = (int) $this->request->getPost('invoice_id');
+
+            // nota toko lain tidak boleh disentuh, sama seperti halaman admin
+            if ($this->notaMilikToko($invoice_id) === null) {
+                return $this->tolakToko();
+            }
+
+            $invModel = new InvoiceModel();
+
+            $hasil = $this->request->getPost('aksi') === 'batalkan'
+                ? $invModel->batalkanKembali($invoice_id)
+                : $invModel->catatKembali($invoice_id, (int) pengguna_sesi(), (string) $this->request->getPost('tanggal'));
+
+            (new PoinPenjualanModel())->sinkron($invoice_id);
+
+            // tanpa url: pemanggilnya cukup memuat ulang halaman yang sedang dibuka,
+            // jadi tab dan saringannya tidak berpindah setelah barang kembali
+            return $this->response->setJSON([
+                'ok'     => $hasil['ok'],
+                'status' => $hasil['pesan'],
+            ]);
+        }
+
+        throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+    }
+
     // hapus invoice
     public function hapus_orderan()
     {
@@ -315,6 +357,10 @@ class Invoices extends BaseController
             \Config\Database::connect()->table('invoice')
                 ->where('id_invoice', (int) $invoice_id)
                 ->update(['deleted_by' => pengguna_sesi()]);
+
+            // nota yang sudah tidak ada tidak boleh menyumbang poin gaji lagi;
+            // halaman admin sudah melakukan ini, jalur CS belum
+            (new PoinPenjualanModel())->cabut((int) $invoice_id);
 
             return $this->response->setJSON([
                 'status' => 'Orderan dihapus',

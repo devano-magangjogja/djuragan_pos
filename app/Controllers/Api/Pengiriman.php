@@ -79,6 +79,11 @@ class Pengiriman extends \CodeIgniter\Controller
                 'status_pengiriman' => $status,
             ]);
 
+            // poin gaji juga bergerak dari sini, bukan hanya lewat pembayaran:
+            // nota yang baru selesai boleh dihitung, yang balik belum selesai
+            // dicabut lagi
+            (new \App\Models\PoinPenjualanModel())->sinkron((int) $invoice_id);
+
             // simpan notif
             $juragan_id = $invoice->find($invoice_id)->juragan_id;
             if ((int) $id_pengiriman > 0) {

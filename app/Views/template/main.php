@@ -1,3 +1,13 @@
+<?php
+/**
+ * Layout ini dipakai child view lewat $this->extend('template/main'), dan $title
+ * mengalir dari array $data controller (mis. 'title' => '...') yang di-extract()
+ * oleh CodeIgniter di system/View/View.php. Karena analyzers tidak bisa menelusuri
+ * extract(), blok @var ini hanya memberi tahu Intelephense jenis variabelnya.
+ *
+ * @var string $title Judul halaman.
+ */
+?>
 <!doctype html>
 <html lang="id">
 

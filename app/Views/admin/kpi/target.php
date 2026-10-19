@@ -1,11 +1,22 @@
 <?php
-/*
+/**
  * Target dan bobot KPI.
  *
  * Yang boleh diubah hanya angka target, bobot, dan aktif/tidaknya
  * indikator. Keterangan di sini dibuat satu kalimat biasa; definisi teknis dan
  * rumus hitungnya hanya muncul saat selnya ditahan (tooltip) dan di halaman
  * detail tiap indikator.
+ *
+ * Variabel di bawah disuntik runtime oleh Admin\Kpi::target() lewat
+ * view('admin/kpi/target', $data). CI4 meng-extract array itu saat render,
+ * jadi tidak ada assignment di file ini dan Intelephense (P1008)
+ * menyangkanya tak terdefinisi. Blok @var ini hanya penanda tipe untuk
+ * analyzer, bukan kode yang dijalankan.
+ *
+ * @var array  $target   daftar indikator: [['indikator','nama','peran','arah','satuan','target','bobot','aktif','definisi','aturan','updated_at','updated_by'], ...]
+ * @var bool   $boleh    pengguna boleh mengubah target (admin/superadmin)
+ * @var string $kabar    pesan flash hasil simpan, kosong jika tidak ada
+ * @var array  $pembaru  [user_id => nama] untuk mencantumkan siapa yang mengubah
  */
 
 /** Bahasa sehari-hari per indikator, tanpa istilah teknis. */

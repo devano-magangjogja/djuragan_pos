@@ -1,3 +1,23 @@
+<?php
+/**
+ * Variabel di bawah diisi oleh Crm::followup() lewat view('admin/crm/followup', $data).
+ * CI4 menyuntikkannya saat runtime melalui extract(), jadi Intelephense tidak bisa
+ * menelusurinya — blok @var ini memberi tahu analyzer tanpa mengubah perilaku.
+ *
+ * @var string $title               judul halaman
+ * @var string $tab                 tab aktif: tagihan|reminder|customer
+ * @var string $cari                kata kunci pencarian dari query string (bisa string kosong)
+ * @var string $status              filter status tab customer: menunggu|selesai|semua
+ * @var int    $page                nomor halaman aktif (1-based)
+ * @var int    $limit               baris per halaman
+ * @var int    $totalPagesTagihan   total halaman daftar tagihan
+ * @var int    $totalInvoicesTagihan total invoice belum lunas
+ * @var array  $followupList        baris follow-up customer
+ * @var array  $invoicesTagihan     baris invoice belum lunas
+ * @var array  $reminders           pengingat otomatis
+ * @var string $templateTagihan     template pesan WA tagihan
+ */
+?>
 <?= $this->extend('template/main') ?>
 
 <?= $this->section('css') ?>

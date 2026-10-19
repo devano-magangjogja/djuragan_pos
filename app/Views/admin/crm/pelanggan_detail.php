@@ -1,3 +1,18 @@
+<?php
+/**
+ * Variabel disuntik oleh controller Admin\Crm::pelanggan_detail() via view().
+ *
+ * @var string $title         judul halaman
+ * @var array  $pelanggan     data profil pelanggan (Customer 360)
+ * @var array  $nilai         ringkasan nilai & kontribusi pelanggan
+ * @var array  $transaksiList riwayat transaksi POS & invoice
+ * @var array  $pembayaranList riwayat mutasi pembayaran
+ * @var array  $timeline      timeline aktivitas multi-channel
+ * @var array  $followupList  daftar follow-up pelanggan
+ * @var array  $allTags       master tag untuk pilihan tambah tag
+ * @var array  $templates     template pesan cepat WhatsApp
+ */
+?>
 <?= $this->extend('template/main') ?>
 
 <?= $this->section('content') ?>

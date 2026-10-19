@@ -1,4 +1,9 @@
 <?php
+/**
+ * Variabel disuntik oleh CodeIgniter melalui extract() saat render.
+ *
+ * @var \CodeIgniter\Pager\PagerRenderer $pager
+ */
 $pager->setSurroundCount(2);
 if (count($pager->links()) > 1) {
     ?>

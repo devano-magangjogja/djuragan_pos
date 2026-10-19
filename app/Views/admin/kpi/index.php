@@ -1,4 +1,25 @@
 <?php
+/**
+ * Variabel di bawah ini diisi dari Kpi::index() lewat view('admin/kpi/index', $data).
+ * CodeIgniter memanggil extract() di dalam system/View/View.php, jadi analyzers tidak
+ * bisa menelusuri asal variabelnya; blok @var ini hanya memberi tahu Intelephense.
+ *
+ * @var array<string, mixed>                        $s          Saringan: awal, akhir, periode, peran, user_id, juragan_id, juragan_ids
+ * @var array<string, array<string, mixed>>         $kartu      Kartu indikator: kunci => [label, nilai, satuan, contoh, tersedia, ...]
+ * @var array<string, array<string, mixed>>         $target     Target per indikator: kunci => [target, arah, bobot, aktif]
+ * @var list<array<string, mixed>>                  $tren      Baris tren: baki, order, gmv, sla_jam
+ * @var array<int, string>                          $pegawai    Pilihan karyawan: id => "nama (level)"
+ * @var array<int, string>                          $juragans   Pilihan toko: id => nama
+ * @var array<string, string>                       $periode    Label periode: kunci => teks
+ * @var array<string, string>                       $peran      Label peran: kunci => teks
+ * @var list<string>                                $indikator  Daftar kunci indikator yang punya halaman detail
+ * @var array<string, mixed>                        $rekap      Rekap per karyawan: baris (list) dan jumlah (total orang)
+ * @var int                                         $batas      Jumlah baris rekap per halaman
+ * @var int                                         $halaman    Nomor halaman berbasis nol
+ * @var string                                      $banding    Indikator yang dipilih untuk grafik perbandingan
+ * @var list<array<string, mixed>>                  $pembanding Data grafik perbandingan: pegawai, nilai
+ */
+
 /*
  * Ringkasan KPI karyawan.
  *

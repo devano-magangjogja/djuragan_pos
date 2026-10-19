@@ -19,6 +19,10 @@ class Notifikasi extends \CodeIgniter\Controller
         $page    = $this->request->getGet('page');
         $baca    = $this->request->getGet('dibaca');
 
+        // lonceng ini dipanggil polling, jadi sapuan otomatis harus lewat gerbang
+        // waktunya dulu: hampir selalu jawabannya "belum waktunya", tanpa query tulis
+        $notifikasi->sapuJadwal();
+
         $limit = config('Pager')->perPage;
         $page  = (int) $this->request->getGet('page');
 
@@ -48,13 +52,14 @@ class Notifikasi extends \CodeIgniter\Controller
 
         foreach ($x as $notif) {
             // template dari config memang berisi markup ikon, jadi yang di-escape
-            // hanyalah nilai yang dimasukkan ke dalamnya
-            $notifikasi = replacer(config('JuraganConfig')->notifikasi[$notif->type], ['invoice' => esc((string) $notif->seri), 'nama' => esc((string) $notif->name)]);
+            // hanyalah nilai yang dimasukkan ke dalamnya; dulu pesan ini menimpa
+            // variabel $notifikasi yang sudah dipakai untuk modelnya
+            $pesan      = replacer(config('JuraganConfig')->notifikasi[$notif->type], ['invoice' => esc((string) $notif->seri), 'nama' => esc((string) $notif->name)]);
             $tanggal    = Time::createFromTimestamp($notif->created_at)->setTimezone(config('App')->appTimezone);
 
             $res['results'][] = [
                 'id'         => (int) $notif->id_notifikasi,
-                'notif'      => $notifikasi,
+                'notif'      => $pesan,
                 'created_at' => $tanggal->toLocalizedString('EEE, d MMM yyyy (HH:mm:ss)'),
                 'invoice'    => $notif->seri,
                 'juragan'    => $notif->juragan,
@@ -63,6 +68,23 @@ class Notifikasi extends \CodeIgniter\Controller
         }
 
         return $this->respond($res);
+    }
+
+    /**
+     * Hapus satu notifikasi milik akun yang login, khusus yang sudah terbaca.
+     * Layar pengaturan (Admin/Superadmin) yang menghapus seluruh kotak; tombol
+     * kecil di halaman daftar hanya membereskan punya sendiri.
+     */
+    public function hapus()
+    {
+        $notifikasi = new \App\Models\NotifikasiModel();
+        $id         = (int) $this->request->getPost('id');
+        $terhapus   = $id > 0 ? $notifikasi->hapusSatu($id, (int) session()->get('id')) : 0;
+
+        return $this->respond([
+            'status'   => $terhapus > 0 ? 'OK' : 'KOSONG',
+            'terhapus' => $terhapus,
+        ]);
     }
 
     public function mark_all()

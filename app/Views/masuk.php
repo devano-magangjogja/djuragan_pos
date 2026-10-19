@@ -1,3 +1,13 @@
+<?php
+
+// Variabel berikut dikirim Auth::index() lewat view() lalu di-extract CI4 saat
+// render, sehingga tidak terlihat oleh analis statis. Deklarasi di bawah memberi
+// jenis sebenarnya ke Intelephense (P1008 pada $validation).
+
+/**
+ * @var \CodeIgniter\Validation\Validation $validation hasil \Config\Services::validation()
+ */
+?>
 <?= $this->extend('template/auth') ?>
 
 <?= $this->section('authTitle') ?>

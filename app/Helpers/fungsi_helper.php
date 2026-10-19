@@ -996,11 +996,12 @@ if (! function_exists('baca_rincian')) {
 if (! function_exists('tipe_pesanan')) {
     /**
      * Jenis pesanan. Menentukan inputan jadwal yang muncul di form: deadline
-     * untuk pembuatan, tanggal ambil/kembali dan jaminan untuk sewa.
+     * untuk pembuatan, tanggal ambil/kembali dan jaminan untuk sewa. Sekalian
+     * menentukan kolam stok yang dipakai, jadi label jual ikut disebut.
      */
     function tipe_pesanan(): array
     {
-        return ['pembuatan' => 'Pembuatan', 'sewa' => 'Sewa'];
+        return ['pembuatan' => 'Pembuatan/Jual', 'sewa' => 'Sewa'];
     }
 }
 
@@ -1380,7 +1381,6 @@ if (! function_exists('foto_panel_form')) {
         $acuan   = $produk
             ? 'Contoh bentuk barang ini; satu foto terlihat di semua ukuran sekartu.'
             : 'Acuan bentuk dari pelanggan.';
-        $ada       = $sudah !== [];
         $petunjuk  = $pemilik > 0
             ? 'Foto langsung tersimpan begitu dipilih.'
             : 'Fotonya ikut dikirim setelah orderan disimpan.';
@@ -1403,20 +1403,22 @@ if (! function_exists('foto_panel_form')) {
                 . '</div>';
         }
 
+        /* Panelnya selalu terbuka. Dulu isian fotonya tersembunyi di balik kepala
+           kartu dan baru muncul setelah panah diklik, padahal memilih foto
+           memang langkah utama panel ini; kepala kartunya jadi judul saja. */
         return '<div class="card mb-3 overflow-hidden rounded-kartu border-ink-200 shadow-kartu foto-panel"'
             . ' data-pemilik="' . (int) $pemilik . '"'
             . ' data-maks="' . (int) $model::MAKS_FOTO . '"'
             . ' data-unggah="' . esc(site_url($api . '/unggah'), 'attr') . '"'
             . ' data-hapus="' . esc(site_url($api . '/hapus'), 'attr') . '">'
             . '<div class="card-header border-ink-100 bg-ink-50/60 py-2.5 px-3 px-sm-4">'
-            . '<button type="button" class="buka-foto flex w-full cursor-pointer items-center gap-2 border-0 bg-transparent p-0 text-[0.78rem] font-bold uppercase tracking-[0.08em] text-ink-700" aria-expanded="' . ($ada ? 'true' : 'false') . '">'
+            . '<div class="flex w-full items-center gap-2 text-[0.78rem] font-bold uppercase tracking-[0.08em] text-ink-700">'
             . '<span class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-[0.65rem] border border-brand-100 bg-white text-brand-500"><i class="fal fa-camera text-xs"></i></span>'
             . '<span>' . $judul . '</span>'
             . '<span class="inline-block rounded-full bg-ink-900 px-2 py-0.5 text-xs font-semibold text-white jumlah-foto">' . count($sudah) . '</span>'
-            . '<i class="fal fa-chevron-down ms-auto text-ink-400 ikon-panah-foto transition-transform' . ($ada ? ' rotate-180' : '') . '"></i>'
-            . '</button>'
             . '</div>'
-            . '<div class="card-body foto-isi' . ($ada ? '' : ' d-none') . ' p-3 p-sm-4">'
+            . '</div>'
+            . '<div class="card-body foto-isi p-3 p-sm-4">'
             . '<p class="small text-muted mb-2"><i class="fal fa-info-circle me-1 text-primary"></i>' . $acuan . ' ' . $petunjuk . ' Maksimum ' . (int) $model::MAKS_FOTO . ' foto JPG, PNG, atau WebP.</p>'
             . '<div class="row g-2 foto-daftar">' . $kartu . '</div>'
             . '<label class="foto-pilih mt-2">'

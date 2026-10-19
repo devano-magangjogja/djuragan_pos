@@ -1,4 +1,33 @@
 <?php
+/**
+ * Variabel di bawah dilempar Admin\Produk::index() ke view() lalu di-extract()
+ * oleh CodeIgniter saat runtime, jadi tidak ada penugasan yang bisa dilihat
+ * Intelephense di file ini; blok @var hanya memberi tahu tipenya.
+ *
+ * @var array<int, array<string, mixed>> $katalog   Kartu produk beserta daftar varian tiap kartu (StokModel::katalog)
+ * @var array<int, list<array<string, mixed>>> $fotonya Gabungan foto varian, dikunci urutan kartu (ProdukFotoModel::perKartu)
+ * @var array<string, int> $ringkas   Ringkasan stok: varian, unit, nilai, menipis, habis, belum berpoin
+ * @var int $juragan      Filter toko terpilih, 0 artinya semua toko
+ * @var array<int, string> $juragans  Pilihan toko pada filter (BaseController::juraganPilihan)
+ * @var string $cakupan   Toko yang sedang dibaca, dipakai pesan daftar kosong
+ * @var int $disewa       Unit sewa yang sedang di tangan penyewa pada cakupan aktif (StokModel::sedangDisewa)
+ * @var string $tautan_disewa Alamat tab Masih Disewa di daftar transaksi untuk cakupan aktif
+ * @var string $cari         Kata kunci pencarian yang sedang dipakai
+ * @var string $keadaan   Filter keadaan stok yang sedang dipakai
+ * @var string $kolam      Kolam tab aktif: 'jual' atau 'sewa' (StokModel::kolam)
+ * @var array<string, string> $kolams  Label tab per kolam (StokModel::KOLAM)
+ * @var array<int, array<string, string>> $ukuran Master ukuran: kode, label, kelompok (StokModel::daftarUkuran)
+ * @var array<int, array<string, string>> $kode   Master kode barang: kolom kode (StokModel::daftarKode)
+ * @var int $total        Jumlah kartu hasil penyaringan
+ * @var int $limit        Kartu per halaman
+ * @var int $page         Nomor halaman aktif
+ * @var ?string $sukses    Flash message berhasil, null saat tidak ada
+ * @var ?string $gagal     Flash message gagal, null saat tidak ada
+ * @var array<string, string> $errors Validasi flashdata: kolom => pesan
+ * @var int $ambangnya   Batas stok disebut menipis (StokModel::AMBANG_MENIPIS)
+ * @var bool $bacaSaja    CS hanya membaca, tombol ubah/hapus disembunyikan
+ * @var bool $bisaPoin    Superadmin boleh menata poin varian
+ */
 
 $pager = \Config\Services::pager();
 
@@ -32,17 +61,21 @@ $keadaan_baris = static function (int $stok) use ($ambangnya): array {
     return $stok <= $ambangnya ? ['warning', 'Menipis'] : ['success', 'Aman'];
 };
 
-// data satu varian untuk modal sunting; esc() yang mengemas atributnya
-$barang = static fn (array $b): array => [
-    'id'         => (int) $b['id_stok'],
-    'kode'       => (string) $b['kode'],
-    'ukuran'     => (string) ($b['ukuran'] ?? ''),
-    'harga'      => (int) $b['harga'],
-    'stok'       => (int) $b['stok'],
-    'keterangan' => (string) ($b['keterangan'] ?? ''),
-    'juragan'    => (string) $b['nama_juragan'],
-    'juragan_id' => (int) $b['juragan_id'],
-];
+// data satu varian untuk modal sunting; esc() yang mengemas atributnya.
+// Harga dan stok baris memang angka kolamnya sendiri, karena satu varian
+// hanya hidup di satu kolam.
+$barang = static function (array $b): array {
+    return [
+        'id'         => (int) $b['id_stok'],
+        'kode'       => (string) $b['kode'],
+        'ukuran'     => (string) ($b['ukuran'] ?? ''),
+        'harga'      => (int) $b['harga'],
+        'stok'       => (int) $b['stok'],
+        'keterangan' => (string) ($b['keterangan'] ?? ''),
+        'juragan'    => (string) $b['nama_juragan'],
+        'juragan_id' => (int) $b['juragan_id'],
+    ];
+};
 
 // kartu utuh untuk tombol Edit: pemilih varian diisi dari daftar ini
 $kartu_barang = static function (array $p) use ($barang): string {
@@ -50,14 +83,104 @@ $kartu_barang = static function (array $p) use ($barang): string {
         'kode'       => $p['kode'],
         'juragan_id' => (int) $p['juragan_id'],
         'nama'       => (string) $p['nama_juragan'],
+        'poin'       => (int) ($p['poin'] ?? 0),
         'varian'     => array_map($barang, $p['varian']),
     ]));
 };
 
 // huruf pertama nama barang, dipakai waktu foto produk belum ada
 $inisial = static fn (string $kode): string => mb_strtoupper(mb_substr(trim($kode), 0, 2));
+
+// satu kata untuk menyebut kolam yang sedang dibuka: "jual" atau "sewa"
+$kataKolam = $kolam === 'sewa' ? 'sewa' : 'jual';
+
+// tautan tab: saringan yang sedang dipakai ikut dibawa, hanya kolamnya yang ganti
+$kueriTab = array_filter([
+    'juragan' => $juragan > 0 ? (string) $juragan : '',
+    'keadaan' => $keadaan,
+    'cari'    => $cari,
+], static fn (string $v): bool => $v !== '');
 ?>
 <?= $this->extend('template/main') ?>
+
+<?= $this->section('css') ?>
+<style>
+    /* galeri thumbnail di modal detail: dulu flex-wrap biasa, jadi baris terakhir
+       yang isinya sedikit tidak ikut menyusut dan kotaknya terlihat lebih besar
+       dari baris di atasnya; grid membuat tiap kolom sama lebar dan barisnya
+       sejajar, dan aspect-ratio menjaga kotaknya tetap persegi */
+    .foto-galeri {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(3.2rem, 1fr));
+    }
+
+    .foto-thumbs {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 1 / 1;
+    }
+
+    /* popus foto produk di layar sempit: kalau fotonya banyak, daftar kotaknya
+       digulir di dalam dirinya sendiri supaya popusnya tidak terus memanjang ke
+       bawah — kepala popus, petunjuk, dan kotak "Pilih foto" tetap terlihat */
+    @media (max-width: 767.98px) {
+        #modalFotoProduk .foto-daftar {
+            max-height: 14rem;
+            overflow-y: auto;
+            /* .row membawa margin negatif; tanpa ini gulir vertikalnya ikut
+               memunculkan gulir mendatar */
+            overflow-x: hidden;
+        }
+    }
+
+    /* "Tambah Barang" memenuhi lebar kartu di layar sempit; dulu ia cuma
+       seukuran tulisannya dan berdempetan dengan baris filter, padahal itu
+       tombol utama halaman ini */
+    @media (max-width: 767.98px) {
+        .toolbar-produk > .btn {
+            width: 100%;
+        }
+    }
+
+    /* Pil "sedang disewa" di bawah kartu produk: seukuran isinya, ditempel di
+       tepi kiri barisnya. Titik merahnya berkedip supaya menyala diam-diam
+       tanpa perlu animasi lain; mati saja kalau pengguna mematikan animasi. */
+    .pil-disewa {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.38rem 0.95rem;
+        border: 1px solid #eaecf0;
+        border-radius: 999px;
+        background: #ffffff;
+        box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06);
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #344054;
+        text-decoration: none;
+    }
+    .pil-disewa:hover {
+        background: #f9fafb;
+        color: #101828;
+    }
+    .pil-disewa__titik {
+        flex: 0 0 auto;
+        width: 0.5rem;
+        height: 0.5rem;
+        border-radius: 50%;
+        background: #da251d;
+        animation: pil-disewa-kedip 1.4s ease-in-out infinite;
+    }
+    @keyframes pil-disewa-kedip {
+        50% { opacity: 0.15; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .pil-disewa__titik {
+            animation: none;
+        }
+    }
+</style>
+<?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
 <?= $this->include('admin/navbar') ?>
@@ -65,23 +188,44 @@ $inisial = static fn (string $kode): string => mb_strtoupper(mb_substr(trim($kod
 <div class="container-xxl">
     <h1 class="h3 mt-5">Produk &amp; Stok</h1>
 
+    <?php /* stok dipisah dua kolam: unit yang boleh dijual dan unit yang boleh
+       disewa; satu tab hanya menampilkan dan menyaring kolamnya sendiri */ ?>
+    <div class="d-flex flex-wrap gap-2 mb-4">
+        <?php foreach ($kolams as $slug => $label) {
+            $tautan = $kueriTab + ['kolam' => $slug];
+            ?>
+            <a class="btn rounded-pill <?= $kolam === $slug ? 'btn-primary' : 'btn-outline-secondary' ?>"
+                title="<?= $slug === 'sewa' ? 'Barang yang boleh disewa' : 'Barang yang boleh dibeli' ?>"
+                href="<?= site_url('admin/produk?' . http_build_query($tautan)) ?>"><?= esc($label) ?></a>
+        <?php } ?>
+    </div>
+
     <div class="row gx-2 gy-3 mb-4">
         <?php
+        // elemen keempat: kelas warna untuk angka + ikonya, dipakai penanda poin
         $ringkasan = [
-            ['Varian tercatat', (string) $ringkas['varian'], 'fa-shapes'],
-            ['Total unit', (string) $ringkas['unit'], 'fa-boxes-stacked'],
-            ['Nilai stok', $rupiah((int) $ringkas['nilai']), 'fa-coins'],
-            ['Menipis', (string) $ringkas['menipis'], 'fa-triangle-exclamation'],
-            ['Habis', (string) $ringkas['habis'], 'fa-circle-xmark'],
+            ['Varian tercatat', (string) $ringkas['varian'], 'fa-shapes', ''],
+            ['Total unit ' . $kataKolam, (string) $ringkas['unit'], 'fa-boxes-stacked', ''],
+            ['Nilai stok ' . $kataKolam, $rupiah((int) $ringkas['nilai']), 'fa-coins', ''],
+            ['Menipis', (string) $ringkas['menipis'], 'fa-triangle-exclamation', ''],
+            ['Habis', (string) $ringkas['habis'], 'fa-circle-xmark', ''],
+            // poin gaji hanya boleh diisi Superadmin: angka ini mengingatkan
+            // Admin dan CS bahwa ada barang yang belum bisa dihitung gajinya
+            [
+                'Belum berpoin',
+                (string) $ringkas['belum_poin'],
+                'fa-coins',
+                $ringkas['belum_poin'] > 0 ? 'text-amber-800' : '',
+            ],
         ];
 
-        foreach ($ringkasan as [$label, $nilai, $ikon]) { ?>
+        foreach ($ringkasan as [$label, $nilai, $ikon, $warna]) { ?>
             <div class="col-6 col-lg">
                 <div class="h-100 rounded-3 border border-ink-200 bg-white px-3 py-2">
-                    <div class="text-muted small text-uppercase">
+                    <div class="text-muted small text-uppercase <?= esc($warna) ?>">
                         <i class="fal <?= $ikon ?>"></i> <?= esc($label) ?>
                     </div>
-                    <div class="fs-4 fw-bold"><?= esc($nilai) ?></div>
+                    <div class="fs-4 fw-bold <?= esc($warna) ?>"><?= esc($nilai) ?></div>
                 </div>
             </div>
         <?php } ?>
@@ -98,8 +242,12 @@ $inisial = static fn (string $kode): string => mb_strtoupper(mb_substr(trim($kod
 
             <div class="card">
                 <div class="card-body">
-                    <div class="d-flex flex-wrap gap-2 align-items-end mb-3">
+                    <div class="d-flex flex-wrap gap-2 align-items-end mb-3 toolbar-produk">
                         <?= form_open('admin/produk', ['method' => 'get', 'class' => 'row g-2 align-items-end mb-0 flex-grow-1']) ?>
+                        <?php /* form GET: kolom isian yang tidak dipakai tetap ikut
+   terbawa sebagai ?, jadi tab yang sedang dibuka tidak hilang saat menyaring */ ?>
+                        <input type="hidden" name="kolam" value="<?= esc($kolam) ?>">
+                        <input type="hidden" name="page" value="">
                         <div class="col-6 col-md-3">
                             <?= form_label('Juragan', 'juragan', ['class' => 'form-label small']) ?>
                             <?= form_dropdown([
@@ -123,7 +271,7 @@ $inisial = static fn (string $kode): string => mb_strtoupper(mb_substr(trim($kod
                                 'selected' => $keadaan,
                             ]) ?>
                         </div>
-                        <div class="col-12 col-md-4">
+                        <div class="col-8 col-md-4">
                             <?= form_label('Cari', 'cari', ['class' => 'form-label small']) ?>
                             <?= form_input([
                                 'class'       => 'form-control form-control-sm',
@@ -132,20 +280,38 @@ $inisial = static fn (string $kode): string => mb_strtoupper(mb_substr(trim($kod
                                 'value'       => $cari,
                             ]) ?>
                         </div>
-                        <div class="col-auto">
-                            <button class="btn btn-sm btn-dark" type="submit"><i class="fal fa-search"></i> Cari</button>
+                        <?php /* tombolnya duduk di samping kolom carinya di semua lebar;
+                                dulu kolom cari col-12 sehingga tombolnya turun sendiri
+                                ke baris berikutnya di layar sempit */ ?>
+                        <div class="col-4 col-md-auto">
+                            <button class="btn btn-sm btn-dark w-100" type="submit"><i class="fal fa-search"></i> Cari</button>
                         </div>
                         <?= form_close() ?>
+                        <?php if (! $bacaSaja) { ?>
                         <button class="btn btn-sm btn-primary flex-shrink-0" type="button" data-bs-toggle="modal" data-bs-target="#modalTambahBarang">
                             <i class="fal fa-plus"></i> Tambah Barang
                         </button>
+                        <?php } ?>
                     </div>
 
                     <?php if ($katalog === []) { ?>
                         <div class="text-center py-5 text-muted">
                             <i class="fal fa-box-open fa-3x mb-2 d-block"></i>
-                            Belum ada barang yang dipantau<?= $cari !== '' ? ' untuk pencarian "' . esc($cari) . '"' : '' ?>.
-                            Klik tombol <strong>Tambah Barang</strong> di atas untuk menambah varian.
+                            <?php if ($kolam === 'sewa') { ?>
+                                <?php /* tab sewa sengaja hanya memuat unit yang ada; yang masih kosong lewat saringan Habis */ ?>
+                                Belum ada barang dengan stok sewa yang tersisa<?= $cari !== '' ? ' untuk pencarian "' . esc($cari) . '"' : '' ?>.
+                                <?php if ($keadaan === '') { ?>
+                                    Lihat
+                                    <a href="<?= site_url('admin/produk?' . http_build_query($kueriTab + ['keadaan' => 'habis'])) ?>">saringan <strong>Habis</strong></a>
+                                    untuk barang yang stok sewanya belum diisi.
+                                <?php } ?>
+                            <?php } else { ?>
+                                Belum ada barang yang dipantau<?= $cari !== '' ? ' untuk pencarian "' . esc($cari) . '"' : '' ?>.
+                            <?php } ?>
+                            <?php /* Admin/CS hanya dibatasi ke tokonya sendiri, jadi daftar yang
+                              kosong sering terlihat seperti bug — sebutkan cakupan yang dibaca. */ ?>
+                            Yang dibaca di halaman ini hanya barang dari <strong><?= esc($cakupan) ?></strong>.
+                            <?php if (! $bacaSaja) { ?>Klik tombol <strong>Tambah Barang</strong> di atas untuk menambah varian.<?php } ?>
                         </div>
                     <?php } else { ?>
                         <div class="grid grid-cols-[repeat(auto-fill,minmax(15rem,1fr))] gap-3">
@@ -174,6 +340,7 @@ $inisial = static fn (string $kode): string => mb_strtoupper(mb_substr(trim($kod
                                                     <?= esc($p['nama_juragan']) ?>
                                                 </span>
                                             <?php } ?>
+                                            <?php if (! $bacaSaja) { ?>
                                             <button type="button" class="produk-foto-btn position-absolute top-0 end-0 m-2 rounded-circle d-flex align-items-center justify-content-center"
                                                 title="Kelola foto produk ini" aria-label="Kelola foto produk"
                                                 data-stok="<?= (int) $varian[0]['id_stok'] ?>"
@@ -181,6 +348,7 @@ $inisial = static fn (string $kode): string => mb_strtoupper(mb_substr(trim($kod
                                                 data-bs-toggle="modal" data-bs-target="#modalFotoProduk">
                                                 <i class="fal fa-camera"></i>
                                             </button>
+                                            <?php } ?>
                                         </div>
                                     </div>
 
@@ -192,17 +360,35 @@ $inisial = static fn (string $kode): string => mb_strtoupper(mb_substr(trim($kod
                                             <?php } ?>
                                             <span><?= $rupiah((int) $p['harga_mulai']) ?></span>
                                         </div>
+                                        <?php if (($p['poin'] ?? 0) > 0) { ?>
+                                            <?php if ($bisaPoin) { ?>
+                                            <div class="produk-poin mb-2 small">
+                                                <i class="fal fa-coins text-brand-600"></i>
+                                                <span class="text-muted">Poin</span>
+                                                <span class="fw-semibold text-ink-700"><?= number_format((int) $p['poin'], 0, ',', '.') ?></span>
+                                            </div>
+                                            <?php } ?>
+                                        <?php } else { ?>
+                                            <?php /* penanda untuk semua role: Admin dan CS boleh membaca daftar
+                                               ini tapi hanya Superadmin yang bisa mengisi poin gajinya */ ?>
+                                            <div class="produk-poin mb-2 small">
+                                                <span class="badge rounded-pill bg-warning text-dark"
+                                                    title="Poin gaji <?= esc($p['kode'], 'attr') ?> belum diisi. Hanya Superadmin yang bisa menentukannya.">
+                                                    <i class="fal fa-coins me-1"></i>Poin belum diisi
+                                                </span>
+                                            </div>
+                                        <?php } ?>
 
                                         <div class="varian-daftar mb-2">
                                             <?php foreach ($varian as $b) {
                                                 $ukuran_baris = (string) ($b['ukuran'] ?? '');
-                                                [$vw, $label_keadaan] = $keadaan_baris((int) $b['stok']);
+                                                [$vw, $label_keadaan] = $keadaan_baris((int) $b['tersedia']);
                                                 ?>
                                                 <button type="button" class="varian-chip"
                                                     title="<?= esc($ukuran_baris === '' ? 'Tanpa ukuran' : 'Ukuran ' . $ukuran_baris) ?> · <?= esc($label_keadaan) ?> · klik untuk melihat detail"
                                                     data-varian="<?= (int) $b['id_stok'] ?>">
                                                     <span class="varian-dot<?= $vw === 'success' ? '' : ' ' . $vw ?>"></span>
-                                                    <span class="text-truncate"><?= esc($ukuran_baris === '' ? 'Tanpa ukuran' : $ukuran_baris) ?> (<?= (int) $b['stok'] ?>)</span>
+                                                    <span class="text-truncate"><?= esc($ukuran_baris === '' ? 'Tanpa ukuran' : $ukuran_baris) ?> (<?= (int) $b['tersedia'] ?>)</span>
                                                 </button>
                                             <?php } ?>
                                         </div>
@@ -222,10 +408,11 @@ $inisial = static fn (string $kode): string => mb_strtoupper(mb_substr(trim($kod
                                             </div>
                                         </div>
 
+                                        <?php if (! $bacaSaja) { ?>
                                         <div class="d-flex produk-aksi pt-2">
                                             <button type="button" class="btn btn-sm produk-aksi-tombol"
                                                 title="Tambah varian untuk <?= esc($p['kode'], 'attr') ?>"
-                                                data-tambah="<?= (string) esc(json_encode(['kode' => $p['kode'], 'juragan' => $p['juragan_id']])) ?>"
+                                                data-tambah="<?= (string) esc(json_encode(['kode' => $p['kode'], 'juragan' => $p['juragan_id'], 'poin' => (int) ($p['poin'] ?? 0)])) ?>"
                                                 data-bs-toggle="modal" data-bs-target="#modalTambahBarang">
                                                 <i class="fal fa-plus"></i> Varian
                                             </button>
@@ -242,6 +429,7 @@ $inisial = static fn (string $kode): string => mb_strtoupper(mb_substr(trim($kod
                                                 <i class="fal fa-trash"></i> Hapus
                                             </button>
                                         </div>
+                                        <?php } ?>
                                     </div>
 
                                     <?php
@@ -280,6 +468,18 @@ $inisial = static fn (string $kode): string => mb_strtoupper(mb_substr(trim($kod
                                                 <div class="fs-5 fw-bold"><?= esc($p['kode']) ?></div>
                                                 <div class="fw-bold text-brand-600"><?= $rupiah((int) $p['harga_mulai']) ?><?= $harga_lain ?></div>
                                                 <div class="small text-muted mt-1"><i class="fal fa-store me-1"></i><?= esc($p['nama_juragan']) ?></div>
+                                                <?php if (($p['poin'] ?? 0) > 0) { ?>
+                                                    <?php if ($bisaPoin) { ?>
+                                                    <div class="small mt-1"><i class="fal fa-coins text-brand-600 me-1"></i>Poin: <span class="fw-semibold text-ink-700"><?= number_format((int) $p['poin'], 0, ',', '.') ?></span></div>
+                                                    <?php } ?>
+                                                <?php } else { ?>
+                                                    <div class="small mt-1">
+                                                        <span class="badge rounded-pill bg-warning text-dark"
+                                                            title="Poin gaji <?= esc($p['kode'], 'attr') ?> belum diisi. Hanya Superadmin yang bisa menentukannya.">
+                                                            <i class="fal fa-coins me-1"></i>Poin belum diisi
+                                                        </span>
+                                                    </div>
+                                                <?php } ?>
                                                 <div class="d-flex gap-2 mt-2">
                                                     <?php /* keadaan cukup dibaca dari warna titiknya */ ?>
                                                     <span class="varian-dot<?= $vw_kartu === 'success' ? '' : ' ' . $vw_kartu ?> align-self-center"
@@ -295,14 +495,14 @@ $inisial = static fn (string $kode): string => mb_strtoupper(mb_substr(trim($kod
                                                             <th class="text-nowrap">Harga</th>
                                                             <th>Stok</th>
                                                             <th class="d-none d-sm-table-cell">Keterangan</th>
-                                                            <th class="w-1"></th>
+                                                            <?php if (! $bacaSaja) { ?><th class="w-1"></th><?php } ?>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
                                                         <?php foreach ($varian as $b) {
                                                             $ukuran_baris = (string) ($b['ukuran'] ?? '');
                                                             $ket_baris    = trim((string) ($b['keterangan'] ?? ''));
-                                                            [$bw, $bteks]  = $keadaan_baris((int) $b['stok']);
+                                                            [$bw, $bteks]  = $keadaan_baris((int) $b['tersedia']);
                                                             ?>
                                                             <tr data-varian="<?= (int) $b['id_stok'] ?>">
                                                                 <td><?= $ukuran_baris === '' ? 'Tanpa ukuran' : esc($ukuran_baris) ?></td>
@@ -310,13 +510,14 @@ $inisial = static fn (string $kode): string => mb_strtoupper(mb_substr(trim($kod
                                                                 <td>
                                                                     <?php /* angkanya saja: warna badge-nya yang menyatakan aman/menipis/habis */ ?>
                                                                     <span class="badge bg-<?= $bw ?> <?= $bw === 'warning' ? 'text-dark' : 'text-white' ?>"
-                                                        title="<?= esc($bteks) ?>"><?= (int) $b['stok'] ?></span>
+                                                        title="<?= esc($bteks) ?>"><?= (int) $b['tersedia'] ?></span>
                                                                 </td>
                                                                 <td class="small text-muted d-none d-sm-table-cell">
                                                                     <?php /* catatannya sepanjang yang diketik (maks 500), jadi tingginya
    dibatasi tiga baris dan tiap baris digulir sendiri-sendiri */ ?>
                                                                     <div class="varian-ket"><?= $ket_baris === '' ? '&mdash;' : esc($ket_baris) ?></div>
                                                                 </td>
+                                                                <?php if (! $bacaSaja) { ?>
                                                                 <td class="text-end">
                                                                     <button type="submit" class="btn btn-sm btn-outline-danger produk-aksi-ikon varian-hapus"
                                                                         title="Hapus varian ini dari daftar stok"
@@ -328,6 +529,7 @@ $inisial = static fn (string $kode): string => mb_strtoupper(mb_substr(trim($kod
                                                                         <i class="fal fa-trash"></i><span class="visually-hidden">Hapus varian</span>
                                                                     </button>
                                                                 </td>
+                                                                <?php } ?>
                                                             </tr>
                                                         <?php } ?>
                                                     </tbody>
@@ -339,9 +541,22 @@ $inisial = static fn (string $kode): string => mb_strtoupper(mb_substr(trim($kod
                             <?php } ?>
                         </div>
 
-                        <div class="mt-3">
-                            <?= $pager->makeLinks($page, $limit, $total, 'front_full') ?>
-                        </div>
+                        <?php if ($katalog !== []) { ?>
+                            <div class="mt-3">
+                                <?= $pager->makeLinks($page, $limit, $total, 'front_full') ?>
+                            </div>
+                        <?php } ?>
+                    <?php } ?>
+
+                    <?php /* pil tampil juga saat katalog kosong: penyewaan aktif
+                       tidak bergantung pada tab kolam yang sedang dibuka */ ?>
+                    <?php if ($disewa > 0) { ?>
+                        <a class="pil-disewa mt-3" href="<?= esc($tautan_disewa) ?>"
+                            title="Buka tab Masih Disewa di daftar transaksi">
+                            <span class="pil-disewa__titik" aria-hidden="true"></span>
+                            <?= formatRibuan($disewa) ?> unit sedang disewa
+                            <i class="fal fa-arrow-alt-right text-ink-400" aria-hidden="true"></i>
+                        </a>
                     <?php } ?>
                 </div>
             </div>
@@ -371,6 +586,8 @@ $inisial = static fn (string $kode): string => mb_strtoupper(mb_substr(trim($kod
             // 1 = dibuka dari tombol "Varian" pada kartu: juragan dan harga ikut
             // kartunya, jadi keduanya tidak ditanyakan lagi
             'kartu'           => set_value('kartu', '0'),
+            // isian stok/harga form ini masuk ke kolam tab yang dibuka
+            'kolam'           => $kolam,
         ]) ?>
         <div class="modal-header">
             <h5 class="modal-title" id="modalTambahBarangLabel">Tambah Barang</h5>
@@ -423,7 +640,7 @@ $inisial = static fn (string $kode): string => mb_strtoupper(mb_substr(trim($kod
             </div>
             <div class="row gx-2">
                 <div class="col-6 mb-3 tambah-khusus-barang">
-                    <?= form_label('Harga', 'harga', ['class' => 'form-label']) ?>
+                    <?= form_label('Harga ' . $kataKolam, 'harga', ['class' => 'form-label']) ?>
                     <?= form_input([
                         'class'       => 'form-control' . ($err_tambah('harga') ? ' is-invalid' : ''),
                         'type'        => 'number',
@@ -438,7 +655,7 @@ $inisial = static fn (string $kode): string => mb_strtoupper(mb_substr(trim($kod
                     <?php } ?>
                 </div>
                 <div class="col-6 mb-3">
-                    <?= form_label('Stok', 'stok', ['class' => 'form-label']) ?>
+                    <?= form_label('Stok ' . $kataKolam, 'stok', ['class' => 'form-label']) ?>
                     <?= form_input([
                         'class'       => 'form-control' . ($err_tambah('stok') ? ' is-invalid' : ''),
                         'type'        => 'number',
@@ -452,6 +669,26 @@ $inisial = static fn (string $kode): string => mb_strtoupper(mb_substr(trim($kod
                     <?php } ?>
                 </div>
             </div>
+            <?php if ($bisaPoin) { ?>
+            <div class="row gx-2">
+                <div class="col-6 mb-3">
+                    <?= form_label('Poin Gaji', 'poin', ['class' => 'form-label']) ?>
+                    <?= form_input([
+                        'class'       => 'form-control' . ($err_tambah('poin') ? ' is-invalid' : ''),
+                        'type'        => 'number',
+                        'name'        => 'poin',
+                        'min'         => 0,
+                        'step'        => 1,
+                        'placeholder' => 'mis. 1000',
+                        'value'       => set_value('poin', '0'),
+                    ]) ?>
+                    <?php if ($err_tambah('poin')) { ?>
+                        <div class="invalid-feedback d-block"><?= esc($err_tambah('poin')) ?></div>
+                    <?php } ?>
+                    <div class="form-text">Isi 0 kalau produk ini tidak menghasilkan poin.</div>
+                </div>
+            </div>
+            <?php } ?>
             <div class="mb-3 tambah-khusus-barang">
                 <?= form_label('Catatan (opsional)', 'keterangan', ['class' => 'form-label']) ?>
                 <?= form_textarea([
@@ -487,6 +724,8 @@ $inisial = static fn (string $kode): string => mb_strtoupper(mb_substr(trim($kod
             'kembali_juragan' => (string) $juragan,
             'kembali_keadaan' => $keadaan,
             'kembali_cari'    => $cari,
+            // sunting hanya menulis kolam tab yang dibuka
+            'kolam'           => $kolam,
         ]) ?>
         <div class="modal-header">
             <h5 class="modal-title" id="modalSuntingBarangLabel">Sunting Barang</h5>
@@ -532,20 +771,27 @@ $inisial = static fn (string $kode): string => mb_strtoupper(mb_substr(trim($kod
                 </div>
                 <div class="row gx-2">
                     <div class="col-6 mb-3">
-                        <?= form_label('Harga', 'sunting_harga', ['class' => 'form-label']) ?>
+                        <?= form_label('Harga ' . $kataKolam, 'sunting_harga', ['class' => 'form-label']) ?>
                         <?= form_input(['class' => 'form-control', 'type' => 'number', 'name' => 'harga', 'id' => 'sunting_harga', 'min' => 0, 'required' => '']) ?>
                         <?php if ($err_sunting('harga')) { ?>
                             <div class="text-danger small mt-1"><?= esc($err_sunting('harga')) ?></div>
                         <?php } ?>
                     </div>
                     <div class="col-6 mb-3">
-                        <?= form_label('Stok', 'sunting_stok', ['class' => 'form-label']) ?>
+                        <?= form_label('Stok ' . $kataKolam, 'sunting_stok', ['class' => 'form-label']) ?>
                         <?= form_input(['class' => 'form-control', 'type' => 'number', 'name' => 'stok', 'id' => 'sunting_stok', 'required' => '']) ?>
                         <?php if ($err_sunting('stok')) { ?>
                             <div class="text-danger small mt-1"><?= esc($err_sunting('stok')) ?></div>
                         <?php } ?>
                     </div>
                 </div>
+                <?php if ($bisaPoin) { ?>
+                <div class="mb-3">
+                    <?= form_label('Poin Gaji', 'sunting_poin', ['class' => 'form-label']) ?>
+                    <?= form_input(['class' => 'form-control', 'type' => 'number', 'name' => 'poin', 'id' => 'sunting_poin', 'min' => 0, 'step' => 1, 'placeholder' => 'mis. 1000']) ?>
+                    <div class="form-text">Poin per produk (sama untuk semua ukuran); 0 = tanpa poin.</div>
+                </div>
+                <?php } ?>
                 <div class="mb-0">
                     <?= form_label('Keterangan', 'sunting_keterangan', ['class' => 'form-label']) ?>
                     <?= form_textarea(['class' => 'form-control', 'name' => 'keterangan', 'id' => 'sunting_keterangan', 'rows' => 3, 'maxlength' => 500, 'placeholder' => 'mis. warna navy, bahan wool, catatan stok...']) ?>
@@ -572,6 +818,7 @@ echo form_open('admin/produk/hapus', ['id' => 'formHapusBarang', 'class' => 'd-n
     . form_hidden('kembali_juragan', (string) $juragan)
     . form_hidden('kembali_keadaan', $keadaan)
     . form_hidden('kembali_cari', $cari)
+    . form_hidden('kolam', $kolam)
     . form_close();
 
 // Tombol hapus per kartu mengirim form ini; kode dan toko tujuan diisi JS
@@ -582,6 +829,7 @@ echo form_open('admin/produk/hapus-kartu', ['id' => 'formHapusKartu', 'class' =>
     . form_hidden('kembali_juragan', (string) $juragan)
     . form_hidden('kembali_keadaan', $keadaan)
     . form_hidden('kembali_cari', $cari)
+    . form_hidden('kolam', $kolam)
     . form_close();
 ?>
 
@@ -666,6 +914,7 @@ $isiUlang         = $sunting_err ? json_encode([
     'kode'       => (string) set_value('kode'),
     'ukuran'     => (string) set_value('ukuran'),
     'harga'      => (string) set_value('harga'),
+    'poin'       => (string) set_value('poin'),
     'stok'       => (string) set_value('stok'),
     'keterangan' => (string) set_value('keterangan'),
     'juragan'    => '',
@@ -697,6 +946,7 @@ $js = <<< JS
             ukuran: modalSunting.querySelector('[name="ukuran"]'),
             harga: modalSunting.querySelector('[name="harga"]'),
             stok: modalSunting.querySelector('[name="stok"]'),
+            poin: modalSunting.querySelector('[name="poin"]'),
             keterangan: modalSunting.querySelector('[name="keterangan"]'),
             juragan: modalSunting.querySelector('[name="juragan_id"]'),
         };
@@ -780,9 +1030,14 @@ $js = <<< JS
 
             // sunting yang gagal: nilai yang tadi diketik dipulihkan, bukan nilai lama
             if (suntingLama) {
-                suntingAktif = { kode: suntingLama.kode, varian: [suntingLama] };
+                suntingAktif = { kode: suntingLama.kode, varian: [suntingLama], poin: suntingLama.poin };
                 isiPemilih(suntingAktif.varian);
                 pilihVarian(suntingLama);
+
+                if (fields.poin) {
+                    fields.poin.value = suntingLama.poin || 0;
+                }
+
                 suntingLama = null;
 
                 return;
@@ -799,6 +1054,11 @@ $js = <<< JS
             suntingAktif = JSON.parse(kartu);
             isiPemilih(suntingAktif.varian);
             judulSunting.textContent = 'Sunting ' + suntingAktif.kode;
+
+            // poin milik produk (satu nilai untuk semua ukuran): diisi sekali saat kartu dibuka
+            if (fields.poin) {
+                fields.poin.value = suntingAktif.poin || 0;
+            }
 
             // tombol Edit memaksa pengguna memilih varian dulu supaya tidak salah ukuran
             sembunyikanDetail();
@@ -888,6 +1148,12 @@ $js = <<< JS
                 harga.value = '';
                 modalTambah.querySelector('[name="keterangan"]').value = '';
                 kode.value = kartu === null ? '' : kartu.kode;
+
+                const poinTambah = modalTambah.querySelector('[name="poin"]');
+
+                if (poinTambah) {
+                    poinTambah.value = kartu ? (kartu.poin || 0) : '0';
+                }
             }
 
             if (kartu === null) {

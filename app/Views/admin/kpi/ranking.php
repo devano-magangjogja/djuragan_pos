@@ -1,4 +1,23 @@
 <?php
+/**
+ * Variabel di bawah disuntik runtime oleh CodeIgniter lewat extract() di
+ * dalam App\Controllers\Admin\Kpi::ranking(); Intelephense tidak bisa
+ * menelusurinya sehingga menyangka P1008. Blok @var ini hanya penanda tipe
+ * untuk analyzer, bukan kode yang dijalankan. $s, $periode, $peran,
+ * $pegawai, dan $juragans dipakai juga oleh admin/kpi/saring karena include
+ * memakai scope yang sama.
+ *
+ * @var string $title     judul halaman
+ * @var array  $s         nilai saringan aktif: ['awal', 'akhir', 'periode', 'peran', 'user_id', 'juragan_id', ...]
+ * @var list   $peringkat baris peringkat per pegawai: ['user_id', 'pegawai', 'level', 'jumlah', 'poin', 'total', 'gmv', 'tercatat', 'peringkat']
+ * @var list   $aturan    aturan poin per aktivitas: ['slug', 'nama', 'sumber', 'poin', 'satuan', 'tercatat', 'belum_ternilai']
+ * @var array  $luar      sumber data yang tidak dinilai per orang: [sumber => pekerjaan]
+ * @var array  $pegawai   pilihan pegawai untuk saringan: [user_id => 'nama (level)']
+ * @var array  $juragans  pilihan toko milik akun ini: [juragan_id => nama]
+ * @var array  $periode   pilihan periode saringan: [slug => label]
+ * @var array  $peran     pilihan peran saringan: [slug => label]
+ */
+
 /*
  * Peringkat karyawan dari poin aktivitas.
  *

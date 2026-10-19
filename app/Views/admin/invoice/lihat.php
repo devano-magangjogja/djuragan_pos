@@ -1,5 +1,24 @@
 <?php
 
+/**
+ * Variabel berikut dikirim Admin\Invoices::lihat() lewat view() lalu di-extract
+ * CI4 saat render, sehingga tidak terlihat oleh analis statis (Intelephense P1008).
+ *
+ * @var string       $title             judul halaman
+ * @var array        $orderan           daftar invoice pada tab aktif
+ * @var string       $juragan           slug toko aktif atau 'semua'
+ * @var int          $juragan_id        id toko aktif (0 = semua juragan)
+ * @var string       $nama_toko         nama toko aktif
+ * @var array        $daftar_toko       pilihan toko: [slug => nama]
+ * @var array|string $cari              kata kunci pencarian dari query string
+ * @var string       $hal               tab/route segmen halaman aktif
+ * @var string       $kategori          saringan kategori pembayaran
+ * @var array        $kategori_pembayaran master kategori: [slug => ['label' => ...]]
+ * @var array        $jumlah_kategori   jumlah transaksi per kategori: [slug => int]
+ * @var int          $limit             jumlah baris per halaman
+ * @var int          $page              nomor halaman aktif
+ */
+
 use App\Libraries\Ongkir;
 use CodeIgniter\I18n\Time;
 
@@ -29,6 +48,48 @@ $session  = \Config\Services::session();
     gap: 0.35rem;
     flex: 1 1 auto;
     min-width: 0;
+    /* tab yang tidak muat digeser lewat tombol panah, jadi wadahnya selalu bisa
+       digulir mendatar; gulir rodanya sendiri ditutup karena sudah ada tombolnya */
+    overflow-x: auto;
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+}
+.toolbar-transaksi__tab::-webkit-scrollbar {
+    display: none;
+}
+
+/* Tombol geser strip tab. Panahnya hanya ditampilkan kalau isinya memang lebih
+   lebar dari wadahnya (class .bisa-geser dipasang dari JS), jadi di layar besar
+   tidak ada tombol yang tidak berguna. */
+.toolbar-transaksi__geser {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+.geser-tab {
+    display: none;
+    flex: 0 0 auto;
+    width: 1.9rem;
+    height: 1.9rem;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 1px solid #eaecf0;
+    border-radius: 999px;
+    background: #ffffff;
+    color: #344054;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06);
+    font-size: 0.8rem;
+    line-height: 1;
+}
+.toolbar-transaksi__geser.bisa-geser .geser-tab {
+    display: inline-flex;
+}
+.geser-tab:disabled {
+    opacity: 0.35;
+    box-shadow: none;
 }
 .toolbar-transaksi__aksi {
     display: flex;
@@ -48,15 +109,15 @@ $session  = \Config\Services::session();
 
 @media (max-width: 767.98px) {
     /* tab digulir mendatar supaya tetap satu baris dan sejajar, tombol aksi
-       turun ke barisnya sendiri dengan nama toko mengisi sisa lebar */
-    .toolbar-transaksi__tab {
+       turun ke barisnya sendiri dengan nama toko mengisi sisa lebar. Yang turun
+       ke baris penuh adalah pembungkusnya, strip tab tetap berbagi baris dengan
+       kedua tombol panah. */
+    .toolbar-transaksi__geser {
         flex: 1 1 100%;
-        overflow-x: auto;
-        scrollbar-width: none;
-        padding-bottom: 0.15rem;
+        min-width: 0;
     }
-    .toolbar-transaksi__tab::-webkit-scrollbar {
-        display: none;
+    .toolbar-transaksi__tab {
+        padding-bottom: 0.15rem;
     }
     .toolbar-transaksi__tab .btn {
         flex: 0 0 auto;
@@ -64,6 +125,9 @@ $session  = \Config\Services::session();
     .toolbar-transaksi__aksi {
         flex: 1 1 100%;
         margin-left: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
     }
     .toolbar-transaksi__aksi > .dropdown {
         flex: 1 1 auto;
@@ -71,6 +135,10 @@ $session  = \Config\Services::session();
     }
     .toolbar-transaksi__aksi > .dropdown .btn {
         width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        text-align: left;
     }
 }
 
@@ -81,6 +149,78 @@ $session  = \Config\Services::session();
 .meta-transaksi a,
 .aksi-kepala a {
     text-decoration: none;
+}
+
+/* Kotak filter kategori/status pembayaran. Dulu selebar isinya saja (w-auto)
+   sehingga separuh kanan kartu menganggur; sekarang ia memanjang mengisi
+   sisanya. Di layar sempit labelnya keburu mendesak, jadi kotaknya yang naik
+   ke baris sendiri dan melebar sampai tepi kartu. */
+@media (max-width: 575.98px) {
+    #filterKategori {
+        width: 100%;
+    }
+}
+@media (max-width: 1023.98px) {
+    .timeliner {
+        margin-left: 0 !important;
+        margin-right: auto;
+        /* dulu selebar isinya saja (±120px) sehingga separuh kanan baris menganggur;
+           sekarang ia mengisi lebarnya dan tiap langkah kebagian sama besar, jadi
+           langkah tambahan otomatis menyusut dan tetap muat sampai batasnya */
+        width: 100%;
+    }
+    .timeliner > li {
+        flex: 1 1 0;
+    }
+}
+
+/* Kepala blok rangkap (Produk / Anggota Rombongan) di layar sempit. Dua hal:
+   - <button> membawa text-align:center dari stylesheet peramban, jadi label dua
+     kata yang turun ke baris kedua tampil di tengah; dipaksa rata kiri supaya
+     sejajar dengan ikonnya.
+   - ms-auto tadinya ada di panah, jadi angka "1 pcs" menggantung di tengah baris
+     sementara "4 orang" kepepet ke pojok. ms-auto dipindah ke angkanya. */
+@media (max-width: 575.98px) {
+    .kartu-invoice .blok-lipat > h6 > button {
+        text-align: left;
+    }
+    .kartu-invoice .blok-lipat > h6 > button > span:first-of-type {
+        margin-left: auto !important;
+    }
+    .kartu-invoice .blok-lipat > h6 > button > i:last-child {
+        margin-left: 0 !important;
+    }
+    /* Kata "Tambah" dilepas agar Sunting + Pembayaran muat satu baris; modalnya
+       tetap berjudul lengkap. */
+    .kartu-invoice .aksi .tambahBayar .kata-depan {
+        display: none;
+    }
+    /* Semua tombol aksi tetap satu baris dengan label lengkap: jarak ikon-ke-teks
+       dalam tombol dan jarak antar tombol dirapatkan. .btn-sm mengunci padding-nya
+       dengan !important di style.css, jadi aturan ini ikut !important dan menyebut
+       .btn juga agar kelasnya menang. */
+    .kartu-invoice .aksi .btn.btn-sm {
+        padding: 0.32rem 0.5rem !important;
+        gap: 0.25rem;
+    }
+    .kartu-invoice .aksi,
+    .kartu-invoice .aksi > div {
+        gap: 0.3rem;
+    }
+    .kartu-invoice .aksi {
+        justify-content: space-between !important;
+    }
+    .kartu-invoice .aksi .aksi-hapus {
+        margin-left: auto !important;
+    }
+}
+
+/* Di desktop: tombol aksi berjajar rapi di kiri, tombol Hapus berdampingan dengan Tambah Pembayaran */
+.kartu-invoice .aksi {
+    justify-content: flex-start !important;
+}
+.kartu-invoice .aksi .aksi-hapus {
+    margin-left: 0 !important;
 }
 </style>
 <?= $this->endSection() ?>
@@ -99,23 +239,30 @@ $session  = \Config\Services::session();
         ['pembayaran', 'Pembayaran', 'counterCekBayar', 'Transaksi yang pembayarannya perlu dicek'],
         ['belum-proses', 'Belum Proses', 'counterBelumProses', 'Transaksi yang belum mulai dikerjakan'],
         ['dalam-proses', 'Dalam Proses', 'counterDalamProses', 'Transaksi yang sedang dikerjakan'],
-        ['selesai', 'Selesai', 'counterSelesai', 'Transaksi yang sudah selesai'],
+        ['selesai', 'Selesai', 'counterSelesai', 'Transaksi yang sudah selesai; nota sewa baru masuk sini setelah barangnya dicatat kembali'],
+        ['masih-disewa', 'Masih Disewa', 'counterMasihDisewa', 'Nota sewa yang barangnya masih di tangan penyewa — pengembaliannya belum dicatat'],
     ];
     ?>
     <div class="toolbar-transaksi mb-4">
-        <div class="toolbar-transaksi__tab">
-            <?php
-            foreach ($tab as [$slug, $label, $counter, $keterangan]) {
-                echo anchor(
-                    'admin/invoices/lihat/' . $juragan . '/' . $slug,
-                    $label . ' <span class="badge rounded-pill bg-ink-100 text-ink-600" id="' . $counter . '">0</span>',
-                    [
-                        'class' => 'btn rounded-pill btn-' . ($hal === $slug ? 'primary' : 'outline-secondary'),
-                        'title' => $keterangan,
-                    ]
-                );
-            }
-            ?>
+        <div class="toolbar-transaksi__geser">
+            <button type="button" class="geser-tab" data-geser="-1" aria-label="Geser daftar tab ke kiri" title="Geser tab ke kiri"><i class="fal fa-chevron-left"></i></button>
+
+            <div class="toolbar-transaksi__tab">
+                <?php
+                foreach ($tab as [$slug, $label, $counter, $keterangan]) {
+                    echo anchor(
+                        'admin/invoices/lihat/' . $juragan . '/' . $slug,
+                        $label . ' <span class="badge rounded-pill bg-ink-100 text-ink-600" id="' . $counter . '">0</span>',
+                        [
+                            'class' => 'btn rounded-pill btn-' . ($hal === $slug ? 'primary' : 'outline-secondary'),
+                            'title' => $keterangan,
+                        ]
+                    );
+                }
+                ?>
+            </div>
+
+            <button type="button" class="geser-tab" data-geser="1" aria-label="Geser daftar tab ke kanan" title="Geser tab ke kanan"><i class="fal fa-chevron-right"></i></button>
         </div>
 
         <div class="toolbar-transaksi__aksi">
@@ -150,8 +297,8 @@ $session  = \Config\Services::session();
                 'data-bs-target' => '#modalCari',
                 'data-bs-toggle' => 'modal',
             ]) ?>
-            <?= anchor('admin/invoices/tulis', '<i class="fal fa-pen-nib"></i> Tulis Orderan', [
-                'class' => 'btn rounded-pill border-0 bg-brand-500 font-semibold text-white hover:bg-brand-600',
+            <?= anchor('admin/invoices/tulis', '<i class="fal fa-pen-nib"></i> <span class="hidden sm:inline">Tulis Orderan</span>', [
+                'class' => 'btn rounded-pill border-0 bg-brand-500 font-semibold text-white hover:bg-brand-600 shrink-0',
                 'title' => 'Buat transaksi baru',
             ]) ?>
         </div>
@@ -180,7 +327,7 @@ $session  = \Config\Services::session();
                 <label class="text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500" for="filterKategori"><?= esc($label_filter) ?></label>
 
                 <?= form_dropdown('kategori', $opsi_kategori, $kategori, [
-                    'class'       => 'form-select form-select-sm w-auto',
+                    'class'       => 'form-select form-select-sm w-auto flex-fill min-w-0',
                     'id'          => 'filterKategori',
                     'data-tautan' => site_url('admin/invoices/lihat/' . $juragan . '/' . $hal),
                 ]) ?>
@@ -193,6 +340,8 @@ $session  = \Config\Services::session();
             <i class="fal fa-inbox block text-[1.35rem] text-ink-400 mb-2"></i>
             <?php if ($hal === 'saring') : ?>
                 Belum ada orderan pada saringan <?= esc($kategori_pembayaran[$kategori]['label']) ?>.
+            <?php elseif ($hal === 'masih-disewa') : ?>
+                Belum ada barang yang sedang disewa — nota sewa masuk ke sini begitu barangnya diserahkan ke penyewa, dan keluar dari sini saat tombol "Sudah kembali" ditekan.
             <?php elseif ($kategori !== 'semua' && in_array($hal, ['pembayaran', 'belum-proses'], true)) : ?>
                 Belum ada transaksi berkategori <?= esc($kategori_pembayaran[$kategori]['label']) ?>.
             <?php else : ?>
@@ -247,18 +396,31 @@ $session  = \Config\Services::session();
         }
 
         $wajib_bayar = $harga_barang;
+        $time        = Time::createFromFormat('Y-m-d', $pesanan->tanggal_pesan);
+
+        // penyewaan belum dianggap selesai sampai pengembaliannya dicatat orang;
+        // tanggal jadual di rincian cuma pengingat, bukan kenyataan barangnya
+        $adalah_sewa   = \App\Models\InvoiceModel::adalahSewa($pesanan->rincian ?? null);
+        $sewa_berjalan = \App\Models\InvoiceModel::sewaMenunggu($pesanan);
+        $sewa_pulang   = $adalah_sewa && ! $sewa_berjalan;
         ?>
-        <div class="kartu-invoice mb-4 rounded-[1.5rem] border border-ink-200 bg-white shadow-sm">
-            <div class="p-3 lg:p-4">
-                <div class="flex flex-col sm:flex-row justify-between items-start gap-4">
-                    <div class="min-w-0">
-                        <?php $time = Time::createFromFormat('Y-m-d', $pesanan->tanggal_pesan); ?>
-                        <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
-                            <span class="inline-flex h-[2.6rem] w-[2.6rem] shrink-0 items-center justify-center rounded-[0.9rem] border border-brand-100 bg-brand-50 text-lg text-brand-500"><i class="fal fa-receipt"></i></span>
+        <div class="kartu-invoice mb-4 rounded-2xl sm:rounded-[1.5rem] border border-ink-200 bg-white shadow-sm transition hover:shadow-md">
+            <div class="p-3.5 sm:p-5">
+                <div class="flex flex-col lg:flex-row justify-between items-start gap-3 lg:gap-4">
+                    <div class="min-w-0 w-full lg:w-auto">
+                        <div class="flex flex-wrap items-center gap-2 sm:gap-x-3 sm:gap-y-2">
+                            <span class="inline-flex h-[2.6rem] w-[2.6rem] shrink-0 items-center justify-center rounded-[0.9rem] border border-brand-100 bg-brand-50 text-lg text-brand-500 shadow-xs"><i class="fal fa-receipt"></i></span>
 
                             <div class="min-w-0">
-                                <h5 class="text-[1.15rem] font-extrabold tracking-[-0.01em] mb-0">#<?= esc($pesanan->seri) ?></h5>
+                                <h5 class="text-[1.15rem] font-extrabold tracking-[-0.01em] text-ink-900 mb-0">#<?= esc($pesanan->seri) ?></h5>
                                 <p class="text-ink-500 text-xs mb-0">( <?= $time->toLocalizedString('EEEE, d MMMM yyyy') ?> )</p>
+                                <?php /* penanda kedua untuk API publik: nomor nota saja terlalu mudah ditebak,
+                                   jadi status orderan baru dibuka kalau nomor + kode ini sama-sama cocok */ ?>
+                                <?php if (! empty($pesanan->kode_lacak)) { ?>
+                                    <p class="text-ink-400 text-xs mb-0" title="Kode pendamping nomor nota saat status orderan dibuka lewat API pihak luar">
+                                        kode lacak <span class="font-semibold text-ink-500"><?= esc($pesanan->kode_lacak) ?></span>
+                                    </p>
+                                <?php } ?>
                             </div>
 
                             <span class="rounded-full px-3 py-1 text-xs font-semibold <?= $pil[$kelas_status]['pill'] ?>">
@@ -273,20 +435,20 @@ $session  = \Config\Services::session();
                                 $pil_dead = $dead['kelas'] === ''
                                     ? 'border border-ink-200 bg-ink-50 text-ink-700'
                                     : $pil[$dead['kelas']]['pill']; ?>
-                                <span class="rounded-full px-3 py-1 text-xs font-semibold <?= $pil_dead ?>" title="Tenggat: <?= esc($dead['teks']) ?>">
-                                    <i class="fal fa-clock me-1"></i><?= esc($dead['teks']) ?>
-                                </span>
-                            <?php endif; ?>
+                                    <span class="rounded-full px-2.5 py-0.5 text-xs font-semibold <?= $pil_dead ?>" title="Tenggat: <?= esc($dead['teks']) ?>">
+                                        <i class="fal fa-clock me-1"></i><?= esc($dead['teks']) ?>
+                                    </span>
+                                <?php endif; ?>
 
-                            <div class="aksi-kepala ms-auto flex items-center gap-1 max-sm:ms-0">
+                            <div class="aksi-kepala flex items-center gap-1">
                                 <a class="inline-flex cursor-pointer items-center gap-1 rounded-[0.7rem] border border-ink-200 bg-ink-50 px-2.5 py-1 text-sm text-ink-700 transition hover:bg-ink-100 hover:text-ink-900" href="<?= site_url('download/penjahit/' . $pesanan->seri) ?>" target="_blank" rel="noopener" title="Cetak lembar kerja penjahit (tanpa harga)">
-                                    <i class="fal fa-cut"></i> <span class="hidden md:inline">Penjahit</span>
+                                    <i class="fal fa-cut text-ink-500"></i> <span class="hidden md:inline">Penjahit</span>
                                 </a>
                                 <a class="inline-flex cursor-pointer items-center gap-1 rounded-[0.7rem] border border-ink-200 bg-ink-50 px-2.5 py-1 text-sm text-ink-700 transition hover:bg-ink-100 hover:text-ink-900" href="<?= site_url('download/invoice/' . $pesanan->seri) ?>" target="_blank" rel="noopener" title="Cetak invoice untuk pelanggan">
-                                    <i class="fal fa-print"></i> <span class="hidden md:inline">Invoice</span>
+                                    <i class="fal fa-print text-ink-500"></i> <span class="hidden md:inline">Invoice</span>
                                 </a>
-                                <button type="button" class="inline-flex cursor-pointer items-center gap-1 rounded-[0.7rem] border border-ink-200 bg-ink-50 px-2.5 py-1 text-sm text-ink-700 transition hover:bg-ink-100 hover:text-ink-900 salinTautan" data-link="<?= esc(site_url('download/invoice/' . $pesanan->seri), 'attr') ?>" title="Salin tautan invoice">
-                                    <i class="fal fa-copy"></i><span class="sr-only">Salin tautan</span>
+                                <button type="button" class="inline-flex cursor-pointer items-center gap-1 rounded-[0.7rem] border border-ink-200 bg-ink-50 px-2 py-1 text-sm text-ink-700 transition hover:bg-ink-100 hover:text-ink-900 salinTautan" data-link="<?= esc(site_url('download/invoice/' . $pesanan->seri), 'attr') ?>" title="Salin tautan invoice">
+                                    <i class="fal fa-copy text-ink-500"></i><span class="sr-only">Salin tautan</span>
                                 </button>
                             </div>
                         </div>
@@ -303,8 +465,8 @@ $session  = \Config\Services::session();
                         </div>
                     </div>
 
-                    <div class="min-w-0 shrink grow basis-40">
-                        <ul class="list-inline mb-0 timeliner">
+                    <div class="min-w-0 shrink grow lg:basis-40 max-lg:w-full max-lg:overflow-x-auto pb-1">
+                        <ul class="list-inline mb-0 timeliner max-lg:!ms-0">
                             <?= timeline_langkah('start full', 'plus-circle', 'Buat', $time, 'Pesanan Ditambahkan') ?>
 
                             <?= status_pembayaran($pesanan->pembayaran, $pesanan->status_pembayaran) ?>
@@ -349,11 +511,12 @@ $session  = \Config\Services::session();
                         </ul>
                     </div>
                 </div>
-                <hr class="my-1 border-0 border-t border-ink-200 opacity-100" />
 
-                <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-12 lg:gap-6">
-                    <section class="col-span-full lg:col-span-6">
-                        <div class="blok h-full rounded-2xl border border-ink-200 bg-[#fcfdfe] px-[1.15rem] py-4">
+                <hr class="my-3 border-0 border-t border-ink-200 opacity-100" />
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-5">
+                    <section class="col-span-1">
+                        <div class="blok h-full rounded-2xl border border-ink-200 bg-[#fcfdfe] p-3.5 sm:p-4">
                             <h6 class="mb-2 flex items-center gap-1.5 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500 [&_.fal]:text-[0.95rem] [&_.fal]:text-ink-400">
                                 <i class="fal fa-user-circle"></i>
                                 <?= ($pesanan->kirimKepada_id === $pesanan->pemesan_id ? 'Pemesan / Kirim Kepada' : 'Pemesan') ?>
@@ -428,12 +591,12 @@ $session  = \Config\Services::session();
                             <?php } ?>
 
                             <h6 class="mb-2 flex items-center gap-1.5 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500 [&_.fal]:text-[0.95rem] [&_.fal]:text-ink-400 mt-4 border-t border-ink-200 pt-3"><i class="fal fa-inbox-in"></i> Asal Orderan</h6>
-                            <div class="text-sm leading-[1.55] text-ink-800"><?= label_asal($pesanan->source->id, $pesanan->source->label) ?></div>
+                            <div class="text-sm leading-[1.55] text-ink-800"><?= $pesanan->source !== null ? label_asal($pesanan->source->id, $pesanan->source->label) : '<span class="text-muted">-</span>' ?></div>
                         </div>
                     </section>
 
-                    <section class="col-span-full md:col-span-1 lg:col-span-6">
-                        <div class="blok h-full rounded-2xl border border-ink-200 bg-[#fcfdfe] px-[1.15rem] py-4">
+                    <section class="col-span-1">
+                        <div class="blok h-full rounded-2xl border border-ink-200 bg-[#fcfdfe] p-3.5 sm:p-4">
                             <h6 class="mb-2 flex items-center gap-1.5 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500 [&_.fal]:text-[0.95rem] [&_.fal]:text-ink-400"><i class="fal fa-receipt"></i> Info Biaya</h6>
 
                             <?php
@@ -665,13 +828,13 @@ $session  = \Config\Services::session();
                 $isi_keterangan  = trim((string) $pesanan->keterangan);
                 ?>
                 <?php if ($rincian_pesanan !== []) { ?>
-                    <div class="blok rounded-2xl border border-ink-200 border-l-[3px] border-l-proses bg-[#fcfdfe] px-[1.15rem] py-4 mt-4">
-                        <h6 class="mb-2 flex items-center gap-1.5 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500 [&_.fal]:text-[0.95rem] [&_.fal]:text-ink-400"><i class="fal fa-list-check"></i> Detail Pesanan</h6>
-                        <div class="grid grid-cols-[repeat(auto-fit,minmax(12rem,1fr))] gap-x-4 gap-y-2.5">
+                    <div class="blok rounded-2xl border border-ink-200 border-l-[3px] border-l-proses bg-[#fcfdfe] p-3.5 sm:p-4 mt-4">
+                        <h6 class="mb-2.5 flex items-center gap-1.5 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500 [&_.fal]:text-[0.95rem] [&_.fal]:text-ink-400"><i class="fal fa-list-check"></i> Detail Pesanan</h6>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 sm:gap-3">
                             <?php foreach ($rincian_pesanan as $item) { ?>
-                                <div class="min-w-0">
-                                    <span class="block text-[0.7rem] font-bold uppercase tracking-[0.08em] text-ink-500 [&_.fal]:mr-1 [&_.fal]:text-ink-400"><i class="fal <?= $item['ikon'] ?>"></i> <?= esc($item['label']) ?></span>
-                                    <span class="mt-[0.1rem] block break-words text-[0.92rem] font-semibold leading-normal <?= $item['nilai'] === null ? 'text-ink-400' : 'text-ink-900' ?>"><?= $item['nilai'] === null ? '-' : esc($item['nilai']) ?></span>
+                                <div class="min-w-0 rounded-xl bg-ink-50/70 p-2 sm:p-2.5 border border-ink-100">
+                                    <span class="block text-[0.68rem] font-bold uppercase tracking-[0.08em] text-ink-500 truncate"><i class="fal <?= $item['ikon'] ?> me-1 text-ink-400"></i> <?= esc($item['label']) ?></span>
+                                    <span class="mt-0.5 block break-words text-xs sm:text-sm font-semibold leading-snug <?= $item['nilai'] === null ? 'text-ink-400' : 'text-ink-900' ?>"><?= $item['nilai'] === null ? '-' : esc($item['nilai']) ?></span>
                                 </div>
                             <?php } ?>
                         </div>
@@ -718,64 +881,92 @@ $session  = \Config\Services::session();
                     </div>
                 <?php } ?>
 
-                <hr class="my-2 border-0 border-t border-ink-200 opacity-100" />
+                <hr class="my-3 border-0 border-t border-ink-200 opacity-100" />
 
-                <div class="aksi flex flex-wrap items-center gap-1">
-                    <?= anchor('admin/invoices/sunting/' . esc($pesanan->seri), '<i class="fal fa-pencil"></i> Sunting', ['class' => 'btn btn-outline-secondary', 'role' => 'button']) ?>
+                <div class="aksi flex flex-wrap items-center gap-2">
+                    <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                        <?= anchor('admin/invoices/sunting/' . esc($pesanan->seri), '<i class="fal fa-pencil"></i> Sunting', ['class' => 'btn btn-sm rounded-lg btn-outline-secondary', 'role' => 'button']) ?>
 
-                    <?php if (! $sudah_lunas) : ?>
+                        <?php if (! $sudah_lunas) : ?>
+                            <?= form_button([
+                                'class'          => 'btn btn-sm rounded-lg btn-outline-secondary tambahBayar',
+                                'content'        => '<i class="fal fa-plus-circle"></i> <span class="label-bayar"><span class="kata-depan">Tambah </span>Pembayaran</span>',
+                                'data-invoice'   => $pesanan->id_invoice,
+                                'data-juragan'   => $pesanan->juragan_id,
+                                'data-kurang'    => max(0, $sisa),
+                                'data-seri'      => $pesanan->seri,
+                                'data-bs-target' => '#modalTambahBayar',
+                                'data-bs-toggle' => 'modal',
+                            ]); ?>
+                        <?php endif; ?>
+
+                        <?php
+                        if ((int) $pesanan->status_pembayaran > 2 && ! $dipacking) {
+                            echo form_button([
+                                'class'          => 'btn btn-sm rounded-lg btn-dark pesanStatus',
+                                'content'        => '<i class="fal fa-comment-alt-plus"></i> Proses Orderan',
+                                'data-invoice'   => $pesanan->id_invoice,
+                                'data-seri'      => $pesanan->seri,
+                                'data-bs-target' => '#modalProgress',
+                                'data-bs-toggle' => 'modal',
+                            ]);
+                        }
+
+                        // tombol cek pembayaran hanya tampil jika ada pembayaran yang perlu dicek
+                        if ($pesanan->status_pembayaran === '2' || $pesanan->status_pembayaran === '3') {
+                            echo form_button([
+                                'class'          => 'btn btn-sm rounded-lg btn-warning pesanBayar',
+                                'content'        => '<i class="fal fa-wallet"></i> Cek Pembayaran',
+                                'data-invoice'   => $pesanan->id_invoice,
+                                'data-juragan'   => $pesanan->juragan_id,
+                                'data-bs-target' => '#modalBayar',
+                                'data-bs-toggle' => 'modal',
+                            ]);
+                        }
+
+                        if ($dipacking && (int) $pesanan->status_pengiriman < 3) {
+                            echo form_button([
+                                'class'        => 'btn btn-sm rounded-lg btn-warning kirimResi',
+                                'content'      => '<i class="fal fa-paper-plane"></i> Input Resi',
+                                'data-count'   => $count_barang,
+                                'data-invoice' => $pesanan->id_invoice,
+                            ]);
+                        }
+
+                        if ($sewa_berjalan) {
+                            echo form_button([
+                                'class'        => 'btn btn-sm rounded-lg btn-success sewaKembali',
+                                'content'      => '<i class="fal fa-tshirt"></i> Sudah kembali',
+                                'data-invoice' => $pesanan->id_invoice,
+                                'data-seri'    => $pesanan->seri,
+                                'title'        => 'Barang sewaan sudah diterima kembali di toko',
+                            ]);
+                        } elseif ($sewa_pulang) {
+                            $kembali = Time::createFromTimestamp((int) $pesanan->sewa_kembali_at)
+                                ->setTimezone(config('App')->appTimezone)
+                                ->toLocalizedString('d MMM yyyy HH:mm'); ?>
+                            <span class="btn btn-sm rounded-lg btn-success disabled" title="Waktu pengembaliannya dicatat">
+                                <i class="fal fa-undo-alt-left"></i> Kembali <?= esc($kembali) ?>
+                            </span>
+                            <?php echo form_button([
+                                'class'        => 'btn btn-sm rounded-lg btn-outline-secondary sewaBatalkan',
+                                'content'      => '<i class="fal fa-undo"></i> Batalkan',
+                                'data-invoice' => $pesanan->id_invoice,
+                                'data-seri'    => $pesanan->seri,
+                                'title'        => 'Salah klik? Kembalikan nota ini ke status masih disewa',
+                            ]);
+                        }
+                        ?>
+                    </div>
+
+                    <div class="aksi-hapus">
                         <?= form_button([
-                            'class'          => 'btn btn-outline-secondary tambahBayar',
-                            'content'        => '<i class="fal fa-plus-circle"></i> Tambah Pembayaran',
-                            'data-invoice'   => $pesanan->id_invoice,
-                            'data-juragan'   => $pesanan->juragan_id,
-                            'data-kurang'    => max(0, $sisa),
-                            'data-seri'      => $pesanan->seri,
-                            'data-bs-target' => '#modalTambahBayar',
-                            'data-bs-toggle' => 'modal',
-                        ]); ?>
-                    <?php endif; ?>
-
-                    <?php
-                    if ((int) $pesanan->status_pembayaran > 2 && ! $dipacking) {
-                        echo form_button([
-                            'class'          => 'btn btn-dark pesanStatus',
-                            'content'        => '<i class="fal fa-comment-alt-plus"></i> Proses Orderan',
-                            'data-invoice'   => $pesanan->id_invoice,
-                            'data-seri'      => $pesanan->seri,
-                            'data-bs-target' => '#modalProgress',
-                            'data-bs-toggle' => 'modal',
-                        ]);
-                    }
-
-                    // tombol cek pembayaran hanya tampil jika ada pembayaran yang perlu dicek
-                    if ($pesanan->status_pembayaran === '2' || $pesanan->status_pembayaran === '3') {
-                        echo form_button([
-                            'class'          => 'btn btn-warning pesanBayar',
-                            'content'        => '<i class="fal fa-wallet"></i> Cek Pembayaran',
-                            'data-invoice'   => $pesanan->id_invoice,
-                            'data-juragan'   => $pesanan->juragan_id,
-                            'data-bs-target' => '#modalBayar',
-                            'data-bs-toggle' => 'modal',
-                        ]);
-                    }
-
-                    if ($dipacking && (int) $pesanan->status_pengiriman < 3) {
-                        echo form_button([
-                            'class'        => 'btn btn-warning kirimResi',
-                            'content'      => '<i class="fal fa-paper-plane"></i> Input Resi',
-                            'data-count'   => $count_barang,
+                            'class'        => 'btn btn-sm rounded-lg btn-outline-danger hapusOrderan',
+                            'content'      => '<i class="fal fa-trash-alt"></i> Hapus',
                             'data-invoice' => $pesanan->id_invoice,
-                        ]);
-                    }
-                    ?>
-
-                    <?= form_button([
-                        'class'        => 'btn btn-outline-danger hapusOrderan',
-                        'content'      => '<i class="fal fa-trash-alt"></i> Hapus',
-                        'data-invoice' => $pesanan->id_invoice,
-                        'data-seri'    => $pesanan->seri,
-                    ]); ?>
+                            'data-seri'    => $pesanan->seri,
+                        ]); ?>
+                    </div>
                 </div>
             </div>
         </div>
@@ -801,21 +992,25 @@ $session  = \Config\Services::session();
         <div class="modal-body">
             <div class="mb-3">
                 <?= form_label('Pilih Status', 'status', ['class' => 'form-label']) ?>
-                <div class="input-group mb-3">
-                    <?php
-                    $list_status = [
-                        ''  => 'Pilih status',
-                        '1' => 'Data Pesanan',
-                        '2' => 'Bahan Produk',
-                        '3' => 'Sablon',
-                        '4' => 'Bordir',
-                        '5' => 'Penjahit',
-                        '6' => 'QC',
-                        '7' => 'Packing',
-                    ];
-                    echo form_dropdown('status', $list_status, '', ['class' => 'form-select', 'id' => 'status', 'required' => '']);
-                    echo form_dropdown('stat', ['' => 'Pilih', '1' => 'Ada', '0' => 'Tidak Ada'], '', ['class' => 'form-select', 'id' => 'stat', 'required' => '', 'disabled' => '']);
-                    ?>
+                <div class="row g-2">
+                    <div class="col-7 col-sm-8">
+                        <?php
+                        $list_status = [
+                            ''  => 'Pilih status',
+                            '1' => 'Data Pesanan',
+                            '2' => 'Bahan Produk',
+                            '3' => 'Sablon',
+                            '4' => 'Bordir',
+                            '5' => 'Penjahit',
+                            '6' => 'QC',
+                            '7' => 'Packing',
+                        ];
+                        echo form_dropdown('status', $list_status, '', ['class' => 'form-select', 'id' => 'status', 'required' => '']);
+                        ?>
+                    </div>
+                    <div class="col-5 col-sm-4">
+                        <?= form_dropdown('stat', ['' => 'Pilih', '1' => 'Ada', '0' => 'Tidak Ada'], '', ['class' => 'form-select', 'id' => 'stat', 'required' => '', 'disabled' => '']); ?>
+                    </div>
                 </div>
             </div>
 
@@ -1041,7 +1236,7 @@ $session  = \Config\Services::session();
     <div class="modal-dialog modal-md modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-body">
-                <?= form_open('admin/invoices/lihat/' . $juragan . '/semua', ['method' => 'get']) ?>
+                <?= form_open('admin/invoices/lihat/' . $juragan . '/' . $hal . '/' . $kategori, ['method' => 'get']) ?>
                 <div class="row g-2 align-items-center">
                     <div class="col-4">
                         <?= form_label('Status Pembayaran', 'status_pembayaran', ['class' => 'form-label visually-hidden']) ?>
@@ -1125,6 +1320,7 @@ $link_api_pengiriman     = site_url('api/pengiriman');
 $link_get_status_invoice = site_url('admin/invoices/detail_status/');
 $link_hapus_orderan      = site_url('admin/invoices/hapus_orderan');
 $link_save_progress      = site_url('admin/invoices/save_progress');
+$link_sewa_kembali       = site_url('admin/invoices/sewa_kembali');
 $link_tambah_pembayaran  = site_url('admin/invoices/simpan_pembayaran');
 $link_update_pembayaran  = site_url('admin/invoices/update_bayar');
 $link_api_counter_tab    = site_url('api/invoice/counter_tab/' . $juragan_id);
@@ -1465,7 +1661,40 @@ $js = <<< JS
 
     	// hapus orderan: alasannya wajib dipilih dan ikut tersimpan di nota
     	var invoiceBatal = 0;
-
+    	
+    	// pencatatan pengembalian barang sewaan. Satu klik ini yang memutuskan nota
+    	// sewa boleh masuk tab Selesai, unitnya pulih di stok kolam sewa, dan poin
+    	// gaji pembuat nota ikut dihitung (atau dicabut lagi kalau dibatalkan)
+    	$('.sewaKembali').on('click', function() {
+    		var tombol = $(this);
+    	
+    		if (! confirm('Catat bahwa pakaian sewaan pada nota ' + tombol.data('seri') + ' sudah kembali ke toko?')) {
+    			return;
+    		}
+    	
+    		tombol.prop('disabled', true);
+    	
+    		$.post("{$link_sewa_kembali}", { invoice_id: tombol.data('invoice') }, function(b) {
+    			// halaman dimuat ulang saja: tab, counter, dan tombolnya ikut
+    			// menyesuaikan keadaan baru tanpa berpindah saringan
+    			document.location.reload();
+    		});
+    	});
+    	
+    	$('.sewaBatalkan').on('click', function() {
+    		var tombol = $(this);
+    	
+    		if (! confirm('Batalkan pencatatan pengembalian nota ' + tombol.data('seri') + '? Barangnya dianggap masih disewa, poin dan stok ikut mundur.')) {
+    			return;
+    		}
+    	
+    		tombol.prop('disabled', true);
+    	
+    		$.post("{$link_sewa_kembali}", { invoice_id: tombol.data('invoice'), aksi: 'batalkan' }, function(b) {
+    			document.location.reload();
+    		});
+    	});
+    	
     	$('.hapusOrderan').on('click',function(){
     		invoiceBatal = $(this).data('invoice');
 
@@ -1771,7 +2000,120 @@ $js = <<< JS
             pasangBadge('#counterBelumProses', counter.belum_proses);
             pasangBadge('#counterDalamProses', counter.dalam_proses);
             pasangBadge('#counterSelesai', counter.selesai);
+            pasangBadge('#counterMasihDisewa', counter.masih_disewa);
         });
+    });
+
+     // Tombol geser strip tab: panah muncul hanya kalau tab memang lebih lebar
+     // dari wadahnya, dan mati begitu mentok di ujung. Angkanya dimuat belakangan
+     // lewat AJAX di atas dan bisa mengubah lebar tab, jadi ukurannya dipantau
+     // dengan MutationObserver, bukan dihitung sekali.
+     $(function() {
+        var wadah = document.querySelector('.toolbar-transaksi__geser');
+
+        if (! wadah) {
+            return;
+        }
+
+        var jalur = wadah.querySelector('.toolbar-transaksi__tab');
+        var kiri = wadah.querySelector('[data-geser="-1"]');
+        var kanan = wadah.querySelector('[data-geser="1"]');
+        var penggunaSedangGeser = false;
+
+        function diukur() {
+            var bisa = jalur.scrollWidth - jalur.clientWidth > 2;
+
+            wadah.classList.toggle('bisa-geser', bisa);
+            kiri.disabled = jalur.scrollLeft <= 2;
+            kanan.disabled = jalur.scrollLeft + jalur.clientWidth >= jalur.scrollWidth - 2;
+        }
+
+        function selaraskanTabAktif(animasi) {
+            var tabAktif = jalur.querySelector('.btn-primary');
+            if (! tabAktif) return;
+
+            var jalurRect = jalur.getBoundingClientRect();
+            var tabRect = tabAktif.getBoundingClientRect();
+
+            var paddingToleransi = 8;
+            var tampakPenuh = (tabRect.left >= jalurRect.left + paddingToleransi) && (tabRect.right <= jalurRect.right - paddingToleransi);
+
+            if (! tampakPenuh) {
+                var tabPos = (tabRect.left - jalurRect.left) + jalur.scrollLeft;
+                var targetScroll = tabPos - (jalur.clientWidth / 2) + (tabRect.width / 2);
+                var batasMaks = Math.max(0, jalur.scrollWidth - jalur.clientWidth);
+                targetScroll = Math.max(0, Math.min(targetScroll, batasMaks));
+
+                if (animasi) {
+                    jalur.scrollTo({ left: targetScroll, behavior: 'smooth' });
+                } else {
+                    jalur.scrollLeft = targetScroll;
+                }
+            }
+            diukur();
+        }
+
+        function geser(tombol) {
+            penggunaSedangGeser = true;
+            var langkah = Math.max(120, Math.round(jalur.clientWidth * 0.75));
+
+            jalur.scrollBy({ left: langkah * parseInt(tombol.dataset.geser, 10), behavior: 'smooth' });
+        }
+
+        // Simpan posisi scroll saat pengguna mengeklik tab status agar setelah halaman dimuat ulang
+        // posisinya tetap di tempat semula dan tidak kembali ke awal (Semua)
+        jalur.addEventListener('click', function(e) {
+            var tautan = e.target.closest('a.btn');
+            if (tautan) {
+                try {
+                    sessionStorage.setItem('toolbar_transaksi_tab_pos', String(jalur.scrollLeft));
+                } catch (err) {}
+            }
+        });
+
+        // Pulihkan posisi scroll dari sessionStorage jika ada, atau pastikan tab aktif tampak di layar
+        var posTersimpan = null;
+        try {
+            posTersimpan = sessionStorage.getItem('toolbar_transaksi_tab_pos');
+            sessionStorage.removeItem('toolbar_transaksi_tab_pos');
+        } catch (err) {}
+
+        if (posTersimpan !== null && ! isNaN(parseFloat(posTersimpan))) {
+            jalur.scrollLeft = parseFloat(posTersimpan);
+            diukur();
+            selaraskanTabAktif(false);
+        } else {
+            selaraskanTabAktif(false);
+        }
+
+        jalur.addEventListener('pointerdown', function() { penggunaSedangGeser = true; }, { passive: true });
+        jalur.addEventListener('touchstart', function() { penggunaSedangGeser = true; }, { passive: true });
+        kiri.addEventListener('click', function() { geser(kiri); });
+        kanan.addEventListener('click', function() { geser(kanan); });
+        jalur.addEventListener('scroll', diukur, { passive: true });
+        window.addEventListener('resize', function() {
+            diukur();
+            if (! penggunaSedangGeser) {
+                selaraskanTabAktif(false);
+            }
+        });
+        window.addEventListener('load', function() {
+            diukur();
+            if (! penggunaSedangGeser) {
+                selaraskanTabAktif(false);
+            }
+        });
+
+        if (window.MutationObserver) {
+            new MutationObserver(function() {
+                diukur();
+                if (! penggunaSedangGeser) {
+                    selaraskanTabAktif(false);
+                }
+            }).observe(jalur, { subtree: true, childList: true, characterData: true });
+        }
+
+        diukur();
     });
     JS;
 
