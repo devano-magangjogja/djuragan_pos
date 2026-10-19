@@ -11,7 +11,7 @@ class InvoiceModel extends Model
     protected $primaryKey         = 'id_invoice';
     protected $returnType         = 'object';
     protected $useSoftDeletes     = true;
-    protected $allowedFields      = ['seri', 'tanggal_pesan', 'pemesan_id', 'kirimKepada_id', 'juragan_id', 'user_id', 'status_pesanan', 'status_pembayaran', 'status_pengiriman', 'keterangan', 'rincian', 'deadline'];
+    protected $allowedFields      = ['seri', 'kode_lacak', 'tanggal_pesan', 'pemesan_id', 'kirimKepada_id', 'juragan_id', 'user_id', 'status_pesanan', 'status_pembayaran', 'status_pengiriman', 'sewa_kembali_at', 'sewa_kembali_oleh', 'keterangan', 'rincian', 'deadline'];
     protected $useTimestamps      = true;
     protected $createdField       = 'created_at';
     protected $updatedField       = 'update_at';
@@ -20,6 +20,24 @@ class InvoiceModel extends Model
     protected $validationRules    = [];
     protected $validationMessages = [];
     protected $skipValidation     = false;
+
+    /** Ditulis sebagai array: CI4 memanggil callback lewat properti ini, bukan lewat nama metodanya. */
+    protected $beforeInsert       = ['isiKodeLacak'];
+
+    /**
+     * Nomor nota urut dan tercetak di mana-mana, jadi tidak cukup jadi penanda
+     * orderan kalau statusnya dibuka ke pihak luar lewat API. Kode lacak ditulis
+     * di sini supaya jalur Admin dan CS memakai satu aturan; nota lama tetap aman
+     * karena kolomnya boleh NULL dan sudah diisi migrasi.
+     */
+    public function isiKodeLacak(array $data): array
+    {
+        if (empty($data['data']['kode_lacak'])) {
+            $data['data']['kode_lacak'] = KunciApiModel::kodeBaru();
+        }
+
+        return $data;
+    }
 
     /**
      * Ambil detail semua invoice
@@ -216,6 +234,14 @@ class InvoiceModel extends Model
         switch ($hal) {
             case 'selesai':
                 $builder->where('status_pengiriman', '3');
+
+                // nota sewa belum selesai sampai barangnya dikembalikan: tab ini dan
+                // tab Masih Disewa tidak boleh memuat nota yang sama
+                $builder->where('NOT (' . self::klausulSewaMenunggu($this->db->prefixTable('invoice')) . ')', null, false);
+                break;
+
+            case 'masih-disewa':
+                $builder->where(self::klausulMasihDisewa($this->db->prefixTable('invoice')), null, false);
                 break;
 
             case 'belum-proses':
@@ -325,6 +351,150 @@ class InvoiceModel extends Model
     }
 
     /**
+     * Klausul "masih disewa": nota sewa yang barangnya sudah diserahkan ke
+     * pelanggan tapi pengembaliannya belum dicatat. Ini kunci yang sama dengan
+     * pengurang stok kolam sewa di StokModel::klausaTersedia dan dengan syarat
+     * poin gaji di PoinPenjualanModel, jadi isi tab Masih Disewa, angka "sedang
+     * disewa" di halaman Produk, dan poin yang belum masuk tidak bisa berbeda
+     * aturan.
+     *
+     * $tabel adalah nama tabel invoice lengkap dengan prefix-nya, karena
+     * klausul ini dipakai pada where mentah yang tidak di-escape builder.
+     */
+    private static function klausulMasihDisewa(string $tabel): string
+    {
+        return self::klausulSewaMenunggu($tabel)
+            . " AND {$tabel}.status_pengiriman = '3'"
+            . " AND {$tabel}.status_pesanan <> '3'";
+    }
+
+    /**
+     * Klausul SQL "nota sewa yang belum dikonfirmasi kembali". Sepasang dengan
+     * adalahSewa() dan sewaMenunggu() di PHP: tanggal `rincian.kembali` hanya
+     * jadual, yang memutuskan barangnya benar-benar pulang adalah orang yang
+     * menekan tombol "Sudah kembali" di nota.
+     *
+     * JSON_EXTRACT atas rincian yang NULL memberi hasil NULL, dan NULL ikut
+     * lolos dari NOT (...) — tanpa COALESCE, negasi klausul ini di tab Selesai
+     * akan membuang semua nota lama yang tidak punya rincian.
+     */
+    public static function klausulSewaMenunggu(string $tabel): string
+    {
+        return "COALESCE(JSON_UNQUOTE(JSON_EXTRACT({$tabel}.rincian, '$.tipe')), '') = 'sewa'"
+            . " AND {$tabel}.sewa_kembali_at IS NULL";
+    }
+
+    /**
+     * Nota bertipe sewa? Nota lama yang kolom rinciannya kosong (dan JSON rusak)
+     * dihitung bukan sewa, jadi perilakunya tidak berubah untuk mereka.
+     *
+     * @param string|array|null $rincian isi kolom rincian, boleh sudah di-decode
+     */
+    public static function adalahSewa($rincian): bool
+    {
+        $isi = is_array($rincian) ? $rincian : json_decode((string) $rincian, true);
+
+        return is_array($isi) && (string) ($isi['tipe'] ?? '') === 'sewa';
+    }
+
+    /**
+     * Barang sewaan masih di tangan penyewa? Bukan sewa selalu false: kolom
+     * penandanya hanya berarti untuk nota sewa.
+     */
+    public static function sewaMenunggu(object $nota): bool
+    {
+        return self::adalahSewa($nota->rincian ?? null) && (int) ($nota->sewa_kembali_at ?? 0) === 0;
+    }
+
+    /**
+     * Catat pengembalian barang sewaan. `$tanggal` boleh diisi kalau petugas
+     * mencatat kepulangan yang terjadi hari sebelumnya; kosong = sekarang.
+     *
+     * Stok kolam sewa dan tab Selesai membaca penanda ini, jadi tidak ada angka
+     * lain yang perlu dirapikan dari sini.
+     *
+     * @return array{ok:bool, pesan:string, waktu:?int}
+     */
+    public function catatKembali(int $invoice_id, int $oleh, ?string $tanggal = null): array
+    {
+        $nota = $this->find($invoice_id);
+
+        if ($nota === null) {
+            return ['ok' => false, 'pesan' => 'Orderan tidak ditemukan.', 'waktu' => null];
+        }
+
+        if (! self::adalahSewa($nota->rincian ?? null)) {
+            return ['ok' => false, 'pesan' => 'Hanya orderan sewa yang punya pencatatan pengembalian.', 'waktu' => null];
+        }
+
+        $waktu = $this->waktuKembali($tanggal);
+
+        if ($waktu === null) {
+            return ['ok' => false, 'pesan' => 'Tanggal pengembalian tidak dikenali atau masih di masa depan.', 'waktu' => null];
+        }
+
+        $this->update($invoice_id, [
+            'sewa_kembali_at'   => $waktu,
+            'sewa_kembali_oleh' => $oleh > 0 ? $oleh : null,
+        ]);
+
+        return [
+            'ok'    => true,
+            'pesan' => 'Barang sewaan dicatat kembali pada ' . date('d/m/Y H:i', $waktu) . '.',
+            'waktu' => $waktu,
+        ];
+    }
+
+    /**
+     * Tarik kembali pencatatan pengembalian: barang dianggap masih disewa.
+     * Dipakai kalau tombolnya kelepasan diklik — poin dan stok ikut mundur
+     * sendiri karena keduanya membaca penanda yang sama.
+     *
+     * @return array{ok:bool, pesan:string, waktu:?int}
+     */
+    public function batalkanKembali(int $invoice_id): array
+    {
+        $nota = $this->find($invoice_id);
+
+        if ($nota === null) {
+            return ['ok' => false, 'pesan' => 'Orderan tidak ditemukan.', 'waktu' => null];
+        }
+
+        if (! self::adalahSewa($nota->rincian ?? null)) {
+            return ['ok' => false, 'pesan' => 'Hanya orderan sewa yang punya pencatatan pengembalian.', 'waktu' => null];
+        }
+
+        if ((int) ($nota->sewa_kembali_at ?? 0) === 0) {
+            return ['ok' => false, 'pesan' => 'Nota ini memang belum dicatat kembali.', 'waktu' => null];
+        }
+
+        $this->update($invoice_id, ['sewa_kembali_at' => null, 'sewa_kembali_oleh' => null]);
+
+        return ['ok' => true, 'pesan' => 'Pengembalian dibatalkan; nota kembali ke tab Masih Disewa.', 'waktu' => null];
+    }
+
+    /**
+     * Waktu pencatatan: kosong berarti sekarang, teks tanggal dibaca kalau memang
+     * tanggal penuh (pengembalian tidak dicatat dari masa depan).
+     */
+    private function waktuKembali(?string $tanggal): ?int
+    {
+        $teks = trim((string) $tanggal);
+
+        if ($teks === '') {
+            return time();
+        }
+
+        $waktu = strtotime($teks);
+
+        if ($waktu === false || $waktu > time()) {
+            return null;
+        }
+
+        return $waktu;
+    }
+
+    /**
      * Batasi query pada daftar toko yang boleh dibuka akun ini.
      * null = tidak membatasi, sama seperti sebelum pagar kepemilikan ada.
      *
@@ -413,6 +583,7 @@ class InvoiceModel extends Model
         $countBelum       = $this->counts($id_juragan, 'belum-proses', $hanya);
         $countCekBayar    = $this->counts($id_juragan, 'cek-bayar', $hanya);
         $countDalamProses = $this->counts($id_juragan, 'dalam-proses', $hanya);
+        $countMasihDisewa = $this->counts($id_juragan, 'masih-disewa', $hanya);
 
         return [
             'semua' => [
@@ -440,6 +611,11 @@ class InvoiceModel extends Model
                 'text' => formatRibuan($countDalamProses),
 
             ],
+            'masih_disewa' => [
+                'num'  => $countMasihDisewa,
+                'text' => formatRibuan($countMasihDisewa),
+
+            ],
         ];
     }
 
@@ -457,6 +633,11 @@ class InvoiceModel extends Model
             case 'selesai':
                 $q->where('invoice.status_pengiriman', '3');
 
+                // sama dengan terapkanTab(): sewa yang barangnya belum kembali
+                // belum berhak masuk Selesai, jadi counter tab tidak boleh
+                // menghitungnya
+                $q->where('NOT (' . self::klausulSewaMenunggu($this->db->prefixTable('invoice')) . ')', null, false);
+
                 break;
 
             case 'belum-proses':
@@ -472,6 +653,13 @@ class InvoiceModel extends Model
             case 'dalam-proses':
                 $q->where('invoice.status_pesanan', '2');
                 $q->whereNotIn('invoice.status_pengiriman', ['3']);
+
+                break;
+
+            case 'masih-disewa':
+                // soft delete sudah disaring otomatis oleh model (getCount hanya
+                // dipanggil lewat builder model ini), sisanya satu klausul mentah
+                $q->where(self::klausulMasihDisewa($this->db->prefixTable('invoice')), null, false);
 
                 break;
         }

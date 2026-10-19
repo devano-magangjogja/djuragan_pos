@@ -15,6 +15,11 @@ use CodeIgniter\Model;
  * Perhitungan dilakukan satu kali lewat sinkron(): pemanggilnya tidak perlu
  * tahu apakah notasinya baru selesai atau sedang balik jadi belum lunas.
  *
+ * Nota sewa punya satu syarat lagi: barangnya harus sudah dikonfirmasi kembali.
+ * Selama tombol "Sudah kembali" di nota belum ditekan, nota itu masih tercatat
+ * sebagai penyewaan berjalan dan pembuatnya belum berhak atas poinnya — sama
+ * seperti tab Selesai dan stok kolam sewa, ketiganya membaca penanda yang satu.
+ *
  * Yang menerima poin adalah pembuat nota (invoice.user_id), bukan orang yang
  * menekan tombol cek pembayaran. Nilainya dipotret saat pemberian (poin_satuan
  * dan qty), sehingga perubahan poin varian di kemudian hari tidak mengubah
@@ -46,7 +51,7 @@ class PoinPenjualanModel extends Model
      */
     public function sinkron(int $invoice_id): void
     {
-        $nota = $this->db->query('SELECT user_id, juragan_id, status_pembayaran, status_pengiriman, status_pesanan, deleted_at'
+        $nota = $this->db->query('SELECT user_id, juragan_id, status_pembayaran, status_pengiriman, status_pesanan, deleted_at, rincian, sewa_kembali_at'
             . ' FROM `' . $this->t('invoice') . '` WHERE id_invoice = ? LIMIT 1', [$invoice_id])
             ->getRow();
 
@@ -56,12 +61,13 @@ class PoinPenjualanModel extends Model
             return;
         }
 
-        $lunas    = in_array((int) $nota->status_pembayaran, self::LUNAS, true);
-        $selesai  = (string) $nota->status_pengiriman === self::SELESAI;
+        $lunas     = in_array((int) $nota->status_pembayaran, self::LUNAS, true);
+        $selesai   = (string) $nota->status_pengiriman === self::SELESAI;
         $tersimpan = $nota->deleted_at === null;
         $dibatalkan = (string) $nota->status_pesanan === '3';
+        $pulang    = ! InvoiceModel::adalahSewa($nota->rincian ?? null) || (int) ($nota->sewa_kembali_at ?? 0) > 0;
 
-        if (! $lunas || ! $selesai || ! $tersimpan || $dibatalkan || (int) $nota->user_id <= 0) {
+        if (! $lunas || ! $selesai || ! $tersimpan || ! $pulang || $dibatalkan || (int) $nota->user_id <= 0) {
             $this->cabut($invoice_id);
 
             return;

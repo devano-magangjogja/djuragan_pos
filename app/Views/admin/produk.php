@@ -10,6 +10,8 @@
  * @var int $juragan      Filter toko terpilih, 0 artinya semua toko
  * @var array<int, string> $juragans  Pilihan toko pada filter (BaseController::juraganPilihan)
  * @var string $cakupan   Toko yang sedang dibaca, dipakai pesan daftar kosong
+ * @var int $disewa       Unit sewa yang sedang di tangan penyewa pada cakupan aktif (StokModel::sedangDisewa)
+ * @var string $tautan_disewa Alamat tab Masih Disewa di daftar transaksi untuk cakupan aktif
  * @var string $cari         Kata kunci pencarian yang sedang dipakai
  * @var string $keadaan   Filter keadaan stok yang sedang dipakai
  * @var string $kolam      Kolam tab aktif: 'jual' atau 'sewa' (StokModel::kolam)
@@ -137,6 +139,44 @@ $kueriTab = array_filter([
     @media (max-width: 767.98px) {
         .toolbar-produk > .btn {
             width: 100%;
+        }
+    }
+
+    /* Pil "sedang disewa" di bawah kartu produk: seukuran isinya, ditempel di
+       tepi kiri barisnya. Titik merahnya berkedip supaya menyala diam-diam
+       tanpa perlu animasi lain; mati saja kalau pengguna mematikan animasi. */
+    .pil-disewa {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.38rem 0.95rem;
+        border: 1px solid #eaecf0;
+        border-radius: 999px;
+        background: #ffffff;
+        box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06);
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #344054;
+        text-decoration: none;
+    }
+    .pil-disewa:hover {
+        background: #f9fafb;
+        color: #101828;
+    }
+    .pil-disewa__titik {
+        flex: 0 0 auto;
+        width: 0.5rem;
+        height: 0.5rem;
+        border-radius: 50%;
+        background: #da251d;
+        animation: pil-disewa-kedip 1.4s ease-in-out infinite;
+    }
+    @keyframes pil-disewa-kedip {
+        50% { opacity: 0.15; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .pil-disewa__titik {
+            animation: none;
         }
     }
 </style>
@@ -501,9 +541,22 @@ $kueriTab = array_filter([
                             <?php } ?>
                         </div>
 
-                        <div class="mt-3">
-                            <?= $pager->makeLinks($page, $limit, $total, 'front_full') ?>
-                        </div>
+                        <?php if ($katalog !== []) { ?>
+                            <div class="mt-3">
+                                <?= $pager->makeLinks($page, $limit, $total, 'front_full') ?>
+                            </div>
+                        <?php } ?>
+                    <?php } ?>
+
+                    <?php /* pil tampil juga saat katalog kosong: penyewaan aktif
+                       tidak bergantung pada tab kolam yang sedang dibuka */ ?>
+                    <?php if ($disewa > 0) { ?>
+                        <a class="pil-disewa mt-3" href="<?= esc($tautan_disewa) ?>"
+                            title="Buka tab Masih Disewa di daftar transaksi">
+                            <span class="pil-disewa__titik" aria-hidden="true"></span>
+                            <?= formatRibuan($disewa) ?> unit sedang disewa
+                            <i class="fal fa-arrow-alt-right text-ink-400" aria-hidden="true"></i>
+                        </a>
                     <?php } ?>
                 </div>
             </div>

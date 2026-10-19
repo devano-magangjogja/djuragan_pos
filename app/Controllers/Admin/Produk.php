@@ -3,6 +3,7 @@
 namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
+use App\Models\JuraganModel;
 use App\Models\ProdukFotoModel;
 use App\Models\StokModel;
 use CodeIgniter\HTTP\Files\UploadedFile;
@@ -74,6 +75,22 @@ class Produk extends BaseController
             $cakupan = count($juragans) . ' toko yang kamu pegang';
         }
 
+        // pil "sedang disewa" di bawah kartu: unit sewa yang masih di tangan
+        // penyewa pada cakupan yang sedang dibuka + tautannya ke tab Masih
+        // Disewa di daftar transaksi. Panel CS tidak mengenal "semua juragan",
+        // jadi tokonya dijabarkan jadi slug konkret.
+        $disewa = $stokModel->sedangDisewa($juragan > 0 ? [$juragan] : $ids);
+        $slug   = 'semua';
+
+        if ($juragan > 0) {
+            $toko = (new JuraganModel())->find($juragan);
+            $slug = (string) ($toko->juragan ?? 'semua');
+        } elseif ((string) session()->get('level') === 'cs') {
+            $slug = (string) array_key_first($this->tokoPilihan());
+        }
+
+        $tautan_disewa = site_url(((string) session()->get('level') === 'cs' ? 'user/invoices/lihat/' : 'admin/invoices/lihat/') . $slug . '/masih-disewa');
+
         $data = [
             'title'     => 'Produk & Stok',
             'katalog'   => $katalog,
@@ -82,6 +99,8 @@ class Produk extends BaseController
             'juragan'   => $juragan,
             'juragans'  => $juragans,
             'cakupan'   => $cakupan,
+            'disewa'    => $disewa,
+            'tautan_disewa' => $tautan_disewa,
             'cari'      => $cari,
             'keadaan'   => $keadaan,
             // tab kolam aktif + labelnya, dipakai view untuk judul kolom dan tautan tab

@@ -38,7 +38,7 @@ class Invoices extends BaseController
     // menampilkan semua invoice
     public function lihat($juragan = 'semua', $hal = 'pembayaran', $kategori = '')
     {
-        if (! in_array($hal, ['semua', 'pembayaran', 'cek-bayar', 'dalam-proses', 'belum-proses', 'selesai', 'saring'], true)) {
+        if (! in_array($hal, ['semua', 'pembayaran', 'cek-bayar', 'dalam-proses', 'belum-proses', 'selesai', 'saring', 'masih-disewa'], true)) {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
 
@@ -747,6 +747,47 @@ class Invoices extends BaseController
 
             return $this->response->setJSON($res);
         }
+    }
+
+    /**
+     * Catat (atau tarik kembali) pengembalian barang sewaan.
+     *
+     * Ini satu-satunya jalan sebuah nota sewa dianggap selesai dikerjakan: selama
+     * tombolnya belum ditekan, unitnya masih dihitung mengendap di penyewa — stok
+     * kolam sewa belum pulih, nota belum masuk tab Selesai, dan poin gaji
+     * pembuat nota belum masuk hitungan.
+     */
+    public function sewa_kembali()
+    {
+        if ($this->request->isAJAX()) {
+            $invoice_id = (int) $this->request->getPost('invoice_id');
+
+            // nota toko lain tidak boleh disentuh akun mana pun di luar tokonya
+            if ($this->notaMilikToko($invoice_id) === null) {
+                return $this->tolakToko();
+            }
+
+            $invModel = new InvoiceModel();
+
+            $hasil = $this->request->getPost('aksi') === 'batalkan'
+                ? $invModel->batalkanKembali($invoice_id)
+                : $invModel->catatKembali($invoice_id, (int) pengguna_sesi(), (string) $this->request->getPost('tanggal'));
+
+            // poin ikut penanda yang barusan berubah arah: nota yang pulang boleh
+            // dihitung, yang pencatatannya dibatalkan dicabut lagi
+            (new PoinPenjualanModel())->sinkron($invoice_id);
+
+            // tanpa url: pemanggilnya memuat ulang halaman yang sedang dibuka, jadi
+            // tab dan saringan orang itu tidak berpindah setelah barang kembali
+            $res = [
+                'ok'     => $hasil['ok'],
+                'status' => $hasil['pesan'],
+            ];
+
+            return $this->response->setJSON($res);
+        }
+
+        throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
     }
 
     public function detail_status($invoice_id)

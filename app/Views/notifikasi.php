@@ -11,6 +11,7 @@
  * @var int                                                $jumlah_semua  Total seluruh notifikasi
  * @var int                                                $halaman       Nomor halaman saat ini
  * @var int                                                $halaman_akhir Total halaman
+ * @var bool                                               $boleh_sapu    Akun ini boleh membuka pengaturan kebersihan
  */
 ?>
 <?= $this->extend('template/main') ?>
@@ -206,6 +207,13 @@
                     <i class="fal fa-check-double"></i> Tandai semua dibaca
                 </button>
             <?php endif; ?>
+
+            <?php if ($boleh_sapu) : ?>
+                <a class="btn btn-sm btn-outline-secondary" href="<?= site_url('admin/settings/notifikasi') ?>"
+                    title="Atur hapus manual dan hapus otomatis">
+                    <i class="fal fa-broom"></i> Pengaturan hapus
+                </a>
+            <?php endif; ?>
         </div>
 
         <?php if (empty($daftar)) : ?>
@@ -242,6 +250,11 @@
                             <button type="button" class="btn btn-sm btn-link text-decoration-none notif-tandai" data-id="<?= (int) $item['id'] ?>">
                                 Tandai dibaca
                             </button>
+                        <?php else : ?>
+                            <?php /* yang sudah terbaca boleh dibuang dari kotak sendiri; kotaknya punya orang lain tidak tersentuh */ ?>
+                            <button type="button" class="btn btn-sm btn-link text-decoration-none text-muted notif-hapus" data-id="<?= (int) $item['id'] ?>" title="Hapus notifikasi ini">
+                                <i class="fal fa-trash"></i>
+                            </button>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -268,6 +281,7 @@
     $(function() {
         var markUrl = '<?= site_url('api/notifikasi/mark') ?>';
         var markAllUrl = '<?= site_url('api/notifikasi/mark_all') ?>';
+        var hapusUrl = '<?= site_url('api/notifikasi/hapus') ?>';
 
         $(document).on('click', '.notif-tandai', function() {
             var tombol = $(this);
@@ -283,6 +297,16 @@
             tombol.prop('disabled', true);
 
             $.post(markAllUrl, {}, function() {
+                window.location.reload();
+            });
+        });
+
+        $(document).on('click', '.notif-hapus', function() {
+            if (! window.confirm('Hapus notifikasi ini dari kotak Anda?')) {
+                return;
+            }
+
+            $.post(hapusUrl, { id: $(this).data('id') }, function() {
                 window.location.reload();
             });
         });

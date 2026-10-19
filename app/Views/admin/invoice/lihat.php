@@ -239,7 +239,8 @@ $session  = \Config\Services::session();
         ['pembayaran', 'Pembayaran', 'counterCekBayar', 'Transaksi yang pembayarannya perlu dicek'],
         ['belum-proses', 'Belum Proses', 'counterBelumProses', 'Transaksi yang belum mulai dikerjakan'],
         ['dalam-proses', 'Dalam Proses', 'counterDalamProses', 'Transaksi yang sedang dikerjakan'],
-        ['selesai', 'Selesai', 'counterSelesai', 'Transaksi yang sudah selesai'],
+        ['selesai', 'Selesai', 'counterSelesai', 'Transaksi yang sudah selesai; nota sewa baru masuk sini setelah barangnya dicatat kembali'],
+        ['masih-disewa', 'Masih Disewa', 'counterMasihDisewa', 'Nota sewa yang barangnya masih di tangan penyewa — pengembaliannya belum dicatat'],
     ];
     ?>
     <div class="toolbar-transaksi mb-4">
@@ -339,6 +340,8 @@ $session  = \Config\Services::session();
             <i class="fal fa-inbox block text-[1.35rem] text-ink-400 mb-2"></i>
             <?php if ($hal === 'saring') : ?>
                 Belum ada orderan pada saringan <?= esc($kategori_pembayaran[$kategori]['label']) ?>.
+            <?php elseif ($hal === 'masih-disewa') : ?>
+                Belum ada barang yang sedang disewa — nota sewa masuk ke sini begitu barangnya diserahkan ke penyewa, dan keluar dari sini saat tombol "Sudah kembali" ditekan.
             <?php elseif ($kategori !== 'semua' && in_array($hal, ['pembayaran', 'belum-proses'], true)) : ?>
                 Belum ada transaksi berkategori <?= esc($kategori_pembayaran[$kategori]['label']) ?>.
             <?php else : ?>
@@ -394,6 +397,12 @@ $session  = \Config\Services::session();
 
         $wajib_bayar = $harga_barang;
         $time        = Time::createFromFormat('Y-m-d', $pesanan->tanggal_pesan);
+
+        // penyewaan belum dianggap selesai sampai pengembaliannya dicatat orang;
+        // tanggal jadual di rincian cuma pengingat, bukan kenyataan barangnya
+        $adalah_sewa   = \App\Models\InvoiceModel::adalahSewa($pesanan->rincian ?? null);
+        $sewa_berjalan = \App\Models\InvoiceModel::sewaMenunggu($pesanan);
+        $sewa_pulang   = $adalah_sewa && ! $sewa_berjalan;
         ?>
         <div class="kartu-invoice mb-4 rounded-2xl sm:rounded-[1.5rem] border border-ink-200 bg-white shadow-sm transition hover:shadow-md">
             <div class="p-3.5 sm:p-5">
@@ -405,6 +414,13 @@ $session  = \Config\Services::session();
                             <div class="min-w-0">
                                 <h5 class="text-[1.15rem] font-extrabold tracking-[-0.01em] text-ink-900 mb-0">#<?= esc($pesanan->seri) ?></h5>
                                 <p class="text-ink-500 text-xs mb-0">( <?= $time->toLocalizedString('EEEE, d MMMM yyyy') ?> )</p>
+                                <?php /* penanda kedua untuk API publik: nomor nota saja terlalu mudah ditebak,
+                                   jadi status orderan baru dibuka kalau nomor + kode ini sama-sama cocok */ ?>
+                                <?php if (! empty($pesanan->kode_lacak)) { ?>
+                                    <p class="text-ink-400 text-xs mb-0" title="Kode pendamping nomor nota saat status orderan dibuka lewat API pihak luar">
+                                        kode lacak <span class="font-semibold text-ink-500"><?= esc($pesanan->kode_lacak) ?></span>
+                                    </p>
+                                <?php } ?>
                             </div>
 
                             <span class="rounded-full px-3 py-1 text-xs font-semibold <?= $pil[$kelas_status]['pill'] ?>">
@@ -575,7 +591,7 @@ $session  = \Config\Services::session();
                             <?php } ?>
 
                             <h6 class="mb-2 flex items-center gap-1.5 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500 [&_.fal]:text-[0.95rem] [&_.fal]:text-ink-400 mt-4 border-t border-ink-200 pt-3"><i class="fal fa-inbox-in"></i> Asal Orderan</h6>
-                            <div class="text-sm leading-[1.55] text-ink-800"><?= label_asal($pesanan->source->id, $pesanan->source->label) ?></div>
+                            <div class="text-sm leading-[1.55] text-ink-800"><?= $pesanan->source !== null ? label_asal($pesanan->source->id, $pesanan->source->label) : '<span class="text-muted">-</span>' ?></div>
                         </div>
                     </section>
 
@@ -916,6 +932,30 @@ $session  = \Config\Services::session();
                                 'data-invoice' => $pesanan->id_invoice,
                             ]);
                         }
+
+                        if ($sewa_berjalan) {
+                            echo form_button([
+                                'class'        => 'btn btn-sm rounded-lg btn-success sewaKembali',
+                                'content'      => '<i class="fal fa-tshirt"></i> Sudah kembali',
+                                'data-invoice' => $pesanan->id_invoice,
+                                'data-seri'    => $pesanan->seri,
+                                'title'        => 'Barang sewaan sudah diterima kembali di toko',
+                            ]);
+                        } elseif ($sewa_pulang) {
+                            $kembali = Time::createFromTimestamp((int) $pesanan->sewa_kembali_at)
+                                ->setTimezone(config('App')->appTimezone)
+                                ->toLocalizedString('d MMM yyyy HH:mm'); ?>
+                            <span class="btn btn-sm rounded-lg btn-success disabled" title="Waktu pengembaliannya dicatat">
+                                <i class="fal fa-undo-alt-left"></i> Kembali <?= esc($kembali) ?>
+                            </span>
+                            <?php echo form_button([
+                                'class'        => 'btn btn-sm rounded-lg btn-outline-secondary sewaBatalkan',
+                                'content'      => '<i class="fal fa-undo"></i> Batalkan',
+                                'data-invoice' => $pesanan->id_invoice,
+                                'data-seri'    => $pesanan->seri,
+                                'title'        => 'Salah klik? Kembalikan nota ini ke status masih disewa',
+                            ]);
+                        }
                         ?>
                     </div>
 
@@ -1196,7 +1236,7 @@ $session  = \Config\Services::session();
     <div class="modal-dialog modal-md modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-body">
-                <?= form_open('admin/invoices/lihat/' . $juragan . '/semua', ['method' => 'get']) ?>
+                <?= form_open('admin/invoices/lihat/' . $juragan . '/' . $hal . '/' . $kategori, ['method' => 'get']) ?>
                 <div class="row g-2 align-items-center">
                     <div class="col-4">
                         <?= form_label('Status Pembayaran', 'status_pembayaran', ['class' => 'form-label visually-hidden']) ?>
@@ -1280,6 +1320,7 @@ $link_api_pengiriman     = site_url('api/pengiriman');
 $link_get_status_invoice = site_url('admin/invoices/detail_status/');
 $link_hapus_orderan      = site_url('admin/invoices/hapus_orderan');
 $link_save_progress      = site_url('admin/invoices/save_progress');
+$link_sewa_kembali       = site_url('admin/invoices/sewa_kembali');
 $link_tambah_pembayaran  = site_url('admin/invoices/simpan_pembayaran');
 $link_update_pembayaran  = site_url('admin/invoices/update_bayar');
 $link_api_counter_tab    = site_url('api/invoice/counter_tab/' . $juragan_id);
@@ -1620,7 +1661,40 @@ $js = <<< JS
 
     	// hapus orderan: alasannya wajib dipilih dan ikut tersimpan di nota
     	var invoiceBatal = 0;
-
+    	
+    	// pencatatan pengembalian barang sewaan. Satu klik ini yang memutuskan nota
+    	// sewa boleh masuk tab Selesai, unitnya pulih di stok kolam sewa, dan poin
+    	// gaji pembuat nota ikut dihitung (atau dicabut lagi kalau dibatalkan)
+    	$('.sewaKembali').on('click', function() {
+    		var tombol = $(this);
+    	
+    		if (! confirm('Catat bahwa pakaian sewaan pada nota ' + tombol.data('seri') + ' sudah kembali ke toko?')) {
+    			return;
+    		}
+    	
+    		tombol.prop('disabled', true);
+    	
+    		$.post("{$link_sewa_kembali}", { invoice_id: tombol.data('invoice') }, function(b) {
+    			// halaman dimuat ulang saja: tab, counter, dan tombolnya ikut
+    			// menyesuaikan keadaan baru tanpa berpindah saringan
+    			document.location.reload();
+    		});
+    	});
+    	
+    	$('.sewaBatalkan').on('click', function() {
+    		var tombol = $(this);
+    	
+    		if (! confirm('Batalkan pencatatan pengembalian nota ' + tombol.data('seri') + '? Barangnya dianggap masih disewa, poin dan stok ikut mundur.')) {
+    			return;
+    		}
+    	
+    		tombol.prop('disabled', true);
+    	
+    		$.post("{$link_sewa_kembali}", { invoice_id: tombol.data('invoice'), aksi: 'batalkan' }, function(b) {
+    			document.location.reload();
+    		});
+    	});
+    	
     	$('.hapusOrderan').on('click',function(){
     		invoiceBatal = $(this).data('invoice');
 
@@ -1926,6 +2000,7 @@ $js = <<< JS
             pasangBadge('#counterBelumProses', counter.belum_proses);
             pasangBadge('#counterDalamProses', counter.dalam_proses);
             pasangBadge('#counterSelesai', counter.selesai);
+            pasangBadge('#counterMasihDisewa', counter.masih_disewa);
         });
     });
 

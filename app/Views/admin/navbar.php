@@ -70,12 +70,27 @@ $laporanSubmenu = [
     ['admin/laporan/pelanggan', 'Laporan Customer', 'fa-user', $laporan_aktif('pelanggan')],
 ];
 
-// Submenu Pengaturan (Superadmin)
-$settingsSubmenu = [
-    ['admin/settings/bank', 'Atur Bank', 'fa-university', str_starts_with($di_halaman, 'admin/settings/bank')],
-    ['admin/settings/juragan', 'Atur Juragan', 'fa-store', str_starts_with($di_halaman, 'admin/settings/juragan')],
-    ['admin/settings/pengguna', 'Atur Pengguna', 'fa-users-cog', str_starts_with($di_halaman, 'admin/settings/pengguna')],
-];
+// Submenu Sistem. Kebersihan kotak notifikasi boleh dipakai Admin; rekening bank,
+// juragan, pengguna, dan kunci API tetap khusus Superadmin.
+$sistemSubmenu = [];
+
+if (in_array($levelSesi, ['admin', 'superadmin'], true)) {
+    $sistemSubmenu[] = [
+        'admin/settings/notifikasi',
+        'Pengaturan Notifikasi',
+        'fa-bell-slash',
+        str_starts_with($di_halaman, 'admin/settings/notifikasi'),
+    ];
+}
+
+if ($levelSesi === 'superadmin') {
+    $sistemSubmenu = array_merge($sistemSubmenu, [
+        ['admin/settings/bank', 'Atur Bank', 'fa-university', str_starts_with($di_halaman, 'admin/settings/bank')],
+        ['admin/settings/juragan', 'Atur Juragan', 'fa-store', str_starts_with($di_halaman, 'admin/settings/juragan')],
+        ['admin/settings/pengguna', 'Atur Pengguna', 'fa-users-cog', str_starts_with($di_halaman, 'admin/settings/pengguna')],
+        ['admin/settings/kunci-api', 'Kunci API', 'fa-key', str_starts_with($di_halaman, 'admin/settings/kunci-api')],
+    ]);
+}
 ?>
 
 <style>
@@ -297,7 +312,7 @@ $settingsSubmenu = [
             </li>
         </ul>
 
-        <?php if ($levelSesi === 'superadmin') : ?>
+        <?php if ($sistemSubmenu !== []) : ?>
             <div class="sidebar-heading mt-2">Sistem</div>
             <ul class="sidebar-nav">
                 <!-- Submenu Pengaturan -->
@@ -309,7 +324,7 @@ $settingsSubmenu = [
                     </a>
                     <div class="collapse <?= $isSettingsAktif ? 'show' : '' ?>" id="submenuSettings">
                         <ul class="sidebar-submenu">
-                            <?php foreach ($settingsSubmenu as [$url, $label, $ikon, $aktif]) : ?>
+                            <?php foreach ($sistemSubmenu as [$url, $label, $ikon, $aktif]) : ?>
                                 <li class="submenu-item">
                                     <a class="sidebar-submenu-link <?= $aktif ? 'active' : '' ?>" href="<?= site_url($url) ?>">
                                         <i class="fal <?= $ikon ?>"></i>

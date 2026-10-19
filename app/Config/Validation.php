@@ -125,6 +125,24 @@ class Validation extends BaseConfig
         'nama'  => 'required|min_length[3]|max_length[50]',
         'email' => 'required|valid_email|max_length[100]|is_unique[user.email,id,{id}]',
     ];
+    /**
+     * Kunci API. Hak dan toko tidak diperiksa di sini karena keduanya pil dari
+     * daftar yang dikenal server — dibersihkan di KunciApiModel::siapan(), dan
+     * controller yang menolak kalau kosong.
+     */
+    public $kunciApi = [
+        'nama'         => 'required|min_length[3]|max_length[60]',
+        'batas_harian' => 'permit_empty|integer|greater_than_equal_to[0]|less_than_equal_to[100000]',
+    ];
+    /**
+     * Pengaturan kebersihan notifikasi. `auto_aktif` adalah sakelar: tidak terkirim
+     * sama sekali kalau tidak dicentang, jadi nilainya boleh kosong dan pembacanya
+     * menganggap kosong = otomatis mati.
+     */
+    public $notifSetelan = [
+        'auto_aktif' => 'permit_empty|in_list[0,1]',
+        'umur_hari'  => 'required|integer|greater_than_equal_to[1]|less_than_equal_to[365]',
+    ];
     public $addInvoice = [
         'juragan'       => 'required',
         'pengguna'      => 'required',

@@ -21,6 +21,11 @@ class Notifikasi extends BaseController
         $user_id    = (int) session()->get('id');
         $saring     = $tab === 'belum' ? false : null;
 
+        // sapuan otomatis: paling sering hanya coba sekali per batas waktunya
+        // (NotifikasiModel::sapuJadwal), jadi halaman ini tidak menulis apa pun
+        // tiap kali dibuka
+        $notifikasi->sapuJadwal();
+
         $limit = config('Pager')->perPage;
         $page  = (int) $this->request->getGet('page');
         $page  = $page < 1 ? 1 : $page;
@@ -60,20 +65,8 @@ class Notifikasi extends BaseController
             'jumlah_semua'  => $notifikasi->ambil($user_id, null)->countAllResults(),
             'halaman'       => $page,
             'halaman_akhir' => $akhir,
+            'boleh_sapu'    => in_array(session()->get('level'), ['admin', 'superadmin'], true),
         ]);
-    }
-
-    public function hapus()
-    {
-        $notifikasi = new \App\Models\NotifikasiModel();
-
-        $builder = $notifikasi->builder();
-        $builder->where('read_at !=', null);
-        $counting = $builder->countAllResults();
-
-        $notifikasi->where('read_at !=', null)->delete();
-
-        return $this->response->setJSON(['status' => 200, 'message' => $counting . ' notifikasi sudah dihapus']);
     }
 
     // --

@@ -117,21 +117,83 @@ class StokModel extends Model
     }
 
     /**
-     * Kondisi "sewa yang sudah harus kembali": tipenya sewa, tanggal kembalinya
-     * diisi, dan tanggalnya sudah lewat. Baris orderan seperti ini tidak lagi
-     * mengurangi stok, jadi barang sewaan pulih di rak sendiri tanpa ada yang
-     * perlu mengingatnya. Sewa tanpa tanggal kembali dianggap masih dipinjam.
+     * Angka KEDUA kolam untuk sekelompok barang (juragan + nama barang), sekali
+     * query. Katalog hanya menampilkan kolam yang dibuka, tapi pihak luar (API)
+     * perlu melihat bahwa unit jual dan unit sewa itu dua tumpukan yang berbeda:
+     * stok gudang, unit yang sedang keluar, dan sisanya, per kolam.
+     *
+     * 'keluar' di sini = unit yang sedang di tangan orang lain: nota Selesai yang
+     * menaut baris kolam itu (sewa yang pengembaliannya belum dicatat tidak ikut),
+     * jadi angkanya sama persis dengan pengurang "tersedia" di halaman Produk.
+     *
+     * @param array<array{juragan_id:int, kode:string}> $pasangan
+     *
+     * @return array<string, array{jual:?array, sewa:?array}> kunci "juragan|kode kecil"
+     */
+    public function duaKolam(array $pasangan, array $juragan_ids): array
+    {
+        if ($pasangan === [] || $juragan_ids === []) {
+            return [];
+        }
+
+        $tabel    = '`' . $this->db->prefixTable('stok') . '`';
+        $kondisi  = [];
+        $bind     = [];
+
+        foreach ($pasangan as $p) {
+            $kondisi[] = '(?,' . $this->db->escape((string) $p['kode']) . ')';
+            $bind[]    = (int) $p['juragan_id'];
+        }
+
+        $tersedia = 'CASE WHEN ' . $tabel . ".kolam = 'sewa' THEN " . $this->klausaTersedia('sewa')
+            . ' ELSE ' . $this->klausaTersedia('jual') . ' END';
+
+        $baris = $this->db->query('SELECT ' . $tabel . '.juragan_id, ' . $tabel . '.kode, ' . $tabel . ".kolam,"
+            . ' COUNT(*) AS varian, SUM(' . $tabel . '.stok) AS stok,'
+            . ' SUM(' . $tabel . '.stok) - SUM(' . $tersedia . ') AS keluar,'
+            . ' MIN(' . $tabel . '.harga) AS harga_mulai, MAX(' . $tabel . '.harga) AS harga_akhir'
+            . ' FROM ' . $tabel
+            . ' WHERE ' . $tabel . '.deleted_at IS NULL'
+            . ' AND ' . $tabel . '.juragan_id IN (' . implode(',', array_map('intval', $juragan_ids)) . ')'
+            . ' AND (' . $tabel . '.juragan_id, ' . $tabel . '.kode) IN (' . implode(',', $kondisi) . ')'
+            . ' GROUP BY ' . $tabel . '.juragan_id, ' . $tabel . '.kode, ' . $tabel . '.kolam', $bind)
+            ->getResultArray();
+
+        $hasil = [];
+
+        foreach ($baris as $b) {
+            $kolam = self::kolam((string) $b['kolam']);
+            $kunci = (int) $b['juragan_id'] . '|' . mb_strtolower((string) $b['kode']);
+
+            $hasil[$kunci][$kolam] = [
+                'varian'      => (int) $b['varian'],
+                'stok'        => (int) $b['stok'],
+                'keluar'      => (int) $b['keluar'],
+                'tersedia'    => (int) $b['stok'] - (int) $b['keluar'],
+                'harga_mulai' => (int) $b['harga_mulai'],
+                'harga_akhir' => (int) $b['harga_akhir'],
+            ];
+        }
+
+        return $hasil;
+    }
+
+    /**
+     * Kondisi "sewa yang barangnya sudah kembali": nota sewa yang pengembaliannya
+     * sudah dicatat orang lewat tombol "Sudah kembali" di nota. Baris orderan
+     * seperti ini tidak lagi mengurangi stok, jadi unitnya pulang ke rak pada saat
+     * yang sama dengan nota masuk tab Selesai. Tanggal `rincian.kembali` sendiri
+     * hanya jadual: belum diklik berarti masih di tangan penyewa, walau tanggalnya
+     * sudah lewat.
      */
     private static function sudahKembali(): string
     {
-        return "JSON_UNQUOTE(JSON_EXTRACT(o.rincian, '$.tipe')) = 'sewa'"
-            . " AND COALESCE(JSON_UNQUOTE(JSON_EXTRACT(o.rincian, '$.kembali')), '') <> ''"
-            . ' AND DATE(JSON_UNQUOTE(JSON_EXTRACT(o.rincian, \'$.kembali\'))) < CURDATE()';
+        return 'o.sewa_kembali_at IS NOT NULL';
     }
 
     /**
      * Nota mana yang memakai satu kolam. Kolam sewa hanya diisi nota bertipe
-     * sewa yang belum lewat tanggal kembalinya; kolam jual menampung semuanya
+     * sewa yang pengembaliannya belum dicatat; kolam jual menampung semuanya
      * yang bukan sewa — termasuk 15 ribu nota lama yang tidak punya tipe, jadi
      * angka mereka tidak berubah saat pemisahan ini dipasang.
      */
@@ -216,6 +278,40 @@ class StokModel extends Model
         }
 
         return $hasil;
+    }
+
+    /**
+     * Berapa unit sewa yang sedang di tangan penyewa untuk sekumpulan toko.
+     * Sumbernya sama persis dengan pengurang stok kolam sewa di
+     * `klausaTersedia('sewa')` — nota bertipe sewa yang belum dicatat kembali —
+     * jadi angka ini adalah unit yang hilang dari kolom "Tersedia" di halaman
+     * Produk, bukan hitungan lain.
+     *
+     * @param array<int> $juragan_ids
+     */
+    public function sedangDisewa(array $juragan_ids): int
+    {
+        $stok    = $this->db->prefixTable('stok');
+        $dibeli  = $this->db->prefixTable('dibeli');
+        $invoice = $this->db->prefixTable('invoice');
+        $ids     = array_values(array_filter(array_map('intval', $juragan_ids)));
+        $ids     = $ids === [] ? '0' : implode(',', $ids);
+
+        $baris = $this->db->query(
+            'SELECT IFNULL(SUM(d.qty), 0) AS n'
+            . ' FROM `' . $dibeli . '` d'
+            . ' JOIN `' . $invoice . '` o ON o.id_invoice = d.invoice_id'
+            . ' JOIN `' . $stok . '` s ON s.id_stok = d.stok_id'
+            . ' WHERE s.deleted_at IS NULL'
+            . " AND s.kolam = 'sewa'"
+            . ' AND s.juragan_id IN (' . $ids . ')'
+            . ' AND o.deleted_at IS NULL'
+            . " AND o.status_pengiriman = '3'"
+            . " AND o.status_pesanan <> '3'"
+            . ' AND ' . self::tipeKolam('sewa')
+        )->getRowArray();
+
+        return (int) ($baris['n'] ?? 0);
     }
 
     /**
@@ -505,10 +601,12 @@ class StokModel extends Model
             default:
                 // Katalog jual tampil apa adanya seperti sebelumnya: barang habis
                 // masih perlu terlihat supaya bisa ditambah stoknya. Kolam sewa
-                // baru dan masih kosong di hampir semua barang, jadi tabnya hanya
-                // memuat unit sewa yang benar-benar ada; yang 0 tetap bisa
-                // dibuka lewat saringan "Habis".
-                if ($kolam === 'sewa') {
+                // baru dan masih kosong di hampir semua barang, jadi tab halaman
+                // Produk hanya memuat unit sewa yang benar-benar ada; yang 0 tetap
+                // bisa dibuka lewat saringan "Habis". 'semua' mematikan aturan itu
+                // dan dipakai umpan data eksternal, yang justru perlu melihat unit
+                // sedang dipinjam.
+                if ($kolam === 'sewa' && $keadaan !== 'semua') {
                     $builder->where($tersedia . ' > 0', null, false);
                 }
         }

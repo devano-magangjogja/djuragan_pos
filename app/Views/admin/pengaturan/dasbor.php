@@ -23,6 +23,11 @@
                 <?= anchor('admin/settings/pengguna', 'Atur Pengguna', ['class' => 'btn btn-lg btn-outline-dark']) ?>
             </div>
         </div>
+        <div class="col-sm-6 col-md-4">
+            <div class="d-grid gap-2 mb-3">
+                <?= anchor('admin/settings/notifikasi', 'Atur Notifikasi', ['class' => 'btn btn-lg btn-outline-dark']) ?>
+            </div>
+        </div>
     </div>
 </div>
 <?= $this->endSection() ?>

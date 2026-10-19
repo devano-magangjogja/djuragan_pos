@@ -36,7 +36,7 @@ $routes->set404Override(static fn () => view('errors/html/error_page'));
  * --------------------------------------------------------------------
  */
 $routes->addPlaceholder('juragan', '[a-z0-9]{40}|semua');
-$routes->addPlaceholder('tab', 'semua|pembayaran|cek-bayar|dalam-proses|belum-proses|selesai|saring');
+$routes->addPlaceholder('tab', 'semua|pembayaran|cek-bayar|dalam-proses|belum-proses|selesai|saring|masih-disewa');
 
 // We get a performance increase by specifying the default
 // route since we don't have to scan directories.
@@ -83,6 +83,9 @@ $routes->group('admin', static function ($routes) {
         $routes->post('save_progress', 'Admin\Invoices::save_progress');
         $routes->post('update_bayar', 'Admin\Invoices::update_bayar');
         $routes->post('hapus_orderan', 'Admin\Invoices::hapus_orderan');
+        // pencatatan barang sewaan kembali: dari sinilah nota sewa berhak masuk
+        // Selesai, pulih di stok, dan dihitung poinnya
+        $routes->post('sewa_kembali', 'Admin\Invoices::sewa_kembali');
     });
 
     // dasbor: ringkasan transaksi, pembayaran, dan stok
@@ -182,6 +185,15 @@ $routes->group('admin', static function ($routes) {
         $routes->match(['GET', 'POST'], 'ambil_qr_fonnte', 'Admin\Crm::ambil_qr_fonnte');
     });
 
+    // kebersihan kotak notifikasi: Admin dan Superadmin boleh menyapu manual dan
+    // memasang batas umur hapus otomatis. Rutenya berdiri sendiri, di luar grup
+    // settings di bawah, karena grup itu dipagari khusus Superadmin
+    $routes->group('settings/notifikasi', ['filter' => 'auth:admin,superadmin'], static function ($routes) {
+        $routes->get('/', 'Admin\Settings\Notifikasi::index', ['as' => 'hal.notif_setelan']);
+        $routes->post('hapus', 'Admin\Settings\Notifikasi::hapus');
+        $routes->post('simpan', 'Admin\Settings\Notifikasi::simpan');
+    });
+
     $routes->group('settings', ['filter' => 'auth:superadmin'], static function ($routes) {
         $routes->get('/', 'Admin\Settings::index');
 
@@ -208,6 +220,18 @@ $routes->group('admin', static function ($routes) {
         $routes->get('pengguna', 'Admin\Settings\Pengguna::pengguna');
         $routes->post('save_pengguna', 'Admin\Settings\Pengguna::save_pengguna');
         $routes->post('update_pengguna', 'Admin\Settings\Pengguna::update_pengguna');
+
+        // kunci untuk pihak luar (website partner): hanya Superadmin yang bisa
+        // menerbitkan dan mencabut, karena isinya cakupan toko + hak baca
+        $routes->group('kunci-api', static function ($routes) {
+            $routes->get('/', 'Admin\Settings\KunciApi::index', ['as' => 'hal.kunci_api']);
+            $routes->post('save', 'Admin\Settings\KunciApi::simpan');
+            $routes->post('sunting/(:num)', 'Admin\Settings\KunciApi::sunting/$1');
+            $routes->post('cabut', 'Admin\Settings\KunciApi::cabut');
+            // hapus lunak: barisnya keluar dari daftar, jejaknya tetap di tabel
+            $routes->post('hapus/(:num)', 'Admin\Settings\KunciApi::hapus/$1');
+            $routes->post('bersihkan', 'Admin\Settings\KunciApi::bersihkan');
+        });
     });
 
     // halaman depan admin = dasbor, daftar invoice sekarang lewat menu Transaksi
@@ -226,8 +250,26 @@ $routes->group('user', ['filter' => 'auth:user'], static function ($routes) {
         $routes->get('info_pembayaran', 'User\Invoices::info_pembayaran');
         $routes->post('simpan_pembayaran', 'User\Invoices::simpan_pembayaran');
         $routes->post('save', 'User\Invoices::save');
+        // CS yang menerima kembali barangnya di counter, jadi pencatatan
+        // pengembalian juga ada di sisi ini
+        $routes->post('sewa_kembali', 'User\Invoices::sewa_kembali');
     });
     $routes->addRedirect('/', 'hal.user');
+});
+
+// Bacaan untuk pihak luar (website partner). Sengaja didefinisikan SEBELUM grup
+// `api` di bawah: grup itu dipagari sesi login, dan orang luar tidak punya sesi.
+// Hak dicek per rute (bukan di filter grup) supaya satu permintaan hanya dihitung
+// sekali dan tambahan endpoint baru tidak bisa diam-diam ikut terbuka.
+$routes->group('api/publik', static function ($routes) {
+    $routes->get('info', 'Api\Publik::info', ['filter' => 'apitoken']);
+    $routes->get('katalog', 'Api\Publik::katalog', ['filter' => 'apitoken:katalog']);
+    $routes->get('stok/(:num)', 'Api\Publik::stok/$1', ['filter' => 'apitoken:stok']);
+    $routes->get('laporan/(:segment)', 'Api\Publik::laporan/$1', ['filter' => 'apitoken:laporan']);
+    $routes->get('pesanan/(:segment)', 'Api\Publik::pesanan/$1', ['filter' => 'apitoken:lacak']);
+    // poin gaji dibuka sendiri: angka internal untuk hitung-gaji pegawai, jadi
+    // tidak ikut terkunci pada hak katalog/laporan
+    $routes->get('poin', 'Api\Publik::poin', ['filter' => 'apitoken:poin']);
 });
 
 // seluruh endpoint API hanya dipanggil jQuery dari halaman yang sudah login,
