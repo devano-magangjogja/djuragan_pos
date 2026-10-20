@@ -1304,8 +1304,26 @@ a.rounded-3.border.border-ink-200:hover {
 .table-responsive {
     border-radius: 12px;
     border: 1px solid #eaecf0;
-    overflow: hidden;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 #f1f5f9;
     background: #ffffff;
+}
+.table-responsive::-webkit-scrollbar {
+    height: 7px;
+}
+.table-responsive::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+}
+.table-responsive::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+.table-responsive::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
 }
 .card .table-responsive {
     border: none;
@@ -1797,6 +1815,13 @@ a.rounded-3.border.border-ink-200:hover {
     pointer-events: none;
 }
 .fixed-bottom > div {
+    pointer-events: none;
+}
+/* Div dalamnya selebar layar penuh (container-fluid + justify-content-end), jadi
+   kalau pointer-events-nya auto seluruh strip bawah layar ikut menelan klik —
+   pager di bagian bawah halaman apa pun jadi tidak bisa diklik. Yang boleh
+   menangkap klik hanya tombolnya. */
+.fixed-bottom > div > * {
     pointer-events: auto;
 }
 /* Tombol masukan cuma ikon headset (tanpa tulisan) dan duduk di pojok kanan
@@ -2339,3 +2364,37 @@ tr.varian-sorot td {
         right: 1rem;
     }
 }
+
+/* 18. Pager daftar CRM di layar sempit (Pelanggan, Tagihan, Duplikat, Follow-up).
+   Mencegah teks info "Halaman X dari Y (Total ...)" dan tombol halaman berdesakan
+   dalam satu baris flex di layar kecil, serta mencegah teks tombol navigasi terbelah dua. */
+.crm-pager .page-link {
+    white-space: nowrap;
+}
+
+@media (max-width: 767.98px) {
+    .crm-pager {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .crm-pager > .small {
+        text-align: center;
+        width: 100%;
+    }
+
+    .crm-pager .pagination {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.25rem;
+    }
+
+    .crm-pager .pagination .page-item .page-link {
+        border-radius: 6px !important;
+        margin-left: 0 !important;
+        padding: 0.32rem 0.6rem;
+        font-size: 0.8125rem;
+    }
+}
+

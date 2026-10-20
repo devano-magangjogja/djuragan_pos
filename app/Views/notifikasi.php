@@ -140,30 +140,13 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    flex-wrap: wrap;
     gap: 0.5rem;
     padding: 0.7rem 1rem;
     border-top: 1px solid #eaecf0;
     background: #f9fafb;
     color: #475467;
     font-size: 0.8rem;
-}
-
-.notif-buntut a {
-    padding: 0.25rem 0.7rem;
-    border: 1px solid #d0d5dd;
-    border-radius: 8px;
-    color: #344054;
-    font-weight: 600;
-    text-decoration: none;
-}
-
-.notif-buntut a:hover {
-    background: #ffffff;
-}
-
-.notif-buntut a.nonaktif {
-    color: #c3c9d2;
-    pointer-events: none;
 }
 
 @media (max-width: 575.98px) {
@@ -203,8 +186,8 @@
             </div>
 
             <?php if ($jumlah_belum > 0) : ?>
-                <button type="button" class="btn btn-sm btn-outline-secondary notif-tandai-semua">
-                    <i class="fal fa-check-double"></i> Tandai semua dibaca
+                <button type="button" class="btn btn-sm btn-outline-secondary notif-tandai-semua" title="Tandai semua dibaca" aria-label="Tandai semua dibaca">
+                    <i class="fal fa-check-double"></i> <span class="d-none d-lg-inline">Tandai semua dibaca</span>
                 </button>
             <?php endif; ?>
 
@@ -247,8 +230,8 @@
 
                     <div class="notif-baris__aksi">
                         <?php if (! $item['dibaca']) : ?>
-                            <button type="button" class="btn btn-sm btn-link text-decoration-none notif-tandai" data-id="<?= (int) $item['id'] ?>">
-                                Tandai dibaca
+                            <button type="button" class="btn btn-sm btn-link text-decoration-none notif-tandai" data-id="<?= (int) $item['id'] ?>" title="Tandai dibaca" aria-label="Tandai dibaca">
+                                <i class="fal fa-check"></i> <span class="d-none d-lg-inline">Tandai dibaca</span>
                             </button>
                         <?php else : ?>
                             <?php /* yang sudah terbaca boleh dibuang dari kotak sendiri; kotaknya punya orang lain tidak tersentuh */ ?>
@@ -262,14 +245,70 @@
         <?php endif; ?>
 
         <?php if ($halaman_akhir > 1) : ?>
-            <div class="notif-buntut">
-                <a class="<?= $halaman <= 1 ? 'nonaktif' : '' ?>" href="<?= site_url(base_user() . '/notifikasi/' . $tab) . ($halaman > 1 ? '?page=' . ($halaman - 1) : '') ?>">
-                    <i class="fal fa-chevron-left"></i> Sebelumnya
-                </a>
-                <span>Halaman <?= (int) $halaman ?> dari <?= (int) $halaman_akhir ?></span>
-                <a class="<?= $halaman >= $halaman_akhir ? 'nonaktif' : '' ?>" href="<?= site_url(base_user() . '/notifikasi/' . $tab) . ($halaman < $halaman_akhir ? '?page=' . ($halaman + 1) : '') ?>">
-                    Berikutnya <i class="fal fa-chevron-right"></i>
-                </a>
+            <?php
+            $akhir = (int) $halaman_akhir;
+
+            // tab yang sedang dibuka harus ikut terbawa, kalau tidak nomor
+            // halaman diam-diam kembali ke daftar "belum dibaca"
+            $tautanHalaman = static function (int $n) use ($tab): string {
+                return site_url(base_user() . '/notifikasi/' . $tab) . ($n > 1 ? '?page=' . $n : '');
+            };
+
+            // Jendela 5 nomor di sekitar halaman aktif, plus halaman pertama/terakhir
+            // dengan penanda "..." supaya halaman terjauh tetap bisa diklik.
+            $dari   = max(1, min($halaman - 2, $akhir - 4));
+            $sampai = min($akhir, $dari + 4);
+
+            $nomorHalaman = [];
+            if ($dari > 1) {
+                $nomorHalaman[] = 1;
+                if ($dari > 2) {
+                    $nomorHalaman[] = null;
+                }
+            }
+            for ($n = $dari; $n <= $sampai; $n++) {
+                $nomorHalaman[] = $n;
+            }
+            if ($sampai < $akhir) {
+                if ($sampai < $akhir - 1) {
+                    $nomorHalaman[] = null;
+                }
+                $nomorHalaman[] = $akhir;
+            }
+            ?>
+            <div class="notif-buntut crm-pager">
+                <div class="small">Halaman <?= (int) $halaman ?> dari <?= $akhir ?></div>
+                <ul class="pagination pagination-sm mb-0">
+                    <?php if ($halaman > 1) : ?>
+                        <li class="page-item">
+                            <a class="page-link" href="<?= $tautanHalaman($halaman - 1) ?>">&laquo; Sebelumnya</a>
+                        </li>
+                    <?php else : ?>
+                        <li class="page-item disabled">
+                            <span class="page-link">&laquo; Sebelumnya</span>
+                        </li>
+                    <?php endif; ?>
+
+                    <?php foreach ($nomorHalaman as $n) : ?>
+                        <?php if ($n === null) : ?>
+                            <li class="page-item disabled"><span class="page-link">&hellip;</span></li>
+                        <?php elseif ($n === $halaman) : ?>
+                            <li class="page-item active" aria-current="page"><span class="page-link"><?= $n ?></span></li>
+                        <?php else : ?>
+                            <li class="page-item"><a class="page-link" href="<?= $tautanHalaman($n) ?>"><?= $n ?></a></li>
+                        <?php endif; ?>
+                    <?php endforeach; ?>
+
+                    <?php if ($halaman < $akhir) : ?>
+                        <li class="page-item">
+                            <a class="page-link" href="<?= $tautanHalaman($halaman + 1) ?>">Berikutnya &raquo;</a>
+                        </li>
+                    <?php else : ?>
+                        <li class="page-item disabled">
+                            <span class="page-link">Berikutnya &raquo;</span>
+                        </li>
+                    <?php endif; ?>
+                </ul>
             </div>
         <?php endif; ?>
     </div>

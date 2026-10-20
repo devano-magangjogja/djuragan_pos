@@ -11,9 +11,13 @@ $templates ??= [];
 
 <?= $this->section('css') ?>
 <style>
+/* Tinggi ruang chat: dihitung dari jarak ruang atas (bar judul + navbar) plus
+   tinggi tombol melayang "Kirim Masukan" (41,6px + margin 16px) + 8px napas,
+   supaya dasar komposer tidak tertutup ikon dan halaman tidak ikut bergulir.
+   Angka 140px untuk >=992px (navbar mobile tersembunyi, ruang atas 74px). */
 .chat-container {
-    height: calc(100vh - 220px);
-    min-height: 580px;
+    height: calc(100vh - 140px);
+    min-height: 0;
     background: #f0f2f5;
     border-radius: 12px;
     overflow: hidden;
@@ -29,6 +33,7 @@ $templates ??= [];
 .chat-conversation-list {
     flex: 1;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 /* style.css memaksa padding & radius .form-control-sm dengan !important, jadi
    kelas Bootstrap (rounded-pill, ps-4) tidak mempan di sini */
@@ -69,6 +74,7 @@ $templates ??= [];
     flex: 1;
     min-height: 0;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     padding: 20px;
     display: flex;
     flex-direction: column;
@@ -76,12 +82,13 @@ $templates ??= [];
 }
 .chat-bubble {
     max-width: 65%;
-    padding: 4px 12px;
+    padding: 6px 14px;
     border-radius: 10px;
     font-size: 0.92rem;
     line-height: 1.45;
     position: relative;
     word-wrap: break-word;
+    word-break: break-word;
     white-space: pre-wrap;
     box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
@@ -103,30 +110,99 @@ $templates ??= [];
     text-align: right;
     margin-top: 4px;
 }
-/* Tombol aksi baris percakapan (pena ganti nama + hapus chat) */
-.chat-aksi-btn {
-    border: 1px solid #e2e8f0;
-    background: #ffffff;
-    color: #54656f;
-    border-radius: 5px;
-    font-size: 11px;
-    line-height: 1;
-    padding: 4px 6px;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+/* Tombol trigger menu dropdown ala WhatsApp (muncul saat baris percakapan di-hover) */
+.chat-conv-trigger {
+    width: 26px;
+    height: 26px;
+    border: none;
+    background: transparent;
+    color: #8696a0;
+    border-radius: 50%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    padding: 0;
+    margin-left: 4px;
+    transition: background 0.15s ease, color 0.15s ease;
+    cursor: pointer;
+    outline: none;
+    box-shadow: none;
 }
-.chat-aksi-btn:hover {
+.chat-conv-trigger::after {
+    display: none !important;
+}
+.chat-conv-trigger:hover,
+.chat-conv-trigger:focus,
+.chat-conv-trigger[aria-expanded="true"] {
+    background: #e9edef;
     color: #111b21;
 }
-/* Pena ganti nama + tombol hapus muncul saat baris percakapan di-hover */
-.chat-conv-item .btn-conv-aksi {
-    display: none;
+.chat-conv-item:hover .chat-conv-trigger,
+.chat-conv-item .chat-item-dropdown.show .chat-conv-trigger,
+.chat-conv-item .chat-conv-trigger[aria-expanded="true"] {
+    display: inline-flex;
 }
-.chat-conv-item:hover .btn-conv-aksi {
+
+/* Dropdown menu ala WhatsApp Web */
+.wa-dropdown-menu {
+    border-radius: 12px !important;
+    border: 1px solid rgba(11, 20, 26, 0.08) !important;
+    box-shadow: 0 4px 20px rgba(11, 20, 26, 0.15), 0 2px 6px rgba(11, 20, 26, 0.06) !important;
+    padding: 6px 0 !important;
+    min-width: 180px !important;
+    background: #ffffff !important;
+    z-index: 1050 !important;
+}
+.wa-dropdown-menu .dropdown-item {
+    padding: 8px 16px !important;
+    font-size: 0.875rem !important;
+    color: #111b21 !important;
+    font-weight: 400 !important;
+    display: flex !important;
+    align-items: center !important;
+    transition: background-color 0.12s ease !important;
+    border: none !important;
+    background: transparent;
+    width: 100%;
+    text-align: left;
+}
+.wa-dropdown-menu .dropdown-item:hover,
+.wa-dropdown-menu .dropdown-item:focus {
+    background-color: #f5f6f6 !important;
+    color: #111b21 !important;
+}
+.wa-dropdown-menu .dropdown-item:active {
+    background-color: #e9edef !important;
+}
+.wa-dropdown-menu .wa-dropdown-icon {
+    width: 20px;
+    margin-right: 12px;
+    font-size: 14px;
+    color: #54656f;
+    text-align: center;
     display: inline-block;
+    flex-shrink: 0;
 }
-.chat-conv-item .btn-hapus-chat:hover {
-    color: #b3261e;
-    border-color: #f3c1bd;
+.wa-dropdown-menu .dropdown-item.text-danger {
+    color: #ea3943 !important;
+}
+.wa-dropdown-menu .dropdown-item.text-danger .wa-dropdown-icon {
+    color: #ea3943 !important;
+}
+.wa-dropdown-menu .dropdown-item.text-danger:hover,
+.wa-dropdown-menu .dropdown-item.text-danger:focus {
+    background-color: #fff1f2 !important;
+    color: #dc2626 !important;
+}
+.wa-dropdown-menu .dropdown-item.text-danger:hover .wa-dropdown-icon {
+    color: #dc2626 !important;
+}
+.wa-dropdown-divider {
+    border: 0;
+    border-top: 1px solid #f0f2f5;
+    margin: 4px 0;
+    opacity: 1;
 }
 .chat-footer {
     background: #ffffff;
@@ -170,20 +246,147 @@ $templates ??= [];
 .blink-badge {
     animation: blink 1.2s ease-in-out infinite;
 }
+
+/* ==========================================================================
+   ATURAN RESPONSIF (HP / LAYAR SEMPIT: < 768px)
+   ========================================================================== */
+@media (max-width: 767.98px) {
+    .chat-container {
+        height: calc(100vh - 176px);
+        height: calc(100dvh - 176px);
+        min-height: 0;
+        border-radius: 8px !important;
+        margin-bottom: 0.5rem;
+    }
+
+    /* Mode awal di HP: Tampilkan sidebar daftar percakapan 100%, sembunyikan area chat */
+    .chat-sidebar {
+        width: 100% !important;
+        border-right: none !important;
+        display: flex !important;
+    }
+    .chat-main {
+        display: none !important;
+        width: 100% !important;
+    }
+
+    /* Mode percakapan dibuka: Sembunyikan sidebar, tampilkan area chat 100% */
+    .chat-container.show-chat .chat-sidebar {
+        display: none !important;
+    }
+    .chat-container.show-chat .chat-main {
+        display: flex !important;
+        width: 100% !important;
+    }
+
+    /* Header obrolan di HP */
+    .chat-header {
+        padding: 8px 12px !important;
+    }
+    .avatar-circle {
+        width: 38px;
+        height: 38px;
+        font-size: 0.95rem;
+    }
+
+    /* Gelembung pesan di HP: lebih lebar dan font pas */
+    .chat-body {
+        padding: 12px 10px !important;
+        gap: 8px !important;
+    }
+    .chat-bubble {
+        max-width: 86% !important;
+        font-size: 0.88rem !important;
+        padding: 6px 12px !important;
+    }
+    .chat-meta {
+        font-size: 0.68rem !important;
+        margin-top: 2px !important;
+    }
+
+    /* Input pesan di HP: hemat ruang */
+    .chat-footer {
+        padding: 8px 10px !important;
+    }
+    #chatInput {
+        font-size: 0.92rem !important;
+        padding: 0.45rem 0.75rem !important;
+    }
+
+    /* Di layar sentuh: tombol trigger dropdown selalu tampak dengan opacity halus */
+    .chat-conv-item .chat-conv-trigger {
+        display: inline-flex !important;
+        opacity: 0.65;
+    }
+    .chat-conv-item .chat-conv-trigger:active,
+    .chat-conv-item .chat-conv-trigger[aria-expanded="true"] {
+        opacity: 1;
+        background: #e9edef;
+    }
+}
+
+/* Tablet (768px - 991px): Sidebar sedikit lebih ramping agar area obrolan lebih lega */
+@media (min-width: 768px) and (max-width: 991.98px) {
+    /* Bar navbar mobile masih tampil di lebar ini, jadi ruang atasnya 118px,
+       bukan 74px seperti di >=992px. */
+    .chat-container {
+        height: calc(100vh - 184px);
+    }
+    .chat-sidebar {
+        width: 310px !important;
+    }
+    .chat-bubble {
+        max-width: 75% !important;
+    }
+}
+
+/* Kedua tombol composer diberi tinggi tetap yang sama dengan kolom teksnya:
+   tanpa itu tingginya beda ~5px hanya karena Template berisi teks (line-height
+   1.4) sedangkan Kirim hanya ikon (line-height normal dari FontAwesome). */
+#chatFooter .btn-komposer {
+    height: 2.125rem;
+}
+
+/* Tiga chip di kanan kepala obrolan (status, order, Profil 360) disamakan
+   tingginya; badge dan .btn bawaan punya padding sendiri-sendiri sehingga
+   tingginya beda 22px vs 30px. */
+#customerBadge .badge,
+#customerBadge .btn {
+    display: inline-flex;
+    align-items: center;
+    height: 2rem;
+    padding-left: 0.6rem;
+    padding-right: 0.6rem;
+    border-radius: 10px !important;
+    font-size: 0.78rem !important;
+    line-height: 1.2;
+}
+
+/* Layar sempit: kedua tombol ikon di composer (Template & Kirim) dibuat kotak
+   seukuran kolom teksnya — sama lebar, sama tinggi, sama radius — supaya
+   sejajar dan tidak ada yang lebih kempes. .btn-sm dan .px-* sama-sama
+   !important, jadi ukurannya juga harus !important. */
+@media (max-width: 767.98px) {
+    #chatFooter .btn-komposer {
+        width: 2.375rem;
+        height: 2.375rem;
+        padding: 0 !important;
+        border-radius: 10px !important;
+    }
+}
 </style>
 <?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
 <?= $this->include('admin/navbar') ?>
 
-<div class="container-xxl py-4">
-    <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
-        <h1 class="h3 mb-1">Live WhatsApp Chat</h1>
+<div class="container-xxl py-2 px-2 py-md-4 px-md-3">
+    <div class="d-flex flex-wrap align-items-center gap-2 mb-2 mb-md-3">
+        <h1 class="h4 h3-md mb-0 fw-bold">Live WhatsApp Chat</h1>
         <button class="btn btn-outline-dark btn-sm" data-bs-toggle="modal" data-bs-target="#modalInfoWebhook">
-            <i class="fal fa-webhook me-1"></i> Webhook & Status
+            <i class="fal fa-webhook me-1"></i> Webhook
         </button>
     </div>
-
 
     <div class="chat-container d-flex">
         <!-- Sidebar Daftar Percakapan -->
@@ -213,14 +416,17 @@ $templates ??= [];
         <div class="chat-main" id="chatArea">
             <!-- Header Chat Aktif -->
             <div class="chat-header d-flex justify-content-between align-items-center" id="chatHeader" style="display: none !important;">
-                <div class="d-flex align-items-center">
-                    <div class="avatar-circle me-3" id="activeAvatar">U</div>
-                    <div>
-                        <h6 class="mb-0 fw-bold" id="activeName">-</h6>
-                        <small class="text-muted font-monospace" id="activePhone">-</small>
+                <div class="d-flex align-items-center min-w-0 me-2">
+                    <button type="button" class="btn btn-sm border-0 bg-transparent text-dark me-2 d-md-none flex-shrink-0" id="btnBackToConvList" title="Kembali ke daftar percakapan">
+                        <i class="fal fa-arrow-left"></i>
+                    </button>
+                    <div class="avatar-circle me-2 me-md-3 flex-shrink-0" id="activeAvatar">U</div>
+                    <div class="min-w-0">
+                        <h6 class="mb-0 fw-bold text-truncate" id="activeName">-</h6>
+                        <small class="text-muted font-monospace text-truncate d-block" id="activePhone">-</small>
                     </div>
                 </div>
-                <div id="customerBadge"></div>
+                <div id="customerBadge" class="flex-shrink-0 ms-2"></div>
             </div>
 
             <!-- Pesan Percakapan -->
@@ -246,9 +452,9 @@ $templates ??= [];
             <!-- Footer Input Kirim Pesan -->
             <div class="chat-footer" id="chatFooter" style="display: none;">
                 <div class="d-flex align-items-end gap-2">
-                    <div class="dropdown">
-                        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Pilih Template Cepat">
-                            <i class="fal fa-bolt"></i> Template
+                    <div class="dropdown flex-shrink-0">
+                        <button class="btn btn-outline-secondary btn-komposer dropdown-toggle px-2 px-md-3" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Pilih Template Cepat">
+                            <i class="fal fa-bolt"></i> <span class="d-none d-md-inline">Template</span>
                         </button>
                         <ul class="dropdown-menu shadow">
                             <?php foreach ($templates as $t) : ?>
@@ -260,8 +466,8 @@ $templates ??= [];
                             <?php endforeach; ?>
                         </ul>
                     </div>
-                    <textarea id="chatInput" class="form-control" rows="1" placeholder="Ketik pesan WhatsApp... (Tekan Enter untuk kirim, Shift+Enter untuk baris baru)" style="resize: none;"></textarea>
-                    <button class="btn btn-success px-4" id="btnKirimPesan">
+                    <textarea id="chatInput" class="form-control" rows="1" placeholder="Ketik pesan WhatsApp..." style="resize: none;"></textarea>
+                    <button class="btn btn-success px-3 flex-shrink-0 btn-komposer" id="btnKirimPesan" title="Kirim Pesan">
                         <i class="fal fa-paper-plane"></i>
                     </button>
                 </div>
@@ -441,17 +647,26 @@ $(function() {
             return;
         }
 
-        // Jika belum ada percakapan aktif yang terbuka, otomatis buka yang diminta atau percakapan pertama
+        // Jika dropdown sedang terbuka, tunda render agar menu tidak mendadak tertutup saat dibuka pengguna
+        if (container.find('.chat-item-dropdown.show, .dropdown-menu.show').length > 0) {
+            return;
+        }
+
+        // Jika belum ada percakapan aktif yang terbuka:
+        // Di DESKTOP (lebar >= 768px): otomatis buka obrolan yang diminta atau pertama.
+        // Di MOBILE (< 768px): hanya buka otomatis jika ada ID spesifik yang diminta (requestedConvId > 0).
         if (!currentConvId && list.length > 0) {
             var targetItem = null;
             if (requestedConvId > 0) {
                 targetItem = list.find(function(it) { return it.id_percakapan === requestedConvId; });
             }
-            if (!targetItem) {
+            if (!targetItem && window.innerWidth >= 768) {
                 targetItem = list[0];
             }
-            currentConvId = targetItem.id_percakapan;
-            openConversation(targetItem.id_percakapan, targetItem.nama_kontak, targetItem.nomor_wa);
+            if (targetItem) {
+                currentConvId = targetItem.id_percakapan;
+                openConversation(targetItem.id_percakapan, targetItem.nama_kontak, targetItem.nomor_wa);
+            }
         }
 
         var html = '';
@@ -459,32 +674,50 @@ $(function() {
             var activeClass  = (keepActive && currentConvId === item.id_percakapan) ? ' active' : '';
             var initial      = (item.nama_kontak || 'U').charAt(0).toUpperCase();
             var unreadBadge  = item.unread_admin > 0
-                ? '<span class="badge bg-success rounded-pill ms-1 blink-badge">Baru</span>'
+                ? '<span class="badge bg-success rounded-pill blink-badge">Baru</span>'
                 : '';
             var prefixArah   = item.arah_terakhir === 'keluar'
                 ? '<i class="fal fa-check text-muted me-1"></i>'
                 : '<i class="fal fa-arrow-down-left text-success me-1"></i>';
 
-            var btnNama = '<button type="button" class="chat-aksi-btn btn-ganti-nama btn-conv-aksi ms-1" title="Ganti nama chat">'
-                        + '<i class="fal fa-pen"></i></button>';
-            var btnHapus = '<button type="button" class="chat-aksi-btn btn-hapus-chat btn-conv-aksi ms-1" title="Hapus chat ini">'
-                         + '<i class="fal fa-trash"></i></button>';
+            var dropdownMenu = '<div class="dropdown chat-item-dropdown">'
+                             + '  <button type="button" class="chat-conv-trigger btn-conv-aksi" data-bs-toggle="dropdown" aria-expanded="false" title="Menu chat">'
+                             + '    <i class="fal fa-chevron-down"></i>'
+                             + '  </button>'
+                             + '  <ul class="dropdown-menu dropdown-menu-end wa-dropdown-menu shadow">'
+                             + '    <li>'
+                             + '      <button type="button" class="dropdown-item btn-ganti-nama d-flex align-items-center" data-id="' + item.id_percakapan + '" data-nama="' + escapeAttr(item.nama_kontak) + '">'
+                             + '        <i class="fal fa-pen wa-dropdown-icon"></i>'
+                             + '        <span>Ganti nama chat</span>'
+                             + '      </button>'
+                             + '    </li>'
+                             + '    <li><hr class="wa-dropdown-divider my-1"></li>'
+                             + '    <li>'
+                             + '      <button type="button" class="dropdown-item btn-hapus-chat text-danger d-flex align-items-center" data-id="' + item.id_percakapan + '" data-nama="' + escapeAttr(item.nama_kontak) + '">'
+                             + '        <i class="fal fa-trash-alt wa-dropdown-icon text-danger"></i>'
+                             + '        <span>Hapus chat</span>'
+                             + '      </button>'
+                             + '    </li>'
+                             + '  </ul>'
+                             + '</div>';
 
             html += '<div class="chat-conv-item p-3 d-flex align-items-center' + activeClass + '"'
                   + ' data-id="' + item.id_percakapan + '"'
                   + ' data-nomor="' + escapeAttr(item.nomor_wa) + '"'
                   + ' data-nama="' + escapeAttr(item.nama_kontak) + '">';
             html += '  <div class="avatar-circle me-3 flex-shrink-0">' + initial + '</div>';
-            html += '  <div class="flex-grow-1 min-w-0 me-2">';
+            html += '  <div class="flex-grow-1 min-w-0">';
             html += '    <div class="d-flex justify-content-between align-items-baseline mb-1">';
             html += '      <strong class="text-truncate text-dark">' + escapeHtml(item.nama_kontak) + '</strong>';
-            html += '      <small class="text-muted font-monospace">' + item.waktu + '</small>';
+            html += '      <small class="text-muted font-monospace ms-2 flex-shrink-0" style="font-size:0.75rem;">' + item.waktu + '</small>';
             html += '    </div>';
-            html += '    <div class="small text-muted text-truncate d-flex align-items-center">';
-            html += '      ' + prefixArah + escapeHtml(item.pesan_terakhir || 'Mulai percakapan...');
+            html += '    <div class="d-flex justify-content-between align-items-center">';
+            html += '      <div class="small text-muted text-truncate d-flex align-items-center pe-1">';
+            html += '        ' + prefixArah + escapeHtml(item.pesan_terakhir || 'Mulai percakapan...');
+            html += '      </div>';
+            html += '      <div class="d-flex align-items-center flex-shrink-0 ms-2">' + unreadBadge + dropdownMenu + '</div>';
             html += '    </div>';
             html += '  </div>';
-            html += '  <div class="flex-shrink-0">' + unreadBadge + btnNama + btnHapus + '</div>';
             html += '</div>';
         });
 
@@ -493,7 +726,7 @@ $(function() {
 
     // ── Klik percakapan ─────────────────────────────────────────────────────
     $(document).on('click', '.chat-conv-item', function(e) {
-        if ($(e.target).closest('.btn-conv-aksi').length) return;
+        if ($(e.target).closest('.btn-conv-aksi, .chat-item-dropdown, .dropdown-menu').length) return;
 
         var id   = $(this).data('id');
         var nama = $(this).data('nama');
@@ -511,6 +744,31 @@ $(function() {
         openConversation(id, nama, nomor);
     });
 
+    // Klik kanan (contextmenu) di baris percakapan membuka menu dropdown ala WhatsApp Web
+    $(document).on('contextmenu', '.chat-conv-item', function(e) {
+        if ($(e.target).is('input, textarea, a, button')) return;
+        e.preventDefault();
+        var $trigger = $(this).find('.chat-conv-trigger');
+        if ($trigger.length) {
+            var dd = bootstrap.Dropdown.getOrCreateInstance($trigger[0]);
+            dd.toggle();
+        }
+    });
+
+    // Tombol kembali di HP (dari area obrolan kembali ke daftar percakapan)
+    $(document).on('click', '#btnBackToConvList', function(e) {
+        e.preventDefault();
+        $('.chat-container').removeClass('show-chat');
+        $('#chatInput').blur();
+    });
+
+    // Sesuaikan jika layar di-resize (misal rotasi perangkat)
+    $(window).on('resize', function() {
+        if (window.innerWidth >= 768) {
+            $('.chat-container').removeClass('show-chat');
+        }
+    });
+
     function openConversation(id, nama, nomor) {
         // Kontak yang belum disimpan punya nama berupa nomor telepon. jQuery .data()
         // mengubah angka jadi Number, dan charAt()/trim() di atas Number melempar
@@ -525,7 +783,14 @@ $(function() {
         $('#chatHeader').attr('style', 'display: flex !important;');
         $('#chatFooter').css('display', 'block').show();
         $('#newMsgNotif').hide();
-        setTimeout(function() { $('#chatInput').focus(); }, 100);
+
+        // Di layar HP, aktifkan tampilan chat (sembunyikan sidebar)
+        $('.chat-container').addClass('show-chat');
+
+        // Hanya auto-focus input di desktop (di HP auto-focus memunculkan keyboard virtual yang menutup layar)
+        if (window.innerWidth >= 768) {
+            setTimeout(function() { $('#chatInput').focus(); }, 100);
+        }
 
         // Full load pertama kali
         loadMessagesFull(id);
@@ -538,6 +803,7 @@ $(function() {
         $('#chatFooter').css('display', 'none');
         $('#customerBadge').empty();
         $('#chatMessages').html(placeholderChat);
+        $('.chat-container').removeClass('show-chat');
     }
 
     // ── Load full (pertama buka percakapan) ─────────────────────────────────
@@ -793,23 +1059,28 @@ $(function() {
             var totalBelanja = Number(pelanggan.nilai || 0).toLocaleString('id-ID');
             var sisaPiutang = pelanggan.sisa ? Number(pelanggan.sisa).toLocaleString('id-ID') : '0';
 
-            var html = '<div class="d-flex align-items-center gap-2 flex-wrap justify-content-end">';
-            html += '<span class="' + stBadge + '" style="font-size:0.75rem;"><i class="fal fa-check-circle me-1"></i>' + stText + '</span>';
-            html += '<span class="badge bg-light text-dark border d-none d-md-inline" style="font-size:0.75rem;">'
-                  + '<i class="fal fa-shopping-bag me-1 text-primary"></i>' + totalOrder + ' Order | Rp ' + totalBelanja
-                  + (Number(pelanggan.sisa || 0) > 0 ? ' | <span class="text-danger">Sisa: Rp ' + sisaPiutang + '</span>' : '')
-                  + '</span>';
-            html += '<a href="<?= site_url('admin/crm/pelanggan/') ?>' + pelanggan.id_pelanggan + '" target="_blank" class="btn btn-sm btn-primary py-1 px-2 fw-semibold" style="font-size:0.8rem;">'
-                  + '<i class="fal fa-id-card me-1"></i> Profil 360°'
+            var html = '<div class="d-flex align-items-center gap-1 gap-md-2 flex-wrap justify-content-end">';
+            /* Layar sempit: badge status dan tombol profil jadi ikon saja; katanya
+               dipindah ke title. Badge "Order | Rp" memang hanya tampil di >=992px. */
+            html += '<span class="' + stBadge + '" style="font-size:0.75rem;" title="' + stText + '"><i class="fal fa-check-circle"></i><span class="d-none d-lg-inline"> ' + stText + '</span></span>';
+            var adaSisa = Number(pelanggan.sisa || 0) > 0;
+            var ketOrder = totalOrder + ' Order | Rp ' + totalBelanja + (adaSisa ? ' | Sisa: Rp ' + sisaPiutang : '');
+            html += '<span class="badge bg-light text-dark border" style="font-size:0.75rem;" title="' + escapeAttr(ketOrder) + '">'
+                  + '<i class="fal fa-shopping-bag text-primary"></i>'
+                  + '<span class="d-none d-lg-inline"> ' + totalOrder + ' Order | Rp ' + totalBelanja
+                  + (adaSisa ? ' | <span class="text-danger">Sisa: Rp ' + sisaPiutang + '</span>' : '')
+                  + '</span></span>';
+            html += '<a href="<?= site_url('admin/crm/pelanggan/') ?>' + pelanggan.id_pelanggan + '" target="_blank" title="Profil 360°" class="btn btn-sm btn-primary py-1 px-2 fw-semibold" style="font-size:0.78rem;">'
+                  + '<i class="fal fa-id-card"></i><span class="d-none d-lg-inline"> Profil 360°</span>'
                   + '</a>';
             html += '</div>';
             $badge.html(html);
         } else {
             var num = currentNumber || $('#activePhone').text() || '';
-            var html = '<div class="d-flex align-items-center gap-2">';
-            html += '<span class="badge bg-light text-muted border"><i class="fal fa-user-times me-1 text-warning"></i> Belum Terdaftar</span>';
-            html += '<button type="button" class="btn btn-sm btn-outline-primary py-1 px-2 fw-semibold" id="btnJadikanCustomer" data-nomor="' + escapeAttr(num) + '" style="font-size:0.8rem;">'
-                  + '<i class="fal fa-user-plus me-1"></i> + Buat Customer'
+            var html = '<div class="d-flex align-items-center gap-1 gap-md-2">';
+            html += '<span class="badge bg-light text-muted border d-none d-sm-inline"><i class="fal fa-user-times me-1 text-warning"></i> Belum Terdaftar</span>';
+            html += '<button type="button" class="btn btn-sm btn-outline-primary py-1 px-2 fw-semibold" id="btnJadikanCustomer" data-nomor="' + escapeAttr(num) + '" style="font-size:0.78rem;">'
+                  + '<i class="fal fa-user-plus me-1"></i><span class="d-none d-sm-inline">+ Buat </span><span class="d-sm-none">+ </span>Customer'
                   + '</button>';
             html += '</div>';
             $badge.html(html);
@@ -978,9 +1249,10 @@ $(function() {
     // ── Hapus satu chat beserta semua pesannya ───────────────────────────────
     $(document).on('click', '.btn-hapus-chat', function(e) {
         e.stopPropagation();
-        var $item = $(this).closest('.chat-conv-item');
-        var id    = $item.data('id');
-        var nama  = ($item.data('nama') || '').toString();
+        var $btn  = $(this);
+        var $item = $btn.closest('.chat-conv-item');
+        var id    = $btn.data('id') || $item.data('id');
+        var nama  = ($btn.data('nama') !== undefined ? $btn.data('nama') : ($item.data('nama') || '')).toString();
 
         var pertanyaan = 'Hapus chat "' + nama + '" beserta semua pesannya?'
             + '\nChat yang sudah dihapus tidak bisa dikembalikan.';
@@ -1002,11 +1274,13 @@ $(function() {
     // ── Ganti nama chat (label percakapan saja) ─────────────────────────────
     $(document).on('click', '.btn-ganti-nama', function(e) {
         e.stopPropagation();
-        var $item = $(this).closest('.chat-conv-item');
+        var $btn  = $(this);
+        var $item = $btn.closest('.chat-conv-item');
 
-        idGantiNama = $item.data('id');
+        idGantiNama = $btn.data('id') || $item.data('id');
+        var nama    = ($btn.data('nama') !== undefined ? $btn.data('nama') : ($item.data('nama') || '')).toString();
         $('#alertGantiNama').addClass('d-none');
-        $('#inputGantiNama').val(($item.data('nama') || '').toString());
+        $('#inputGantiNama').val(nama);
 
         modalGantiNama.show();
     });

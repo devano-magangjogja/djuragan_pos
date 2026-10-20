@@ -15,28 +15,372 @@
 ?>
 <?= $this->extend('template/main') ?>
 
+<?= $this->section('css') ?>
+<style>
+    /* Berlaku di semua lebar. */
+
+    /* Enam tab navigasi desktop (>= 992px):
+       Dibuat lebih besar, proporsional, dan nyaman dibaca (font-size & padding naik)
+       menggunakan clamp responsif agar otomatis menyesuaikan resolusi laptop/monitor.
+       Stripnya tidak pernah dibuat wadah gulir: overflow-x: hidden + overflow-y
+       bawaan memaksa Chrome menampilkan bilah gulir vertikal (15px di tepi kanan),
+       dan memotong tab terakhir. Kalau enam label tidak muat, tab terakhir turun
+       satu baris. */
+    /* Enam tab navigasi desktop (>= 992px):
+       Berbentuk tab persegi panjang utuh (tertutup 4 sisi dengan border dan 4 sudut melengkung halus).
+       Tidak memakai gaya folder tab klasik yang bawahnya bolong, melainkan persegi panjang mandiri yang rapi. */
+    #customer360Tabs {
+        border-bottom: 0 !important;
+        margin-bottom: 0 !important;
+        flex: 1 1 auto;
+        min-width: 0;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        row-gap: 0.35rem;
+        overflow: visible;
+        align-items: center;
+        gap: 0.35rem;
+    }
+
+    #customer360Tabs .nav-item {
+        flex: 0 0 auto;
+        margin: 0 !important;
+    }
+
+    #customer360Tabs .nav-link {
+        margin: 0 !important;
+        margin-bottom: 0 !important;
+        border: 1.5px solid transparent !important;
+        border-radius: 8px !important;
+        padding-left: clamp(0.6rem, 0.65vw, 1rem) !important;
+        padding-right: clamp(0.6rem, 0.65vw, 1rem) !important;
+        padding-top: 0.55rem !important;
+        padding-bottom: 0.55rem !important;
+        font-size: clamp(0.84rem, 0.45vw + 0.45rem, 0.92rem) !important;
+        white-space: nowrap;
+        transition: all 0.15s ease;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    #customer360Tabs .nav-link > i {
+        margin-right: 0.32rem !important;
+        font-size: clamp(0.82rem, 0.4vw + 0.45rem, 0.88rem) !important;
+    }
+
+    #customer360Tabs .nav-link .badge {
+        margin-left: 0.35rem !important;
+        padding: 0.12rem 0.42rem !important;
+        font-size: 0.72rem !important;
+        border-radius: 6px !important;
+    }
+
+    /* Hover tab tidak aktif */
+    #customer360Tabs .nav-link:hover:not(.active) {
+        color: #101828 !important;
+        background-color: #f8fafc !important;
+        border-color: #e2e8f0 !important;
+    }
+
+    #customer360Tabs .nav-link:focus-visible {
+        color: #101828;
+        background-color: #f8fafc;
+        border-color: #cbd5e1;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(16, 24, 40, 0.08);
+    }
+
+    #customer360Tabs .nav-link:active:not(.active) {
+        background-color: #f1f5f9;
+    }
+
+    /* Tab aktif: PERSEGI PANJANG UTUH (tertutup 4 sisi dengan border solid dan melengkung rata 4 sudut) */
+    #customer360Tabs .nav-link.active,
+    #customer360Tabs .nav-link.active:hover,
+    #customer360Tabs .nav-link.active:focus {
+        background-color: #ffffff !important;
+        border: 1.5px solid #cbd5e1 !important;
+        border-top: 1.5px solid #cbd5e1 !important;
+        border-bottom: 1.5px solid #cbd5e1 !important;
+        border-left: 1.5px solid #cbd5e1 !important;
+        border-right: 1.5px solid #cbd5e1 !important;
+        border-radius: 8px !important;
+        color: #0f172a !important;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08) !important;
+    }
+
+    /* Pemilih bagian di layar sempit: font-weight 600 supaya setara dengan
+       label tab yang digantikannya. */
+    #customer360Pilih {
+        font-weight: 600;
+    }
+
+    /* Badge jenis order di kartu ringkasan: 3 badge selalu proporsional
+       dan sebaris dengan grid 3 kolom rata, teks di tengah, dan ikon presisi */
+    .rincian-order {
+        display: grid !important;
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        gap: 0.4rem;
+    }
+
+    .rincian-order > .badge {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        white-space: nowrap !important;
+        padding: 0.38rem 0.25rem !important;
+        font-size: 0.76rem !important;
+        font-weight: 600 !important;
+        border-radius: 6px !important;
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    .rincian-order > .badge > i {
+        margin-right: 0.25rem !important;
+        font-size: 0.72rem !important;
+    }
+
+    /* Titik timeline harus duduk di atas garisnya. Di markup posisinya inline
+       (left:-33px) dan itu 7px meleset ke kanan begitu wadahnya memakai
+       padding ps-4 + border 2px, jadi dikoreksi dengan !important. */
+    .timeline-titik {
+        left: -40px !important;
+    }
+
+    /* Hanya isi timeline yang digulir — di desktop maupun ponsel — supaya kepala
+       tab ("Urutan Aktivitas & Interaksi Customer" + badge Multi-channel) dan
+       pemantik "Catat Interaksi Baru" tetap di tempat, dan halaman tidak
+       memanjang ribuan piksel. Wadah gulir ini pembungkus .timeline-container —
+       bukan elemen itu sendiri — karena titik ikon timeline duduk 14px di luar
+       garis kiri; margin/padding kiri di bawah memberi ruang itu di dalam wadah
+       tanpa menggeser posisinya. */
+    .gulir-timeline {
+        max-height: 70vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+        margin-left: -1rem;
+        padding-left: 1rem;
+        padding-right: 0.5rem;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+        scrollbar-color: #cbd5e1 #f1f5f9;
+    }
+
+    .gulir-timeline::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .gulir-timeline::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 4px;
+    }
+
+    .gulir-timeline::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+    }
+
+    /* Form catat interaksi cuma ada satu: #modalCatatInteraksi. Di layar sempit
+       ia memang pop-up Bootstrap, tapi di desktop dipaksa tampil inline di kolom
+       kanannya (persis seperti kartu sebelumnya) — tombol pemicunya disembunyikan
+       di sana, jadi tidak pernah ada yang memanggil .modal('show') di desktop. */
+    @media (min-width: 992px) {
+        #modalCatatInteraksi {
+            display: block !important;
+            position: static !important;
+            width: auto;
+            height: auto;
+            overflow: visible;
+            z-index: auto;
+            opacity: 1 !important;
+            visibility: visible !important;
+            background: none;
+        }
+
+        #modalCatatInteraksi .modal-dialog {
+            max-width: 100%;
+            margin: 0;
+        }
+
+        #modalCatatInteraksi .modal-content {
+            max-height: none;
+            overflow: visible;
+            box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05) !important;
+        }
+
+        #modalCatatInteraksi .modal-body {
+            overflow: visible;
+        }
+    }
+
+    /* Tabel di dalam tab harus bisa discroll mendatar di HP / layar sempit
+       agar informasi (item pakaian, total tagihan, dibayar, sisa, aksi) tidak terpotong.
+       style.css sebelumnya mengunci .table-responsive dengan overflow: hidden, jadi
+       dibuka kembali dengan overflow-x: auto !important dan scrollbar di bawah */
+    .table-responsive {
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+        scrollbar-color: #94a3b8 #f1f5f9;
+        padding-bottom: 6px;
+    }
+
+    .table-responsive::-webkit-scrollbar {
+        height: 7px;
+    }
+
+    .table-responsive::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 4px;
+    }
+
+    .table-responsive::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+    }
+
+    .table-responsive::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+    }
+
+    /* Lebar minimum tabel agar kolom tidak terhimpit */
+    #tab-transaksi .table {
+        min-width: 820px;
+    }
+
+    #tab-pembayaran .table {
+        min-width: 680px;
+    }
+
+    #tab-followup .table {
+        min-width: 680px;
+    }
+
+    #customer360TabsContent .table th {
+        white-space: nowrap;
+    }
+
+    #customer360TabsContent .table td:first-child,
+    #customer360TabsContent .table td:nth-child(2),
+    #customer360TabsContent .table td.text-end {
+        white-space: nowrap;
+    }
+
+    /* Footer timeline: di layar HP (responsif) diberi garis pemisah dan tanggal di kiri bawah,
+       di layar desktop garis dinonaktifkan karena tanggal tetap di kanan atas */
+    .timeline-meta-footer {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 11px;
+    }
+
+    @media (max-width: 767.98px) {
+        .timeline-meta-footer {
+            border-top: 1px solid #eaecf0;
+            padding-top: 0.5rem;
+            margin-top: 0.5rem;
+        }
+    }
+
+    /* Halaman profil customer 360 di layar sempit. Semua aturan di bawah hanya
+       berlaku di bawah 992px — titik di mana kolom-kolom halaman ini mulai
+       menumpuk. */
+    @media (max-width: 991.98px) {
+        /* Kepala halaman: dulu judul dan tautan "Kembali" terimpit oleh dua
+           tombol di kanannya sampai belah tiga baris. Sekarang susunannya
+           bertingkat — tautan penuh satu baris, judul penuh satu baris,
+           lalu tombolnya di bawah judul rata ke kanan. */
+        .kepala-360 {
+            flex-direction: column;
+            /* Bootstrap menandai .align-items-center dengan !important, jadi
+               tanpa !important anak-anaknya tetap dipusatkan dan tidak melebar */
+            align-items: stretch !important;
+            gap: 0.35rem;
+        }
+
+        .kepala-360 > div:first-child > a {
+            display: block;
+            white-space: nowrap;
+        }
+
+        .kepala-360 h4 {
+            white-space: nowrap;
+        }
+
+        .tombol-360 {
+            justify-content: flex-end;
+        }
+
+        /* Angka ringkasan: kartunya cuma kebagian setengah layar (126px isi)
+           sehingga "Rp 13.502.500" pada ukuran h3/h4 bawaan turun ke baris
+           kedua dan tingginya jadi tidak seragam */
+        .ringkasan-nilai h3,
+        .ringkasan-nilai h4 {
+            font-size: 1.05rem;
+        }
+
+        .ringkasan-nilai .text-muted.small.fw-semibold {
+            font-size: 0.75rem;
+        }
+
+        /* Judul tab: "Urutan Aktivitas & Interaksi Customer" mengambil lebar
+           penuh dan badge multi-channel diletakkan di bawahnya. !important
+           diperlukan karena .align-items-center / .justify-content-between di
+           markup juga !important. */
+        .timeline-kepala,
+        .sub-kepala {
+            flex-direction: column;
+            align-items: flex-start !important;
+            justify-content: flex-start !important;
+            gap: 0.35rem;
+        }
+
+        /* Kepala tiap tab: judul penuh satu baris di atas, keterangannya di
+           bawahnya */
+        .sub-kepala {
+            gap: 0.15rem;
+        }
+
+        /* Baris judul + tombol aksi: judul di atas, tombolnya turun ke baris
+           sendiri dan memanjang seisi kartu (stretch membuat lebarnya penuh
+           tanpa perlu !important pada .btn). */
+        .kepala-aksi {
+            flex-direction: column;
+            align-items: stretch !important;
+            justify-content: flex-start !important;
+            gap: 0.4rem;
+        }
+    }
+</style>
+<?= $this->endSection() ?>
+
 <?= $this->section('content') ?>
 <?= $this->include('admin/navbar') ?>
 
 <div class="container-xxl py-4">
     <!-- Breadcrumb & Back -->
-    <div class="d-flex align-items-center justify-content-between mb-3">
+    <div class="d-flex align-items-center justify-content-between mb-3 kepala-360">
         <div>
             <a href="<?= site_url('admin/crm/pelanggan') ?>" class="text-decoration-none text-muted small">
                 <i class="fal fa-arrow-left me-1"></i> Kembali ke Data Pelanggan
             </a>
             <h4 class="mb-0 fw-bold mt-1">
-                <i class="fal fa-id-card text-primary me-2"></i> Profil Customer 360
+                <?php /* ikonnya hanya di layar lebar; di ponsel judulnya saja yang tersisa */ ?>
+                <i class="fal fa-id-card text-primary me-2 d-none d-lg-inline"></i> Profil Customer 360
             </h4>
         </div>
-        <div class="d-flex gap-2">
+        <div class="d-flex gap-2 tombol-360">
             <?php if (!empty($pelanggan['nomor_utama'])): ?>
                 <a href="<?= site_url('admin/crm/chat') ?>?nomor=<?= esc($pelanggan['nomor_utama']) ?>" class="btn btn-outline-success btn-sm fw-semibold">
-                    <i class="fab fa-whatsapp me-1"></i> Buka di Live Chat
+                    <i class="fab fa-whatsapp me-1"></i> <span class="d-none d-lg-inline">Buka di </span>Live Chat
                 </a>
             <?php endif; ?>
             <button class="btn btn-primary btn-sm fw-semibold" data-bs-toggle="modal" data-bs-target="#modalKirimWaDirect">
-                <i class="fal fa-paper-plane me-1"></i> Kirim WhatsApp
+                <i class="fal fa-paper-plane me-1"></i> <span class="d-none d-lg-inline">Kirim </span>WhatsApp
             </button>
         </div>
     </div>
@@ -81,7 +425,7 @@
                                 </span>
                             </div>
                             <div class="text-muted mt-1 small">
-                                <span class="me-3">
+                                <span class="d-block">
                                     <i class="fab fa-whatsapp text-success me-1"></i>
                                     <strong><?= esc($pelanggan['nomor_utama'] ?: 'Belum ada nomor') ?></strong>
                                 </span>
@@ -163,7 +507,7 @@
     </div>
 
     <!-- Ringkasan Nilai Customer (Customer Value Metrics) -->
-    <div class="row g-3 mb-4">
+    <div class="row g-3 mb-4 ringkasan-nilai">
         <!-- Total Transaksi -->
         <div class="col-xl-2 col-md-4 col-6">
             <div class="card border-0 shadow-sm h-100">
@@ -194,27 +538,8 @@
                 </div>
             </div>
         </div>
-        <!-- Breakdown Jenis Order -->
-        <div class="col-xl-3 col-md-6 col-6">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body p-3">
-                    <span class="text-muted small fw-semibold d-block mb-1">Rincian Jenis Order</span>
-                    <div class="d-flex align-items-center gap-2 mt-1">
-                        <span class="badge bg-primary px-2 py-1" title="Penjualan Ready Stock">
-                            <i class="fal fa-shopping-bag me-1"></i> Jual: <?= $nilai['count_penjualan'] ?>
-                        </span>
-                        <span class="badge bg-success px-2 py-1" title="Custom / Pembuatan Pakaian">
-                            <i class="fal fa-scissors me-1"></i> Custom: <?= $nilai['count_custom'] ?>
-                        </span>
-                        <span class="badge bg-info px-2 py-1" title="Sewa / Rental Pakaian">
-                            <i class="fal fa-sync me-1"></i> Sewa: <?= $nilai['count_sewa'] ?>
-                        </span>
-                    </div>
-                </div>
-            </div>
-        </div>
         <!-- Sisa Piutang / Tagihan -->
-        <div class="col-xl-2 col-md-6 col-12">
+        <div class="col-xl-2 col-md-6 col-6">
             <div class="card border-0 shadow-sm h-100 <?= $nilai['sisa_piutang'] > 0 ? 'border-danger border-start border-4' : '' ?>">
                 <div class="card-body p-3">
                     <span class="text-muted small fw-semibold">Sisa Tagihan / Piutang</span>
@@ -227,46 +552,78 @@
                 </div>
             </div>
         </div>
+        <!-- Breakdown Jenis Order -->
+        <div class="col-xl-3 col-md-6 col-12">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body p-3">
+                    <span class="text-muted small fw-semibold d-block mb-1">Rincian Jenis Order</span>
+                    <div class="rincian-order mt-2">
+                        <span class="badge bg-primary" title="Penjualan Ready Stock">
+                            <i class="fal fa-shopping-bag"></i> Jual: <?= $nilai['count_penjualan'] ?>
+                        </span>
+                        <span class="badge bg-success" title="Custom / Pembuatan Pakaian">
+                            <i class="fal fa-scissors"></i> Custom: <?= $nilai['count_custom'] ?>
+                        </span>
+                        <span class="badge bg-info" title="Sewa / Rental Pakaian">
+                            <i class="fal fa-sync"></i> Sewa: <?= $nilai['count_sewa'] ?>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Main Navigation Tabs Customer 360 -->
     <div class="card border-0 shadow-sm mb-4">
-        <div class="card-header bg-white border-bottom p-0">
-            <ul class="nav nav-tabs card-header-tabs m-0 px-3" id="customer360Tabs" role="tablist">
+        <div class="card-header bg-white border-bottom py-2 px-3">
+            <ul class="nav m-0 d-none d-lg-flex border-0" id="customer360Tabs" role="tablist">
                 <li class="nav-item">
-                    <button class="nav-link active py-3 px-4 fw-semibold" id="tab-timeline-btn" data-bs-toggle="tab" data-bs-target="#tab-timeline" type="button">
+                    <button class="nav-link active fw-semibold" id="tab-timeline-btn" data-bs-toggle="tab" data-bs-target="#tab-timeline" type="button">
                         <i class="fal fa-stream me-2 text-primary"></i> Timeline Aktivitas
                     </button>
                 </li>
                 <li class="nav-item">
-                    <button class="nav-link py-3 px-4 fw-semibold" id="tab-transaksi-btn" data-bs-toggle="tab" data-bs-target="#tab-transaksi" type="button">
+                    <button class="nav-link fw-semibold" id="tab-transaksi-btn" data-bs-toggle="tab" data-bs-target="#tab-transaksi" type="button">
                         <i class="fal fa-file-invoice-dollar me-2 text-success"></i> Riwayat Transaksi POS
                         <span class="badge bg-light text-dark border ms-1"><?= count($transaksiList) ?></span>
                     </button>
                 </li>
                 <li class="nav-item">
-                    <button class="nav-link py-3 px-4 fw-semibold" id="tab-pembayaran-btn" data-bs-toggle="tab" data-bs-target="#tab-pembayaran" type="button">
+                    <button class="nav-link fw-semibold" id="tab-pembayaran-btn" data-bs-toggle="tab" data-bs-target="#tab-pembayaran" type="button">
                         <i class="fal fa-money-check-alt me-2 text-info"></i> Pembayaran
                         <span class="badge bg-light text-dark border ms-1"><?= count($pembayaranList) ?></span>
                     </button>
                 </li>
                 <li class="nav-item">
-                    <button class="nav-link py-3 px-4 fw-semibold" id="tab-ukuran-btn" data-bs-toggle="tab" data-bs-target="#tab-ukuran" type="button">
-                        <i class="fal fa-tape me-2 text-warning"></i> Ukuran & Preferensi Pakaian
+                    <button class="nav-link fw-semibold" id="tab-ukuran-btn" data-bs-toggle="tab" data-bs-target="#tab-ukuran" type="button">
+                        <i class="fal fa-tape me-2 text-warning"></i> Ukuran &amp; Preferensi Pakaian
                     </button>
                 </li>
                 <li class="nav-item">
-                    <button class="nav-link py-3 px-4 fw-semibold" id="tab-catatan-btn" data-bs-toggle="tab" data-bs-target="#tab-catatan" type="button">
+                    <button class="nav-link fw-semibold" id="tab-catatan-btn" data-bs-toggle="tab" data-bs-target="#tab-catatan" type="button">
                         <i class="fal fa-comment-alt-lines me-2 text-secondary"></i> Catatan Staff
                     </button>
                 </li>
                 <li class="nav-item">
-                    <button class="nav-link py-3 px-4 fw-semibold" id="tab-followup-btn" data-bs-toggle="tab" data-bs-target="#tab-followup" type="button">
+                    <button class="nav-link fw-semibold" id="tab-followup-btn" data-bs-toggle="tab" data-bs-target="#tab-followup" type="button">
                         <i class="fal fa-calendar-check me-2 text-danger"></i> Follow-up
                         <span class="badge bg-light text-dark border ms-1"><?= count($followupList) ?></span>
                     </button>
                 </li>
             </ul>
+            <!-- Layar sempit: strip tab enam item jadi tiga baris dan memakan
+               setengah layar, jadi diganti satu dropdown. Bawaannya sama
+               dengan tab yang aktif, yaitu Timeline Aktivitas. -->
+            <div class="py-1 d-lg-none">
+                <select class="form-select" id="customer360Pilih" aria-label="Pilih bagian data customer">
+                    <option value="tab-timeline-btn" selected>Timeline Aktivitas</option>
+                    <option value="tab-transaksi-btn">Riwayat Transaksi POS (<?= count($transaksiList) ?>)</option>
+                    <option value="tab-pembayaran-btn">Pembayaran (<?= count($pembayaranList) ?>)</option>
+                    <option value="tab-ukuran-btn">Ukuran &amp; Preferensi Pakaian</option>
+                    <option value="tab-catatan-btn">Catatan Staff</option>
+                    <option value="tab-followup-btn">Follow-up (<?= count($followupList) ?>)</option>
+                </select>
+            </div>
         </div>
         <div class="card-body p-4">
             <div class="tab-content" id="customer360Content">
@@ -275,8 +632,8 @@
                 <div class="tab-pane fade show active" id="tab-timeline" role="tabpanel">
                     <div class="row">
                         <!-- Timeline feed -->
-                        <div class="col-lg-8 border-end pe-lg-4">
-                            <div class="d-flex align-items-center justify-content-between mb-4">
+                        <div class="col-lg-8 border-end pe-lg-4 order-2 order-lg-1 mt-4 mt-lg-0">
+                            <div class="d-flex align-items-center justify-content-between mb-4 timeline-kepala">
                                 <h6 class="fw-bold mb-0">Urutan Aktivitas & Interaksi Customer</h6>
                                 <span class="badge bg-light text-muted border">Multi-channel (WA, Order, Fitting, Kasir)</span>
                             </div>
@@ -287,78 +644,106 @@
                                     <p class="mb-0">Belum ada aktivitas yang tercatat untuk customer ini.</p>
                                 </div>
                             <?php else: ?>
+                                <div class="gulir-timeline">
                                 <div class="timeline-container position-relative ps-4" style="border-left: 2px solid #e9ecef;">
                                     <?php foreach ($timeline as $item): ?>
                                         <div class="timeline-item mb-4 position-relative">
                                             <!-- Bullet icon -->
-                                            <div class="position-absolute rounded-circle d-flex align-items-center justify-content-center bg-<?= esc($item['warna']) ?> text-white shadow-sm" 
+                                            <div class="position-absolute rounded-circle d-flex align-items-center justify-content-center bg-<?= esc($item['warna']) ?> text-white shadow-sm timeline-titik"
                                                  style="left: -33px; top: 0; width: 30px; height: 30px; font-size: 13px;">
                                                 <i class="fal <?= esc($item['icon']) ?>"></i>
                                             </div>
                                             <div class="card border bg-light bg-opacity-50 shadow-none">
                                                 <div class="card-body p-3">
+                                                    <!-- Baris Judul & Tanggal Kanan Atas (Desktop) -->
                                                     <div class="d-flex justify-content-between align-items-start mb-1">
                                                         <h6 class="fw-bold mb-0 text-dark"><?= esc($item['judul']) ?></h6>
-                                                        <span class="text-muted small" style="font-size: 11px;">
-                                                            <?= date('d M Y, H:i', (int) $item['waktu']) ?>
+                                                        <span class="text-muted small d-none d-md-inline flex-shrink-0 ms-2 text-nowrap" style="font-size: 11px;">
+                                                            <?= date('H:i', (int) $item['waktu']) !== '00:00' 
+                                                                ? date('d M Y, H:i', (int) $item['waktu']) 
+                                                                : date('d M Y', (int) $item['waktu']) ?>
                                                         </span>
                                                     </div>
-                                                    <p class="mb-1 text-secondary small" style="white-space: pre-wrap;"><?= esc($item['deskripsi']) ?></p>
-                                                    <div class="text-muted small" style="font-size: 11px;">
-                                                        <i class="fal fa-user-edit me-1"></i> Dicatat oleh: <strong><?= esc($item['actor']) ?></strong>
+
+                                                    <!-- Deskripsi Catatan -->
+                                                    <?php if (!empty($item['deskripsi'])): ?>
+                                                        <p class="mb-1 text-secondary small" style="white-space: pre-wrap;"><?= esc($item['deskripsi']) ?></p>
+                                                    <?php endif; ?>
+
+                                                    <!-- Footer: Di HP tanggal di kiri bawah, di Desktop hanya 'Dicatat oleh' -->
+                                                    <div class="timeline-meta-footer text-muted small">
+                                                        <span class="d-md-none">
+                                                            <i class="fal fa-clock me-1 text-muted"></i>
+                                                            <?= date('H:i', (int) $item['waktu']) !== '00:00' 
+                                                                ? date('d M Y, H:i', (int) $item['waktu']) 
+                                                                : date('d M Y', (int) $item['waktu']) ?>
+                                                        </span>
+                                                        <span>
+                                                            <i class="fal fa-user-edit me-1 text-muted"></i> Dicatat oleh: <strong><?= esc($item['actor']) ?></strong>
+                                                        </span>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                     <?php endforeach; ?>
                                 </div>
+                                </div>
                             <?php endif; ?>
                         </div>
 
-                        <!-- Panel Tambah Aktivitas Manual -->
-                        <div class="col-lg-4 ps-lg-4 mt-4 mt-lg-0">
-                            <div class="card border bg-white shadow-sm">
-                                <div class="card-header bg-white py-3 border-bottom">
-                                    <h6 class="fw-bold mb-0">
-                                        <i class="fal fa-plus-circle text-primary me-1"></i> Catat Interaksi Baru
-                                    </h6>
-                                </div>
-                                <div class="card-body">
-                                    <form action="<?= site_url('admin/crm/pelanggan/tambah_aktivitas/' . $pelanggan['id_pelanggan']) ?>" method="post">
-                                        <?= csrf_field() ?>
-                                        <div class="mb-3">
-                                            <label class="form-label small fw-semibold">Jenis Interaksi / Aktivitas</label>
-                                            <select name="tipe" class="form-select form-select-sm" required>
-                                                <option value="catatan">Catatan Staff</option>
-                                                <option value="fitting">Fitting Pakaian</option>
-                                                <option value="telepon">Panggilan Telepon</option>
-                                                <option value="datang">Datang ke Toko</option>
-                                                <option value="pengambilan">Pengambilan Pakaian</option>
-                                                <option value="pengembalian">Pengembalian Pakaian Sewa</option>
-                                                <option value="wa">Interaksi WhatsApp</option>
-                                            </select>
+                        <!-- Panel Catat Interaksi: satu-satunya form, tampil sebagai
+                             kartu di desktop dan sebagai pop-up di layar sempit. -->
+                        <div class="col-lg-4 ps-lg-4 order-1 order-lg-2">
+                            <button type="button" class="btn btn-primary fw-semibold w-100 d-lg-none" data-bs-toggle="modal" data-bs-target="#modalCatatInteraksi">
+                                <i class="fal fa-plus-circle me-1"></i> Catat Interaksi Baru
+                            </button>
+                            <div class="modal fade" id="modalCatatInteraksi" tabindex="-1" aria-labelledby="judulCatatInteraksi" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h6 class="modal-title fw-bold mb-0" id="judulCatatInteraksi">
+                                                <i class="fal fa-plus-circle text-primary me-1"></i> Catat Interaksi Baru
+                                            </h6>
+                                            <button type="button" class="btn-close d-lg-none" data-bs-dismiss="modal" aria-label="Tutup"></button>
                                         </div>
-                                        <div class="mb-3">
-                                            <label class="form-label small fw-semibold">Judul Ringkas</label>
-                                            <input type="text" name="judul" class="form-control form-control-sm" placeholder="Contoh: Customer fitting jas kedua" required>
+                                        <div class="modal-body">
+                                            <form action="<?= site_url('admin/crm/pelanggan/tambah_aktivitas/' . $pelanggan['id_pelanggan']) ?>" method="post">
+                                                <?= csrf_field() ?>
+                                                <div class="mb-3">
+                                                    <label class="form-label small fw-semibold">Jenis Interaksi / Aktivitas</label>
+                                                    <select name="tipe" class="form-select form-select-sm" required>
+                                                        <option value="catatan">Catatan Staff</option>
+                                                        <option value="fitting">Fitting Pakaian</option>
+                                                        <option value="telepon">Panggilan Telepon</option>
+                                                        <option value="datang">Datang ke Toko</option>
+                                                        <option value="pengambilan">Pengambilan Pakaian</option>
+                                                        <option value="pengembalian">Pengembalian Pakaian Sewa</option>
+                                                        <option value="wa">Interaksi WhatsApp</option>
+                                                    </select>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label small fw-semibold">Judul Ringkas</label>
+                                                    <input type="text" name="judul" class="form-control form-control-sm" placeholder="Contoh: Customer fitting jas kedua" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label small fw-semibold">Keterangan / Hasil Interaksi</label>
+                                                    <textarea name="deskripsi" class="form-control form-control-sm" rows="4" placeholder="Tuliskan catatan hasil interaksi dengan customer..."></textarea>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label small fw-semibold">Hubungkan dengan Invoice (Opsional)</label>
+                                                    <select name="invoice_id" class="form-select form-select-sm">
+                                                        <option value="">-- Tanpa Invoice Terkait --</option>
+                                                        <?php foreach ($transaksiList as $inv): ?>
+                                                            <option value="<?= $inv['id_invoice'] ?>">#<?= esc($inv['seri']) ?> (<?= esc($inv['tipe_label']) ?>)</option>
+                                                        <?php endforeach; ?>
+                                                    </select>
+                                                </div>
+                                                <button type="submit" class="btn btn-primary btn-sm w-100 fw-semibold">
+                                                    <i class="fal fa-save me-1"></i> Simpan ke Timeline
+                                                </button>
+                                            </form>
                                         </div>
-                                        <div class="mb-3">
-                                            <label class="form-label small fw-semibold">Keterangan / Hasil Interaksi</label>
-                                            <textarea name="deskripsi" class="form-control form-control-sm" rows="4" placeholder="Tuliskan catatan hasil interaksi dengan customer..."></textarea>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label small fw-semibold">Hubungkan dengan Invoice (Opsional)</label>
-                                            <select name="invoice_id" class="form-select form-select-sm">
-                                                <option value="">-- Tanpa Invoice Terkait --</option>
-                                                <?php foreach ($transaksiList as $inv): ?>
-                                                    <option value="<?= $inv['id_invoice'] ?>">#<?= esc($inv['seri']) ?> (<?= esc($inv['tipe_label']) ?>)</option>
-                                                <?php endforeach; ?>
-                                            </select>
-                                        </div>
-                                        <button type="submit" class="btn btn-primary btn-sm w-100 fw-semibold">
-                                            <i class="fal fa-save me-1"></i> Simpan ke Timeline
-                                        </button>
-                                    </form>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -367,7 +752,7 @@
 
                 <!-- ================= TAB 2: RIWAYAT TRANSAKSI POS ================= -->
                 <div class="tab-pane fade" id="tab-transaksi" role="tabpanel">
-                    <div class="d-flex align-items-center justify-content-between mb-3">
+                    <div class="d-flex align-items-center justify-content-between mb-3 sub-kepala">
                         <h6 class="fw-bold mb-0">Seluruh Transaksi POS Customer</h6>
                         <span class="text-muted small">Menampilkan semua pembelian pakaian, pesanan custom, dan sewa</span>
                     </div>
@@ -735,7 +1120,7 @@
 
                 <!-- ================= TAB 6: FOLLOW-UP & REMINDER ================= -->
                 <div class="tab-pane fade" id="tab-followup" role="tabpanel">
-                    <div class="d-flex align-items-center justify-content-between mb-3">
+                    <div class="d-flex align-items-center justify-content-between mb-3 kepala-aksi">
                         <h6 class="fw-bold mb-0">Daftar Jadwal Tindakan & Follow-up</h6>
                         <button class="btn btn-primary btn-sm fw-semibold" data-bs-toggle="modal" data-bs-target="#modalTambahFollowup">
                             <i class="fal fa-plus me-1"></i> Buat Follow-up Baru
@@ -959,6 +1344,21 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Dropdown pengganti strip tab di layar sempit: nilainya id tombol tab,
+    // jadi cukup panggil API tab Bootstrap-nya.
+    const pilih360 = document.getElementById('customer360Pilih');
+    if (pilih360 && window.bootstrap && bootstrap.Tab) {
+        pilih360.addEventListener('change', function() {
+            const tombol = document.getElementById(this.value);
+            if (tombol) new bootstrap.Tab(tombol).show();
+        });
+        document.querySelectorAll('#customer360Tabs .nav-link').forEach(function(tombol) {
+            tombol.addEventListener('shown.bs.tab', function() {
+                pilih360.value = tombol.id;
+            });
+        });
+    }
+
     // Template dropdown selection
     const selTpl = document.getElementById('selectTemplateWaDirect');
     const txtPesan = document.getElementById('pesanWaDirect');

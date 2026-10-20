@@ -21,6 +21,26 @@
         .pengingat-waktu {
             justify-content: space-between;
         }
+
+        /* Jarak dalam kartu pengingat dulu ketumpuk: style.css mengunci
+           .card-body{padding:1.25rem !important} sehingga kelas p-0 di markup
+           kalah (20px), lalu tiap baris menambah isian sendiri, jadi teks baru
+           mulai 33px dari tepi kartu dan judul panjang belah tiga baris.
+           Isian badan kartu dinolkan di layar sempit; yang tersisa cuma isian
+           tiap baris. Butuh !important karena kunci style.css dan .p-0 di
+           markup sama-sama !important. */
+        .kartu-pengingat > .card-body {
+            padding: 0 !important;
+        }
+
+        .kartu-pengingat .card-header,
+        .kartu-pengingat .list-group-item {
+            padding: 0.5rem 0.75rem !important;
+        }
+
+        .kartu-pengingat > .text-end {
+            padding: 0 0.75rem 0.6rem !important;
+        }
     }
 
     /* Kartu KPI di layar sempit hanya kebagian setengah lebar (134px ruang
@@ -43,6 +63,32 @@
            layar sempit tingginya disamakan supaya dua kartu sekolom tidak beda */
         .kartu-kpi-sejajar {
             height: 100%;
+        }
+    }
+
+    /* Empat kartu pintasan di kolom kanan, layar sempit: judul dan keterangannya
+       memakai lebar penuh (tombol tidak lagi menggantung di kanan tengah), dan
+       tombolnya pindah ke pojok kanan bawah, di samping baris terakhir
+       keterangannya. Ruang kanan khusus itu hanya diberikan ke keterangan,
+       supaya judulnya tidak ikut tergencet. .d-flex Bootstrap dan .btn-sm di
+       style.css sama-sama !important, jadi dua-duanya ikut !important. */
+    @media (max-width: 991.98px) {
+        .shortcut-crm .card-body {
+            display: block !important;
+            position: relative;
+        }
+
+        .shortcut-crm .card-body small {
+            display: block;
+            padding-right: 7rem;
+        }
+
+        .shortcut-crm .card-body > .btn {
+            position: absolute;
+            right: 1rem;
+            bottom: 1rem;
+            padding: 0.2rem 0.6rem !important;
+            font-size: 0.74rem !important;
         }
     }
 
@@ -225,7 +271,7 @@
     <div class="row g-4 mb-4">
         <!-- Kolom Kiri: Reminder & Jadwal Penting Hari Ini -->
         <div class="col-lg-7">
-            <div class="card border-0 shadow-sm h-100">
+            <div class="card border-0 shadow-sm h-100 kartu-pengingat">
                 <div class="card-header bg-white py-3 border-bottom d-lg-flex justify-content-between align-items-center">
                     <h6 class="fw-bold mb-0">
                         <i class="fal fa-bell text-warning me-2"></i> Pengingat & Tindakan Hari Ini
@@ -290,7 +336,7 @@
             <div class="row g-3">
                 <!-- Shortcut Live Chat -->
                 <div class="col-12">
-                    <div class="card border-0 shadow-sm bg-white">
+                    <div class="card border-0 shadow-sm bg-white shortcut-crm">
                         <div class="card-body p-3 d-flex align-items-center justify-content-between">
                             <div class="d-flex align-items-center">
                                 <div class="avatar-circle bg-success bg-opacity-10 text-success rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px;">
@@ -310,7 +356,7 @@
 
                 <!-- Shortcut Follow-up Customer -->
                 <div class="col-12">
-                    <div class="card border-0 shadow-sm bg-white">
+                    <div class="card border-0 shadow-sm bg-white shortcut-crm">
                         <div class="card-body p-3 d-flex align-items-center justify-content-between">
                             <div class="d-flex align-items-center">
                                 <div class="avatar-circle bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px;">
@@ -330,7 +376,7 @@
 
                 <!-- Shortcut Broadcast Promo -->
                 <div class="col-12">
-                    <div class="card border-0 shadow-sm bg-white">
+                    <div class="card border-0 shadow-sm bg-white shortcut-crm">
                         <div class="card-body p-3 d-flex align-items-center justify-content-between">
                             <div class="d-flex align-items-center">
                                 <div class="avatar-circle bg-info bg-opacity-10 text-info rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px;">
@@ -350,7 +396,7 @@
 
                 <!-- Shortcut Duplikat -->
                 <div class="col-12">
-                    <div class="card border-0 shadow-sm bg-white">
+                    <div class="card border-0 shadow-sm bg-white shortcut-crm">
                         <div class="card-body p-3 d-flex align-items-center justify-content-between">
                             <div class="d-flex align-items-center">
                                 <div class="avatar-circle bg-danger bg-opacity-10 text-danger rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px;">

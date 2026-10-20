@@ -122,9 +122,10 @@ class StokModel extends Model
      * perlu melihat bahwa unit jual dan unit sewa itu dua tumpukan yang berbeda:
      * stok gudang, unit yang sedang keluar, dan sisanya, per kolam.
      *
-     * 'keluar' di sini = unit yang sedang di tangan orang lain: nota Selesai yang
-     * menaut baris kolam itu (sewa yang pengembaliannya belum dicatat tidak ikut),
-     * jadi angkanya sama persis dengan pengurang "tersedia" di halaman Produk.
+     * 'keluar' di sini = unit yang sudah diikat nota: semua nota tercatat yang
+     * menaut baris kolam itu menghitung, termasuk nota yang belum diserahkan;
+     * hanya nota sewa yang pengembaliannya sudah dicatat yang lepas. Jadi angkanya
+     * sama persis dengan pengurang "tersedia" di halaman Produk.
      *
      * @param array<array{juragan_id:int, kode:string}> $pasangan
      *
@@ -181,10 +182,10 @@ class StokModel extends Model
     /**
      * Kondisi "sewa yang barangnya sudah kembali": nota sewa yang pengembaliannya
      * sudah dicatat orang lewat tombol "Sudah kembali" di nota. Baris orderan
-     * seperti ini tidak lagi mengurangi stok, jadi unitnya pulang ke rak pada saat
-     * yang sama dengan nota masuk tab Selesai. Tanggal `rincian.kembali` sendiri
-     * hanya jadual: belum diklik berarti masih di tangan penyewa, walau tanggalnya
-     * sudah lewat.
+     * seperti ini tidak lagi mengurangi stok, jadi unitnya pulang ke rak pada detik
+     * yang sama dengan notanya boleh masuk tab Selesai. Tanggal `rincian.kembali`
+     * sendiri hanya jadual: belum diklik berarti masih di tangan penyewa, walau
+     * tanggalnya sudah lewat.
      */
     private static function sudahKembali(): string
     {
@@ -192,10 +193,14 @@ class StokModel extends Model
     }
 
     /**
-     * Nota mana yang memakai satu kolam. Kolam sewa hanya diisi nota bertipe
-     * sewa yang pengembaliannya belum dicatat; kolam jual menampung semuanya
-     * yang bukan sewa — termasuk 15 ribu nota lama yang tidak punya tipe, jadi
-     * angka mereka tidak berubah saat pemisahan ini dipasang.
+     * Nota mana yang memakai satu kolam. Kolam sewa hanya diisi nota bertipe sewa
+     * yang pengembaliannya belum dicatat; kolam jual menampung semuanya yang bukan
+     * sewa — termasuk 15 ribu nota lama yang tidak punya tipe, jadi angka mereka
+     * tidak berubah saat pemisahan ini dipasang.
+     *
+     * Di sini sengaja TIDAK ada syarat pembayaran: tab Masih Disewa memang menandai
+     * fase pekerjaan (barang sudah di tangan penyewa dan dananya sudah masuk), tapi
+     * stok tidak boleh menunggu sejauh itu — lihat `klausaTersedia()`.
      */
     private static function tipeKolam(string $kolam): string
     {
@@ -207,11 +212,18 @@ class StokModel extends Model
     }
 
     /**
-     * Ungkapan SQL: stok satu kolam dikurangi unit yang sedang keluar, yaitu qty
-     * dari nota yang sudah masuk tab Selesai (status_pengiriman 3), tidak
-     * dibatalkan, dan tidak dihapus. Dipakai katalog, saringan keadaan, saran
-     * form order, dan kartu ringkasan supaya angka stok berarti "masih bisa
-     * diambil" untuk kolam yang sedang dibuka.
+     * Ungkapan SQL: stok satu kolam dikurangi unit yang sudah diikat nota, yaitu qty
+     * dari setiap nota yang MASIH TERCATAT — tidak dihapus dan tidak dibatalkan —
+     * sejak nota itu ditulis, bukan sejak barangnya diserahkan. Kolam sewa lepas
+     * lebih awal: unitnya dihitung pulang begitu tombol "Sudah kembali" ditekan.
+     *
+     * Aturan ini ada supaya tidak ada stok gaib: begitu sebuah orderan tercatat,
+     * unitnya tidak bisa lagi dijualkan atau disewakan ke orang lain walau notasnya
+     * masih berstatus belum diproses dan pembayarannya baru DP.
+     *
+     * Dipakai katalog, saringan keadaan, saran form order, penengah qty saat menulis
+     * (`keluar()`), dan kartu ringkasan supaya angka stok berarti "masih bisa diambil"
+     * untuk kolam yang sedang dibuka, di semua tempat sekaligus.
      *
      * Satu baris stok hanya milik satu kolam, jadi kolomnya selalu `stok`;
      * saringan nota bertipe sekadar menjaga nota lama yang sempat menaut
@@ -232,15 +244,16 @@ class StokModel extends Model
             . ' JOIN `' . $invoice . '` o ON o.id_invoice = d.invoice_id'
             . ' WHERE d.stok_id = ' . $stok . '.id_stok'
             . ' AND o.deleted_at IS NULL'
-            . " AND o.status_pengiriman = '3'"
             . " AND o.status_pesanan <> '3'"
             . ' AND ' . self::tipeKolam($kolam) . '))';
     }
 
     /**
-     * Unit yang sedang keluar per varian untuk satu kolam. Sama aturannya dengan
+     * Unit yang sudah diikat nota per varian untuk satu kolam. Sama aturannya dengan
      * `klausaTersedia()`, hanya saja bentuknya peta PHP supaya jalur tulis bisa
-     * memeriksa dulu sebelum menulis apa pun.
+     * memeriksa dulu sebelum menulis apa pun — termasuk nota yang sedang dibuka
+     * itu sendiri, yang dikecualikan lewat `$kecuali_invoice` supaya tidak
+     * dihitung dua kali saat menyunting.
      *
      * @return array<int, int> id_stok => qty yang keluar
      */
@@ -261,7 +274,6 @@ class StokModel extends Model
             . ' JOIN `' . $invoice . '` o ON o.id_invoice = d.invoice_id'
             . ' WHERE d.stok_id IN (' . implode(',', $ids) . ')'
             . ' AND o.deleted_at IS NULL'
-            . " AND o.status_pengiriman = '3'"
             . " AND o.status_pesanan <> '3'"
             . ' AND ' . self::tipeKolam($kolam);
 
@@ -281,11 +293,11 @@ class StokModel extends Model
     }
 
     /**
-     * Berapa unit sewa yang sedang di tangan penyewa untuk sekumpulan toko.
-     * Sumbernya sama persis dengan pengurang stok kolam sewa di
-     * `klausaTersedia('sewa')` — nota bertipe sewa yang belum dicatat kembali —
-     * jadi angka ini adalah unit yang hilang dari kolom "Tersedia" di halaman
-     * Produk, bukan hitungan lain.
+     * Berapa unit sewa yang sudah diikat nota dan belum kembali untuk sekumpulan
+     * toko. Sumbernya sama persis dengan pengurang stok kolam sewa di
+     * `klausaTersedia('sewa')` — nota bertipe sewa yang belum dicatat kembali,
+     * berapapun status pembayarannya — jadi angka ini adalah unit yang hilang dari
+     * kolom "Tersedia" di halaman Produk, bukan hitungan lain.
      *
      * @param array<int> $juragan_ids
      */
@@ -306,7 +318,6 @@ class StokModel extends Model
             . " AND s.kolam = 'sewa'"
             . ' AND s.juragan_id IN (' . $ids . ')'
             . ' AND o.deleted_at IS NULL'
-            . " AND o.status_pengiriman = '3'"
             . " AND o.status_pesanan <> '3'"
             . ' AND ' . self::tipeKolam('sewa')
         )->getRowArray();

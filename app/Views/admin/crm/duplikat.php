@@ -14,6 +14,28 @@
         letter-spacing: normal !important;
         border-radius: 8px !important;
     }
+
+    /* Layar sempit: badge ID akun tetap mengalir ke kanan seperti di desktop
+       (jangan satu per baris). Selnya dijadikan flex container ber-wrap supaya
+       jarak antar badge persis 0,25rem -- selama ini spasi antar elemen di
+       markup ikut memakan lebar sehingga cuma 2 badge muat. Jarak diurus gap,
+       jadi .me-1 (yang !important) dimatikan. */
+    @media (max-width: 767.98px) {
+        .id-akun {
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-start;
+            gap: 0.25rem;
+            min-width: 268px;
+        }
+
+        .id-akun a.badge {
+            display: inline-flex;
+            margin-right: 0 !important;
+            margin-bottom: 0;
+            white-space: nowrap;
+        }
+    }
 </style>
 <?= $this->endSection() ?>
 
@@ -24,26 +46,22 @@
     <div class="d-flex align-items-center justify-content-between mb-3">
         <div>
             <h4 class="mb-0 fw-bold">
-                <i class="fal fa-clone text-primary me-2"></i> Deteksi & Penggabungan Akun Duplikat
+                <i class="fal fa-clone text-primary me-2 d-none d-lg-inline"></i> Deteksi & Penggabungan Akun Duplikat
             </h4>
             <p class="text-muted small mb-0">Mendeteksi customer ganda berdasarkan kesamaan nomor WhatsApp atau kemiripan nama, serta fitur merge tanpa kehilangan riwayat transaksi.</p>
         </div>
     </div>
 
 
-    <div class="alert alert-info border-0 shadow-sm mb-4">
-        <div class="d-flex align-items-start gap-2">
-            <i class="fal fa-info-circle fs-5 mt-1 text-primary"></i>
-            <div>
-                <strong>Penting tentang Penggabungan (Merge):</strong>
-                Ketika dua akun digabungkan, seluruh data invoice POS, mutasi pembayaran, riwayat chat WhatsApp, aktivitas timeline, catatan staff, dan tag dari akun kedua akan otomatis dialihkan ke akun utama yang Anda pertahankan. Akun kedua akan dinonaktifkan sehingga data CRM tetap akurat dan tidak ada transaksi yang hilang.
-            </div>
-        </div>
-    </div>
-
     <div class="card border-0 shadow-sm">
         <div class="card-header bg-white py-3 border-bottom d-flex flex-wrap gap-2 justify-content-between align-items-center">
-            <h6 class="fw-bold mb-0">Daftar Akun yang Terindikasi Duplikat</h6>
+            <div class="d-flex align-items-center gap-2">
+                <h6 class="fw-bold mb-0">Daftar Akun Terindikasi Duplikat</h6>
+                <?php /* penjelasannya dipindah ke popus, jadi di kepala kartu cukup ikonnya */ ?>
+                <button type="button" class="btn btn-link text-dark text-decoration-none p-0" data-bs-toggle="modal" data-bs-target="#modalAturanMerge" title="Cara kerja penggabungan akun" aria-label="Cara kerja penggabungan akun">
+                    <i class="fal fa-info-circle fs-5"></i>
+                </button>
+            </div>
             <div class="d-flex align-items-center gap-2">
                 <span class="badge bg-light text-dark border jumlah-grup"><?= $totalDuplikat ?> Grup Duplikat Terdeteksi</span>
                 <button class="btn btn-primary btn-sm fw-semibold" data-bs-toggle="modal" data-bs-target="#modalManualMerge">
@@ -90,7 +108,7 @@
                                     <td class="text-center">
                                         <span class="badge bg-danger rounded-pill px-2 py-1"><?= (int) $d['jumlah_akun'] ?> akun</span>
                                     </td>
-                                    <td>
+                                    <td class="id-akun">
                                         <?php 
                                         $ids = explode(',', $d['id_akun']);
                                         foreach ($ids as $idItem): 
@@ -145,7 +163,7 @@
                 $nomorHalaman[] = $akhir;
             }
             ?>
-            <div class="card-footer bg-white d-flex justify-content-between align-items-center py-3">
+            <div class="card-footer bg-white d-flex justify-content-between align-items-center py-3 crm-pager">
                 <div class="small text-muted">
                     Halaman <?= $page ?> dari <?= $akhir ?> (Total <?= number_format($totalDuplikat) ?> grup)
                 </div>
@@ -249,6 +267,27 @@
                 </div>
             </div>
         </form>
+    </div>
+</div>
+
+<!-- Penjelasan cara kerja merge: dulu alert panjang di atas daftar, sekarang popus
+     yang dibuka dari ikon info di kepala kartu. -->
+<div class="modal fade" id="modalAturanMerge" tabindex="-1" aria-labelledby="judulAturanMerge" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title fw-bold" id="judulAturanMerge">
+                    <i class="fal fa-info-circle text-dark me-1"></i> Penting tentang Penggabungan (Merge)
+                </h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+            </div>
+            <div class="modal-body small">
+                Ketika dua akun digabungkan, seluruh data invoice POS, mutasi pembayaran, riwayat chat WhatsApp, aktivitas timeline, catatan staff, dan tag dari akun kedua akan otomatis dialihkan ke akun utama yang Anda pertahankan. Akun kedua akan dinonaktifkan sehingga data CRM tetap akurat dan tidak ada transaksi yang hilang.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">Tutup</button>
+            </div>
+        </div>
     </div>
 </div>
 

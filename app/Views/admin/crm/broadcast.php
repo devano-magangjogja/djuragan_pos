@@ -1,5 +1,20 @@
 <?= $this->extend('template/main') ?>
 
+<?= $this->section('css') ?>
+<style>
+/* Chip tag dinamis (+ {nama}, + {total_order}) di layar sempit: satu tingkat
+   lebih kecil supaya tidak mendesak label di barisnya. .btn-sm memakai
+   !important, jadi aturan ini juga !important -- blok <style> halaman dimuat
+   setelah style.css sehingga menang di urutan. */
+@media (max-width: 767.98px) {
+    .btn-tag {
+        font-size: 0.7rem !important;
+        padding: 0.25rem 0.45rem !important;
+    }
+}
+</style>
+<?= $this->endSection() ?>
+
 <?= $this->section('content') ?>
 <?= $this->include('admin/navbar') ?>
 
@@ -14,19 +29,7 @@
     </div>
 
 
-    <?php if (($provider ?? '') === 'fonnte') : ?>
-        <div class="alert alert-success border-0 shadow-sm d-flex align-items-center mb-4">
-            <div class="me-3 fs-3">
-                <i class="fab fa-whatsapp"></i>
-            </div>
-            <div>
-                <h6 class="alert-heading mb-1 fw-bold">Mode Fonnte Gateway Aktif</h6>
-                <div class="small">
-                    Pesan siaran broadcast akan dikirimkan langsung ke seluruh nomor WhatsApp kontak pelanggan yang telah opt-in menerima promo melalui Fonnte Gateway.
-                </div>
-            </div>
-        </div>
-    <?php elseif (!empty($isSandbox)) : ?>
+    <?php if (!empty($isSandbox)) : ?>
         <div class="alert alert-warning border-0 shadow-sm d-flex align-items-center mb-4">
             <div class="me-3 fs-3">
                 <i class="fal fa-flask"></i>
@@ -70,7 +73,7 @@
                         <div class="mb-3">
                             <div class="d-flex justify-content-between align-items-center mb-1">
                                 <label class="form-label small fw-bold mb-0">Isi Pesan WhatsApp</label>
-                                <div class="btn-group btn-group-sm">
+                                <div class="d-flex gap-1">
                                     <button type="button" class="btn btn-outline-secondary btn-sm btn-tag" data-tag="{nama}">+ {nama}</button>
                                     <button type="button" class="btn btn-outline-secondary btn-sm btn-tag" data-tag="{total_order}">+ {total_order}</button>
                                 </div>
