@@ -7,6 +7,14 @@
 .form-control.crm-cari {
     padding-left: 2.1rem !important;
 }
+/* style.css mengunci .form-select-sm{padding:.35rem .65rem !important} sehingga
+   ruang yang Bootstrap sisakan di sisi kanan untuk panah kotaknya ikut terhapus.
+   Akibatnya teks pilihan yang panjang ("Prospek / Belum Closing", "Semua Segmen
+   Perilaku") mengalir sampai ke bawah tanda ">". Ruang itu dikembalikan: panah
+   sm duduk di 8px dari tepi dan lebarnya ±13px, 1,75rem memberi sisa aman. */
+.form-select-sm {
+    padding-right: 1.75rem !important;
+}
 /* dua tombol aksi di kolom paling kanan dibuat sama ukurannya. .btn di style.css
    pakai inline-flex + gap, jadi cukup atur lebar minimumnya saja */
 td .btn.crm-aksi {
@@ -89,6 +97,52 @@ td .btn.crm-aksi {
     .crm-tabel td .btn {
         margin-bottom: 0.25rem;
     }
+    /* Baris Aksi dulu dua tombolnya menggantung di kiri dan menyisakan hampir
+       separuh baris kosong di kanan. Sekarang labelnya satu baris sendiri dan
+       kedua tombol dibagi rata sampai tepi kartu. .me-2 di markup dan padding
+       td di atas sama-sama !important, jadi ikut !important juga. */
+    .crm-tabel td[data-label="Aksi"] {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .crm-tabel td[data-label="Aksi"]::before {
+        width: 100%;
+    }
+    .crm-tabel td[data-label="Aksi"] .btn {
+        flex: 1 1 0;
+        min-width: 0;
+        margin: 0 !important;
+    }
+    /* Dua angka uang sejajar di kolomnya masing-masing supaya tidak bergigi */
+    .crm-tabel td[data-label="Total Belanja"],
+    .crm-tabel td[data-label="Sisa Piutang"] {
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+    }
+
+    /* Sorotan baris di mode kartu. style.css mewarnai TIAP SEL saat barisnya
+       disorot (.table tbody tr:hover td, !important); di mode kartu sel tidak
+       punya padding kiri-kanan sementara kartunya punya column-gap + padding,
+       jadi sentuhan menimbulkan kotak-kotak putih di dalam kartu. Pewarnaan sel
+       dimatikan dan kartunya saja yang disorot -- khusus pointer sungguhan,
+       supaya di layar sentuh tidak menempel setelah dilepas. */
+    .crm-tabel tbody tr:hover td {
+        background-color: transparent !important;
+    }
+
+    .crm-tabel tbody tr {
+        background-color: #ffffff;
+        transition: background-color 0.15s ease, border-color 0.15s ease;
+    }
+
+    @media (hover: hover) {
+        .crm-tabel tbody tr:hover {
+            background-color: #f9fafb;
+            border-color: #d0d5dd;
+        }
+    }
 }
 </style>
 <?= $this->endSection() ?>
@@ -100,7 +154,9 @@ td .btn.crm-aksi {
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
         <div>
             <h4 class="mb-0 fw-bold">
-                <i class="fal fa-users text-primary me-2"></i> Data Pelanggan CRM
+                <?php /* ikonnya hanya untuk layar lebar; di layar sempit judulnya
+                        saja yang tersisa supaya tidak ada ruang kosong di kiri */ ?>
+                <i class="fal fa-users text-primary me-2 d-none d-lg-inline"></i> Data Pelanggan CRM
             </h4>
             <p class="text-muted small mb-0">Kelola profil customer, segmentasi perilaku, status interaksi, dan tag pelanggan.</p>
         </div>
@@ -112,8 +168,11 @@ td .btn.crm-aksi {
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-body">
             <form method="get" action="<?= site_url('admin/crm/pelanggan') ?>" class="row g-2 align-items-center">
+                <?php /* di bawah 992px tiap filter mengambil satu baris penuh:
+                        sebelumnya dua-tiga filter sebaris sehingga teks pilihan
+                        terpanjang terpotong; susunan layar lebar tidak diubah */ ?>
                 <!-- Search input -->
-                <div class="col-lg-3 col-md-6">
+                <div class="col-12 col-lg-3">
                     <div class="position-relative">
                         <i class="fal fa-search text-muted position-absolute top-50 start-0 translate-middle-y ms-2"></i>
                         <input type="text" name="cari" class="form-control form-control-sm crm-cari" placeholder="Cari nama, nomor WA, atau ID..." value="<?= esc($cari) ?>">
@@ -121,7 +180,7 @@ td .btn.crm-aksi {
                 </div>
 
                 <!-- Status CRM -->
-                <div class="col-lg-2 col-md-3 col-6">
+                <div class="col-12 col-lg-2">
                     <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
                         <option value="semua" <?= $status === 'semua' ? 'selected' : '' ?>>Semua Status CRM</option>
                         <option value="prospek" <?= $status === 'prospek' ? 'selected' : '' ?>>Prospek / Belum Closing</option>
@@ -133,7 +192,7 @@ td .btn.crm-aksi {
                 </div>
 
                 <!-- Segmen Perilaku -->
-                <div class="col-lg-3 col-md-3 col-6">
+                <div class="col-12 col-lg-3">
                     <select name="segmen" class="form-select form-select-sm" onchange="this.form.submit()">
                         <option value="semua" <?= $segmen === 'semua' ? 'selected' : '' ?>>Semua Segmen Perilaku</option>
                         <option value="sewa" <?= $segmen === 'sewa' ? 'selected' : '' ?>>Sering Sewa / Rental</option>
@@ -148,7 +207,7 @@ td .btn.crm-aksi {
                 </div>
 
                 <!-- Filter Tag -->
-                <div class="col-lg-2 col-md-4 col-6">
+                <div class="col-12 col-lg-2">
                     <select name="tag_id" class="form-select form-select-sm" onchange="this.form.submit()">
                         <option value="0">Semua Tag</option>
                         <?php foreach ($allTags as $t): ?>
@@ -160,7 +219,7 @@ td .btn.crm-aksi {
                 </div>
 
                 <!-- Buttons -->
-                <div class="col-lg-2 col-md-4 col-6 d-flex gap-1">
+                <div class="col-12 col-lg-2 d-flex gap-1">
                     <button type="submit" class="btn btn-primary btn-sm w-100 fw-semibold"><i class="fal fa-filter me-1"></i> Filter</button>
                     <?php if (!empty($cari) || $segmen !== 'semua' || $status !== 'semua' || $tagId > 0) : ?>
                         <a href="<?= site_url('admin/crm/pelanggan') ?>" class="btn btn-outline-secondary btn-sm" title="Reset Filter"><i class="fal fa-undo"></i></a>
@@ -322,7 +381,7 @@ td .btn.crm-aksi {
                 $nomorHalaman[] = $akhir;
             }
             ?>
-            <div class="card-footer bg-white d-flex justify-content-between align-items-center py-3">
+            <div class="card-footer bg-white d-flex justify-content-between align-items-center py-3 crm-pager">
                 <div class="small text-muted">
                     Halaman <?= $page ?> dari <?= $akhir ?> (Total <?= number_format($totalData) ?> data)
                 </div>

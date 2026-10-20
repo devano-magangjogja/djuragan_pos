@@ -106,6 +106,25 @@
     .fup-tabel tr td:last-child {
         border-bottom: 0;
     }
+    /* Hover di mode kartu. style.css mewarnai SETIAP SEL saat baris disorot
+       (.table tbody tr:hover td, !important), dan di mode kartu selnya tidak punya
+       padding kiri-kanan — hasilnya blok abu-abu yang tidak menyentuh tepi kartu
+       dengan garis putih di antaranya. Pewarnaan sel dimatikan, lalu kartunya
+       (tr) yang disorot sekaligus. Dibungkus @media (hover: hover) supaya efeknya
+       tidak menempel setelah disentuh di HP. */
+    .fup-tabel tbody tr:hover td {
+        background-color: transparent !important;
+    }
+    .fup-tabel tbody tr {
+        background-color: #ffffff;
+        transition: background-color 0.15s ease, border-color 0.15s ease;
+    }
+    @media (hover: hover) {
+        .fup-tabel tbody tr:hover {
+            background-color: #f9fafb;
+            border-color: #d0d5dd;
+        }
+    }
     .fup-tabel td::before {
         content: attr(data-label);
         display: block;
@@ -224,7 +243,7 @@
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3 fup-judul-baris">
         <div>
             <h4 class="mb-0 fw-bold fup-judul">
-                <i class="fal fa-tasks text-primary me-2"></i> Pusat Follow-up & Reminder
+                <i class="fal fa-tasks text-primary me-2 d-none d-lg-inline"></i> Pusat Follow-up & Reminder
             </h4>
             <p class="text-muted small mb-0 fup-teks">Kelola tindakan follow-up customer, penagihan invoice, dan pengingat jadwal pakaian penting.</p>
         </div>
@@ -483,7 +502,7 @@
                     </div>
 
                     <?php if (!empty($totalPagesTagihan) && $totalPagesTagihan > 1) : ?>
-                        <div class="d-flex flex-wrap justify-content-between align-items-center pt-3 border-top mt-3">
+                        <div class="d-flex flex-wrap justify-content-between align-items-center pt-3 border-top mt-3 crm-pager">
                             <div class="small text-muted mb-2 mb-md-0">
                                 Halaman <?= $page ?> dari <?= $totalPagesTagihan ?> (Total <?= number_format($totalInvoicesTagihan) ?> invoice pending)
                             </div>

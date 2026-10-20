@@ -17,20 +17,20 @@
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-body">
             <form method="get" action="<?= site_url('admin/crm/pengiriman') ?>" class="row g-2 align-items-center">
-                <div class="col-md-5">
+                <div class="col-8 col-md-5">
                     <div class="cari-merged">
                         <button type="submit" class="cari-kirim" title="Cari"><i class="fal fa-search"></i></button>
                         <input type="text" name="cari" class="form-control" placeholder="Cari invoice, resi, kurir, nama pelanggan..." value="<?= esc($cari) ?>">
                     </div>
                 </div>
-                <div class="col-auto">
-                    <button type="submit" class="btn btn-dark"><i class="fal fa-filter me-1"></i> Filter</button>
+                <div class="col-4 col-md-auto d-flex flex-column flex-md-row gap-2">
+                    <button type="submit" class="btn btn-dark w-100"><i class="fal fa-filter me-1"></i> Filter</button>
                     <?php if (!empty($cari)) : ?>
-                        <a href="<?= site_url('admin/crm/pengiriman') ?>" class="btn btn-outline-secondary">Reset</a>
+                        <a href="<?= site_url('admin/crm/pengiriman') ?>" class="btn btn-outline-secondary w-100">Reset</a>
                     <?php endif; ?>
                 </div>
                 <div class="col text-end text-muted small">
-                    Ditemukan <strong><?= count($invoices) ?></strong> pengiriman dengan resi
+                    Ditemukan <strong><?= number_format($total) ?></strong> pengiriman dengan resi
                 </div>
             </form>
         </div>
@@ -87,7 +87,7 @@
                                 </td>
                                 <td class="text-center">
                                     <button type="button" 
-                                            class="btn btn-sm btn-primary btn-notif-resi"
+                                            class="btn btn-sm btn-primary btn-notif-resi text-nowrap"
                                             data-id="<?= $inv['id_invoice'] ?>"
                                             data-seri="<?= esc($inv['seri']) ?>"
                                             data-nama="<?= esc($inv['nama_pelanggan']) ?>"
@@ -104,6 +104,83 @@
                 </tbody>
             </table>
         </div>
+        <?php if ($totalPages > 1) : ?>
+            <?php
+            $akhir = (int) $totalPages;
+
+            // kunci pencarian ikut dibawa, kalau tidak halaman 2 diam-diam
+            // kembali menampilkan daftar tanpa filter
+            $tautanHalaman = static function (int $n) use ($cari): string {
+                $query = [];
+                if ($n > 1) {
+                    $query['page'] = $n;
+                }
+                if ($cari !== '') {
+                    $query['cari'] = $cari;
+                }
+
+                return site_url('admin/crm/pengiriman' . ($query ? '?' . http_build_query($query) : ''));
+            };
+
+            // Jendela 5 nomor di sekitar halaman aktif, plus halaman pertama/terakhir
+            // dengan penanda "..." supaya halaman terjauh tetap bisa diklik.
+            $dari   = max(1, min($page - 2, $akhir - 4));
+            $sampai = min($akhir, $dari + 4);
+
+            $nomorHalaman = [];
+            if ($dari > 1) {
+                $nomorHalaman[] = 1;
+                if ($dari > 2) {
+                    $nomorHalaman[] = null;
+                }
+            }
+            for ($n = $dari; $n <= $sampai; $n++) {
+                $nomorHalaman[] = $n;
+            }
+            if ($sampai < $akhir) {
+                if ($sampai < $akhir - 1) {
+                    $nomorHalaman[] = null;
+                }
+                $nomorHalaman[] = $akhir;
+            }
+            ?>
+            <div class="card-footer bg-white d-flex justify-content-between align-items-center py-3 crm-pager">
+                <div class="small text-muted">
+                    Menampilkan <?= count($invoices) ?> dari <?= number_format($total) ?> pengiriman ber-resi &middot; Halaman <?= (int) $page ?> dari <?= $akhir ?>
+                </div>
+                <ul class="pagination pagination-sm mb-0">
+                    <?php if ($page > 1) : ?>
+                        <li class="page-item">
+                            <a class="page-link" href="<?= $tautanHalaman($page - 1) ?>">&laquo; Sebelumnya</a>
+                        </li>
+                    <?php else : ?>
+                        <li class="page-item disabled">
+                            <span class="page-link">&laquo; Sebelumnya</span>
+                        </li>
+                    <?php endif; ?>
+
+                    <?php foreach ($nomorHalaman as $n) : ?>
+                        <?php if ($n === null) : ?>
+                            <li class="page-item disabled"><span class="page-link">&hellip;</span></li>
+                        <?php elseif ($n === $page) : ?>
+                            <li class="page-item active" aria-current="page"><span class="page-link"><?= $n ?></span></li>
+                        <?php else : ?>
+                            <li class="page-item"><a class="page-link" href="<?= $tautanHalaman($n) ?>"><?= $n ?></a></li>
+                        <?php endif; ?>
+                    <?php endforeach; ?>
+
+                    <?php if ($page < $akhir) : ?>
+                        <li class="page-item">
+                            <a class="page-link" href="<?= $tautanHalaman($page + 1) ?>">Berikutnya &raquo;</a>
+                        </li>
+                    <?php else : ?>
+                        <li class="page-item disabled">
+                            <span class="page-link">Berikutnya &raquo;</span>
+                        </li>
+                    <?php endif; ?>
+                </ul>
+            </div>
+        <?php endif; ?>
     </div>
 </div>
 
