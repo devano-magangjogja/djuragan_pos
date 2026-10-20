@@ -245,7 +245,7 @@ class ModulCrm extends Migration
         // Default templates
         $templates = [
             [
-                'judul'      => 'Pengingat Tagihan Belum Lunas',
+                'judul'      => 'Pengingat Tagihan',
                 'kode'       => 'tagihan_belum_lunas',
                 'kategori'   => 'tagihan',
                 'pesan'      => "Halo kak *{nama}*,\n\nKami menginfokan mengenai pesanan invoice *{invoice}* dengan total *Rp {total}*.\nSaat ini masih terdapat sisa tagihan sebesar *Rp {sisa}*.\n\nPembayaran dapat ditransfer melalui rincian rekening di invoice berikut:\n{link_invoice}\n\nJika sudah melakukan pembayaran, mohon konfirmasi kembali ya kak. Terima kasih!",
@@ -253,7 +253,7 @@ class ModulCrm extends Migration
                 'updated_at' => $now,
             ],
             [
-                'judul'      => 'Notifikasi Resi Pengiriman',
+                'judul'      => 'Notifikasi Resi',
                 'kode'       => 'notifikasi_resi',
                 'kategori'   => 'pengiriman',
                 'pesan'      => "Halo kak *{nama}*,\n\nKabar baik! Pesanan invoice *{invoice}* telah dikirimkan menggunakan ekspedisi *{kurir}* dengan nomor resi:\n\n🚚 *{resi}*\n\nPaket sedang dalam perjalanan menuju alamat kakak. Terima kasih telah mempercayakan pesanan kepada kami!",
@@ -261,7 +261,7 @@ class ModulCrm extends Migration
                 'updated_at' => $now,
             ],
             [
-                'judul'      => 'Broadcast Promo & Koleksi Baru',
+                'judul'      => 'Broadcast Promo',
                 'kode'       => 'broadcast_promo',
                 'kategori'   => 'broadcast',
                 'pesan'      => "Halo kak *{nama}*!\n\nAda promo spesial dan update produk terbaru untuk kakak hari ini. Nikmati penawaran eksklusif khusus untuk pelanggan setia kami.\n\nSilakan balas pesan ini untuk konsultasi pesanan atau katalog terbaru. Terima kasih!",

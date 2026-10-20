@@ -1442,6 +1442,44 @@ class CrmModel extends Model
     }
 
     /**
+     * Jumlah baris daftar pengiriman ber-resi, dipakai pager halaman
+     * Pengiriman & Resi. JOIN dan saringannya harus sama persis dengan
+     * getInvoicePengiriman() supaya jumlah halamannya tidak meleset.
+     */
+    public function countInvoicePengiriman(string $cari = ''): int
+    {
+        $pInv  = $this->db->prefixTable('invoice');
+        $pPel  = $this->db->prefixTable('pelanggan');
+        $pJur  = $this->db->prefixTable('juragan');
+        $pKir  = $this->db->prefixTable('pengiriman');
+        $pKon  = $this->db->prefixTable('pelanggan_kontak');
+
+        $whereCari = '';
+        $params = [];
+        if (!empty($cari)) {
+            $whereCari = "AND (inv.seri LIKE ? OR pel.nama_pelanggan LIKE ? OR kir.resi LIKE ? OR kon.nomor LIKE ?)";
+            $params = ["%{$cari}%", "%{$cari}%", "%{$cari}%", "%{$cari}%"];
+        }
+
+        $sql = "SELECT COUNT(DISTINCT inv.id_invoice) as total
+        FROM `{$pInv}` inv
+        JOIN `{$pPel}` pel ON pel.id_pelanggan = inv.kirimKepada_id
+        JOIN `{$pJur}` jur ON jur.id_juragan = inv.juragan_id
+        JOIN `{$pKir}` kir ON kir.invoice_id = inv.id_invoice
+        LEFT JOIN (
+            SELECT pelanggan_id, MIN(nomor_pure) as nomor 
+            FROM `{$pKon}` GROUP BY pelanggan_id
+        ) kon ON kon.pelanggan_id = pel.id_pelanggan
+        WHERE inv.deleted_at IS NULL
+          AND kir.resi IS NOT NULL AND TRIM(kir.resi) != ''
+          {$whereCari}";
+
+        $baris = $this->db->query($sql, $params)->getRowArray();
+
+        return (int) ($baris['total'] ?? 0);
+    }
+
+    /**
      * Mengambil data satu invoice lengkap untuk pengisian template pesan
      */
     public function getInvoiceDetailPesan(int $id_invoice): ?array
@@ -1615,5 +1653,15 @@ class CrmModel extends Model
         LIMIT {$limit} OFFSET {$offset}";
 
         return $this->db->query($sql)->getResultArray();
+    }
+
+    /**
+     * Jumlah seluruh baris log pesan, dipakai pager halaman Riwayat Pesan.
+     */
+    public function countLogPesan(): int
+    {
+        $pLog = $this->db->prefixTable('crm_pesan_log');
+
+        return (int) $this->db->table($pLog)->countAllResults();
     }
 }

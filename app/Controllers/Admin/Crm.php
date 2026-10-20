@@ -572,19 +572,26 @@ class Crm extends BaseController
      */
     public function pengiriman()
     {
-        $cari = trim($this->request->getGet('cari') ?? '');
-        $invoices = $this->crmModel->getInvoicePengiriman($cari, 50);
+        $cari       = trim($this->request->getGet('cari') ?? '');
+        $perHalaman = 25;
+        $total      = $this->crmModel->countInvoicePengiriman($cari);
+        $totalPages = (int) ceil($total / $perHalaman);
+        $page       = max(1, min(max($totalPages, 1), (int) ($this->request->getGet('page') ?: 1)));
+        $invoices   = $this->crmModel->getInvoicePengiriman($cari, $perHalaman, ($page - 1) * $perHalaman);
 
         $db = Database::connect();
         $template = $db->table('crm_template')->where('kode', 'notifikasi_resi')->get()->getRowArray();
 
         $data = [
-            'title'     => 'Notifikasi Resi Pengiriman',
-            'invoices'  => $invoices,
-            'cari'      => $cari,
-            'template'  => $template['pesan'] ?? '',
-            'provider'  => $this->wa->getActiveProviderName(),
-            'isSandbox' => ($this->wa->getActiveProviderName() === 'kapso') ? (int) $this->wa->getSetting('kapso_sandbox_mode', '1') : 0,
+            'title'      => 'Notifikasi Resi Pengiriman',
+            'invoices'   => $invoices,
+            'cari'       => $cari,
+            'template'   => $template['pesan'] ?? '',
+            'provider'   => $this->wa->getActiveProviderName(),
+            'isSandbox'  => ($this->wa->getActiveProviderName() === 'kapso') ? (int) $this->wa->getSetting('kapso_sandbox_mode', '1') : 0,
+            'total'      => $total,
+            'page'       => $page,
+            'totalPages' => $totalPages,
         ];
 
         return view('admin/crm/pengiriman', $data);
@@ -711,11 +718,18 @@ class Crm extends BaseController
      */
     public function log()
     {
-        $logPesan = $this->crmModel->getLogPesan(100);
+        $perHalaman = 25;
+        $total      = $this->crmModel->countLogPesan();
+        $totalPages = (int) ceil($total / $perHalaman);
+        $page       = max(1, min(max($totalPages, 1), (int) ($this->request->getGet('page') ?: 1)));
+        $logPesan   = $this->crmModel->getLogPesan($perHalaman, ($page - 1) * $perHalaman);
 
         $data = [
-            'title'    => 'Riwayat Pengiriman Pesan WhatsApp',
-            'logPesan' => $logPesan,
+            'title'      => 'Riwayat Pengiriman Pesan WhatsApp',
+            'logPesan'   => $logPesan,
+            'total'      => $total,
+            'page'       => $page,
+            'totalPages' => $totalPages,
         ];
 
         return view('admin/crm/log', $data);
@@ -1030,13 +1044,11 @@ class Crm extends BaseController
         $db = Database::connect();
 
         $templates     = $db->table('crm_template')->get()->getResultArray();
-        $isSandbox     = (int) $this->wa->getSetting('kapso_sandbox_mode', '1');
 
         $data = [
             'title'         => 'Live Chat WhatsApp CRM',
             'activeId'      => $activeId,
             'templates'     => $templates,
-            'isSandbox'     => $isSandbox,
         ];
 
         return view('admin/crm/chat', $data);

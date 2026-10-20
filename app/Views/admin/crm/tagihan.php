@@ -41,16 +41,16 @@
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-body">
             <form method="get" action="<?= site_url('admin/crm/tagihan') ?>" class="row g-2 align-items-center">
-                <div class="col-md-5">
+                <div class="col-8 col-md-5">
                     <div class="position-relative">
                         <i class="fal fa-search text-muted position-absolute top-50 start-0 translate-middle-y ms-3"></i>
                         <input type="text" name="cari" class="form-control crm-cari" placeholder="Cari nomor invoice, nama, atau no HP..." value="<?= esc($cari) ?>">
                     </div>
                 </div>
-                <div class="col-auto">
-                    <button type="submit" class="btn btn-dark"><i class="fal fa-filter me-1"></i> Filter</button>
+                <div class="col-4 col-md-auto d-flex flex-column flex-md-row gap-2">
+                    <button type="submit" class="btn btn-dark w-100"><i class="fal fa-filter me-1"></i> Filter</button>
                     <?php if (!empty($cari)) : ?>
-                        <a href="<?= site_url('admin/crm/tagihan') ?>" class="btn btn-outline-secondary">Reset</a>
+                        <a href="<?= site_url('admin/crm/tagihan') ?>" class="btn btn-outline-secondary w-100">Reset</a>
                     <?php endif; ?>
                 </div>
                 <div class="col text-end text-muted small">
@@ -113,7 +113,7 @@
                                 </td>
                                 <td class="text-center">
                                     <button type="button" 
-                                            class="btn btn-sm btn-success btn-followup"
+                                            class="btn btn-sm btn-success btn-followup text-nowrap"
                                             data-id="<?= $inv['id_invoice'] ?>"
                                             data-seri="<?= esc($inv['seri']) ?>"
                                             data-nama="<?= esc($inv['nama_pelanggan']) ?>"
@@ -169,7 +169,7 @@
                 $nomorHalaman[] = $akhir;
             }
             ?>
-            <div class="card-footer bg-white d-flex justify-content-between align-items-center py-3">
+            <div class="card-footer bg-white d-flex justify-content-between align-items-center py-3 crm-pager">
                 <div class="small text-muted">
                     Halaman <?= $page ?> dari <?= $akhir ?> (Total <?= number_format($totalTagihan) ?> pesanan)
                 </div>

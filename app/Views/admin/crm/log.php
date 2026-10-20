@@ -17,6 +17,15 @@ body.has-app-sidebar > div.container-xxl.log-halaman {
 .log-halaman .table tbody td {
     padding: 0.45rem 0.6rem !important;
 }
+
+/* Layar sempit: kolom Isi Pesan butuh ruang selebar layar. Tanpa ini teksnya
+   terjerat di kolom 89px (sebaris cuma ~10 karakter, barisnya jadi 127px
+   tingginya) sementara tabelnya memang sudah bisa digeser ke samping. */
+@media (max-width: 767.98px) {
+    .log-halaman .kolom-isi {
+        min-width: calc(100vw - 2rem);
+    }
+}
 </style>
 <?= $this->endSection() ?>
 
@@ -46,7 +55,10 @@ body.has-app-sidebar > div.container-xxl.log-halaman {
                         <th>Tujuan</th>
                         <th>Provider</th>
                         <th>Tipe</th>
-                        <th>Isi Pesan</th>
+                        <?php /* width:100% membuat kolom ini menyerap sisa lebar tabel,
+                           jadi isi pesan memanjang ke kanan alih-alih berhenti di
+                           tengah; kolom lain otomatis menyusut ke lebar konten minimumnya */ ?>
+                        <th style="width: 100%;" class="kolom-isi">Isi Pesan</th>
                         <th>Pengirim</th>
                         <th style="width: 110px;">Status</th>
                     </tr>
@@ -62,7 +74,7 @@ body.has-app-sidebar > div.container-xxl.log-halaman {
                     <?php else : ?>
                         <?php foreach ($logPesan as $log) : ?>
                             <tr>
-                                <td class="small text-muted font-monospace">
+                                <td class="small text-muted font-monospace text-nowrap">
                                     <?= date('d/m/Y H:i:s', (int) $log['created_at']) ?>
                                 </td>
                                 <td>
@@ -79,8 +91,9 @@ body.has-app-sidebar > div.container-xxl.log-halaman {
                                         <?= strtoupper(esc($log['tipe_pesan'])) ?>
                                     </span>
                                 </td>
-                                <td>
-                                    <div class="small font-monospace" style="max-width: 450px; white-space: pre-wrap; word-break: break-word;"><?= esc($log['isi_pesan']) ?></div>
+                                <td class="kolom-isi">
+                                    <?php /* tanpa max-width: kolom ini yang menyerap sisa lebar tabel, jadi isinya memanjang ke kanan */ ?>
+                                    <div class="small font-monospace" style="white-space: pre-wrap; word-break: break-word;"><?= esc($log['isi_pesan']) ?></div>
                                     <?php if (!empty($log['invoice_seri'])) : ?>
                                         <div class="small text-primary mt-1">Invoice: <strong><?= esc($log['invoice_seri']) ?></strong></div>
                                     <?php endif; ?>
@@ -104,6 +117,69 @@ body.has-app-sidebar > div.container-xxl.log-halaman {
                 </tbody>
             </table>
         </div>
+        <?php if ($totalPages > 1) : ?>
+            <?php
+            $akhir = (int) $totalPages;
+
+            // Jendela 5 nomor di sekitar halaman aktif, plus halaman pertama/terakhir
+            // dengan penanda "..." supaya halaman terjauh tetap bisa diklik.
+            $dari   = max(1, min($page - 2, $akhir - 4));
+            $sampai = min($akhir, $dari + 4);
+
+            $nomorHalaman = [];
+            if ($dari > 1) {
+                $nomorHalaman[] = 1;
+                if ($dari > 2) {
+                    $nomorHalaman[] = null;
+                }
+            }
+            for ($n = $dari; $n <= $sampai; $n++) {
+                $nomorHalaman[] = $n;
+            }
+            if ($sampai < $akhir) {
+                if ($sampai < $akhir - 1) {
+                    $nomorHalaman[] = null;
+                }
+                $nomorHalaman[] = $akhir;
+            }
+            ?>
+            <div class="card-footer bg-white d-flex justify-content-between align-items-center py-3 crm-pager">
+                <div class="small text-muted">
+                    Menampilkan <?= count($logPesan) ?> dari <?= number_format($total) ?> pesan terkirim &middot; Halaman <?= (int) $page ?> dari <?= $akhir ?>
+                </div>
+                <ul class="pagination pagination-sm mb-0">
+                    <?php if ($page > 1) : ?>
+                        <li class="page-item">
+                            <a class="page-link" href="<?= site_url('admin/crm/log' . ($page - 1 > 1 ? '?page=' . ($page - 1) : '')) ?>">&laquo; Sebelumnya</a>
+                        </li>
+                    <?php else : ?>
+                        <li class="page-item disabled">
+                            <span class="page-link">&laquo; Sebelumnya</span>
+                        </li>
+                    <?php endif; ?>
+
+                    <?php foreach ($nomorHalaman as $n) : ?>
+                        <?php if ($n === null) : ?>
+                            <li class="page-item disabled"><span class="page-link">&hellip;</span></li>
+                        <?php elseif ($n === $page) : ?>
+                            <li class="page-item active" aria-current="page"><span class="page-link"><?= $n ?></span></li>
+                        <?php else : ?>
+                            <li class="page-item"><a class="page-link" href="<?= site_url('admin/crm/log' . ($n > 1 ? '?page=' . $n : '')) ?>"><?= $n ?></a></li>
+                        <?php endif; ?>
+                    <?php endforeach; ?>
+
+                    <?php if ($page < $akhir) : ?>
+                        <li class="page-item">
+                            <a class="page-link" href="<?= site_url('admin/crm/log?page=' . ($page + 1)) ?>">Berikutnya &raquo;</a>
+                        </li>
+                    <?php else : ?>
+                        <li class="page-item disabled">
+                            <span class="page-link">Berikutnya &raquo;</span>
+                        </li>
+                    <?php endif; ?>
+                </ul>
+            </div>
+        <?php endif; ?>
     </div>
 </div>
 <?= $this->endSection() ?>
