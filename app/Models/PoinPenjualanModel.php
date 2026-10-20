@@ -36,9 +36,6 @@ class PoinPenjualanModel extends Model
     ];
     protected $useTimestamps  = false;
 
-    /** Status pembayaran yang dihitung lunas: 5 (lunas + kelebihan) dan 6 (lunas). */
-    private const LUNAS = [5, 6];
-
     /** Nilai status_pengiriman yang berarti semua barang sudah keluar = tab Selesai. */
     private const SELESAI = '3';
 
@@ -61,7 +58,7 @@ class PoinPenjualanModel extends Model
             return;
         }
 
-        $lunas     = in_array((int) $nota->status_pembayaran, self::LUNAS, true);
+        $lunas     = InvoiceModel::sudahLunas($nota);
         $selesai   = (string) $nota->status_pengiriman === self::SELESAI;
         $tersimpan = $nota->deleted_at === null;
         $dibatalkan = (string) $nota->status_pesanan === '3';

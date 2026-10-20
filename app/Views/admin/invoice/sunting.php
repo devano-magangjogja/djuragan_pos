@@ -539,7 +539,7 @@ $rincian_pesanan = baca_rincian($orderan->rincian);
                 </div>
             </div>
 
-            <!-- COD + alamat: hanya ditanya waktu menambah penerima -->
+            <!-- COD + alamat: kolomnya selalu ada; COD hanya mematikan isian alamat -->
             <div class="blk-alamat">
             <div class="mb-3">
                 <div class="form-check form-switch">
@@ -548,7 +548,7 @@ $rincian_pesanan = baca_rincian($orderan->rincian);
                 </div>
             </div>
 
-            <div id="nonCOD" style="display:none">
+            <div id="nonCOD">
                 <div class="mb-3">
                     <?= form_label('Alamat', 'alamat', ['class' => 'form-label']); ?>
                     <?= form_textarea(['name' => 'alamat', 'class' => 'form-control input',  'id' => 'alamat', 'required' => '', 'placeholder' => 'RT/RW, Nama Kampung/Perumahan, No Rumah, Desa/Kelurahan', 'rows' => '3', 'disabled' => '']); ?>
@@ -856,24 +856,22 @@ $js = <<< JS
 
     	var mpel=document.getElementById('modalTambahPelanggan');
 
-    	// Mode modal: tambah_pemesan / tambah_kirimKe. Judul dan blok yang tampil
-    	// datang dari tombol pemicunya, kecuali waktu edit yang membuka modal langsung.
-    	// Waktu edit, pertanyaan COD/alamat selalu ikut dibuka: kalau tidak, field
-    	// alamat tidak terkirim dan data pelanggan lama tertimpa jadi COD.
-    	function terapkanMode(mode, judul, edit) {
-    		var penerima = mode === 'tambah_kirimKe',
-    			tanyaAlamat = penerima || edit === true;
+    	// Mode modal: tambah_pemesan / tambah_kirimKe. Judul dan blok nama yang datang
+    	// dari tombol pemicunya. Blok COD + alamat TIDAK ikut disembunyikan: pemesan dan
+    	// penerima sama-sama punya kolom alamat, dan COD hanya mematikan isian alamatnya.
+    	// Kolom yang hilang dari layar bikin orang mengira fiturnya memang tidak ada.
+    	function terapkanMode(mode, judul) {
+    		var penerima = mode === 'tambah_kirimKe';
 
     		mpel.querySelector('.modal-title').textContent = judul;
     		$('#tambahPelanggan').removeClass('tambah_pemesan tambah_kirimKe').addClass(mode);
 
     		$('#tambahPelanggan .blk-pemesan').toggle(!penerima);
     		$('#tambahPelanggan .blk-penerima').toggle(penerima);
-    		$('#tambahPelanggan .blk-alamat').toggle(tanyaAlamat);
     		$('#nama_pelanggan, #hp1').prop('required', !penerima);
     		$('#nama_penerima, #hp_penerima1').prop('required', penerima);
 
-    		$('#nonCOD .input').prop('disabled', !tanyaAlamat || $('#cod').prop('checked'));
+    		$('#nonCOD .input').prop('disabled', $('#cod').prop('checked'));
     	}
 
     	mpel.addEventListener('show.bs.modal',function(g){
@@ -965,14 +963,14 @@ $js = <<< JS
     			cod   = Number(d.cod) === 1,
     			hp    = d.hp || [];
 
-    		terapkanMode(kirim ? 'tambah_kirimKe' : 'tambah_pemesan', kirim ? 'Ubah Data Penerima' : 'Ubah Data Pemesan', true);
+    		terapkanMode(kirim ? 'tambah_kirimKe' : 'tambah_pemesan', kirim ? 'Ubah Data Penerima' : 'Ubah Data Pemesan');
 
     		$('#nama_' + (kirim ? 'penerima' : 'pelanggan')).val(d.nama);
     		$(kirim ? '#hp_penerima1' : '#hp1').val(hp[0] || '');
     		$(kirim ? '#hp_penerima2' : '#hp2').val(hp[1] || '');
     		$('#tambahPelanggan [name="id_pelanggan"]').val(d.id);
 
-    		// switch COD sekaligus menentukan form alamat tampil atau tidak
+    		// switch COD menentukan isian alamat dipakai atau tidak (mati, bukan hilang)
     		$('#cod').prop('checked', cod).trigger('change');
 
     		$('#alamat').val(cod ? '' : d.alamat);
@@ -994,15 +992,13 @@ $js = <<< JS
     	}
 
     	$(document).on("keyup change", '.swictCOD', function(){
-    		var nonCOD = $('#nonCOD');
-    		if (this.checked) {
-    			// COD aktif - sembunyikan form alamat
-    			$('#nonCOD .input').prop('disabled', true);
-    			nonCOD.hide();
-    		} else {
-    			// COD nonaktif - tampilkan form alamat
-    			$('#nonCOD .input').prop('disabled', false);
-    			nonCOD.show();
+    		// COD aktif: isian alamat DIMATIKAN tapi tetap terlihat. Field yang disabled
+    		// juga tidak ikut terkirim, jadi tindakan ke server sama persis seperti
+    		// waktu bloknya disembunyikan — hanya layarnya yang kini jujur.
+    		$('#nonCOD .input').prop('disabled', this.checked);
+
+    		if (! this.checked) {
+    			// daftar wilayah baru dibutuhkan ketika alamatnya jadi dipakai
     			isiProvinsi();
     		}
     	});
@@ -1033,7 +1029,7 @@ $js = <<< JS
     			fpel[0].reset();
     			fpel.removeData('tersimpan');
     			$('#auto-results').empty();
-    			$('#nonCOD').hide();
+    			// reset mengembalikan COD ke posisi aktif, jadi isian alamat dimatikan lagi
     			$('#nonCOD .input').prop('disabled', true);
     		}
     	});

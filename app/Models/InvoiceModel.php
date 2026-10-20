@@ -351,12 +351,16 @@ class InvoiceModel extends Model
     }
 
     /**
-     * Klausul "masih disewa": nota sewa yang barangnya sudah diserahkan ke
-     * pelanggan tapi pengembaliannya belum dicatat. Ini kunci yang sama dengan
-     * pengurang stok kolam sewa di StokModel::klausaTersedia dan dengan syarat
-     * poin gaji di PoinPenjualanModel, jadi isi tab Masih Disewa, angka "sedang
-     * disewa" di halaman Produk, dan poin yang belum masuk tidak bisa berbeda
-     * aturan.
+     * Klausul "masih disewa": barang sewaan sudah diserahkan ke penyewa,
+     * pembayarannya sudah lunas, dan pengembaliannya belum dicatat. Tab ini
+     * menandai fase pekerjaan — unit di tangan orang lain yang tinggal ditagih
+     * kepulangannya — sehingga nota yang barangnya masih di rak atau dananya baru
+     * DP tidak ikut menyempakkan daftar.
+     *
+     * Ini kunci yang sama dengan syarat tombol "Sudah kembali" boleh ditekan
+     * (masihDisewa()), jadi isi tab dan apa yang hidup di kartu nota tidak bisa
+     * berbeda pendapat. Stok kolam sewa sengaja mengikat lebih awal: unitnya sudah
+     * terpakai sejak notasnya ditulis, supaya tidak ada stok gaib.
      *
      * $tabel adalah nama tabel invoice lengkap dengan prefix-nya, karena
      * klausul ini dipakai pada where mentah yang tidak di-escape builder.
@@ -365,7 +369,30 @@ class InvoiceModel extends Model
     {
         return self::klausulSewaMenunggu($tabel)
             . " AND {$tabel}.status_pengiriman = '3'"
-            . " AND {$tabel}.status_pesanan <> '3'";
+            . " AND {$tabel}.status_pesanan <> '3'"
+            . ' AND ' . self::klausulLunas($tabel);
+    }
+
+    /** Status pembayaran yang dihitung lunas; satu daftar untuk SQL dan PHP. */
+    public const LUNAS = ['5', '6'];
+
+    /** Klausul lunas dalam SQL mentah; pasangannya sudahLunas() di PHP. */
+    public static function klausulLunas(string $tabel): string
+    {
+        return $tabel . ".status_pembayaran IN ('" . implode("', '", self::LUNAS) . "')";
+    }
+
+    /**
+     * Dana nota ini sudah sah masuk? Yang ditanya di sini hanya keadaan bayar,
+     * bukan besarnya uang: dipakai untuk memutuskan unit sewa sedang dipakai.
+     *
+     * @param object|array|null $nota baris invoice
+     */
+    public static function sudahLunas($nota): bool
+    {
+        $status = (string) (is_array($nota) ? ($nota['status_pembayaran'] ?? '') : ($nota->status_pembayaran ?? ''));
+
+        return in_array($status, self::LUNAS, true);
     }
 
     /**
@@ -407,6 +434,47 @@ class InvoiceModel extends Model
     }
 
     /**
+     * Pasangan PHP dari klausulMasihDisewa(): barangnya sudah diserahkan,
+     * pembayarannya sudah lunas, dan pengembaliannya belum dicatat. Inilah satu-
+     * satunya keadaan yang boleh menekan tombol "Sudah kembali", jadi layar dan
+     * query tidak bisa berbeda pendapat. Stok tidak ikut syarat ini — unit sewa
+     * sudah diikat notasnya sejak orderan ditulis, supaya tidak ada stok gaib.
+     */
+    public static function masihDisewa(object $nota): bool
+    {
+        return self::sewaMenunggu($nota)
+            && (string) ($nota->status_pengiriman ?? '') === '3'
+            && (string) ($nota->status_pesanan ?? '') !== '3'
+            && self::sudahLunas($nota);
+    }
+
+    /**
+     * Kenapa tombolnya masih mati, untuk ditulis di tooltip. null = boleh ditekan.
+     * Urutan alasannya sengaja dari yang paling awal dalam alur kerja: belum
+     * diserahkan, belum dibayar, baru batal.
+     */
+    public static function alasanBelumDisewa(object $nota): ?string
+    {
+        if (! self::sewaMenunggu($nota)) {
+            return null;
+        }
+
+        if ((string) ($nota->status_pengiriman ?? '') !== '3') {
+            return 'Belum bisa dicatat kembali: barangnya belum diserahkan ke penyewa.';
+        }
+
+        if (! self::sudahLunas($nota)) {
+            return 'Belum bisa dicatat kembali: pembayaran nota ini belum lunas.';
+        }
+
+        if ((string) ($nota->status_pesanan ?? '') === '3') {
+            return 'Nota ini dibatalkan, pengembaliannya tidak dicatat lagi.';
+        }
+
+        return null;
+    }
+
+    /**
      * Catat pengembalian barang sewaan. `$tanggal` boleh diisi kalau petugas
      * mencatat kepulangan yang terjadi hari sebelumnya; kosong = sekarang.
      *
@@ -425,6 +493,17 @@ class InvoiceModel extends Model
 
         if (! self::adalahSewa($nota->rincian ?? null)) {
             return ['ok' => false, 'pesan' => 'Hanya orderan sewa yang punya pencatatan pengembalian.', 'waktu' => null];
+        }
+
+        // penanda ini adalah pintu masuk tab Selesai, stok pulih, dan poin diberikan,
+        // jadi tidak boleh diisi untuk nota yang penyewaannya belum sah berjalan —
+        // sama seperti tombolnya yang hanya hidup di tab Masih Disewa
+        if (! self::masihDisewa($nota)) {
+            return [
+                'ok'    => false,
+                'pesan' => self::alasanBelumDisewa($nota) ?? 'Nota ini tidak sedang disewa.',
+                'waktu' => null,
+            ];
         }
 
         $waktu = $this->waktuKembali($tanggal);

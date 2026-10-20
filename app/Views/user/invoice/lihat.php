@@ -211,11 +211,15 @@ $session  = \Config\Services::session();
         $wajib_bayar = $harga_barang;
         $time        = Time::createFromFormat('Y-m-d', $pesanan->tanggal_pesan);
 
-        // penyewaan belum dianggap selesai sampai pengembaliannya dicatat orang;
+        // penyewaan berjalan = barang sudah diserahkan DAN pembayaran sudah lunas,
+        // sementara pengembaliannya belum dicatat. Keadaan inilah yang memakan stok
+        // kolam sewa dan satu-satunya yang boleh menekan tombol "Sudah kembali";
         // tanggal jadual di rincian cuma pengingat, bukan kenyataan barangnya
-        $adalah_sewa   = \App\Models\InvoiceModel::adalahSewa($pesanan->rincian ?? null);
-        $sewa_berjalan = \App\Models\InvoiceModel::sewaMenunggu($pesanan);
-        $sewa_pulang   = $adalah_sewa && ! $sewa_berjalan;
+        $adalah_sewa    = \App\Models\InvoiceModel::adalahSewa($pesanan->rincian ?? null);
+        $sewa_berjalan  = \App\Models\InvoiceModel::sewaMenunggu($pesanan);
+        $sewa_pulang    = $adalah_sewa && ! $sewa_berjalan;
+        $siap_kembali   = \App\Models\InvoiceModel::masihDisewa($pesanan);
+        $alasan_kembali = \App\Models\InvoiceModel::alasanBelumDisewa($pesanan);
         ?>
         <div class="kartu-invoice mb-4 rounded-2xl sm:rounded-[1.5rem] border border-ink-200 bg-white shadow-sm transition hover:shadow-md">
             <div class="p-3.5 sm:p-5">
@@ -711,19 +715,31 @@ $session  = \Config\Services::session();
                     }
 
                     if ($sewa_berjalan) {
-                        echo form_button([
-                            'class'        => 'btn btn-sm rounded-lg btn-success sewaKembali',
+                        // tombolnya mati selama nota belum masuk tab Masih Disewa:
+                        // dicatat kembali hanya masuk akal untuk barang yang memang
+                        // benar-benar sedang dipinjam orang
+                        $kembali = [
                             'content'      => '<i class="fal fa-tshirt"></i> Sudah kembali',
                             'data-invoice' => $pesanan->id_invoice,
                             'data-seri'    => $pesanan->seri,
-                            'title'        => 'Barang sewaan sudah diterima kembali di toko',
-                        ]);
+                        ];
+
+                        if ($siap_kembali) {
+                            $kembali['class'] = 'btn btn-sm rounded-lg btn-success sewaKembali';
+                            $kembali['title'] = 'Barang sewaan sudah diterima kembali di toko';
+                        } else {
+                            $kembali['class']    = 'btn btn-sm rounded-lg btn-success disabled';
+                            $kembali['disabled'] = '';
+                            $kembali['title']    = (string) $alasan_kembali;
+                        }
+
+                        echo form_button($kembali);
                     } elseif ($sewa_pulang) {
-                        $kembali = Time::createFromTimestamp((int) $pesanan->sewa_kembali_at)
+                        $waktu_kembali = Time::createFromTimestamp((int) $pesanan->sewa_kembali_at)
                             ->setTimezone(config('App')->appTimezone)
                             ->toLocalizedString('d MMM yyyy HH:mm'); ?>
                         <span class="btn btn-sm rounded-lg btn-success disabled" title="Waktu pengembaliannya dicatat">
-                            <i class="fal fa-undo-alt-left"></i> Kembali <?= esc($kembali) ?>
+                            <i class="fal fa-undo-alt-left"></i> Kembali <?= esc($waktu_kembali) ?>
                         </span>
                         <?php echo form_button([
                             'class'        => 'btn btn-sm rounded-lg btn-outline-secondary sewaBatalkan',

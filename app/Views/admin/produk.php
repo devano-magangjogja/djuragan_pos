@@ -552,9 +552,9 @@ $kueriTab = array_filter([
                        tidak bergantung pada tab kolam yang sedang dibuka */ ?>
                     <?php if ($disewa > 0) { ?>
                         <a class="pil-disewa mt-3" href="<?= esc($tautan_disewa) ?>"
-                            title="Buka tab Masih Disewa di daftar transaksi">
+                            title="Unit yang sudah diikat nota sewa dan belum dicatat kembali — inilah pengurang kolom Tersedia. Tab Masih Disewa hanya memuat yang sudah diserahkan dan lunas.">
                             <span class="pil-disewa__titik" aria-hidden="true"></span>
-                            <?= formatRibuan($disewa) ?> unit sedang disewa
+                            <?= formatRibuan($disewa) ?> unit terikat nota sewa
                             <i class="fal fa-arrow-alt-right text-ink-400" aria-hidden="true"></i>
                         </a>
                     <?php } ?>
