@@ -1,0 +1,1832 @@
+<!-- DEBUG-VIEW START 7 APPPATH\Views\admin\crm\pelanggan.php -->
+<!-- DEBUG-VIEW START 6 APPPATH\Views\template\main.php -->
+<!doctype html>
+<html lang="id">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="http://localhost:8080/assets/css/style.css?v=1792483834">
+    <link rel="stylesheet" href="http://localhost:8080/assets/css/tailwind.css?v=1792154747">
+
+    <style>
+/* ikon cari ikut di dalam field; radius sengaja tidak disentuh supaya bentuk
+   kotaknya tetap sama seperti sebelumnya */
+.form-control.crm-cari {
+    padding-left: 2.1rem !important;
+}
+/* style.css mengunci .form-select-sm{padding:.35rem .65rem !important} sehingga
+   ruang yang Bootstrap sisakan di sisi kanan untuk panah kotaknya ikut terhapus.
+   Akibatnya teks pilihan yang panjang ("Prospek / Belum Closing", "Semua Segmen
+   Perilaku") mengalir sampai ke bawah tanda ">". Ruang itu dikembalikan: panah
+   sm duduk di 8px dari tepi dan lebarnya ±13px, 1,75rem memberi sisa aman. */
+.form-select-sm {
+    padding-right: 1.75rem !important;
+}
+/* dua tombol aksi di kolom paling kanan dibuat sama ukurannya. .btn di style.css
+   pakai inline-flex + gap, jadi cukup atur lebar minimumnya saja */
+td .btn.crm-aksi {
+    min-width: 84px;
+}
+/* Desktop: tabel ini lebih lebar dari wadahnya (judul kolom dipaksa nowrap di
+   style.css + kolom Customer punya min-width), sehingga .table-responsive
+   memunculkan scroll horizontal dan kolom Aksi terdorong keluar. table-layout
+   fixed membuat tabel tidak pernah melebar lebih dari kontainernya: kolom dibagi
+   dalam persen dan isinya yang turun baris, bukan tabelnya. */
+.crm-tabel {
+    table-layout: fixed;
+    width: 100%;
+}
+.crm-tabel th {
+    white-space: normal !important;
+}
+.crm-tabel td,
+.crm-tabel th {
+    overflow-wrap: anywhere;
+}
+/* padding harus memakai selector yang lebih spesifik dari
+   ".table tbody td" di style.css (paddingnya !important), kalau tidak
+   aturan ini kalah dan tiap sel tetap makan 1rem kiri-kanan */
+.crm-tabel tbody td {
+    padding-left: 0.6rem !important;
+    padding-right: 0.6rem !important;
+}
+/* Khusus mobile (<=768px): tiap baris ditumpuk jadi kartu. Desktop tidak diubah. */
+@media (max-width: 767.98px) {
+    /* Wadah tabel: bukan area geser, tapi juga tidak boleh meluber ke kanan
+       sampai melewati tepi layar (pakai hidden, bukan visible). */
+    div.table-responsive {
+        overflow: hidden !important;
+    }
+    .crm-tabel thead {
+        display: none;
+    }
+    .crm-tabel,
+    .crm-tabel tbody,
+    .crm-tabel td {
+        display: block;
+        width: 100%;
+    }
+    .crm-tabel tr {
+        display: grid;
+        /* minmax(0,1fr), bukan 1fr: batas bawah 1fr adalah "auto" sehingga satu
+           sel yang isinya panjang bisa melebar dan halaman jadi bisa digeser */
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        column-gap: 0.9rem;
+        border: 1px solid #eaecf0;
+        border-radius: 10px;
+        margin-bottom: 0.6rem;
+        padding: 0.15rem 0.7rem;
+    }
+    .crm-tabel td:nth-child(1),
+    .crm-tabel td:nth-child(8),
+    .crm-tabel td[colspan] {
+        grid-column: 1 / -1;
+    }
+    .crm-tabel tbody td {
+        padding: 0.5rem 0 !important;
+        border-bottom: 1px dashed #eaecf0 !important;
+        box-shadow: none;
+        text-align: left !important;
+        white-space: normal !important;
+        overflow-wrap: anywhere;
+    }
+    .crm-tabel tr td:last-child,
+    .crm-tabel tbody td:last-child,
+    .crm-tabel td[data-label="Aksi"] {
+        border-bottom: 0 !important;
+    }
+    .crm-tabel td::before {
+        content: attr(data-label);
+        display: block;
+        margin-bottom: 0.15rem;
+        font-size: 0.72rem !important;
+        font-weight: 600;
+        color: #98a2b3;
+    }
+    .crm-tabel td .btn {
+        margin-bottom: 0.25rem;
+    }
+    /* Baris Aksi dulu dua tombolnya menggantung di kiri dan menyisakan hampir
+       separuh baris kosong di kanan. Sekarang labelnya satu baris sendiri dan
+       kedua tombol dibagi rata sampai tepi kartu. .me-2 di markup dan padding
+       td di atas sama-sama !important, jadi ikut !important juga. */
+    .crm-tabel td[data-label="Aksi"] {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .crm-tabel td[data-label="Aksi"]::before {
+        width: 100%;
+    }
+    .crm-tabel td[data-label="Aksi"] .btn {
+        flex: 1 1 0;
+        min-width: 0;
+        margin: 0 !important;
+    }
+    /* Dua angka uang sejajar di kolomnya masing-masing supaya tidak bergigi */
+    .crm-tabel td[data-label="Total Belanja"],
+    .crm-tabel td[data-label="Sisa Piutang"] {
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+    }
+
+    /* Sorotan baris di mode kartu. style.css mewarnai TIAP SEL saat barisnya
+       disorot (.table tbody tr:hover td, !important); di mode kartu sel tidak
+       punya padding kiri-kanan sementara kartunya punya column-gap + padding,
+       jadi sentuhan menimbulkan kotak-kotak putih di dalam kartu. Pewarnaan sel
+       dimatikan dan kartunya saja yang disorot -- khusus pointer sungguhan,
+       supaya di layar sentuh tidak menempel setelah dilepas. */
+    .crm-tabel tbody tr:hover td {
+        background-color: transparent !important;
+    }
+
+    .crm-tabel tbody tr {
+        background-color: #ffffff;
+        transition: background-color 0.15s ease, border-color 0.15s ease;
+    }
+
+    @media (hover: hover) {
+        .crm-tabel tbody tr:hover {
+            background-color: #f9fafb;
+            border-color: #d0d5dd;
+        }
+    }
+}
+</style>
+
+    <title>CRM - Data Pelanggan</title>
+    <script>
+        if (localStorage.getItem('djuragan_sidebar_collapsed') === '1') {
+            document.documentElement.classList.add('sidebar-collapsed');
+            document.addEventListener('DOMContentLoaded', function() {
+                document.body.classList.add('sidebar-collapsed');
+            });
+        }
+    </script>
+</head>
+
+<body class="has-app-sidebar">
+    <!-- DEBUG-VIEW START 3 APPPATH\Views\admin\navbar.php -->
+<!-- DEBUG-VIEW START 1 APPPATH\Views\template\feedback.php -->
+<div class="fixed-bottom">
+    <div class="container-fluid d-flex justify-content-end px-2">
+        <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#feedbackModal" title="Kirim Masukan" aria-label="Kirim Masukan">
+            <i class="fal fa-headset fs-5"></i>
+        </button>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="feedbackModal" tabindex="-1" aria-labelledby="feedbackModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form action="http://localhost:8080/kirim-masukan" method="post" accept-charset="utf-8">
+            <div class="modal-header">
+                <h5 class="modal-title" id="feedbackModalLabel">Kirim Masukan / Permintaan Fitur</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+
+                <div class="mb-3">
+                    <label for="keterangan" class="form-label">Detail</label>                    <textarea name="keterangan" cols="40" rows="3" class="form-control" id="keterangan" placeholder="Ketikkan detail masukan / permintaan fitur"></textarea>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <!-- <button type="button" class="btn btn-link" data-bs-dismiss="modal">Batal</button> -->
+                <button type="submit" class="btn btn-primary">Kirim</button>
+            </div>
+            </form>        </div>
+    </div>
+</div>
+
+<!-- DEBUG-VIEW ENDED 1 APPPATH\Views\template\feedback.php -->
+
+<style>
+    /* Lingkaran merah di topbar layar kecil: titik kecil berkedip yang menempel di
+       ujung kanan-atas lonceng. Angkanya tidak ditampilkan lagi. Kelas Bootstrap
+       (top-0 / start-100 / translate-middle / .badge) semuanya memakai !important,
+       jadi posisi dan ukurannya juga harus !important. */
+    .mobile-topbar .counter {
+        font-size: 0 !important;
+        padding: 0 !important;
+        width: 6px !important;
+        height: 6px !important;
+        top: 6px !important;
+        right: 5px !important;
+        left: auto !important;
+        transform: none !important;
+        animation: notif-kedip 1.2s ease-in-out infinite;
+    }
+
+    /* Loncengnya duduk 1px lebih tinggi dari hamburger, logo, dan avatar (kotak
+       <a>-nya pakai p-2 sedangkan tombol lain p-1/p-0), jadi geser 1px ke bawah
+       supaya sebaris. Titik merangnya ikut karena posisinya di dalam <a> ini. */
+    .mobile-topbar a[data-notif-toggle="1"] {
+        top: 1px;
+    }
+
+    @keyframes notif-kedip {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.2; }
+    }
+</style>
+<!-- Topbar khusus layar kecil; di desktop lonceng notifikasi melayang sendiri
+     (lihat .notif-melayang di template/notif_bar.php), bukan bar penuh. -->
+<header class="mobile-topbar d-flex d-lg-none align-items-center justify-content-between px-2 sticky-top">
+    <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-sm btn-link mobile-topbar-btn p-1 text-decoration-none" id="mobileSidebarToggle" type="button" aria-label="Buka Menu">
+            <i class="fal fa-bars fs-5"></i>
+        </button>
+        <a href="http://localhost:8080/" class="d-flex align-items-center gap-2 mobile-topbar-brand text-decoration-none">
+            <div class="sidebar-brand-icon" style="width:28px;height:28px;font-size:0.85rem;">
+                <i class="fal fa-layer-group"></i>
+            </div>
+            <span class="fw-bold small sidebar-brand-text-label">Djuragan POS</span>
+        </a>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a class="mobile-topbar-btn text-decoration-none position-relative p-2" data-notif-toggle="1" href="#notifikasi" role="button" aria-label="Notifikasi" title="Notifikasi">
+            <i class="fal fa-bell fs-5"></i>
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger counter"></span>
+        </a>
+        <div class="dropdown">
+            <button class="btn btn-sm btn-link mobile-topbar-btn p-0 text-decoration-none" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <div class="sidebar-user-avatar" style="width:28px;height:28px;font-size:0.75rem;">
+                    A                </div>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
+                <li class="dropdown-header text-truncate" style="max-width: 200px;">
+                    <strong>Admin</strong>
+                    <div class="small text-muted text-uppercase">admin</div>
+                </li>
+                <li><hr class="dropdown-divider my-1"></li>
+                <li><a class="dropdown-item py-2" href="http://localhost:8080/user/sunting"><i class="fal fa-user-edit me-2"></i> Ubah Profil</a></li>
+                <li><a class="dropdown-item py-2 text-danger" href="http://localhost:8080/auth/keluar"><i class="fal fa-sign-out-alt me-2"></i> Keluar</a></li>
+            </ul>
+        </div>
+    </div>
+</header>
+
+<!-- Backdrop overlay untuk mobile -->
+<div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+<!-- Sidebar Utama Admin -->
+<aside class="app-sidebar" id="appSidebar">
+    <!-- Header Brand -->
+    <div class="sidebar-header">
+        <a href="http://localhost:8080/" class="sidebar-brand">
+            <div class="sidebar-brand-icon">
+                <i class="fal fa-layer-group"></i>
+            </div>
+            <div class="sidebar-brand-text">
+                <span>Djuragan POS</span>
+                <span class="role-badge">ADMIN</span>
+            </div>
+        </a>
+        <div class="d-flex align-items-center">
+            <!-- Tombol sembunyikan desktop -->
+            <button class="btn btn-sm sidebar-close-btn sidebar-collapse-btn p-1" id="desktopSidebarCollapse" type="button" title="Sembunyikan Sidebar">
+                <i class="fal fa-bars fs-6"></i>
+            </button>
+            <!-- Tombol tutup mobile -->
+            <button class="btn btn-sm sidebar-close-btn p-1 d-lg-none" id="mobileSidebarClose" type="button" aria-label="Tutup Menu">
+                <i class="fal fa-times fs-5"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Menu Gulir -->
+    <div class="sidebar-menu">
+        <div class="sidebar-heading">Menu Utama</div>
+        <ul class="sidebar-nav">
+            <li class="nav-item">
+                <a class="sidebar-link " href="http://localhost:8080/admin/dasbor">
+                    <i class="sidebar-link-icon fal fa-home"></i>
+                    <span>Dasbor</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="sidebar-link " data-bs-toggle="collapse" href="#submenuTransaksi" role="button" aria-expanded="false" aria-controls="submenuTransaksi">
+                    <i class="sidebar-link-icon fal fa-receipt"></i>
+                    <span>Transaksi</span>
+                    <i class="fal fa-chevron-down sidebar-chevron"></i>
+                </a>
+                <div class="collapse " id="submenuTransaksi">
+                    <ul class="sidebar-submenu">
+                                                    <li class="submenu-item">
+                                <a class="sidebar-submenu-link " href="http://localhost:8080/admin/invoices/lihat/semua/semua">
+                                    <i class="fal fa-receipt"></i>
+                                    <span>Tracking Transaksi</span>
+                                </a>
+                            </li>
+                                                    <li class="submenu-item">
+                                <a class="sidebar-submenu-link " href="http://localhost:8080/admin/cod">
+                                    <i class="fal fa-truck-fast"></i>
+                                    <span>Pencatatan COD</span>
+                                </a>
+                            </li>
+                                            </ul>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="sidebar-link " href="http://localhost:8080/admin/produk">
+                    <i class="sidebar-link-icon fal fa-tshirt"></i>
+                    <span>Produk</span>
+                </a>
+            </li>
+        </ul>
+
+                    <div class="sidebar-heading mt-2">Hubungan Pelanggan</div>
+            <ul class="sidebar-nav">
+                <!-- Submenu CRM -->
+                <li class="nav-item">
+                    <a class="sidebar-link active" data-bs-toggle="collapse" href="#submenuCrm" role="button" aria-expanded="true" aria-controls="submenuCrm">
+                        <i class="sidebar-link-icon fal fa-comments-alt"></i>
+                        <span>CRM</span>
+                        <i class="fal fa-chevron-down sidebar-chevron"></i>
+                    </a>
+                    <div class="collapse show" id="submenuCrm">
+                        <ul class="sidebar-submenu">
+                                                            <li class="submenu-item">
+                                    <a class="sidebar-submenu-link " href="http://localhost:8080/admin/crm">
+                                        <i class="fal fa-chart-pie"></i>
+                                        <span>Ringkasan</span>
+                                    </a>
+                                </li>
+                                                            <li class="submenu-item">
+                                    <a class="sidebar-submenu-link active" href="http://localhost:8080/admin/crm/pelanggan">
+                                        <i class="fal fa-users"></i>
+                                        <span>Data Pelanggan</span>
+                                    </a>
+                                </li>
+                                                            <li class="submenu-item">
+                                    <a class="sidebar-submenu-link " href="http://localhost:8080/admin/crm/followup">
+                                        <i class="fal fa-tasks"></i>
+                                        <span>Follow-up</span>
+                                    </a>
+                                </li>
+                                                            <li class="submenu-item">
+                                    <a class="sidebar-submenu-link " href="http://localhost:8080/admin/crm/tagihan">
+                                        <i class="fal fa-file-invoice-dollar"></i>
+                                        <span>Tagihan</span>
+                                    </a>
+                                </li>
+                                                            <li class="submenu-item">
+                                    <a class="sidebar-submenu-link " href="http://localhost:8080/admin/crm/chat">
+                                        <i class="fal fa-comments"></i>
+                                        <span>Live Chat WA</span>
+                                    </a>
+                                </li>
+                                                            <li class="submenu-item">
+                                    <a class="sidebar-submenu-link " href="http://localhost:8080/admin/crm/broadcast">
+                                        <i class="fal fa-bullhorn"></i>
+                                        <span>Broadcast</span>
+                                    </a>
+                                </li>
+                                                            <li class="submenu-item">
+                                    <a class="sidebar-submenu-link " href="http://localhost:8080/admin/crm/duplikat">
+                                        <i class="fal fa-clone"></i>
+                                        <span>Akun Duplikat</span>
+                                    </a>
+                                </li>
+                                                            <li class="submenu-item">
+                                    <a class="sidebar-submenu-link " href="http://localhost:8080/admin/crm/pengiriman">
+                                        <i class="fal fa-shipping-fast"></i>
+                                        <span>Pengiriman &amp; Resi</span>
+                                    </a>
+                                </li>
+                                                            <li class="submenu-item">
+                                    <a class="sidebar-submenu-link " href="http://localhost:8080/admin/crm/log">
+                                        <i class="fal fa-history"></i>
+                                        <span>Riwayat Pesan</span>
+                                    </a>
+                                </li>
+                                                            <li class="submenu-item">
+                                    <a class="sidebar-submenu-link " href="http://localhost:8080/admin/crm/template">
+                                        <i class="fal fa-file-alt"></i>
+                                        <span>Template Pesan</span>
+                                    </a>
+                                </li>
+                                                            <li class="submenu-item">
+                                    <a class="sidebar-submenu-link " href="http://localhost:8080/admin/crm/pengaturan">
+                                        <i class="fal fa-sliders-h"></i>
+                                        <span>Pengaturan WA</span>
+                                    </a>
+                                </li>
+                                                    </ul>
+                    </div>
+                </li>
+            </ul>
+
+            <div class="sidebar-heading mt-2">Kinerja & KPI</div>
+            <ul class="sidebar-nav">
+                <!-- Submenu KPI -->
+                <li class="nav-item">
+                    <a class="sidebar-link " data-bs-toggle="collapse" href="#submenuKpi" role="button" aria-expanded="false" aria-controls="submenuKpi">
+                        <i class="sidebar-link-icon fal fa-bullseye"></i>
+                        <span>KPI</span>
+                        <i class="fal fa-chevron-down sidebar-chevron"></i>
+                    </a>
+                    <div class="collapse " id="submenuKpi">
+                        <ul class="sidebar-submenu">
+                                                            <li class="submenu-item">
+                                    <a class="sidebar-submenu-link " href="http://localhost:8080/admin/kpi">
+                                        <i class="fal fa-chart-pie"></i>
+                                        <span>Ringkasan</span>
+                                    </a>
+                                </li>
+                                                            <li class="submenu-item">
+                                    <a class="sidebar-submenu-link " href="http://localhost:8080/admin/kpi/ranking">
+                                        <i class="fal fa-trophy"></i>
+                                        <span>Ranking</span>
+                                    </a>
+                                </li>
+                                                            <li class="submenu-item">
+                                    <a class="sidebar-submenu-link " href="http://localhost:8080/admin/kpi/target">
+                                        <i class="fal fa-bullseye"></i>
+                                        <span>Target &amp; Bobot</span>
+                                    </a>
+                                </li>
+                                                    </ul>
+                    </div>
+                </li>
+            </ul>
+        
+        <div class="sidebar-heading mt-2">Laporan & Analisis</div>
+        <ul class="sidebar-nav">
+            <!-- Submenu Laporan -->
+            <li class="nav-item">
+                <a class="sidebar-link " data-bs-toggle="collapse" href="#submenuLaporan" role="button" aria-expanded="false" aria-controls="submenuLaporan">
+                    <i class="sidebar-link-icon fal fa-file-alt"></i>
+                    <span>Laporan</span>
+                    <i class="fal fa-chevron-down sidebar-chevron"></i>
+                </a>
+                <div class="collapse " id="submenuLaporan">
+                    <ul class="sidebar-submenu">
+                                                    <li class="submenu-item">
+                                <a class="sidebar-submenu-link " href="http://localhost:8080/admin/laporan/pesanan">
+                                    <i class="fal fa-file-alt"></i>
+                                    <span>Laporan Pesanan</span>
+                                </a>
+                            </li>
+                                                    <li class="submenu-item">
+                                <a class="sidebar-submenu-link " href="http://localhost:8080/admin/laporan/pendapatan">
+                                    <i class="fal fa-wallet"></i>
+                                    <span>Laporan Pendapatan</span>
+                                </a>
+                            </li>
+                                                    <li class="submenu-item">
+                                <a class="sidebar-submenu-link " href="http://localhost:8080/admin/laporan/pembayaran">
+                                    <i class="fal fa-money-check-edit"></i>
+                                    <span>Laporan Pembayaran</span>
+                                </a>
+                            </li>
+                                                    <li class="submenu-item">
+                                <a class="sidebar-submenu-link " href="http://localhost:8080/admin/laporan/piutang">
+                                    <i class="fal fa-inbox-in"></i>
+                                    <span>Laporan Piutang</span>
+                                </a>
+                            </li>
+                                                    <li class="submenu-item">
+                                <a class="sidebar-submenu-link " href="http://localhost:8080/admin/laporan/produksi">
+                                    <i class="fal fa-tasks"></i>
+                                    <span>Laporan Produksi</span>
+                                </a>
+                            </li>
+                                                    <li class="submenu-item">
+                                <a class="sidebar-submenu-link " href="http://localhost:8080/admin/laporan/produk">
+                                    <i class="fal fa-box-alt"></i>
+                                    <span>Laporan Produk</span>
+                                </a>
+                            </li>
+                                                    <li class="submenu-item">
+                                <a class="sidebar-submenu-link " href="http://localhost:8080/admin/laporan/pelanggan">
+                                    <i class="fal fa-user"></i>
+                                    <span>Laporan Customer</span>
+                                </a>
+                            </li>
+                                            </ul>
+                </div>
+            </li>
+        </ul>
+
+            </div>
+
+    <!-- Footer Sidebar: Profil -->
+    <div class="sidebar-footer">
+        <div class="sidebar-user-card">
+            <div class="sidebar-user-avatar">
+                A            </div>
+            <div class="sidebar-user-info">
+                <div class="sidebar-user-name" title="Admin">Admin</div>
+                <div class="sidebar-user-role">admin</div>
+            </div>
+            <div class="sidebar-user-actions">
+                <a class="sidebar-action-btn" href="http://localhost:8080/user/sunting" title="Ubah Profil">
+                    <i class="fal fa-user-edit"></i>
+                </a>
+                <a class="sidebar-action-btn btn-logout" href="http://localhost:8080/auth/keluar" title="Keluar">
+                    <i class="fal fa-sign-out-alt"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</aside>
+
+<!-- DEBUG-VIEW START 2 APPPATH\Views\template\notif_bar.php -->
+<!-- Lonceng khusus desktop: melayang di pojok kanan atas, bukan bar penuh.
+     Di layar kecil loncengnya sudah ada di topbar. -->
+<a class="notif-melayang" data-notif-toggle="1" href="#notifikasi" role="button" aria-label="Notifikasi" title="Notifikasi">
+    <i class="fal fa-bell"></i>
+    <span class="notif-melayang__angka counter"></span>
+</a>
+
+<div class="notif-panel" id="notifikasi" role="dialog" aria-label="Notifikasi" aria-hidden="true">
+    <div class="notif-panel__kepala">
+        <span class="fw-semibold">Notifikasi</span>
+        <button type="button" class="btn btn-sm btn-link p-0 small fw-semibold btnSettingNotif tandaiSemuaTerbaca">
+            Tandai semua dibaca
+        </button>
+    </div>
+
+    <div class="list-group list-group-flush notif-panel__isi" id="notifDisini"></div>
+
+    <a class="notif-panel__buntut" href="http://localhost:8080/admin/notifikasi">
+        Lihat semua notifikasi <i class="fal fa-chevron-right"></i>
+    </a>
+</div>
+
+<!-- DEBUG-VIEW ENDED 2 APPPATH\Views\template\notif_bar.php -->
+
+<script>
+    (function() {
+        document.body.classList.add('has-app-sidebar');
+        if (localStorage.getItem('djuragan_sidebar_collapsed') === '1') {
+            document.body.classList.add('sidebar-collapsed');
+        }
+
+        // Mobile sidebar toggle
+        var mobToggle = document.getElementById('mobileSidebarToggle');
+        var mobClose  = document.getElementById('mobileSidebarClose');
+        var backdrop  = document.getElementById('sidebarBackdrop');
+        var sidebar   = document.getElementById('appSidebar');
+
+        function openSidebar() {
+            if (sidebar) sidebar.classList.add('show');
+            if (backdrop) backdrop.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeSidebar() {
+            if (sidebar) sidebar.classList.remove('show');
+            if (backdrop) backdrop.classList.remove('show');
+            document.body.style.overflow = '';
+        }
+
+        if (mobToggle) mobToggle.addEventListener('click', openSidebar);
+        if (mobClose) mobClose.addEventListener('click', closeSidebar);
+        if (backdrop) backdrop.addEventListener('click', closeSidebar);
+
+        // Desktop collapse toggle — rail ikon tetap terlihat dan melebar sendiri
+        // saat disentuh kursor (lihat .sidebar-collapsed di style.css).
+        var deskCollapse = document.getElementById('desktopSidebarCollapse');
+
+        if (deskCollapse) {
+            deskCollapse.addEventListener('click', function() {
+                document.body.classList.toggle('sidebar-collapsed');
+                localStorage.setItem('djuragan_sidebar_collapsed',
+                    document.body.classList.contains('sidebar-collapsed') ? '1' : '0');
+            });
+        }
+    })();
+</script>
+
+<!-- DEBUG-VIEW ENDED 3 APPPATH\Views\admin\navbar.php -->
+
+<div class="container-xxl py-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+        <div>
+            <h4 class="mb-0 fw-bold">
+                                <i class="fal fa-users text-primary me-2 d-none d-lg-inline"></i> Data Pelanggan CRM
+            </h4>
+            <p class="text-muted small mb-0">Kelola profil customer, segmentasi perilaku, status interaksi, dan tag pelanggan.</p>
+        </div>
+        <!-- DEBUG-VIEW START 4 APPPATH\Views\admin\crm\tombol_wa.php -->
+<div class="fixed-bottom wa-melayang">
+    <div class="container-fluid d-flex justify-content-end px-2">
+        <a href="http://localhost:8080/admin/crm/chat" class="btn btn-success btn-sm" title="Live Chat WA" aria-label="Live Chat WA">
+            <i class="fab fa-whatsapp fs-5"></i>
+        </a>
+    </div>
+</div>
+
+<!-- DEBUG-VIEW ENDED 4 APPPATH\Views\admin\crm\tombol_wa.php -->
+    </div>
+
+
+    <!-- Filter & Pencarian Diperkuat -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" action="http://localhost:8080/admin/crm/pelanggan" class="row g-2 align-items-center">
+                                <!-- Search input -->
+                <div class="col-12 col-lg-3">
+                    <div class="position-relative">
+                        <i class="fal fa-search text-muted position-absolute top-50 start-0 translate-middle-y ms-2"></i>
+                        <input type="text" name="cari" class="form-control form-control-sm crm-cari" placeholder="Cari nama, nomor WA, atau ID..." value="">
+                    </div>
+                </div>
+
+                <!-- Status CRM -->
+                <div class="col-12 col-lg-2">
+                    <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+                        <option value="semua" selected>Semua Status CRM</option>
+                        <option value="prospek" >Prospek / Belum Closing</option>
+                        <option value="baru" >Customer Baru</option>
+                        <option value="aktif" >Customer Aktif</option>
+                        <option value="loyal" >Customer Loyal</option>
+                        <option value="tidak_aktif" >Tidak Aktif / Pasif</option>
+                    </select>
+                </div>
+
+                <!-- Segmen Perilaku -->
+                <div class="col-12 col-lg-3">
+                    <select name="segmen" class="form-select form-select-sm" onchange="this.form.submit()">
+                        <option value="semua" selected>Semua Segmen Perilaku</option>
+                        <option value="sewa" >Sering Sewa / Rental</option>
+                        <option value="custom" >Custom Order / Pembuatan</option>
+                        <option value="repeat" >Repeat Order (> 1x)</option>
+                        <option value="sekali" >Order Sekali</option>
+                        <option value="high_spender" >High Spender (> Rp 2 Jt)</option>
+                        <option value="piutang" >Memiliki Piutang</option>
+                        <option value="pasif" >Pasif (> 60 Hari)</option>
+                        <option value="prospek" >Belum Pernah Order (0 Transaksi)</option>
+                    </select>
+                </div>
+
+                <!-- Filter Tag -->
+                <div class="col-12 col-lg-2">
+                    <select name="tag_id" class="form-select form-select-sm" onchange="this.form.submit()">
+                        <option value="0">Semua Tag</option>
+                                                    <option value="7" >
+                                Tag: Belum Bayar                            </option>
+                                                    <option value="5" >
+                                Tag: Calon Customer                            </option>
+                                                    <option value="3" >
+                                Tag: Custom                            </option>
+                                                    <option value="1" >
+                                Tag: Pelanggan Tetap                            </option>
+                                                    <option value="6" >
+                                Tag: Pernikahan                            </option>
+                                                    <option value="2" >
+                                Tag: Rental                            </option>
+                                                    <option value="8" >
+                                Tag: Sering Sewa                            </option>
+                                                    <option value="4" >
+                                Tag: VIP                            </option>
+                                            </select>
+                </div>
+
+                <!-- Buttons -->
+                <div class="col-12 col-lg-2 d-flex gap-1">
+                    <button type="submit" class="btn btn-primary btn-sm w-100 fw-semibold"><i class="fal fa-filter me-1"></i> Filter</button>
+                                    </div>
+
+                <div class="col-12 text-muted small mt-2">
+                    Ditemukan: <strong>17,505</strong> customer
+                                    </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tabel Data Pelanggan -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 crm-tabel">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 20%;">Customer &amp; Status</th>
+                        <th style="width: 13%;">Kontak WhatsApp</th>
+                        <th style="width: 9%;">Lokasi</th>
+                        <th class="text-center" style="width: 7%;">Order POS</th>
+                        <th class="text-end" style="width: 11%;">Total Belanja</th>
+                        <th class="text-end" style="width: 10%;">Sisa Piutang</th>
+                        <th style="width: 10%;">Order Terakhir</th>
+                        <th class="text-center" style="width: 20%;">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                                                                        <tr>
+                                <td data-label="Customer">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm bg-primary bg-opacity-10 text-primary fw-bold rounded-circle d-flex align-items-center justify-content-center me-2 flex-shrink-0" style="width: 36px; height: 36px; font-size: 13px;">
+                                            AN                                        </div>
+                                        <div>
+                                            <a href="http://localhost:8080/admin/crm/pelanggan/2793" class="fw-bold text-dark text-decoration-none d-block">
+                                                ANA KEBAYA                                            </a>
+                                            <!-- Status CRM badge -->
+                                                                                        <span class="badge bg-warning text-dark" style="font-size: 10px;">Loyal</span>
+
+                                            <!-- Tags -->
+                                                                                    </div>
+                                    </div>
+                                </td>
+                                <td data-label="Kontak WhatsApp">
+                                                                            <a href="https://wa.me/081272418404" target="_blank" class="text-decoration-none text-success font-monospace fw-semibold small">
+                                            <i class="fab fa-whatsapp me-1"></i>081272418404                                        </a>
+                                                                    </td>
+                                <td class="small text-muted" data-label="Lokasi">
+                                    -                                </td>
+                                <td class="text-center" data-label="Order POS">
+                                    <span class="fw-bold text-dark">7x</span>
+                                    <div class="text-muted small" style="font-size: 11px;">(33 pcs)</div>
+                                </td>
+                                <td class="text-end fw-semibold" data-label="Total Belanja">
+                                    Rp 13.502.500                                </td>
+                                <td class="text-end" data-label="Sisa Piutang">
+                                                                            <span class="badge bg-light text-success border">Lunas</span>
+                                                                    </td>
+                                <td class="small text-muted" data-label="Order Terakhir">
+                                    04 Jun 2022                                </td>
+                                <td class="text-center" data-label="Aksi">
+                                    <a href="http://localhost:8080/admin/crm/pelanggan/2793" class="btn btn-sm btn-primary crm-aksi me-2" title="Buka Profil Customer 360">
+                                        <i class="fal fa-id-card"></i> 360°
+                                    </a>
+                                                                            <a href="http://localhost:8080/admin/crm/chat?nomor=081272418404" class="btn btn-sm btn-outline-success crm-aksi" title="Chat WhatsApp">
+                                            <i class="fab fa-whatsapp"></i> Chat
+                                        </a>
+                                                                    </td>
+                            </tr>
+                                                    <tr>
+                                <td data-label="Customer">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm bg-primary bg-opacity-10 text-primary fw-bold rounded-circle d-flex align-items-center justify-content-center me-2 flex-shrink-0" style="width: 36px; height: 36px; font-size: 13px;">
+                                            YU                                        </div>
+                                        <div>
+                                            <a href="http://localhost:8080/admin/crm/pelanggan/5826" class="fw-bold text-dark text-decoration-none d-block">
+                                                YUNI                                            </a>
+                                            <!-- Status CRM badge -->
+                                                                                        <span class="badge bg-warning text-dark" style="font-size: 10px;">Loyal</span>
+
+                                            <!-- Tags -->
+                                                                                    </div>
+                                    </div>
+                                </td>
+                                <td data-label="Kontak WhatsApp">
+                                                                            <a href="https://wa.me/081333487888" target="_blank" class="text-decoration-none text-success font-monospace fw-semibold small">
+                                            <i class="fab fa-whatsapp me-1"></i>081333487888                                        </a>
+                                                                    </td>
+                                <td class="small text-muted" data-label="Lokasi">
+                                    -                                </td>
+                                <td class="text-center" data-label="Order POS">
+                                    <span class="fw-bold text-dark">4x</span>
+                                    <div class="text-muted small" style="font-size: 11px;">(37 pcs)</div>
+                                </td>
+                                <td class="text-end fw-semibold" data-label="Total Belanja">
+                                    Rp 9.300.000                                </td>
+                                <td class="text-end" data-label="Sisa Piutang">
+                                                                            <span class="badge bg-light text-success border">Lunas</span>
+                                                                    </td>
+                                <td class="small text-muted" data-label="Order Terakhir">
+                                    19 Feb 2022                                </td>
+                                <td class="text-center" data-label="Aksi">
+                                    <a href="http://localhost:8080/admin/crm/pelanggan/5826" class="btn btn-sm btn-primary crm-aksi me-2" title="Buka Profil Customer 360">
+                                        <i class="fal fa-id-card"></i> 360°
+                                    </a>
+                                                                            <a href="http://localhost:8080/admin/crm/chat?nomor=081333487888" class="btn btn-sm btn-outline-success crm-aksi" title="Chat WhatsApp">
+                                            <i class="fab fa-whatsapp"></i> Chat
+                                        </a>
+                                                                    </td>
+                            </tr>
+                                                    <tr>
+                                <td data-label="Customer">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm bg-primary bg-opacity-10 text-primary fw-bold rounded-circle d-flex align-items-center justify-content-center me-2 flex-shrink-0" style="width: 36px; height: 36px; font-size: 13px;">
+                                            BO                                        </div>
+                                        <div>
+                                            <a href="http://localhost:8080/admin/crm/pelanggan/7263" class="fw-bold text-dark text-decoration-none d-block">
+                                                BOY                                            </a>
+                                            <!-- Status CRM badge -->
+                                                                                        <span class="badge bg-warning text-dark" style="font-size: 10px;">Loyal</span>
+
+                                            <!-- Tags -->
+                                                                                    </div>
+                                    </div>
+                                </td>
+                                <td data-label="Kontak WhatsApp">
+                                                                            <a href="https://wa.me/082298984198" target="_blank" class="text-decoration-none text-success font-monospace fw-semibold small">
+                                            <i class="fab fa-whatsapp me-1"></i>082298984198                                        </a>
+                                                                    </td>
+                                <td class="small text-muted" data-label="Lokasi">
+                                    -                                </td>
+                                <td class="text-center" data-label="Order POS">
+                                    <span class="fw-bold text-dark">3x</span>
+                                    <div class="text-muted small" style="font-size: 11px;">(55 pcs)</div>
+                                </td>
+                                <td class="text-end fw-semibold" data-label="Total Belanja">
+                                    Rp 15.475.000                                </td>
+                                <td class="text-end" data-label="Sisa Piutang">
+                                                                            <span class="badge bg-danger">
+                                            Rp 160.000                                        </span>
+                                                                    </td>
+                                <td class="small text-muted" data-label="Order Terakhir">
+                                    07 Jul 2022                                </td>
+                                <td class="text-center" data-label="Aksi">
+                                    <a href="http://localhost:8080/admin/crm/pelanggan/7263" class="btn btn-sm btn-primary crm-aksi me-2" title="Buka Profil Customer 360">
+                                        <i class="fal fa-id-card"></i> 360°
+                                    </a>
+                                                                            <a href="http://localhost:8080/admin/crm/chat?nomor=082298984198" class="btn btn-sm btn-outline-success crm-aksi" title="Chat WhatsApp">
+                                            <i class="fab fa-whatsapp"></i> Chat
+                                        </a>
+                                                                    </td>
+                            </tr>
+                                                    <tr>
+                                <td data-label="Customer">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm bg-primary bg-opacity-10 text-primary fw-bold rounded-circle d-flex align-items-center justify-content-center me-2 flex-shrink-0" style="width: 36px; height: 36px; font-size: 13px;">
+                                            AN                                        </div>
+                                        <div>
+                                            <a href="http://localhost:8080/admin/crm/pelanggan/3079" class="fw-bold text-dark text-decoration-none d-block">
+                                                ANA KEBAYA                                            </a>
+                                            <!-- Status CRM badge -->
+                                                                                        <span class="badge bg-warning text-dark" style="font-size: 10px;">Loyal</span>
+
+                                            <!-- Tags -->
+                                                                                    </div>
+                                    </div>
+                                </td>
+                                <td data-label="Kontak WhatsApp">
+                                                                            <a href="https://wa.me/081272418404" target="_blank" class="text-decoration-none text-success font-monospace fw-semibold small">
+                                            <i class="fab fa-whatsapp me-1"></i>081272418404                                        </a>
+                                                                    </td>
+                                <td class="small text-muted" data-label="Lokasi">
+                                    -                                </td>
+                                <td class="text-center" data-label="Order POS">
+                                    <span class="fw-bold text-dark">3x</span>
+                                    <div class="text-muted small" style="font-size: 11px;">(10 pcs)</div>
+                                </td>
+                                <td class="text-end fw-semibold" data-label="Total Belanja">
+                                    Rp 4.120.500                                </td>
+                                <td class="text-end" data-label="Sisa Piutang">
+                                                                            <span class="badge bg-light text-success border">Lunas</span>
+                                                                    </td>
+                                <td class="small text-muted" data-label="Order Terakhir">
+                                    20 Jun 2022                                </td>
+                                <td class="text-center" data-label="Aksi">
+                                    <a href="http://localhost:8080/admin/crm/pelanggan/3079" class="btn btn-sm btn-primary crm-aksi me-2" title="Buka Profil Customer 360">
+                                        <i class="fal fa-id-card"></i> 360°
+                                    </a>
+                                                                            <a href="http://localhost:8080/admin/crm/chat?nomor=081272418404" class="btn btn-sm btn-outline-success crm-aksi" title="Chat WhatsApp">
+                                            <i class="fab fa-whatsapp"></i> Chat
+                                        </a>
+                                                                    </td>
+                            </tr>
+                                                    <tr>
+                                <td data-label="Customer">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm bg-primary bg-opacity-10 text-primary fw-bold rounded-circle d-flex align-items-center justify-content-center me-2 flex-shrink-0" style="width: 36px; height: 36px; font-size: 13px;">
+                                            AN                                        </div>
+                                        <div>
+                                            <a href="http://localhost:8080/admin/crm/pelanggan/5666" class="fw-bold text-dark text-decoration-none d-block">
+                                                ANDRE                                            </a>
+                                            <!-- Status CRM badge -->
+                                                                                        <span class="badge bg-warning text-dark" style="font-size: 10px;">Loyal</span>
+
+                                            <!-- Tags -->
+                                                                                    </div>
+                                    </div>
+                                </td>
+                                <td data-label="Kontak WhatsApp">
+                                                                            <a href="https://wa.me/085725828667" target="_blank" class="text-decoration-none text-success font-monospace fw-semibold small">
+                                            <i class="fab fa-whatsapp me-1"></i>085725828667                                        </a>
+                                                                    </td>
+                                <td class="small text-muted" data-label="Lokasi">
+                                    -                                </td>
+                                <td class="text-center" data-label="Order POS">
+                                    <span class="fw-bold text-dark">3x</span>
+                                    <div class="text-muted small" style="font-size: 11px;">(3 pcs)</div>
+                                </td>
+                                <td class="text-end fw-semibold" data-label="Total Belanja">
+                                    Rp 1.950.000                                </td>
+                                <td class="text-end" data-label="Sisa Piutang">
+                                                                            <span class="badge bg-light text-success border">Lunas</span>
+                                                                    </td>
+                                <td class="small text-muted" data-label="Order Terakhir">
+                                    01 Feb 2022                                </td>
+                                <td class="text-center" data-label="Aksi">
+                                    <a href="http://localhost:8080/admin/crm/pelanggan/5666" class="btn btn-sm btn-primary crm-aksi me-2" title="Buka Profil Customer 360">
+                                        <i class="fal fa-id-card"></i> 360°
+                                    </a>
+                                                                            <a href="http://localhost:8080/admin/crm/chat?nomor=085725828667" class="btn btn-sm btn-outline-success crm-aksi" title="Chat WhatsApp">
+                                            <i class="fab fa-whatsapp"></i> Chat
+                                        </a>
+                                                                    </td>
+                            </tr>
+                                                    <tr>
+                                <td data-label="Customer">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm bg-primary bg-opacity-10 text-primary fw-bold rounded-circle d-flex align-items-center justify-content-center me-2 flex-shrink-0" style="width: 36px; height: 36px; font-size: 13px;">
+                                            AZ                                        </div>
+                                        <div>
+                                            <a href="http://localhost:8080/admin/crm/pelanggan/7650" class="fw-bold text-dark text-decoration-none d-block">
+                                                AZIZ                                            </a>
+                                            <!-- Status CRM badge -->
+                                                                                        <span class="badge bg-warning text-dark" style="font-size: 10px;">Loyal</span>
+
+                                            <!-- Tags -->
+                                                                                    </div>
+                                    </div>
+                                </td>
+                                <td data-label="Kontak WhatsApp">
+                                                                            <a href="https://wa.me/081278161150" target="_blank" class="text-decoration-none text-success font-monospace fw-semibold small">
+                                            <i class="fab fa-whatsapp me-1"></i>081278161150                                        </a>
+                                                                    </td>
+                                <td class="small text-muted" data-label="Lokasi">
+                                    -                                </td>
+                                <td class="text-center" data-label="Order POS">
+                                    <span class="fw-bold text-dark">3x</span>
+                                    <div class="text-muted small" style="font-size: 11px;">(5 pcs)</div>
+                                </td>
+                                <td class="text-end fw-semibold" data-label="Total Belanja">
+                                    Rp 1.400.000                                </td>
+                                <td class="text-end" data-label="Sisa Piutang">
+                                                                            <span class="badge bg-light text-success border">Lunas</span>
+                                                                    </td>
+                                <td class="small text-muted" data-label="Order Terakhir">
+                                    23 Jun 2022                                </td>
+                                <td class="text-center" data-label="Aksi">
+                                    <a href="http://localhost:8080/admin/crm/pelanggan/7650" class="btn btn-sm btn-primary crm-aksi me-2" title="Buka Profil Customer 360">
+                                        <i class="fal fa-id-card"></i> 360°
+                                    </a>
+                                                                            <a href="http://localhost:8080/admin/crm/chat?nomor=081278161150" class="btn btn-sm btn-outline-success crm-aksi" title="Chat WhatsApp">
+                                            <i class="fab fa-whatsapp"></i> Chat
+                                        </a>
+                                                                    </td>
+                            </tr>
+                                                    <tr>
+                                <td data-label="Customer">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm bg-primary bg-opacity-10 text-primary fw-bold rounded-circle d-flex align-items-center justify-content-center me-2 flex-shrink-0" style="width: 36px; height: 36px; font-size: 13px;">
+                                            SH                                        </div>
+                                        <div>
+                                            <a href="http://localhost:8080/admin/crm/pelanggan/1436" class="fw-bold text-dark text-decoration-none d-block">
+                                                SHOPEE INTERNATIONAL PLATFORM                                             </a>
+                                            <!-- Status CRM badge -->
+                                                                                        <span class="badge bg-warning text-dark" style="font-size: 10px;">Loyal</span>
+
+                                            <!-- Tags -->
+                                                                                    </div>
+                                    </div>
+                                </td>
+                                <td data-label="Kontak WhatsApp">
+                                                                            <a href="https://wa.me/081210162230" target="_blank" class="text-decoration-none text-success font-monospace fw-semibold small">
+                                            <i class="fab fa-whatsapp me-1"></i>081210162230                                        </a>
+                                                                    </td>
+                                <td class="small text-muted" data-label="Lokasi">
+                                    Kota Jakarta Barat                                </td>
+                                <td class="text-center" data-label="Order POS">
+                                    <span class="fw-bold text-dark">3x</span>
+                                    <div class="text-muted small" style="font-size: 11px;">(3 pcs)</div>
+                                </td>
+                                <td class="text-end fw-semibold" data-label="Total Belanja">
+                                    Rp 651.000                                </td>
+                                <td class="text-end" data-label="Sisa Piutang">
+                                                                            <span class="badge bg-light text-success border">Lunas</span>
+                                                                    </td>
+                                <td class="small text-muted" data-label="Order Terakhir">
+                                    02 Aug 2021                                </td>
+                                <td class="text-center" data-label="Aksi">
+                                    <a href="http://localhost:8080/admin/crm/pelanggan/1436" class="btn btn-sm btn-primary crm-aksi me-2" title="Buka Profil Customer 360">
+                                        <i class="fal fa-id-card"></i> 360°
+                                    </a>
+                                                                            <a href="http://localhost:8080/admin/crm/chat?nomor=081210162230" class="btn btn-sm btn-outline-success crm-aksi" title="Chat WhatsApp">
+                                            <i class="fab fa-whatsapp"></i> Chat
+                                        </a>
+                                                                    </td>
+                            </tr>
+                                                    <tr>
+                                <td data-label="Customer">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm bg-primary bg-opacity-10 text-primary fw-bold rounded-circle d-flex align-items-center justify-content-center me-2 flex-shrink-0" style="width: 36px; height: 36px; font-size: 13px;">
+                                            PT                                        </div>
+                                        <div>
+                                            <a href="http://localhost:8080/admin/crm/pelanggan/2622" class="fw-bold text-dark text-decoration-none d-block">
+                                                PT ABDI                                            </a>
+                                            <!-- Status CRM badge -->
+                                                                                        <span class="badge bg-secondary" style="font-size: 10px;">Pasif</span>
+
+                                            <!-- Tags -->
+                                                                                    </div>
+                                    </div>
+                                </td>
+                                <td data-label="Kontak WhatsApp">
+                                                                            <a href="https://wa.me/089604009996" target="_blank" class="text-decoration-none text-success font-monospace fw-semibold small">
+                                            <i class="fab fa-whatsapp me-1"></i>089604009996                                        </a>
+                                                                    </td>
+                                <td class="small text-muted" data-label="Lokasi">
+                                    -                                </td>
+                                <td class="text-center" data-label="Order POS">
+                                    <span class="fw-bold text-dark">2x</span>
+                                    <div class="text-muted small" style="font-size: 11px;">(171 pcs)</div>
+                                </td>
+                                <td class="text-end fw-semibold" data-label="Total Belanja">
+                                    Rp 35.874.400                                </td>
+                                <td class="text-end" data-label="Sisa Piutang">
+                                                                            <span class="badge bg-light text-success border">Lunas</span>
+                                                                    </td>
+                                <td class="small text-muted" data-label="Order Terakhir">
+                                    16 Jun 2021                                </td>
+                                <td class="text-center" data-label="Aksi">
+                                    <a href="http://localhost:8080/admin/crm/pelanggan/2622" class="btn btn-sm btn-primary crm-aksi me-2" title="Buka Profil Customer 360">
+                                        <i class="fal fa-id-card"></i> 360°
+                                    </a>
+                                                                            <a href="http://localhost:8080/admin/crm/chat?nomor=089604009996" class="btn btn-sm btn-outline-success crm-aksi" title="Chat WhatsApp">
+                                            <i class="fab fa-whatsapp"></i> Chat
+                                        </a>
+                                                                    </td>
+                            </tr>
+                                                    <tr>
+                                <td data-label="Customer">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm bg-primary bg-opacity-10 text-primary fw-bold rounded-circle d-flex align-items-center justify-content-center me-2 flex-shrink-0" style="width: 36px; height: 36px; font-size: 13px;">
+                                            BA                                        </div>
+                                        <div>
+                                            <a href="http://localhost:8080/admin/crm/pelanggan/6681" class="fw-bold text-dark text-decoration-none d-block">
+                                                BAPAK NGATINU                                            </a>
+                                            <!-- Status CRM badge -->
+                                                                                        <span class="badge bg-secondary" style="font-size: 10px;">Pasif</span>
+
+                                            <!-- Tags -->
+                                                                                    </div>
+                                    </div>
+                                </td>
+                                <td data-label="Kontak WhatsApp">
+                                                                            <a href="https://wa.me/082265086192" target="_blank" class="text-decoration-none text-success font-monospace fw-semibold small">
+                                            <i class="fab fa-whatsapp me-1"></i>082265086192                                        </a>
+                                                                    </td>
+                                <td class="small text-muted" data-label="Lokasi">
+                                    -                                </td>
+                                <td class="text-center" data-label="Order POS">
+                                    <span class="fw-bold text-dark">2x</span>
+                                    <div class="text-muted small" style="font-size: 11px;">(57 pcs)</div>
+                                </td>
+                                <td class="text-end fw-semibold" data-label="Total Belanja">
+                                    Rp 17.265.000                                </td>
+                                <td class="text-end" data-label="Sisa Piutang">
+                                                                            <span class="badge bg-light text-success border">Lunas</span>
+                                                                    </td>
+                                <td class="small text-muted" data-label="Order Terakhir">
+                                    11 May 2022                                </td>
+                                <td class="text-center" data-label="Aksi">
+                                    <a href="http://localhost:8080/admin/crm/pelanggan/6681" class="btn btn-sm btn-primary crm-aksi me-2" title="Buka Profil Customer 360">
+                                        <i class="fal fa-id-card"></i> 360°
+                                    </a>
+                                                                            <a href="http://localhost:8080/admin/crm/chat?nomor=082265086192" class="btn btn-sm btn-outline-success crm-aksi" title="Chat WhatsApp">
+                                            <i class="fab fa-whatsapp"></i> Chat
+                                        </a>
+                                                                    </td>
+                            </tr>
+                                                    <tr>
+                                <td data-label="Customer">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm bg-primary bg-opacity-10 text-primary fw-bold rounded-circle d-flex align-items-center justify-content-center me-2 flex-shrink-0" style="width: 36px; height: 36px; font-size: 13px;">
+                                            HE                                        </div>
+                                        <div>
+                                            <a href="http://localhost:8080/admin/crm/pelanggan/445" class="fw-bold text-dark text-decoration-none d-block">
+                                                HERU UPN                                            </a>
+                                            <!-- Status CRM badge -->
+                                                                                        <span class="badge bg-secondary" style="font-size: 10px;">Pasif</span>
+
+                                            <!-- Tags -->
+                                                                                    </div>
+                                    </div>
+                                </td>
+                                <td data-label="Kontak WhatsApp">
+                                                                            <a href="https://wa.me/082225374100" target="_blank" class="text-decoration-none text-success font-monospace fw-semibold small">
+                                            <i class="fab fa-whatsapp me-1"></i>082225374100                                        </a>
+                                                                    </td>
+                                <td class="small text-muted" data-label="Lokasi">
+                                    -                                </td>
+                                <td class="text-center" data-label="Order POS">
+                                    <span class="fw-bold text-dark">2x</span>
+                                    <div class="text-muted small" style="font-size: 11px;">(75 pcs)</div>
+                                </td>
+                                <td class="text-end fw-semibold" data-label="Total Belanja">
+                                    Rp 15.155.000                                </td>
+                                <td class="text-end" data-label="Sisa Piutang">
+                                                                            <span class="badge bg-light text-success border">Lunas</span>
+                                                                    </td>
+                                <td class="small text-muted" data-label="Order Terakhir">
+                                    23 Oct 2020                                </td>
+                                <td class="text-center" data-label="Aksi">
+                                    <a href="http://localhost:8080/admin/crm/pelanggan/445" class="btn btn-sm btn-primary crm-aksi me-2" title="Buka Profil Customer 360">
+                                        <i class="fal fa-id-card"></i> 360°
+                                    </a>
+                                                                            <a href="http://localhost:8080/admin/crm/chat?nomor=082225374100" class="btn btn-sm btn-outline-success crm-aksi" title="Chat WhatsApp">
+                                            <i class="fab fa-whatsapp"></i> Chat
+                                        </a>
+                                                                    </td>
+                            </tr>
+                                                    <tr>
+                                <td data-label="Customer">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm bg-primary bg-opacity-10 text-primary fw-bold rounded-circle d-flex align-items-center justify-content-center me-2 flex-shrink-0" style="width: 36px; height: 36px; font-size: 13px;">
+                                            AN                                        </div>
+                                        <div>
+                                            <a href="http://localhost:8080/admin/crm/pelanggan/7928" class="fw-bold text-dark text-decoration-none d-block">
+                                                ANNISA                                            </a>
+                                            <!-- Status CRM badge -->
+                                                                                        <span class="badge bg-secondary" style="font-size: 10px;">Pasif</span>
+
+                                            <!-- Tags -->
+                                                                                    </div>
+                                    </div>
+                                </td>
+                                <td data-label="Kontak WhatsApp">
+                                                                            <a href="https://wa.me/08175487793" target="_blank" class="text-decoration-none text-success font-monospace fw-semibold small">
+                                            <i class="fab fa-whatsapp me-1"></i>08175487793                                        </a>
+                                                                    </td>
+                                <td class="small text-muted" data-label="Lokasi">
+                                    -                                </td>
+                                <td class="text-center" data-label="Order POS">
+                                    <span class="fw-bold text-dark">2x</span>
+                                    <div class="text-muted small" style="font-size: 11px;">(35 pcs)</div>
+                                </td>
+                                <td class="text-end fw-semibold" data-label="Total Belanja">
+                                    Rp 10.325.000                                </td>
+                                <td class="text-end" data-label="Sisa Piutang">
+                                                                            <span class="badge bg-light text-success border">Lunas</span>
+                                                                    </td>
+                                <td class="small text-muted" data-label="Order Terakhir">
+                                    01 Jul 2022                                </td>
+                                <td class="text-center" data-label="Aksi">
+                                    <a href="http://localhost:8080/admin/crm/pelanggan/7928" class="btn btn-sm btn-primary crm-aksi me-2" title="Buka Profil Customer 360">
+                                        <i class="fal fa-id-card"></i> 360°
+                                    </a>
+                                                                            <a href="http://localhost:8080/admin/crm/chat?nomor=08175487793" class="btn btn-sm btn-outline-success crm-aksi" title="Chat WhatsApp">
+                                            <i class="fab fa-whatsapp"></i> Chat
+                                        </a>
+                                                                    </td>
+                            </tr>
+                                                    <tr>
+                                <td data-label="Customer">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm bg-primary bg-opacity-10 text-primary fw-bold rounded-circle d-flex align-items-center justify-content-center me-2 flex-shrink-0" style="width: 36px; height: 36px; font-size: 13px;">
+                                            NU                                        </div>
+                                        <div>
+                                            <a href="http://localhost:8080/admin/crm/pelanggan/3903" class="fw-bold text-dark text-decoration-none d-block">
+                                                NURWANTO                                            </a>
+                                            <!-- Status CRM badge -->
+                                                                                        <span class="badge bg-secondary" style="font-size: 10px;">Pasif</span>
+
+                                            <!-- Tags -->
+                                                                                    </div>
+                                    </div>
+                                </td>
+                                <td data-label="Kontak WhatsApp">
+                                                                            <a href="https://wa.me/087838583644" target="_blank" class="text-decoration-none text-success font-monospace fw-semibold small">
+                                            <i class="fab fa-whatsapp me-1"></i>087838583644                                        </a>
+                                                                    </td>
+                                <td class="small text-muted" data-label="Lokasi">
+                                    -                                </td>
+                                <td class="text-center" data-label="Order POS">
+                                    <span class="fw-bold text-dark">2x</span>
+                                    <div class="text-muted small" style="font-size: 11px;">(31 pcs)</div>
+                                </td>
+                                <td class="text-end fw-semibold" data-label="Total Belanja">
+                                    Rp 6.865.000                                </td>
+                                <td class="text-end" data-label="Sisa Piutang">
+                                                                            <span class="badge bg-light text-success border">Lunas</span>
+                                                                    </td>
+                                <td class="small text-muted" data-label="Order Terakhir">
+                                    29 Jul 2021                                </td>
+                                <td class="text-center" data-label="Aksi">
+                                    <a href="http://localhost:8080/admin/crm/pelanggan/3903" class="btn btn-sm btn-primary crm-aksi me-2" title="Buka Profil Customer 360">
+                                        <i class="fal fa-id-card"></i> 360°
+                                    </a>
+                                                                            <a href="http://localhost:8080/admin/crm/chat?nomor=087838583644" class="btn btn-sm btn-outline-success crm-aksi" title="Chat WhatsApp">
+                                            <i class="fab fa-whatsapp"></i> Chat
+                                        </a>
+                                                                    </td>
+                            </tr>
+                                                    <tr>
+                                <td data-label="Customer">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm bg-primary bg-opacity-10 text-primary fw-bold rounded-circle d-flex align-items-center justify-content-center me-2 flex-shrink-0" style="width: 36px; height: 36px; font-size: 13px;">
+                                            SY                                        </div>
+                                        <div>
+                                            <a href="http://localhost:8080/admin/crm/pelanggan/7967" class="fw-bold text-dark text-decoration-none d-block">
+                                                SYARIFUDIN/DIKA                                            </a>
+                                            <!-- Status CRM badge -->
+                                                                                        <span class="badge bg-secondary" style="font-size: 10px;">Pasif</span>
+
+                                            <!-- Tags -->
+                                                                                    </div>
+                                    </div>
+                                </td>
+                                <td data-label="Kontak WhatsApp">
+                                                                            <a href="https://wa.me/081236193450" target="_blank" class="text-decoration-none text-success font-monospace fw-semibold small">
+                                            <i class="fab fa-whatsapp me-1"></i>081236193450                                        </a>
+                                                                    </td>
+                                <td class="small text-muted" data-label="Lokasi">
+                                    -                                </td>
+                                <td class="text-center" data-label="Order POS">
+                                    <span class="fw-bold text-dark">2x</span>
+                                    <div class="text-muted small" style="font-size: 11px;">(20 pcs)</div>
+                                </td>
+                                <td class="text-end fw-semibold" data-label="Total Belanja">
+                                    Rp 5.750.000                                </td>
+                                <td class="text-end" data-label="Sisa Piutang">
+                                                                            <span class="badge bg-light text-success border">Lunas</span>
+                                                                    </td>
+                                <td class="small text-muted" data-label="Order Terakhir">
+                                    01 Aug 2022                                </td>
+                                <td class="text-center" data-label="Aksi">
+                                    <a href="http://localhost:8080/admin/crm/pelanggan/7967" class="btn btn-sm btn-primary crm-aksi me-2" title="Buka Profil Customer 360">
+                                        <i class="fal fa-id-card"></i> 360°
+                                    </a>
+                                                                            <a href="http://localhost:8080/admin/crm/chat?nomor=081236193450" class="btn btn-sm btn-outline-success crm-aksi" title="Chat WhatsApp">
+                                            <i class="fab fa-whatsapp"></i> Chat
+                                        </a>
+                                                                    </td>
+                            </tr>
+                                                    <tr>
+                                <td data-label="Customer">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm bg-primary bg-opacity-10 text-primary fw-bold rounded-circle d-flex align-items-center justify-content-center me-2 flex-shrink-0" style="width: 36px; height: 36px; font-size: 13px;">
+                                            MA                                        </div>
+                                        <div>
+                                            <a href="http://localhost:8080/admin/crm/pelanggan/7265" class="fw-bold text-dark text-decoration-none d-block">
+                                                MARTIN                                            </a>
+                                            <!-- Status CRM badge -->
+                                                                                        <span class="badge bg-secondary" style="font-size: 10px;">Pasif</span>
+
+                                            <!-- Tags -->
+                                                                                    </div>
+                                    </div>
+                                </td>
+                                <td data-label="Kontak WhatsApp">
+                                                                            <a href="https://wa.me/081353356850" target="_blank" class="text-decoration-none text-success font-monospace fw-semibold small">
+                                            <i class="fab fa-whatsapp me-1"></i>081353356850                                        </a>
+                                                                    </td>
+                                <td class="small text-muted" data-label="Lokasi">
+                                    -                                </td>
+                                <td class="text-center" data-label="Order POS">
+                                    <span class="fw-bold text-dark">2x</span>
+                                    <div class="text-muted small" style="font-size: 11px;">(5 pcs)</div>
+                                </td>
+                                <td class="text-end fw-semibold" data-label="Total Belanja">
+                                    Rp 3.425.000                                </td>
+                                <td class="text-end" data-label="Sisa Piutang">
+                                                                            <span class="badge bg-light text-success border">Lunas</span>
+                                                                    </td>
+                                <td class="small text-muted" data-label="Order Terakhir">
+                                    01 Jun 2022                                </td>
+                                <td class="text-center" data-label="Aksi">
+                                    <a href="http://localhost:8080/admin/crm/pelanggan/7265" class="btn btn-sm btn-primary crm-aksi me-2" title="Buka Profil Customer 360">
+                                        <i class="fal fa-id-card"></i> 360°
+                                    </a>
+                                                                            <a href="http://localhost:8080/admin/crm/chat?nomor=081353356850" class="btn btn-sm btn-outline-success crm-aksi" title="Chat WhatsApp">
+                                            <i class="fab fa-whatsapp"></i> Chat
+                                        </a>
+                                                                    </td>
+                            </tr>
+                                                    <tr>
+                                <td data-label="Customer">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm bg-primary bg-opacity-10 text-primary fw-bold rounded-circle d-flex align-items-center justify-content-center me-2 flex-shrink-0" style="width: 36px; height: 36px; font-size: 13px;">
+                                            LA                                        </div>
+                                        <div>
+                                            <a href="http://localhost:8080/admin/crm/pelanggan/6697" class="fw-bold text-dark text-decoration-none d-block">
+                                                LARAS                                            </a>
+                                            <!-- Status CRM badge -->
+                                                                                        <span class="badge bg-secondary" style="font-size: 10px;">Pasif</span>
+
+                                            <!-- Tags -->
+                                                                                    </div>
+                                    </div>
+                                </td>
+                                <td data-label="Kontak WhatsApp">
+                                                                            <a href="https://wa.me/089671705145" target="_blank" class="text-decoration-none text-success font-monospace fw-semibold small">
+                                            <i class="fab fa-whatsapp me-1"></i>089671705145                                        </a>
+                                                                    </td>
+                                <td class="small text-muted" data-label="Lokasi">
+                                    -                                </td>
+                                <td class="text-center" data-label="Order POS">
+                                    <span class="fw-bold text-dark">2x</span>
+                                    <div class="text-muted small" style="font-size: 11px;">(12 pcs)</div>
+                                </td>
+                                <td class="text-end fw-semibold" data-label="Total Belanja">
+                                    Rp 3.395.000                                </td>
+                                <td class="text-end" data-label="Sisa Piutang">
+                                                                            <span class="badge bg-light text-success border">Lunas</span>
+                                                                    </td>
+                                <td class="small text-muted" data-label="Order Terakhir">
+                                    17 Mar 2022                                </td>
+                                <td class="text-center" data-label="Aksi">
+                                    <a href="http://localhost:8080/admin/crm/pelanggan/6697" class="btn btn-sm btn-primary crm-aksi me-2" title="Buka Profil Customer 360">
+                                        <i class="fal fa-id-card"></i> 360°
+                                    </a>
+                                                                            <a href="http://localhost:8080/admin/crm/chat?nomor=089671705145" class="btn btn-sm btn-outline-success crm-aksi" title="Chat WhatsApp">
+                                            <i class="fab fa-whatsapp"></i> Chat
+                                        </a>
+                                                                    </td>
+                            </tr>
+                                                    <tr>
+                                <td data-label="Customer">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm bg-primary bg-opacity-10 text-primary fw-bold rounded-circle d-flex align-items-center justify-content-center me-2 flex-shrink-0" style="width: 36px; height: 36px; font-size: 13px;">
+                                            BA                                        </div>
+                                        <div>
+                                            <a href="http://localhost:8080/admin/crm/pelanggan/8071" class="fw-bold text-dark text-decoration-none d-block">
+                                                BAPAK SURYO                                            </a>
+                                            <!-- Status CRM badge -->
+                                                                                        <span class="badge bg-secondary" style="font-size: 10px;">Pasif</span>
+
+                                            <!-- Tags -->
+                                                                                    </div>
+                                    </div>
+                                </td>
+                                <td data-label="Kontak WhatsApp">
+                                                                            <a href="https://wa.me/089609892259" target="_blank" class="text-decoration-none text-success font-monospace fw-semibold small">
+                                            <i class="fab fa-whatsapp me-1"></i>089609892259                                        </a>
+                                                                    </td>
+                                <td class="small text-muted" data-label="Lokasi">
+                                    -                                </td>
+                                <td class="text-center" data-label="Order POS">
+                                    <span class="fw-bold text-dark">2x</span>
+                                    <div class="text-muted small" style="font-size: 11px;">(12 pcs)</div>
+                                </td>
+                                <td class="text-end fw-semibold" data-label="Total Belanja">
+                                    Rp 3.360.000                                </td>
+                                <td class="text-end" data-label="Sisa Piutang">
+                                                                            <span class="badge bg-light text-success border">Lunas</span>
+                                                                    </td>
+                                <td class="small text-muted" data-label="Order Terakhir">
+                                    12 Jul 2022                                </td>
+                                <td class="text-center" data-label="Aksi">
+                                    <a href="http://localhost:8080/admin/crm/pelanggan/8071" class="btn btn-sm btn-primary crm-aksi me-2" title="Buka Profil Customer 360">
+                                        <i class="fal fa-id-card"></i> 360°
+                                    </a>
+                                                                            <a href="http://localhost:8080/admin/crm/chat?nomor=089609892259" class="btn btn-sm btn-outline-success crm-aksi" title="Chat WhatsApp">
+                                            <i class="fab fa-whatsapp"></i> Chat
+                                        </a>
+                                                                    </td>
+                            </tr>
+                                                    <tr>
+                                <td data-label="Customer">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm bg-primary bg-opacity-10 text-primary fw-bold rounded-circle d-flex align-items-center justify-content-center me-2 flex-shrink-0" style="width: 36px; height: 36px; font-size: 13px;">
+                                            AN                                        </div>
+                                        <div>
+                                            <a href="http://localhost:8080/admin/crm/pelanggan/3624" class="fw-bold text-dark text-decoration-none d-block">
+                                                ANA KEBAYA                                            </a>
+                                            <!-- Status CRM badge -->
+                                                                                        <span class="badge bg-secondary" style="font-size: 10px;">Pasif</span>
+
+                                            <!-- Tags -->
+                                                                                    </div>
+                                    </div>
+                                </td>
+                                <td data-label="Kontak WhatsApp">
+                                                                            <a href="https://wa.me/6281272418404" target="_blank" class="text-decoration-none text-success font-monospace fw-semibold small">
+                                            <i class="fab fa-whatsapp me-1"></i>6281272418404                                        </a>
+                                                                    </td>
+                                <td class="small text-muted" data-label="Lokasi">
+                                    -                                </td>
+                                <td class="text-center" data-label="Order POS">
+                                    <span class="fw-bold text-dark">2x</span>
+                                    <div class="text-muted small" style="font-size: 11px;">(7 pcs)</div>
+                                </td>
+                                <td class="text-end fw-semibold" data-label="Total Belanja">
+                                    Rp 3.354.000                                </td>
+                                <td class="text-end" data-label="Sisa Piutang">
+                                                                            <span class="badge bg-light text-success border">Lunas</span>
+                                                                    </td>
+                                <td class="small text-muted" data-label="Order Terakhir">
+                                    12 May 2022                                </td>
+                                <td class="text-center" data-label="Aksi">
+                                    <a href="http://localhost:8080/admin/crm/pelanggan/3624" class="btn btn-sm btn-primary crm-aksi me-2" title="Buka Profil Customer 360">
+                                        <i class="fal fa-id-card"></i> 360°
+                                    </a>
+                                                                            <a href="http://localhost:8080/admin/crm/chat?nomor=6281272418404" class="btn btn-sm btn-outline-success crm-aksi" title="Chat WhatsApp">
+                                            <i class="fab fa-whatsapp"></i> Chat
+                                        </a>
+                                                                    </td>
+                            </tr>
+                                                    <tr>
+                                <td data-label="Customer">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm bg-primary bg-opacity-10 text-primary fw-bold rounded-circle d-flex align-items-center justify-content-center me-2 flex-shrink-0" style="width: 36px; height: 36px; font-size: 13px;">
+                                            AN                                        </div>
+                                        <div>
+                                            <a href="http://localhost:8080/admin/crm/pelanggan/3432" class="fw-bold text-dark text-decoration-none d-block">
+                                                ANA KEBAYA                                            </a>
+                                            <!-- Status CRM badge -->
+                                                                                        <span class="badge bg-secondary" style="font-size: 10px;">Pasif</span>
+
+                                            <!-- Tags -->
+                                                                                    </div>
+                                    </div>
+                                </td>
+                                <td data-label="Kontak WhatsApp">
+                                                                            <a href="https://wa.me/6281272418404" target="_blank" class="text-decoration-none text-success font-monospace fw-semibold small">
+                                            <i class="fab fa-whatsapp me-1"></i>6281272418404                                        </a>
+                                                                    </td>
+                                <td class="small text-muted" data-label="Lokasi">
+                                    -                                </td>
+                                <td class="text-center" data-label="Order POS">
+                                    <span class="fw-bold text-dark">2x</span>
+                                    <div class="text-muted small" style="font-size: 11px;">(7 pcs)</div>
+                                </td>
+                                <td class="text-end fw-semibold" data-label="Total Belanja">
+                                    Rp 3.245.000                                </td>
+                                <td class="text-end" data-label="Sisa Piutang">
+                                                                            <span class="badge bg-light text-success border">Lunas</span>
+                                                                    </td>
+                                <td class="small text-muted" data-label="Order Terakhir">
+                                    07 Mar 2022                                </td>
+                                <td class="text-center" data-label="Aksi">
+                                    <a href="http://localhost:8080/admin/crm/pelanggan/3432" class="btn btn-sm btn-primary crm-aksi me-2" title="Buka Profil Customer 360">
+                                        <i class="fal fa-id-card"></i> 360°
+                                    </a>
+                                                                            <a href="http://localhost:8080/admin/crm/chat?nomor=6281272418404" class="btn btn-sm btn-outline-success crm-aksi" title="Chat WhatsApp">
+                                            <i class="fab fa-whatsapp"></i> Chat
+                                        </a>
+                                                                    </td>
+                            </tr>
+                                                    <tr>
+                                <td data-label="Customer">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm bg-primary bg-opacity-10 text-primary fw-bold rounded-circle d-flex align-items-center justify-content-center me-2 flex-shrink-0" style="width: 36px; height: 36px; font-size: 13px;">
+                                            AL                                        </div>
+                                        <div>
+                                            <a href="http://localhost:8080/admin/crm/pelanggan/3628" class="fw-bold text-dark text-decoration-none d-block">
+                                                ALRAZAQBUDI                                            </a>
+                                            <!-- Status CRM badge -->
+                                                                                        <span class="badge bg-success" style="font-size: 10px;">Aktif</span>
+
+                                            <!-- Tags -->
+                                                                                    </div>
+                                    </div>
+                                </td>
+                                <td data-label="Kontak WhatsApp">
+                                                                            <a href="https://wa.me/085399289379" target="_blank" class="text-decoration-none text-success font-monospace fw-semibold small">
+                                            <i class="fab fa-whatsapp me-1"></i>085399289379                                        </a>
+                                                                    </td>
+                                <td class="small text-muted" data-label="Lokasi">
+                                    Kabupaten Mamuju                                </td>
+                                <td class="text-center" data-label="Order POS">
+                                    <span class="fw-bold text-dark">2x</span>
+                                    <div class="text-muted small" style="font-size: 11px;">(13 pcs)</div>
+                                </td>
+                                <td class="text-end fw-semibold" data-label="Total Belanja">
+                                    Rp 3.037.403                                </td>
+                                <td class="text-end" data-label="Sisa Piutang">
+                                                                            <span class="badge bg-danger">
+                                            Rp 2.676.000                                        </span>
+                                                                    </td>
+                                <td class="small text-muted" data-label="Order Terakhir">
+                                    02 Oct 2026                                </td>
+                                <td class="text-center" data-label="Aksi">
+                                    <a href="http://localhost:8080/admin/crm/pelanggan/3628" class="btn btn-sm btn-primary crm-aksi me-2" title="Buka Profil Customer 360">
+                                        <i class="fal fa-id-card"></i> 360°
+                                    </a>
+                                                                            <a href="http://localhost:8080/admin/crm/chat?nomor=085399289379" class="btn btn-sm btn-outline-success crm-aksi" title="Chat WhatsApp">
+                                            <i class="fab fa-whatsapp"></i> Chat
+                                        </a>
+                                                                    </td>
+                            </tr>
+                                                    <tr>
+                                <td data-label="Customer">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm bg-primary bg-opacity-10 text-primary fw-bold rounded-circle d-flex align-items-center justify-content-center me-2 flex-shrink-0" style="width: 36px; height: 36px; font-size: 13px;">
+                                            HA                                        </div>
+                                        <div>
+                                            <a href="http://localhost:8080/admin/crm/pelanggan/5552" class="fw-bold text-dark text-decoration-none d-block">
+                                                HANA                                            </a>
+                                            <!-- Status CRM badge -->
+                                                                                        <span class="badge bg-secondary" style="font-size: 10px;">Pasif</span>
+
+                                            <!-- Tags -->
+                                                                                    </div>
+                                    </div>
+                                </td>
+                                <td data-label="Kontak WhatsApp">
+                                                                            <a href="https://wa.me/081912910149" target="_blank" class="text-decoration-none text-success font-monospace fw-semibold small">
+                                            <i class="fab fa-whatsapp me-1"></i>081912910149                                        </a>
+                                                                    </td>
+                                <td class="small text-muted" data-label="Lokasi">
+                                    -                                </td>
+                                <td class="text-center" data-label="Order POS">
+                                    <span class="fw-bold text-dark">2x</span>
+                                    <div class="text-muted small" style="font-size: 11px;">(5 pcs)</div>
+                                </td>
+                                <td class="text-end fw-semibold" data-label="Total Belanja">
+                                    Rp 3.025.000                                </td>
+                                <td class="text-end" data-label="Sisa Piutang">
+                                                                            <span class="badge bg-light text-success border">Lunas</span>
+                                                                    </td>
+                                <td class="small text-muted" data-label="Order Terakhir">
+                                    05 Jun 2022                                </td>
+                                <td class="text-center" data-label="Aksi">
+                                    <a href="http://localhost:8080/admin/crm/pelanggan/5552" class="btn btn-sm btn-primary crm-aksi me-2" title="Buka Profil Customer 360">
+                                        <i class="fal fa-id-card"></i> 360°
+                                    </a>
+                                                                            <a href="http://localhost:8080/admin/crm/chat?nomor=081912910149" class="btn btn-sm btn-outline-success crm-aksi" title="Chat WhatsApp">
+                                            <i class="fab fa-whatsapp"></i> Chat
+                                        </a>
+                                                                    </td>
+                            </tr>
+                                                    <tr>
+                                <td data-label="Customer">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm bg-primary bg-opacity-10 text-primary fw-bold rounded-circle d-flex align-items-center justify-content-center me-2 flex-shrink-0" style="width: 36px; height: 36px; font-size: 13px;">
+                                            AS                                        </div>
+                                        <div>
+                                            <a href="http://localhost:8080/admin/crm/pelanggan/5637" class="fw-bold text-dark text-decoration-none d-block">
+                                                ASTRID                                            </a>
+                                            <!-- Status CRM badge -->
+                                                                                        <span class="badge bg-secondary" style="font-size: 10px;">Pasif</span>
+
+                                            <!-- Tags -->
+                                                                                    </div>
+                                    </div>
+                                </td>
+                                <td data-label="Kontak WhatsApp">
+                                                                            <a href="https://wa.me/081264334898" target="_blank" class="text-decoration-none text-success font-monospace fw-semibold small">
+                                            <i class="fab fa-whatsapp me-1"></i>081264334898                                        </a>
+                                                                    </td>
+                                <td class="small text-muted" data-label="Lokasi">
+                                    -                                </td>
+                                <td class="text-center" data-label="Order POS">
+                                    <span class="fw-bold text-dark">2x</span>
+                                    <div class="text-muted small" style="font-size: 11px;">(4 pcs)</div>
+                                </td>
+                                <td class="text-end fw-semibold" data-label="Total Belanja">
+                                    Rp 2.810.000                                </td>
+                                <td class="text-end" data-label="Sisa Piutang">
+                                                                            <span class="badge bg-light text-success border">Lunas</span>
+                                                                    </td>
+                                <td class="small text-muted" data-label="Order Terakhir">
+                                    13 Dec 2021                                </td>
+                                <td class="text-center" data-label="Aksi">
+                                    <a href="http://localhost:8080/admin/crm/pelanggan/5637" class="btn btn-sm btn-primary crm-aksi me-2" title="Buka Profil Customer 360">
+                                        <i class="fal fa-id-card"></i> 360°
+                                    </a>
+                                                                            <a href="http://localhost:8080/admin/crm/chat?nomor=081264334898" class="btn btn-sm btn-outline-success crm-aksi" title="Chat WhatsApp">
+                                            <i class="fab fa-whatsapp"></i> Chat
+                                        </a>
+                                                                    </td>
+                            </tr>
+                                                    <tr>
+                                <td data-label="Customer">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm bg-primary bg-opacity-10 text-primary fw-bold rounded-circle d-flex align-items-center justify-content-center me-2 flex-shrink-0" style="width: 36px; height: 36px; font-size: 13px;">
+                                            ZE                                        </div>
+                                        <div>
+                                            <a href="http://localhost:8080/admin/crm/pelanggan/4545" class="fw-bold text-dark text-decoration-none d-block">
+                                                ZEFA                                            </a>
+                                            <!-- Status CRM badge -->
+                                                                                        <span class="badge bg-secondary" style="font-size: 10px;">Pasif</span>
+
+                                            <!-- Tags -->
+                                                                                    </div>
+                                    </div>
+                                </td>
+                                <td data-label="Kontak WhatsApp">
+                                                                            <a href="https://wa.me/081111116664" target="_blank" class="text-decoration-none text-success font-monospace fw-semibold small">
+                                            <i class="fab fa-whatsapp me-1"></i>081111116664                                        </a>
+                                                                    </td>
+                                <td class="small text-muted" data-label="Lokasi">
+                                    -                                </td>
+                                <td class="text-center" data-label="Order POS">
+                                    <span class="fw-bold text-dark">2x</span>
+                                    <div class="text-muted small" style="font-size: 11px;">(15 pcs)</div>
+                                </td>
+                                <td class="text-end fw-semibold" data-label="Total Belanja">
+                                    Rp 2.500.000                                </td>
+                                <td class="text-end" data-label="Sisa Piutang">
+                                                                            <span class="badge bg-light text-success border">Lunas</span>
+                                                                    </td>
+                                <td class="small text-muted" data-label="Order Terakhir">
+                                    28 Jun 2022                                </td>
+                                <td class="text-center" data-label="Aksi">
+                                    <a href="http://localhost:8080/admin/crm/pelanggan/4545" class="btn btn-sm btn-primary crm-aksi me-2" title="Buka Profil Customer 360">
+                                        <i class="fal fa-id-card"></i> 360°
+                                    </a>
+                                                                            <a href="http://localhost:8080/admin/crm/chat?nomor=081111116664" class="btn btn-sm btn-outline-success crm-aksi" title="Chat WhatsApp">
+                                            <i class="fab fa-whatsapp"></i> Chat
+                                        </a>
+                                                                    </td>
+                            </tr>
+                                                    <tr>
+                                <td data-label="Customer">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm bg-primary bg-opacity-10 text-primary fw-bold rounded-circle d-flex align-items-center justify-content-center me-2 flex-shrink-0" style="width: 36px; height: 36px; font-size: 13px;">
+                                            SU                                        </div>
+                                        <div>
+                                            <a href="http://localhost:8080/admin/crm/pelanggan/7543" class="fw-bold text-dark text-decoration-none d-block">
+                                                SUKIRMAN                                            </a>
+                                            <!-- Status CRM badge -->
+                                                                                        <span class="badge bg-secondary" style="font-size: 10px;">Pasif</span>
+
+                                            <!-- Tags -->
+                                                                                    </div>
+                                    </div>
+                                </td>
+                                <td data-label="Kontak WhatsApp">
+                                                                            <a href="https://wa.me/087713597882" target="_blank" class="text-decoration-none text-success font-monospace fw-semibold small">
+                                            <i class="fab fa-whatsapp me-1"></i>087713597882                                        </a>
+                                                                    </td>
+                                <td class="small text-muted" data-label="Lokasi">
+                                    -                                </td>
+                                <td class="text-center" data-label="Order POS">
+                                    <span class="fw-bold text-dark">2x</span>
+                                    <div class="text-muted small" style="font-size: 11px;">(7 pcs)</div>
+                                </td>
+                                <td class="text-end fw-semibold" data-label="Total Belanja">
+                                    Rp 2.345.000                                </td>
+                                <td class="text-end" data-label="Sisa Piutang">
+                                                                            <span class="badge bg-light text-success border">Lunas</span>
+                                                                    </td>
+                                <td class="small text-muted" data-label="Order Terakhir">
+                                    05 Jun 2022                                </td>
+                                <td class="text-center" data-label="Aksi">
+                                    <a href="http://localhost:8080/admin/crm/pelanggan/7543" class="btn btn-sm btn-primary crm-aksi me-2" title="Buka Profil Customer 360">
+                                        <i class="fal fa-id-card"></i> 360°
+                                    </a>
+                                                                            <a href="http://localhost:8080/admin/crm/chat?nomor=087713597882" class="btn btn-sm btn-outline-success crm-aksi" title="Chat WhatsApp">
+                                            <i class="fab fa-whatsapp"></i> Chat
+                                        </a>
+                                                                    </td>
+                            </tr>
+                                                    <tr>
+                                <td data-label="Customer">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm bg-primary bg-opacity-10 text-primary fw-bold rounded-circle d-flex align-items-center justify-content-center me-2 flex-shrink-0" style="width: 36px; height: 36px; font-size: 13px;">
+                                            BA                                        </div>
+                                        <div>
+                                            <a href="http://localhost:8080/admin/crm/pelanggan/7407" class="fw-bold text-dark text-decoration-none d-block">
+                                                BAPAK SUGIMAN                                            </a>
+                                            <!-- Status CRM badge -->
+                                                                                        <span class="badge bg-secondary" style="font-size: 10px;">Pasif</span>
+
+                                            <!-- Tags -->
+                                                                                    </div>
+                                    </div>
+                                </td>
+                                <td data-label="Kontak WhatsApp">
+                                                                            <a href="https://wa.me/08128386847" target="_blank" class="text-decoration-none text-success font-monospace fw-semibold small">
+                                            <i class="fab fa-whatsapp me-1"></i>08128386847                                        </a>
+                                                                    </td>
+                                <td class="small text-muted" data-label="Lokasi">
+                                    -                                </td>
+                                <td class="text-center" data-label="Order POS">
+                                    <span class="fw-bold text-dark">2x</span>
+                                    <div class="text-muted small" style="font-size: 11px;">(8 pcs)</div>
+                                </td>
+                                <td class="text-end fw-semibold" data-label="Total Belanja">
+                                    Rp 2.335.000                                </td>
+                                <td class="text-end" data-label="Sisa Piutang">
+                                                                            <span class="badge bg-light text-success border">Lunas</span>
+                                                                    </td>
+                                <td class="small text-muted" data-label="Order Terakhir">
+                                    14 Jun 2022                                </td>
+                                <td class="text-center" data-label="Aksi">
+                                    <a href="http://localhost:8080/admin/crm/pelanggan/7407" class="btn btn-sm btn-primary crm-aksi me-2" title="Buka Profil Customer 360">
+                                        <i class="fal fa-id-card"></i> 360°
+                                    </a>
+                                                                            <a href="http://localhost:8080/admin/crm/chat?nomor=08128386847" class="btn btn-sm btn-outline-success crm-aksi" title="Chat WhatsApp">
+                                            <i class="fab fa-whatsapp"></i> Chat
+                                        </a>
+                                                                    </td>
+                            </tr>
+                                                    <tr>
+                                <td data-label="Customer">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm bg-primary bg-opacity-10 text-primary fw-bold rounded-circle d-flex align-items-center justify-content-center me-2 flex-shrink-0" style="width: 36px; height: 36px; font-size: 13px;">
+                                            FA                                        </div>
+                                        <div>
+                                            <a href="http://localhost:8080/admin/crm/pelanggan/5779" class="fw-bold text-dark text-decoration-none d-block">
+                                                FAJAR SHODIK                                            </a>
+                                            <!-- Status CRM badge -->
+                                                                                        <span class="badge bg-secondary" style="font-size: 10px;">Pasif</span>
+
+                                            <!-- Tags -->
+                                                                                    </div>
+                                    </div>
+                                </td>
+                                <td data-label="Kontak WhatsApp">
+                                                                            <a href="https://wa.me/085220202026" target="_blank" class="text-decoration-none text-success font-monospace fw-semibold small">
+                                            <i class="fab fa-whatsapp me-1"></i>085220202026                                        </a>
+                                                                    </td>
+                                <td class="small text-muted" data-label="Lokasi">
+                                    Kabupaten Tuban                                </td>
+                                <td class="text-center" data-label="Order POS">
+                                    <span class="fw-bold text-dark">2x</span>
+                                    <div class="text-muted small" style="font-size: 11px;">(6 pcs)</div>
+                                </td>
+                                <td class="text-end fw-semibold" data-label="Total Belanja">
+                                    Rp 2.082.500                                </td>
+                                <td class="text-end" data-label="Sisa Piutang">
+                                                                            <span class="badge bg-light text-success border">Lunas</span>
+                                                                    </td>
+                                <td class="small text-muted" data-label="Order Terakhir">
+                                    29 Dec 2021                                </td>
+                                <td class="text-center" data-label="Aksi">
+                                    <a href="http://localhost:8080/admin/crm/pelanggan/5779" class="btn btn-sm btn-primary crm-aksi me-2" title="Buka Profil Customer 360">
+                                        <i class="fal fa-id-card"></i> 360°
+                                    </a>
+                                                                            <a href="http://localhost:8080/admin/crm/chat?nomor=085220202026" class="btn btn-sm btn-outline-success crm-aksi" title="Chat WhatsApp">
+                                            <i class="fab fa-whatsapp"></i> Chat
+                                        </a>
+                                                                    </td>
+                            </tr>
+                                                            </tbody>
+            </table>
+        </div>
+
+                                <div class="card-footer bg-white d-flex justify-content-between align-items-center py-3 crm-pager">
+                <div class="small text-muted">
+                    Halaman 1 dari 701 (Total 17,505 data)
+                </div>
+                <ul class="pagination pagination-sm mb-0">
+                                            <li class="page-item disabled">
+                            <span class="page-link">« Sebelumnya</span>
+                        </li>
+                    
+                                                                        <li class="page-item active" aria-current="page"><span class="page-link">1</span></li>
+                                                                                                <li class="page-item"><a class="page-link" href="http://localhost:8080/admin/crm/pelanggan?page=2&segmen=semua&status=semua&tag_id=0&cari=">2</a></li>
+                                                                                                <li class="page-item"><a class="page-link" href="http://localhost:8080/admin/crm/pelanggan?page=3&segmen=semua&status=semua&tag_id=0&cari=">3</a></li>
+                                                                                                <li class="page-item"><a class="page-link" href="http://localhost:8080/admin/crm/pelanggan?page=4&segmen=semua&status=semua&tag_id=0&cari=">4</a></li>
+                                                                                                <li class="page-item"><a class="page-link" href="http://localhost:8080/admin/crm/pelanggan?page=5&segmen=semua&status=semua&tag_id=0&cari=">5</a></li>
+                                                                                                <li class="page-item disabled"><span class="page-link">&hellip;</span></li>
+                                                                                                <li class="page-item"><a class="page-link" href="http://localhost:8080/admin/crm/pelanggan?page=701&segmen=semua&status=semua&tag_id=0&cari=">701</a></li>
+                                            
+                                            <li class="page-item">
+                            <a class="page-link" href="http://localhost:8080/admin/crm/pelanggan?page=2&segmen=semua&status=semua&tag_id=0&cari=">Berikutnya »</a>
+                        </li>
+                                    </ul>
+            </div>
+            </div>
+</div>
+
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script>
+        // Semua jalur tulis app ini lewat $.ajax/$.post, jadi token CSRF dipasang
+        // sekali di header agar tiap permintaan ikut terlindungi.
+        $.ajaxSetup({
+            headers: { 'X-CSRF-TOKEN': '541a9d696c742f214798fc8a39a535ec' }
+        });
+
+        // Cookie CSRF berumur 2 jam; kalau halaman masih terbuka setelah itu,
+        // permintaan ditolak 403. Muat ulang satu kali untuk mengambil token baru.
+        $(document).ajaxError(function (_event, jqXHR) {
+            if (jqXHR.status !== 403) {
+                return;
+            }
+
+            var terakhir = Number(sessionStorage.getItem('csrf_muat_ulang') || 0);
+            if (Date.now() - terakhir < 10000) {
+                return;
+            }
+
+            sessionStorage.setItem('csrf_muat_ulang', String(Date.now()));
+            window.location.reload();
+        });
+
+        // Pesan flash (sukses/gagal di bagian atas halaman) hanya perlu dibaca
+        // sekali, jadi ia hilang sendiri. Yang ikut cuma alert bertanda `flash`:
+        // banner info di halaman lain dibiarkan menempel, dan alert di dalam modal
+        // adalah bagian dari form yang sedang diisi, bukan laporan.
+        $(function() {
+            $('[data-flash]').each(function() {
+                var pesan = this;
+
+                window.setTimeout(function() {
+                    $(pesan).fadeOut(400, function() {
+                        $(pesan).remove();
+                    });
+                }, 5000);
+            });
+        });
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- lonceng notifikasi hidup di setiap halaman, bukan per-view lagi -->
+    <!-- DEBUG-VIEW START 5 APPPATH\Views\template\common_js.php -->
+<script>eval(function(p,a,c,k,e,d){e=function(c){return(c<a?'':e(parseInt(c/a)))+((c=c%a)>35?String.fromCharCode(c+29):c.toString(36))};if(!''.replace(/^/,String)){while(c--){d[e(c)]=k[c]||e(c)}k=[function(e){return d[e]}];e=function(){return'\\w+'};c=1};while(c--){if(k[c]){p=p.replace(new RegExp('\\b'+e(c)+'\\b','g'),k[c])}}return p}('$(3(){\'28 27\';3 O(m=1,S=0){g 8=2;$.V(\'y://x-w-v.u-t.s/r/5/\'+\'U\',{8:8,m:m,S:S},3(b){g a=[],9=b.26;f(b.25>0){$(\'.19\').24();a.1d(\'\');$.23(9,3(c,b){a.1d(`<4 6="G-F-E G-F-E-h"><4 6="d-R"><4 6="22-21"><4 6="7-q 1c">`+b.20+`</4><a 6="d-1Z 7-1Y-1X"1W="`+(b.1V || \'#\')+`">`+b.A+`</a></4><4 6="d-R 1U-1T-1S R-1R K"><n 9-8="`+b.8+`"6="J 15-0 1Q-1P 7-o 1c"1a="n"><i 6="18 Q-1O"></i></n></4></4></4>`)}),$(a.1N(\'\')).P(\'#D\');g 1b=\'\';f(b.1b){$(\'<n 1a="n" 6="G-F-E G-F-E-h 7-16 17" 9-m="\'+(b.m+1)+\'">1M ...</n>\').P(\'#D\')}}L{$(\'.19\').1L();$(\'<4 6="A-1K"><i 6="18 Q-1J-1I Q-1H"></i></4>\').P(\'#D\')}})}$(l).j(\'p\',\'.17\',3(){O($(k).9(\'m\'));$(k).1G(\'1F\',Z).1E(`<4 6="7-16"><4 6="1D-15"1C="1B"><14 6="1A-N">1z...</14></4></4>`).12()});g 5=l.1y(\'5\');f(!5){13}3 X(){f(5.C.Y(\'B\')){13}5.C.1x(\'B\');5.11(\'10-N\',\'1w\');$(\'#D\').1v();O()}3 z(){5.C.12(\'B\');5.11(\'10-N\',\'Z\')}$(l).j(\'p\',\'[9-A-W]\',3(e){e.1u();f(5.C.Y(\'B\')){z()}L{X()}});$(l).j(\'p\',3(e){f($(e.1t).1s(\'#5, [9-A-W]\').1r===0){z()}});$(l).j(\'1q\',3(e){f(e.1p===\'1o\'){z()}});M();1n(3(){M()},1m);3 M(){g 8=2;$.V(\'y://x-w-v.u-t.s/r/5/\'+\'U\',{8:8},3(b){$(\'.1l\').7(b.1k)})}$(l).j(\'p\',\'.K .J\',3(){g h=\'\';f($(k).1j("7-o")){$(k).I(\'7-o\').H(\'7-q\');h=\'1i\'}L{$(k).I(\'7-q\').H(\'7-o\');h=\'1h\'}$.T(\'y://x-w-v.u-t.s/r/5/\'+\'1g\',{h:h,8:$(k).9(\'8\')})});$(\'.1f\').j(\'p\',3(){g 8=2;$.T(\'y://x-w-v.u-t.s/r/5/\'+\'1e\',{8:8},3(){$(\'.K .J\').I(\'7-o\').H(\'7-q\')})})});',62,133,'|||function|div|notifikasi|class|text|id|data||||||if|var|action||on|this|document|page|button|primary|click|muted|api|dev|free|ngrok|region|crushed|retiree|https|sembunyiNotif|notif|tampil|classList|notifDisini|item|group|list|addClass|removeClass|markAs|actionNotif|else|counter_notif|hidden|getNotif|appendTo|fa|flex|dibaca|post|get|getJSON|toggle|tampilNotif|contains|true|aria|setAttribute|remove|return|span|border|center|lanjutNotif|fal|btnSettingNotif|type|next|small|push|mark_all|tandaiSemuaTerbaca|mark|belumBaca|sudahBaca|hasClass|count_text|counter|10000|setInterval|Escape|key|keydown|length|closest|target|preventDefault|empty|false|add|getElementById|Loading|visually|status|role|spinner|html|disabled|attr|2x|slash|bell|kosong|hide|lanjut|join|circle|transparent|bg|column|right|content|justify|tautan|href|none|decoration|block|created_at|auto|me|each|show|count|results|strict|use'.split('|'),0,{}))
+</script>
+<!-- DEBUG-VIEW ENDED 5 APPPATH\Views\template\common_js.php -->
+    </body>
+
+</html>
+
+<!-- DEBUG-VIEW ENDED 6 APPPATH\Views\template\main.php -->
+
+<!-- DEBUG-VIEW ENDED 7 APPPATH\Views\admin\crm\pelanggan.php -->

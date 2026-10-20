@@ -97,14 +97,16 @@
     }
     .fup-tabel td {
         padding: 0.5rem 0 !important;
-        border-bottom: 1px dashed #eaecf0;
+        border-bottom: 1px dashed #eaecf0 !important;
         box-shadow: none;
         text-align: left !important;
         white-space: normal !important;
         overflow-wrap: anywhere;
     }
-    .fup-tabel tr td:last-child {
-        border-bottom: 0;
+    .fup-tabel tr td:last-child,
+    .fup-tabel td:last-child,
+    .fup-tabel td[data-label="Aksi"] {
+        border-bottom: 0 !important;
     }
     /* Hover di mode kartu. style.css mewarnai SETIAP SEL saat baris disorot
        (.table tbody tr:hover td, !important), dan di mode kartu selnya tidak punya

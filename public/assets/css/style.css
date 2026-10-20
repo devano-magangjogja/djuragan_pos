@@ -1346,6 +1346,14 @@ a.rounded-3.border.border-ink-200:hover {
     padding: 0.35rem 0.65rem !important;
     border-radius: 8px !important;
 }
+/* Panah select digambar Bootstrap lewat background-image di calc(100% - 12px)
+   dengan lebar 16px, dan aturan .form-select-sm di atas ikut menimpa padding
+   kanan bawaannya (2,25rem -> 0,65rem) karena sama-sama !important. Akibatnya
+   teks opsi yang panjang mengalir sampai ke bawah tanda ">". Ruangnya
+   dikembalikan: panah duduk di 8px dari tepi + lebarnya 16px, 1,75rem sisa aman. */
+.form-select-sm {
+    padding-right: 1.75rem !important;
+}
 .form-label {
     font-size: 0.76rem !important;
     font-weight: 600 !important;
