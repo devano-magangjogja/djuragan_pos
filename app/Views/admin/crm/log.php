@@ -1,3 +1,15 @@
+<?php
+/**
+ * Variabel diinject saat runtime oleh App\Controllers\Admin\Crm::log() lewat view().
+ * Deklarasi di sini untuk menyelesaikan false positive Intelephense P1008
+ * (CI4 memakai extract() sehingga analyzer tidak menelusuri variabel dinamis).
+ *
+ * @var array $logPesan   Daftar baris log pesan WhatsApp per halaman
+ * @var int   $total      Total seluruh pesan (countLogPesan)
+ * @var int   $page       Nomor halaman aktif
+ * @var int   $totalPages  Total jumlah halaman untuk pagination
+ */
+?>
 <?= $this->extend('template/main') ?>
 
 <?= $this->section('css') ?>

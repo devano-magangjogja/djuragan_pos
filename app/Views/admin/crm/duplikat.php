@@ -1,3 +1,16 @@
+<?php
+// Variabel di bawah diisi oleh Crm::duplikat() lewat view('admin/crm/duplikat', $data).
+// CI4 menyuntikkannya saat runtime melalui extract(), jadi Intelephense tidak bisa
+// menelusurinya -- blok @var terpisah ini memberi tahu analyzer tanpa mengubah perilaku.
+
+/**
+ * @var string $title         judul halaman
+ * @var array  $duplikatList  baris grup duplikat untuk halaman aktif
+ * @var int    $page          nomor halaman aktif (1-based)
+ * @var int    $totalPages    jumlah halaman
+ * @var int    $totalDuplikat total seluruh grup duplikat terdeteksi
+ */
+?>
 <?= $this->extend('template/main') ?>
 
 <?= $this->section('css') ?>

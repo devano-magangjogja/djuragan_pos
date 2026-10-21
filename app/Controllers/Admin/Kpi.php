@@ -22,8 +22,8 @@ class Kpi extends BaseController
     /** Pilihan keranjang waktu grafik. */
     private const PERIODE = ['harian' => 'Harian', 'mingguan' => 'Mingguan', 'bulanan' => 'Bulanan'];
 
-    /** Pilihan peran yang dinilai. */
-    private const PERAN = ['semua' => 'Semua karyawan', 'admin' => 'Admin', 'cs' => 'Customer Service'];
+    /** Pilihan peran yang dinilai. KPI khusus Customer Service, admin/superadmin tidak dinilai. */
+    private const PERAN = ['semua' => 'Customer Service'];
 
     /** Baris per halaman rekap dan detail. */
     private const HALAMAN = [10, 25, 50];

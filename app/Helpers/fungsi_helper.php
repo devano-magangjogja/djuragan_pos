@@ -1381,9 +1381,11 @@ if (! function_exists('foto_panel_form')) {
         $acuan   = $produk
             ? 'Contoh bentuk barang ini; satu foto terlihat di semua ukuran sekartu.'
             : 'Acuan bentuk dari pelanggan.';
-        $petunjuk  = $pemilik > 0
-            ? 'Foto langsung tersimpan begitu dipilih.'
-            : 'Fotonya ikut dikirim setelah orderan disimpan.';
+        $petunjuk  = $produk
+            ? 'Tekan Simpan setelah semua foto dipilih.'
+            : ($pemilik > 0
+                ? 'Foto langsung tersimpan begitu dipilih.'
+                : 'Fotonya ikut dikirim setelah orderan disimpan.');
         $kartu     = '';
 
         foreach ($sudah as $f) {
@@ -1407,6 +1409,7 @@ if (! function_exists('foto_panel_form')) {
            kartu dan baru muncul setelah panah diklik, padahal memilih foto
            memang langkah utama panel ini; kepala kartunya jadi judul saja. */
         return '<div class="card mb-3 overflow-hidden rounded-kartu border-ink-200 shadow-kartu foto-panel"'
+            . ' data-sumber="' . esc($sumber, 'attr') . '"'
             . ' data-pemilik="' . (int) $pemilik . '"'
             . ' data-maks="' . (int) $model::MAKS_FOTO . '"'
             . ' data-unggah="' . esc(site_url($api . '/unggah'), 'attr') . '"'
@@ -1462,9 +1465,8 @@ if (! function_exists('stok_panel_form')) {
             . '</div>'
             . '<button type="button" class="btn btn-link text-decoration-none stok-batal d-none p-0 small">Tulis manual</button>'
             . '</div>'
-            . '<p class="small text-muted mb-0 mt-2"><i class="fal fa-lightbulb me-1 text-primary"></i>'
-            . 'Opsional. Pilih barang yang sudah dipantau stoknya supaya harga, ukuran, dan foto produknya ikut terpakai; '
-            . 'kalau belum ada, tulis saja manual seperti biasa.</p>'
+            . '<p class="small text-muted mb-0 mt-2">'
+            . 'Opsional. Pilih barang yang sudah dipantau stoknya</p>'
             . '<div class="list-group list-group-flush saran-stok mt-2 d-none" style="max-height:13rem;overflow:auto"></div>'
             . '<div class="stok-catatan small mt-2 d-none"></div>'
             . '<div class="foto-acuan mt-2 d-none">'

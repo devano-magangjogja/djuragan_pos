@@ -1,3 +1,15 @@
+<?php
+/**
+ * Variables injected at runtime by App\Controllers\Admin\Crm::broadcast() via view().
+ * Declared here to resolve Intelephense P1008/P1006 false positives (CI4 uses extract()).
+ *
+ * @var string $template          WhatsApp broadcast message template body
+ * @var array  $riwayatBroadcast  Recent broadcast history rows
+ * @var string $provider          Active WhatsApp gateway name
+ * @var string $sandboxNumber     Kapso sandbox test number
+ * @var int    $isSandbox         Kapso sandbox mode flag (0/1)
+ */
+?>
 <?= $this->extend('template/main') ?>
 
 <?= $this->section('css') ?>

@@ -1,4 +1,14 @@
 <?php
+
+// Variabel berikut dikirim Profil::sunting() lewat view() lalu di-extract CI4 saat
+// render, sehingga tidak terlihat oleh analis statis. Deklarasi di bawah memberi
+// jenis sebenarnya ke Intelephense (P1008 pada $pengguna & $validation).
+
+/**
+ * @var object                              $pengguna  data user dari UserModel::find(): id, username, level, name, email
+ * @var \CodeIgniter\Validation\Validation $validation hasil \Config\Services::validation()
+ */
+
 $session = \Config\Services::session();
 ?>
 <?= $this->extend('template/main') ?>

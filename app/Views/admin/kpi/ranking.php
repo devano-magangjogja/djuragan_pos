@@ -81,7 +81,7 @@ $kosong    = count($peringkat) - count($bernilai);
     <div class="row gx-2 gy-3 mb-3">
         <?php
         $kartu = [
-            ['Karyawan dinilai', $angka(count($peringkat)), 'level admin, superadmin, dan cs yang masih aktif'],
+            ['Karyawan dinilai', $angka(count($peringkat)), 'akun Customer Service yang masih aktif'],
             ['Poin tertinggi', $teratas === 0.0 ? '&mdash;' : $angka($teratas), $peringkat[0]['pegawai'] ?? '&mdash;'],
             ['Aktivitas tercatat', $angka($tercatat), 'jumlah satuan kerja yang masuk rumus poin'],
             ['Belum ada jejak', $angka($kosong), 'poin 0 karena aktivitasnya tidak tercatat atas namanya'],

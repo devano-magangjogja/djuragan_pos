@@ -661,8 +661,9 @@ $kueriTab = array_filter([
                         'type'        => 'number',
                         'name'        => 'stok',
                         'placeholder' => '10',
+                        'min'         => 1,
                         'required'    => '',
-                        'value'       => set_value('stok', '0'),
+                        'value'       => set_value('stok', '1'),
                     ]) ?>
                     <?php if ($err_tambah('stok')) { ?>
                         <div class="invalid-feedback d-block"><?= esc($err_tambah('stok')) ?></div>
@@ -670,23 +671,20 @@ $kueriTab = array_filter([
                 </div>
             </div>
             <?php if ($bisaPoin) { ?>
-            <div class="row gx-2">
-                <div class="col-6 mb-3">
-                    <?= form_label('Poin Gaji', 'poin', ['class' => 'form-label']) ?>
-                    <?= form_input([
-                        'class'       => 'form-control' . ($err_tambah('poin') ? ' is-invalid' : ''),
-                        'type'        => 'number',
-                        'name'        => 'poin',
-                        'min'         => 0,
-                        'step'        => 1,
-                        'placeholder' => 'mis. 1000',
-                        'value'       => set_value('poin', '0'),
-                    ]) ?>
-                    <?php if ($err_tambah('poin')) { ?>
-                        <div class="invalid-feedback d-block"><?= esc($err_tambah('poin')) ?></div>
-                    <?php } ?>
-                    <div class="form-text">Isi 0 kalau produk ini tidak menghasilkan poin.</div>
-                </div>
+            <div class="mb-3">
+                <?= form_label('Poin Gaji', 'poin', ['class' => 'form-label']) ?>
+                <?= form_input([
+                    'class'       => 'form-control' . ($err_tambah('poin') ? ' is-invalid' : ''),
+                    'type'        => 'number',
+                    'name'        => 'poin',
+                    'min'         => 0,
+                    'step'        => 1,
+                    'placeholder' => 'mis. 1000',
+                    'value'       => set_value('poin', '0'),
+                ]) ?>
+                <?php if ($err_tambah('poin')) { ?>
+                    <div class="invalid-feedback d-block"><?= esc($err_tambah('poin')) ?></div>
+                <?php } ?>
             </div>
             <?php } ?>
             <div class="mb-3 tambah-khusus-barang">
@@ -847,6 +845,13 @@ echo form_open('admin/produk/hapus-kartu', ['id' => 'formHapusKartu', 'class' =>
             </div>
             <div class="modal-body foto-muat">
                 <div class="text-center text-muted py-4"><i class="fal fa-spinner fa-spin me-2"></i>Fotonya dimuat...</div>
+            </div>
+            <div class="modal-footer border-top-0 pt-0 pb-3 px-3 px-sm-4">
+                <span class="foto-status small text-muted me-auto d-none"><i class="fal fa-exclamation-circle text-warning me-1"></i>Ada perubahan belum disimpan</span>
+                <button type="button" class="btn btn-outline-secondary rounded-kartu" data-bs-dismiss="modal">Tutup</button>
+                <button type="button" id="btnSimpanFoto" class="btn btn-primary rounded-kartu d-none">
+                    <i class="fal fa-save me-1"></i>Simpan
+                </button>
             </div>
         </div>
     </div>
@@ -1144,7 +1149,7 @@ $js = <<< JS
 
             if (bersih) {
                 ukuran.value = '';
-                stok.value = '0';
+                stok.value = '1';
                 harga.value = '';
                 modalTambah.querySelector('[name="keterangan"]').value = '';
                 kode.value = kartu === null ? '' : kartu.kode;
@@ -1202,6 +1207,34 @@ $js = <<< JS
             tataTambah(null, true);
         });
 
+        // min="1" hanya mengunci spinner dan memvalidasi saat form dikirim; tanda
+        // minus dan angka nol tetap bisa diketik manual. Dibersihkan di sini: apa
+        // pun selain angka dibuang, nol di depan dilucuti, dan kolom kosong diisi
+        // ulang jadi 1 saat kehilangan fokus. Hanya untuk tambah; sunting masih
+        // boleh 0/negatif untuk koreksi salah hitung gudang.
+        const stokTambah = modalTambah.querySelector('[name="stok"]');
+
+        if (stokTambah) {
+            stokTambah.addEventListener('input', function () {
+                this.value = this.value.replace(/[^0-9]/g, '').replace(/^0+/, '');
+            });
+            stokTambah.addEventListener('blur', function () {
+                if (this.value === '') {
+                    this.value = '1';
+                }
+            });
+        }
+
+        // Stok pada form sunting juga jangan bisa diketik minus atau nol: non-digit
+        // dibuang, nol di depan dilucuti. Sengaja tanpa min="1" dan tanpa blur->1,
+        // supaya stok 0 yang sudah tersimpan (habis) tetap bisa disimpan saat
+        // pengguna hanya mengubah field lain pada varian itu.
+        if (fields.stok) {
+            fields.stok.addEventListener('input', function () {
+                this.value = this.value.replace(/[^0-9]/g, '').replace(/^0+/, '');
+            });
+        }
+
         if (suntingErr) {
             bootstrap.Modal.getOrCreateInstance(modalSunting).show();
         }
@@ -1219,12 +1252,22 @@ $js = <<< JS
         const muatFoto = modalFoto.querySelector('.foto-muat');
         const judulFoto = modalFoto.querySelector('.modal-title');
 
+        // Penanda permintaan terakhir. 'show.bs.modal' dilempar SEBELUM Bootstrap
+        // memasang kelas .show (kelas itu baru ada setelah transisi fade selesai),
+        // jadi mengecek .show di sini balapan: jawaban pertama (kirim lambat) lolos,
+        // jawaban berikutnya (sudah ter-cache, balik instan) datang sebelum .show
+        // terpasang sehingga kontennya tidak pernah dipasang. Urutan permintaan yang
+        // jadi acuan, bukan kelas .show.
+        let fotoReq = 0;
+
         modalFoto.addEventListener('show.bs.modal', event => {
             const tombol = event.relatedTarget;
 
             if (!tombol || !tombol.hasAttribute('data-stok')) {
                 return;
             }
+
+            const req = ++fotoReq;
 
             judulFoto.textContent = 'Foto ' + tombol.getAttribute('data-nama');
             muatFoto.innerHTML = '<div class="text-center text-muted py-4"><i class="fal fa-spinner fa-spin me-2"></i>Fotonya dimuat...</div>';
@@ -1233,18 +1276,25 @@ $js = <<< JS
 
             $.get(alamatFoto + '/' + id)
                 .done(html => {
-                    // modal bisa sempat ditutup sebelum jawaban datang
-                    if (document.getElementById('modalFotoProduk') && modalFoto.classList.contains('show')) {
+                    // hanya jawaban permintaan terakhir yang dipakai; modal bisa
+                    // sempat ditutup atau berpindah kartu sebelum jawaban datang
+                    if (req === fotoReq) {
                         muatFoto.innerHTML = html;
                     }
                 })
                 .fail(() => {
-                    muatFoto.innerHTML = '<div class="alert alert-danger py-2 mb-0">Foto produk gagal dimuat, coba lagi ya.</div>';
+                    if (req === fotoReq) {
+                        muatFoto.innerHTML = '<div class="alert alert-danger py-2 mb-0">Foto produk gagal dimuat, coba lagi ya.</div>';
+                    }
                 });
         });
 
         modalFoto.addEventListener('hidden.bs.modal', () => {
+            fotoReq++; // batalkan permintaan yang masih mengantung
             muatFoto.innerHTML = '';
+            if (window.FOTO) { window.FOTO.reset(); }
+            document.getElementById('btnSimpanFoto').classList.add('d-none');
+            modalFoto.querySelector('.foto-status').classList.add('d-none');
         });
 
         // klik di mana pun pada kartu membuka rangkapan detailnya; tombol aksi

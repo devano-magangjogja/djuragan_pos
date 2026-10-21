@@ -8,6 +8,9 @@
  * @var string $template   WhatsApp message template body
  * @var string $provider   Active WhatsApp gateway name
  * @var int    $isSandbox  Kapso sandbox mode flag (0/1)
+ * @var int    $total      Total shipped-invoice rows (countInvoicePengiriman)
+ * @var int    $page       Current pagination page number
+ * @var int    $totalPages Total number of pages
  */
 ?>
 <?= $this->extend('template/main') ?>

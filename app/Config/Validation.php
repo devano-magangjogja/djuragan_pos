@@ -211,9 +211,18 @@ class Validation extends BaseConfig
         // harga boleh kosong: tombol "+ Varian" pada kartu tidak menanyakannya,
         // nilainya diwarisi dari saudara sekartu oleh controller
         'harga'      => 'permit_empty|integer',
-        // stok boleh negatif supaya salah hitung gudang bisa langsung dikoreksi
-        'stok'       => 'required|integer',
+        // stok awal minimal 1: menambah varian baru tanpa stok tidak masuk akal,
+        // koreksi gudang (nol/negatif) dilakukan lewat sunting, bukan lewat tambah
+        'stok'       => 'required|integer|greater_than_equal_to[1]',
         'keterangan' => 'permit_empty|max_length[500]',
+    ];
+    // lok api masih 'en', jadi pesan stok di atas dibahasakan agar tidak mencolok
+    public $addStok_errors = [
+        'stok' => [
+            'required'              => 'Stok wajib diisi.',
+            'integer'               => 'Stok harus berupa angka bulat.',
+            'greater_than_equal_to' => 'Stok minimal 1, tidak boleh kosong atau nol.',
+        ],
     ];
     public $updateStok = [
         'juragan_id' => 'required|integer',

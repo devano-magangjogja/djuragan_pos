@@ -131,7 +131,7 @@ $judul_banding = [
 
 // penjelasan singkat per kartu, hanya muncul saat ikonnya ditahan
 $tooltip = [
-    'pegawai_dinilai'       => 'Akun admin, superadmin, dan CS yang masih aktif.',
+    'pegawai_dinilai'       => 'Akun Customer Service yang masih aktif.',
     'order_diproses'        => 'Semua nota yang dibuat orang ini pada periode terpilih, sudah lunas maupun belum.',
     'sla_fulfillment'       => 'Diukur dari pembayaran pertama yang tercatat sampai nota masuk packing atau kirim. Tanggal yang urutannya tidak masuk akal tidak ikut dihitung.',
     'return_error_rate'     => 'Butuh pencatatan retur beserta alasannya. Kalau form retur belum dipakai, angkanya memang belum ada.',
