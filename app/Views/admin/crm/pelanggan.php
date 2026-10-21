@@ -67,6 +67,32 @@ td .btn.crm-aksi {
     div.table-responsive {
         overflow: hidden !important;
     }
+    /* Panel putih yang membungkus SELURUH daftar (25 kartu, tingginya ±10.300px)
+       harus mundur di mode kartu: selama panelnya ikut putih, celah antar kartu
+       terbaca putih-di-atas-putih sehingga kartu-kartunya tampak digandeng jadi
+       satu papan. Yang terlihat di celah sekarang adalah latar halaman (#f9fafb).
+       .card dan .bg-white di style.css sama-sama !important, jadi ikut !important.
+       Selector-nya ".card.crm-panel-kartu" (0,2,0), bukan kelasnya saja, supaya
+       menang atas ".card, .kartu-invoice{background:#fff!important}" di style.css:1190
+       tanpa bergantung pada urutan muat stylesheet. */
+    .card.crm-panel-kartu,
+    .crm-panel-kartu > .table-responsive {
+        background: transparent !important;
+        border: 0 !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+    }
+    /* Pager-nya tadinya menempel di dasar panel; setelah panelnya hilang ia
+       jadi kartu sendiri yang sama bentuknya dengan kartu di atasnya. margin-top
+       sengaja 0: .table-responsive di atas pakai overflow:hidden (BFC) sehingga
+       margin-bottom kartu terakhir sudah dihitung di dalamnya — ditambah lagi
+       akan jadi dua kali jarak. */
+    .crm-panel-kartu > .card-footer {
+        background: #ffffff !important;
+        border: 1px solid #eaecf0 !important;
+        border-radius: 10px !important;
+        margin-top: 0;
+    }
     .crm-tabel thead {
         display: none;
     }
@@ -84,7 +110,9 @@ td .btn.crm-aksi {
         column-gap: 0.9rem;
         border: 1px solid #eaecf0;
         border-radius: 10px;
-        margin-bottom: 0.6rem;
+        /* sama rata dengan column-gap supaya jarak antar kartu tidak terasa
+           lebih sumpek daripada jarak dua kolom di dalam kartu */
+        margin-bottom: 0.9rem;
         padding: 0.15rem 0.7rem;
     }
     .crm-tabel td:nth-child(1),
@@ -94,14 +122,16 @@ td .btn.crm-aksi {
     }
     .crm-tabel tbody td {
         padding: 0.5rem 0 !important;
-        border-bottom: 1px dashed #eaecf0;
+        border-bottom: 1px dashed #eaecf0 !important;
         box-shadow: none;
         text-align: left !important;
         white-space: normal !important;
         overflow-wrap: anywhere;
     }
-    .crm-tabel tr td:last-child {
-        border-bottom: 0;
+    .crm-tabel tr td:last-child,
+    .crm-tabel tbody td:last-child,
+    .crm-tabel td[data-label="Aksi"] {
+        border-bottom: 0 !important;
     }
     .crm-tabel td::before {
         content: attr(data-label);
@@ -254,7 +284,7 @@ td .btn.crm-aksi {
     </div>
 
     <!-- Tabel Data Pelanggan -->
-    <div class="card border-0 shadow-sm mb-4">
+    <div class="card border-0 shadow-sm mb-4 crm-panel-kartu">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0 crm-tabel">
                 <thead class="table-light">
