@@ -272,6 +272,12 @@ $session  = \Config\Services::session();
                                 <i class="fal fa-user"></i>
                                 <span class="text-lowercase text-ink-500">Admin/CS:</span> <?= esc($pesanan->pengguna->nama) ?>
                             </span>
+                            <?php if (($pj = penanggung_jawab($pesanan->source->label ?? null)) !== '') { ?>
+                            <span class="inline-flex min-w-0 items-center gap-1 [&>.fal]:text-[0.85rem] [&>.fal]:text-ink-400">
+                                <i class="fal fa-user-check"></i>
+                                <span class="text-lowercase text-ink-500">Dilayani Oleh:</span> <?= esc($pj) ?>
+                            </span>
+                            <?php } ?>
                         </div>
                     </div>
 
@@ -401,7 +407,7 @@ $session  = \Config\Services::session();
                             <?php } ?>
 
                             <h6 class="mb-2 flex items-center gap-1.5 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500 [&_.fal]:text-[0.95rem] [&_.fal]:text-ink-400 mt-4 border-t border-ink-200 pt-3"><i class="fal fa-inbox-in"></i> Asal Orderan</h6>
-                            <div class="text-sm leading-[1.55] text-ink-800"><?= $pesanan->source !== null ? label_asal($pesanan->source->id, $pesanan->source->label) : '<span class="text-muted">-</span>' ?></div>
+                            <div class="text-sm leading-[1.55] text-ink-800"><?= $pesanan->source !== null ? label_asal($pesanan->source->id) : '<span class="text-muted">-</span>' ?></div>
                         </div>
                     </section>
 

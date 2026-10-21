@@ -80,6 +80,26 @@ if (! function_exists('label_asal')) {
     }
 }
 
+if (! function_exists('penanggung_jawab')) {
+    /**
+     * Nama penanggung jawab untuk ditampilkan di detail orderan. Dulu pengguna
+     * mengetik penuh "Dilayani Oleh: <nama>" di kolom bebas, jadi prefiksnya bisa
+     * sudah ikut tersimpan; di sini prefiks itu dilepas supaya tampilan bisa
+     * memasang labelnya sendiri tanpa berlipat. Tidak ada penanggung jawab =>
+     * string kosong, dan pemanggil menyembunyikan barisnya.
+     */
+    function penanggung_jawab(?string $label): string
+    {
+        $nama = trim((string) $label);
+
+        if (mb_stripos($nama, 'dilayani oleh') === 0) {
+            $nama = ltrim(mb_substr($nama, mb_strlen('dilayani oleh')), " \t\n\r\0\x0B:");
+        }
+
+        return trim($nama);
+    }
+}
+
 if (! function_exists('logo_bank')) {
     function logo_bank($nama_bank)
     {

@@ -49,7 +49,8 @@ class Invoices extends BaseController
             $invModel     = new InvoiceModel();
             $juraganModel = new JuraganModel();
 
-            $user_id    = $this->request->getPost('pengguna');
+            $user_id    = (int) $this->request->getPost('pengguna');
+            /** @var object|null $t */
             $t          = $userModel->find($user_id);
             $seri       = strtoupper(first_letter($t->name) . time());
             $juragan_id = $this->request->getPost('juragan');
