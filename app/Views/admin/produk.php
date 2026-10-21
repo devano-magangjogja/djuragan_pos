@@ -183,7 +183,10 @@ $kueriTab = array_filter([
 <?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
-<?= $this->include('admin/navbar') ?>
+<?php /* CS membuka halaman yang sama untuk membaca katalog, tapi harus memakai
+   sidebar-nya sendiri (Transaksi/Chart/Katalog), bukan chrome admin yang penuh
+   tautan yang tidak boleh dia buka */ ?>
+<?= $this->include((string) session()->get('level') === 'cs' ? 'user/navbar' : 'admin/navbar') ?>
 
 <div class="container-xxl">
     <h1 class="h3 mt-5">Produk &amp; Stok</h1>

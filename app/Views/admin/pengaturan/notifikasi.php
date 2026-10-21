@@ -39,16 +39,6 @@ $rp = static fn (int $angka): string => number_format($angka, 0, ',', '.');
         <div class="alert alert-danger py-2"><?= esc(implode(' ', $errors)) ?></div>
     <?php } ?>
 
-    <div class="card mb-4 rounded-kartu shadow-kartu">
-        <div class="card-body">
-            <p class="mb-0 text-muted small">
-                Notifikasi isinya jejak perubahan satu nota, dan yang sudah terbaca tidak pernah dibaca dua kali.
-                Yang boleh dihapus hanyalah yang <strong>sudah terbaca</strong>: yang belum dibaca dibiarkan
-                di kotaknya sampai pemiliknya membuka. Riwayat nota tidak pernah ikut tersentuh.
-            </p>
-        </div>
-    </div>
-
     <div class="row gx-3 gy-3 mb-4">
         <div class="col-12 col-md-4">
             <div class="card h-100 rounded-kartu shadow-kartu">
@@ -102,8 +92,7 @@ $rp = static fn (int $angka): string => number_format($angka, 0, ',', '.');
                         ],
                     ]) ?>
                     <div class="form-text">
-                        Sekali klik, semua notifikasi yang sudah terbaca pada cakupan itu hilang dari kotaknya masing-masing.
-                        Riwayat notanya tidak ikut tersentuh — hanya loncengnya yang dibersihkan.
+                        Riwayat notanya tidak terhapus, hanya notifikasinya saja.
                     </div>
                     <button type="submit" class="btn btn-sm btn-outline-danger mt-3"
                         onclick="return confirm('Hapus semua notifikasi yang sudah terbaca pada cakupan terpilih? Yang belum dibaca dibiarkan.')">
@@ -139,13 +128,6 @@ $rp = static fn (int $angka): string => number_format($angka, 0, ',', '.');
                                 'value' => set_value('umur_hari', (string) $setelan['umur_hari']),
                             ]) ?>
                         </div>
-                        <div class="col-6">
-                            <div class="small text-muted mb-2">
-                                Notifikasi terbaca yang dibuat lebih tua dari angka ini ikut tersapu.
-                                Batas diperiksa maksimal sekali per <?= \App\Models\NotifikasiModel::JEDA_SAPU ?> jam,
-                                bukan tiap permintaan.
-                            </div>
-                        </div>
                     </div>
                     <div class="small text-muted mt-2">
                         <?php if ($sapu_terakhir !== null) { ?>
@@ -154,11 +136,6 @@ $rp = static fn (int $angka): string => number_format($angka, 0, ',', '.');
                         <?php } else { ?>
                             <i class="fal fa-broom me-1"></i>Belum pernah dijalankan.
                         <?php } ?>
-                    </div>
-                    <div class="form-text mt-2">
-                        Server yang punya cron boleh menjalankan jadwalnya sendiri:
-                        <code>php spark notif:bersihkan</code>. Tanpa itu pun aplikasi tetap menyapu saat
-                        halaman atau lonceng notifikasi dibuka.
                     </div>
                     <button type="submit" class="btn btn-sm btn-primary mt-3">
                         <i class="fal fa-save"></i> Simpan pengaturan
