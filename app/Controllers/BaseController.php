@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Controllers\Juragan as Jrgn;
 use App\Models\InvoiceModel;
 use App\Models\JuraganModel;
+use App\Models\UserModel;
 use CodeIgniter\Controller;
 use CodeIgniter\HTTP\CLIRequest;
 use CodeIgniter\HTTP\IncomingRequest;
@@ -118,6 +119,71 @@ abstract class BaseController extends Controller
         }
 
         asort($pilihan);
+
+        return $pilihan;
+    }
+
+    /**
+     * Apakah akun ini boleh melihat katalog produk dari SEMUA juragan, bukan hanya
+     * toko yang disematkan padanya. Superadmin selalu boleh; CS boleh hanya kalau
+     * Superadmin menyalakan penanda `lihat_semua_produk` di akunnya. Dibaca dari
+     * basis data (bukan sesi) supaya perubahan Superadmin langsung berlaku tanpa
+     * perlu login ulang.
+     */
+    public function bolehLihatSemuaProduk(): bool
+    {
+        if ((string) session()->get('level') === 'superadmin') {
+            return true;
+        }
+
+        $user_id = (int) session()->get('id');
+
+        if ($user_id <= 0) {
+            return false;
+        }
+
+        // find() diberi id skalar: kembali satu baris (object) atau null
+        $akun = (new UserModel())->find($user_id);
+
+        return $akun !== null && (int) $akun->lihat_semua_produk === 1;
+    }
+
+    /**
+     * ID juragan yang boleh dibaca di katalog produk. Sama seperti juraganIds()
+     * (hanya toko yang disematkan), kecuali akun ini boleh melihat semuanya: maka
+     * seluruh juragan aktif ikut terbaca. Hanya dipakai halaman Produk, jadi tidak
+     * menyentuh pembatasan transaksi/nota.
+     *
+     * @return list<int>
+     */
+    public function produkJuraganIds(): array
+    {
+        if (! $this->bolehLihatSemuaProduk()) {
+            return $this->juraganIds();
+        }
+
+        $semua = (new JuraganModel())->select('id_juragan')->findAll();
+
+        return array_map('intval', array_column($semua, 'id_juragan'));
+    }
+
+    /**
+     * Pilihan toko untuk filter katalog produk, mengikuti produkJuraganIds():
+     * semua juragan bila akun ini boleh, kalau tidak hanya yang disematkan.
+     *
+     * @return array<int, string> id_juragan => nama
+     */
+    public function produkJuraganPilihan(): array
+    {
+        if (! $this->bolehLihatSemuaProduk()) {
+            return $this->juraganPilihan();
+        }
+
+        $pilihan = [];
+
+        foreach ((new JuraganModel())->orderBy('nama_juragan', 'ASC')->findAll() as $t) {
+            $pilihan[(int) $t->id_juragan] = $t->nama_juragan;
+        }
 
         return $pilihan;
     }

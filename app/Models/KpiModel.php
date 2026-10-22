@@ -29,11 +29,14 @@ use CodeIgniter\Model;
  */
 class KpiModel extends Model
 {
-    /** Level akun yang dinilai untuk tiap pilihan peran. */
+    /**
+     * Level akun yang dinilai untuk tiap pilihan peran. KPI gaji khusus menilai
+     * Customer Service; admin dan superadmin sengaja tidak ikut dinilai, jadi
+     * 'semua' pun hanya berisi 'cs'.
+     */
     private const LEVEL_PERAN = [
-        'admin' => ['admin', 'superadmin'],
         'cs'    => ['cs'],
-        'semua' => ['admin', 'superadmin', 'cs'],
+        'semua' => ['cs'],
     ];
 
     /** Indikator yang punya jalur angka dan bisa dibuka detailnya. */

@@ -241,7 +241,8 @@ class Invoices extends BaseController
             }
             $db = \Config\Database::connect();
 
-            $user_id    = $this->request->getPost('pengguna');
+            $user_id    = (int) $this->request->getPost('pengguna');
+            /** @var object|null $t */
             $t          = $userModel->find($user_id);
             $seri       = strtoupper(first_letter($t->name) . time());
             $juragan_id = $this->request->getPost('juragan');
@@ -284,7 +285,7 @@ class Invoices extends BaseController
                 $data_asal = [
                     'invoice_id' => $invoice_id,
                     'source_id'  => $this->request->getPost('asal_orderan'),
-                    'label'      => ($this->request->getPost('label') !== '' ? $this->request->getPost('label') : null),
+                    'label'      => ($this->request->getPost('label') !== '' ? trim($this->request->getPost('label')) : null),
                 ];
                 $db->table('label_invoice')->insert($data_asal);
 
@@ -419,7 +420,7 @@ class Invoices extends BaseController
             $data_asal = [
                 'invoice_id' => $invoice_id,
                 'source_id'  => $this->request->getPost('asal_orderan'),
-                'label'      => ($this->request->getPost('label') !== '' ? $this->request->getPost('label') : null),
+                'label'      => ($this->request->getPost('label') !== '' ? trim($this->request->getPost('label')) : null),
             ];
             $db->table('label_invoice')->insert($data_asal);
 

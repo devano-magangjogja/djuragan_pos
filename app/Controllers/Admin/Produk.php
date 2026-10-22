@@ -22,7 +22,9 @@ class Produk extends BaseController
      */
     public function index()
     {
-        $ids       = $this->juraganIds();
+        // cakupan katalog produk: toko yang disematkan, kecuali akun ini (CS yang
+        // diberi hak, atau Superadmin) boleh membaca katalog semua juragan
+        $ids       = $this->produkJuraganIds();
         $stokModel = new StokModel();
 
         $juragan = (int) $this->request->getGet('juragan');
@@ -59,17 +61,18 @@ class Produk extends BaseController
             $katalog
         );
 
-        $juragans = $this->juraganPilihan();
+        $juragans = $this->produkJuraganPilihan();
 
         // penjelasan cakupan untuk pesan daftar kosong: Admin dan CS hanya
-        // melihat toko yang melekat di akunnya, Superadmin melihat semuanya
+        // melihat toko yang melekat di akunnya, kecuali hak "lihat semua produk"
+        // dinyalakan; Superadmin selalu melihat semuanya
         if ($juragan > 0) {
             $cakupan = 'toko ' . ($juragans[$juragan] ?? '-');
-        } elseif (count($juragans) === 1) {
-            $cakupan = 'toko ' . reset($juragans);
         } elseif ($juragans === []) {
             $cakupan = 'toko mana pun yang kamu pegang';
-        } elseif ((string) session()->get('level') === 'superadmin') {
+        } elseif (count($juragans) === 1) {
+            $cakupan = 'toko ' . reset($juragans);
+        } elseif ($this->bolehLihatSemuaProduk()) {
             $cakupan = 'semua toko (' . count($juragans) . ')';
         } else {
             $cakupan = count($juragans) . ' toko yang kamu pegang';

@@ -54,10 +54,12 @@ return array(
     'Evenement\\' => array($vendorDir . '/evenement/evenement/src'),
     'Ergebnis\\AgentDetector\\' => array($vendorDir . '/ergebnis/agent-detector/src'),
     'Dompdf\\' => array($vendorDir . '/dompdf/dompdf/src'),
+    'DASPRiD\\Enum\\' => array($vendorDir . '/dasprid/enum/src'),
     'Composer\\XdebugHandler\\' => array($vendorDir . '/composer/xdebug-handler/src'),
     'Composer\\Semver\\' => array($vendorDir . '/composer/semver/src'),
     'Composer\\Pcre\\' => array($vendorDir . '/composer/pcre/src'),
     'Complex\\' => array($vendorDir . '/markbaker/complex/classes/src'),
     'CodeIgniter\\' => array($vendorDir . '/codeigniter4/framework/system'),
     'Clue\\React\\NDJson\\' => array($vendorDir . '/clue/ndjson-react/src'),
+    'BaconQrCode\\' => array($vendorDir . '/bacon/bacon-qr-code/src'),
 );

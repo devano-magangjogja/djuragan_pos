@@ -67,6 +67,24 @@ $pil_toko = static function (string $awalan, array $punya, array $toko): string 
     filter: none;
     user-select: text;
 }
+
+/* Judul "Kunci API" dibuat sama persis dengan header "Pencatatan COD".
+   style.css menormalkan h1.h3.mt-5 ke 1.5rem, tapi judul di halaman ini duduk
+   di dalam baris flex (mt-5 ada di wadah, bukan di <h1>) sehingga tidak kena
+   aturan itu dan ikut ukuran h3 responsif Bootstrap yang lebih besar. Nilai
+   tipografinya ditiru di sini; jarak atas cukup dari padding container. */
+.judul-halaman {
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.025em !important;
+    line-height: 1.25 !important;
+    color: #101828 !important;
+}
+@media (max-width: 575.98px) {
+    .judul-halaman {
+        font-size: 1.25rem !important;
+    }
+}
 </style>
 <?= $this->endSection() ?>
 
@@ -74,9 +92,9 @@ $pil_toko = static function (string $awalan, array $punya, array $toko): string 
 <?= $this->include('admin/navbar') ?>
 
 <div class="container-xxl">
-    <div class="d-flex flex-wrap align-items-center gap-2 mt-5 mb-3">
-        <h1 class="h3 mb-0">Kunci API</h1>
-        <button type="button" class="btn btn-sm btn-primary ms-auto" data-bs-toggle="modal" data-bs-target="#modalBuatKunci">
+    <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+        <h1 class="h3 mb-0 judul-halaman">Kunci API</h1>
+        <button type="button" class="btn rounded-pill border-0 bg-brand-500 font-semibold text-white" data-bs-toggle="modal" data-bs-target="#modalBuatKunci" title="Buat kunci API baru">
             <i class="fal fa-plus"></i> Buat Kunci API
         </button>
     </div>

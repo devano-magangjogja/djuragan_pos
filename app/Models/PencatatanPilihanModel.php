@@ -78,6 +78,27 @@ class PencatatanPilihanModel extends Model
         ]);
     }
 
+    /**
+     * Id pilihan yang sudah ada untuk label ini, atau null kalau belum ada.
+     *
+     * Kebalikan jamin(): tidak membuat baris baru. Dipakai untuk kategori yang
+     * isinya dijaga (status transaksi), di mana menambah pilihan adalah hak
+     * Superadmin semata sehingga kiriman form dari level lain tidak boleh
+     * menyelipkan baris master baru secara diam-diam.
+     */
+    public function idUntuk(string $jenis, string $label): ?int
+    {
+        $kunci = self::kunci($label);
+
+        if ($kunci === '') {
+            return null;
+        }
+
+        $ada = $this->select('id')->where('jenis', $jenis)->where('kunci', $kunci)->orderBy('id', 'ASC')->first();
+
+        return $ada === null ? null : (int) $ada['id'];
+    }
+
     public static function kunci(string $label): string
     {
         return trim((string) preg_replace('/\s+/', ' ', mb_strtolower(trim($label))));

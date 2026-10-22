@@ -131,7 +131,7 @@ $judul_banding = [
 
 // penjelasan singkat per kartu, hanya muncul saat ikonnya ditahan
 $tooltip = [
-    'pegawai_dinilai'       => 'Akun admin, superadmin, dan CS yang masih aktif.',
+    'pegawai_dinilai'       => 'Akun Customer Service yang masih aktif.',
     'order_diproses'        => 'Semua nota yang dibuat orang ini pada periode terpilih, sudah lunas maupun belum.',
     'sla_fulfillment'       => 'Diukur dari pembayaran pertama yang tercatat sampai nota masuk packing atau kirim. Tanggal yang urutannya tidak masuk akal tidak ikut dihitung.',
     'return_error_rate'     => 'Butuh pencatatan retur beserta alasannya. Kalau form retur belum dipakai, angkanya memang belum ada.',
@@ -144,6 +144,32 @@ $tooltip = [
 ];
 ?>
 <?= $this->extend('template/main') ?>
+
+<?= $this->section('css') ?>
+<style>
+@media (max-width: 767.98px) {
+    /* Judul pembanding bisa panjang ("Rata-rata SLA fulfillment per karyawan
+       (jam, makin kecil makin baik)"). Sejajar di baris sempit membuat labelnya
+       turun jadi tiga baris dan select-nya tergencet sampai teks opsinya
+       tertelan panah ">". Di responsif label mendapat barisnya sendiri, lalu
+       select dan tombol Ganti membagi sisa lebar. Desktop tidak diubah. */
+    .kpi-kepala-banding {
+        flex-wrap: wrap;
+    }
+    .kpi-kepala-banding > span {
+        flex: 1 1 100%;
+    }
+    .kpi-banding {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+    .kpi-banding select {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+}
+</style>
+<?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
 <?= $this->include('admin/navbar') ?>
@@ -219,9 +245,9 @@ $tooltip = [
         </div>
         <div class="col-12 col-xl-5">
             <div class="card h-100">
-                <div class="card-header bg-white d-flex justify-content-between align-items-center gap-2">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center gap-2 kpi-kepala-banding">
                     <span class="fw-semibold small"><?= esc($judul_banding[$banding] ?? 'Perbandingan karyawan') ?></span>
-                    <?= form_open('admin/kpi', ['method' => 'get', 'class' => 'd-flex align-items-center gap-1']) ?>
+                    <?= form_open('admin/kpi', ['method' => 'get', 'class' => 'd-flex align-items-center gap-1 kpi-banding']) ?>
                     <?php foreach (['awal' => $s['awal'], 'akhir' => $s['akhir'], 'periode' => $s['periode'],
                         'peran' => $s['peran'], 'pegawai' => $s['user_id'], 'juragan' => $s['juragan_id']] as $nama => $nilai) { ?>
                         <?= form_input(['type' => 'hidden', 'name' => $nama, 'value' => $nilai]) ?>

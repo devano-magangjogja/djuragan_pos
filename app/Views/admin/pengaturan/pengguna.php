@@ -241,6 +241,19 @@ $per_halaman = (int) config('Pager')->perPage;
                     <div class="form-text">klik untuk memilih, boleh lebih dari satu.</div>
                     <div class="form-text text-danger d-none" data-hint-cs>Level CS wajib punya minimal satu juragan.</div>
                 </div>
+                <?php /* hak baca lintas toko: khusus CS, dipilih Superadmin. Tanpa hak
+                   ini katalog CS hanya berisi juragan yang disematkan ke akunnya. */ ?>
+                <div class="form-check mb-3" data-hak-produk>
+                    <?= form_checkbox([
+                        'name'    => 'lihat_semua_produk',
+                        'id'      => 'lihatSemuaProduk',
+                        'value'   => '1',
+                        'class'   => 'form-check-input',
+                        'checked' => ($isi('lihat_semua_produk') === '1'),
+                    ]); ?>
+                    <?= form_label('Boleh melihat katalog produk semua juragan', 'lihatSemuaProduk', ['class' => 'form-check-label']); ?>
+                    <div class="form-text">Khusus CS: tanpa hak ini, katalog yang terlihat hanya dari juragan yang disematkan ke akun ini.</div>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-link text-decoration-none" data-bs-dismiss="modal">Batal</button>
@@ -330,6 +343,16 @@ $per_halaman = (int) config('Pager')->perPage;
                     </div>
                     <div class="form-text">klik untuk memilih, boleh lebih dari satu.</div>
                     <div class="form-text text-danger d-none" data-hint-cs>Level CS wajib punya minimal satu juragan.</div>
+                </div>
+                <div class="form-check mb-3" data-hak-produk>
+                    <?= form_checkbox([
+                        'name'  => 'lihat_semua_produk',
+                        'id'    => 'lihatSemuaProduk_',
+                        'value' => '1',
+                        'class' => 'form-check-input',
+                    ]); ?>
+                    <?= form_label('Boleh melihat katalog produk semua juragan', 'lihatSemuaProduk_', ['class' => 'form-check-label']); ?>
+                    <div class="form-text">Khusus CS: tanpa hak ini, katalog yang terlihat hanya dari juragan yang disematkan ke akun ini.</div>
                 </div>
 
             </div>
@@ -508,7 +531,8 @@ $js = <<< JS
     			+ '<td class="text-end text-nowrap">'
     			+ '<button type="button" class="btn btn-sm btn-outline-secondary me-1" title="Sunting ' + aman(u.nama) + '" aria-label="Sunting ' + aman(u.nama) + '" data-bs-toggle="modal" data-bs-target="#modalSuntingPengguna"'
     			+ ' data-id="' + aman(u.id) + '" data-nama="' + aman(u.nama) + '" data-email="' + aman(u.email) + '"'
-    			+ ' data-username="' + aman(u.username) + '" data-level="' + aman(u.level) + '" data-status="' + aman(u.status) + '"><i class="fal fa-pencil"></i></button>'
+    			+ ' data-username="' + aman(u.username) + '" data-level="' + aman(u.level) + '" data-status="' + aman(u.status) + '"'
+    			+ ' data-lihat-semua="' + aman(u.lihat_semua_produk || 0) + '"><i class="fal fa-pencil"></i></button>'
     			+ '<button type="button" class="btn btn-sm btn-outline-danger" title="Hapus ' + aman(u.nama) + '" aria-label="Hapus ' + aman(u.nama) + '"><i class="fal fa-trash"></i></button>'
     			+ '</td></tr>';
     	}
@@ -602,8 +626,19 @@ $js = <<< JS
     	function sinkronHintLevel(popup) {
     			var opsi = popup.querySelector('select[name="level"]');
     			var hint = popup.querySelector('[data-hint-cs]');
+    			var hak  = popup.querySelector('[data-hak-produk]');
+    			var isCs = !!opsi && opsi.value === 'cs';
 
-    			if (opsi && hint) { hint.classList.toggle('d-none', opsi.value !== 'cs'); }
+    			if (hint) { hint.classList.toggle('d-none', ! isCs); }
+    			if (hak)  { hak.classList.toggle('d-none', ! isCs); }
+    	}
+
+    // kotak centang hak "lihat semua produk" diisi dari baris pengguna saat popup
+    // sunting dibuka; checkbox tidak ikut ternilai lewat value= biasa
+    function sinkronHakProduk(popup, nilai) {
+    			var hakEl = popup.querySelector('input[name="lihat_semua_produk"]');
+
+    			if (hakEl) { hakEl.checked = ('' + nilai === '1'); }
     	}
 
     	$(document).on('change', 'select[name="level"]', function () {
@@ -664,6 +699,7 @@ $js = <<< JS
     		m.value=f,
     		n.value=g,
     		sinkronHintLevel(mP),
+    		sinkronHakProduk(mP, a.getAttribute('data-lihat-semua')),
 
     		$.ajax({
     			method:'GET',

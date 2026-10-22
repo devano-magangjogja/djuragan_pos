@@ -1,5 +1,6 @@
 <?php
 
+use App\Libraries\Barcode;
 use App\Libraries\Ongkir;
 
 /**
@@ -10,6 +11,10 @@ use App\Libraries\Ongkir;
  */
 
 $html_logo = '<img src="' . str_replace('\\', '/', rtrim(FCPATH, '/\\')) . '/assets/img/logo-invoice.png" width="92" height="92" />';
+
+// QR berisi nomor nota apa adanya: hasil scan langsung bisa ditempel ke kolom
+// cari Transaksi (pencocokan persis invoice.seri). Render gagal = tanpa QR.
+$html_qr = Barcode::qrDataUri((string) $invoice->seri, 160);
 ?>
 <!doctype html>
 <html lang="id">
@@ -438,6 +443,21 @@ $html_logo = '<img src="' . str_replace('\\', '/', rtrim(FCPATH, '/\\')) . '/ass
             <td align="right">Dicetak <?= esc(date('d M Y')) ?> &nbsp;·&nbsp; dokumen tagihan</td>
         </tr>
     </table>
+
+    <?php if ($html_qr !== '') { ?>
+        <table style="margin-top: 10px;">
+            <tr>
+                <td width="70" align="center" style="border: 1px solid #d6dde4; padding: 4px;">
+                    <img src="<?= $html_qr ?>" width="60" height="60" alt="QR <?= esc($invoice->seri) ?>" />
+                </td>
+                <td style="padding-left: 10px; vertical-align: middle;">
+                    <span class="cap">Scan untuk cari nota</span><br>
+                    <span class="nomor">Arahkan kamera HP atau scanner ke kode ini, lalu buka menu
+                        Transaksi &gt; Scan. Kode = nomor nota <?= esc($invoice->seri) ?>.</span>
+                </td>
+            </tr>
+        </table>
+    <?php } ?>
 
 </body>
 

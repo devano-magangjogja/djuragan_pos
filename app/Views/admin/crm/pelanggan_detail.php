@@ -35,11 +35,14 @@
         flex: 1 1 auto;
         min-width: 0;
         flex-wrap: wrap;
-        justify-content: space-between;
-        row-gap: 0.35rem;
+        /* dikumpulkan ke kiri, tidak diuraikan sampai tepi kanan: dulu
+           space-between mendorong tab terakhir tepat di atas panel "Catat
+           Interaksi Baru" sehingga terlihat menumpuk. */
+        justify-content: flex-start;
+        gap: 0.3rem;
+        row-gap: 0.3rem;
         overflow: visible;
         align-items: center;
-        gap: 0.35rem;
     }
 
     #customer360Tabs .nav-item {
@@ -51,12 +54,11 @@
         margin: 0 !important;
         margin-bottom: 0 !important;
         border: 1.5px solid transparent !important;
-        border-radius: 8px !important;
-        padding-left: clamp(0.6rem, 0.65vw, 1rem) !important;
-        padding-right: clamp(0.6rem, 0.65vw, 1rem) !important;
-        padding-top: 0.55rem !important;
-        padding-bottom: 0.55rem !important;
-        font-size: clamp(0.84rem, 0.45vw + 0.45rem, 0.92rem) !important;
+        border-radius: 7px !important;
+        /* lebih compact: padding vertikal & horizontal dikecilkan, font diturunkan */
+        padding: 0.3rem 0.6rem !important;
+        font-size: 0.8rem !important;
+        line-height: 1.15 !important;
         white-space: nowrap;
         transition: all 0.15s ease;
         display: inline-flex;
@@ -64,15 +66,15 @@
     }
 
     #customer360Tabs .nav-link > i {
-        margin-right: 0.32rem !important;
-        font-size: clamp(0.82rem, 0.4vw + 0.45rem, 0.88rem) !important;
+        margin-right: 0.3rem !important;
+        font-size: 0.8rem !important;
     }
 
     #customer360Tabs .nav-link .badge {
-        margin-left: 0.35rem !important;
-        padding: 0.12rem 0.42rem !important;
-        font-size: 0.72rem !important;
-        border-radius: 6px !important;
+        margin-left: 0.3rem !important;
+        padding: 0.05rem 0.35rem !important;
+        font-size: 0.68rem !important;
+        border-radius: 5px !important;
     }
 
     /* Hover tab tidak aktif */
@@ -104,7 +106,7 @@
         border-bottom: 1.5px solid #cbd5e1 !important;
         border-left: 1.5px solid #cbd5e1 !important;
         border-right: 1.5px solid #cbd5e1 !important;
-        border-radius: 8px !important;
+        border-radius: 7px !important;
         color: #0f172a !important;
         box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08) !important;
     }
@@ -189,9 +191,11 @@
         #modalCatatInteraksi {
             display: block !important;
             position: static !important;
-            width: auto;
-            height: auto;
-            overflow: visible;
+            top: auto !important;
+            left: auto !important;
+            width: auto !important;
+            height: auto !important;
+            overflow: visible !important;
             z-index: auto;
             opacity: 1 !important;
             visibility: visible !important;
@@ -200,17 +204,37 @@
 
         #modalCatatInteraksi .modal-dialog {
             max-width: 100%;
-            margin: 0;
+            margin: 0 !important;
+            min-height: 0 !important;
+            height: auto !important;
+            display: block !important;
+            /* Biang keroknya: .modal.fade .modal-dialog punya
+               transform: translate(0, -50px) selama popus belum berkelas .show.
+               Di desktop popus ini dipaksa tampil inline dan tidak pernah di-show
+               lewat JS, jadi tidak pernah dapat .show -> kartunya naik terus ke atas
+               menutupi strip tab. Dinetralkan di sini. */
+            transform: none !important;
+            transition: none !important;
         }
 
         #modalCatatInteraksi .modal-content {
-            max-height: none;
-            overflow: visible;
+            max-height: none !important;
+            height: auto !important;
+            overflow: visible !important;
+            transform: none !important;
             box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05) !important;
         }
 
         #modalCatatInteraksi .modal-body {
             overflow: visible;
+        }
+
+        /* Turunkan isi tab menjauh dari strip tab. Padding global .card-body
+           terkunci 1.25rem oleh !important di style.css, jadi khusus kartu ini
+           dinaikkan; kedua kolom (timeline & panel) ikut turun bersamaan karena
+           berada di baris yang sama, jadi tetap sejajar dan proporsional. */
+        .body-360 {
+            padding-top: 2.25rem !important;
         }
     }
 
@@ -625,7 +649,7 @@
                 </select>
             </div>
         </div>
-        <div class="card-body p-4">
+        <div class="card-body p-4 body-360">
             <div class="tab-content" id="customer360Content">
                 
                 <!-- ================= TAB 1: TIMELINE AKTIVITAS ================= -->
@@ -692,8 +716,11 @@
                         </div>
 
                         <!-- Panel Catat Interaksi: satu-satunya form, tampil sebagai
-                             kartu di desktop dan sebagai pop-up di layar sempit. -->
-                        <div class="col-lg-4 ps-lg-4 order-1 order-lg-2">
+                             kartu di desktop dan sebagai pop-up di layar sempit. Margin
+                             atasnya disamakan dengan kolom timeline (mt-4 mt-lg-0) supaya
+                             puncak kartu sejajar dengan kepala "Urutan Aktivitas", bukan
+                             naik lebih tinggi darinya. -->
+                        <div class="col-lg-4 ps-lg-4 order-1 order-lg-2 mt-4 mt-lg-0">
                             <button type="button" class="btn btn-primary fw-semibold w-100 d-lg-none" data-bs-toggle="modal" data-bs-target="#modalCatatInteraksi">
                                 <i class="fal fa-plus-circle me-1"></i> Catat Interaksi Baru
                             </button>

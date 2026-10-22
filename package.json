@@ -22,6 +22,7 @@
   "homepage": "https://github.com/devano-magangjogja/djuragan_pos#readme",
   "devDependencies": {
     "@tailwindcss/cli": "^4.3.3",
+    "html5-qrcode": "2.3.8",
     "tailwindcss": "^4.3.3"
   }
 }

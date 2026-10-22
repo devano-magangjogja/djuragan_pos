@@ -56,20 +56,11 @@ $ikut = array_filter([
             ]) ?>
         </div>
         <div class="col-6 col-md-2">
-            <?= form_label('Role', 'peran', ['class' => 'form-label small']) ?>
-            <?= form_dropdown([
-                'class'    => 'form-select form-select-sm',
-                'name'     => 'peran',
-                'options'  => $peran,
-                'selected' => $s['peran'],
-            ]) ?>
-        </div>
-        <div class="col-6 col-md-2">
             <?= form_label('Karyawan', 'pegawai', ['class' => 'form-label small']) ?>
             <?= form_dropdown([
                 'class'    => 'form-select form-select-sm',
                 'name'     => 'pegawai',
-                'options'  => [0 => 'Semua karyawan'] + $pegawai,
+                'options'  => [0 => 'Semua CS'] + $pegawai,
                 'selected' => $s['user_id'] ?? 0,
             ]) ?>
         </div>

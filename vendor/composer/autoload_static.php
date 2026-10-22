@@ -98,6 +98,7 @@ class ComposerStaticInit5506de97fb6a0a6b1e48b0b4385acd36
         'D' =>
         array (
             'Dompdf\\' => 7,
+            'DASPRiD\\Enum\\' => 13,
         ),
         'C' =>
         array (
@@ -107,6 +108,10 @@ class ComposerStaticInit5506de97fb6a0a6b1e48b0b4385acd36
             'Complex\\' => 8,
             'CodeIgniter\\' => 12,
             'Clue\\React\\NDJson\\' => 18,
+        ),
+        'B' =>
+        array (
+            'BaconQrCode\\' => 12,
         ),
     );
 
@@ -303,6 +308,10 @@ class ComposerStaticInit5506de97fb6a0a6b1e48b0b4385acd36
         array (
             0 => __DIR__ . '/..' . '/dompdf/dompdf/src',
         ),
+        'DASPRiD\\Enum\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/dasprid/enum/src',
+        ),
         'Composer\\XdebugHandler\\' =>
         array (
             0 => __DIR__ . '/..' . '/composer/xdebug-handler/src',
@@ -326,6 +335,10 @@ class ComposerStaticInit5506de97fb6a0a6b1e48b0b4385acd36
         'Clue\\React\\NDJson\\' =>
         array (
             0 => __DIR__ . '/..' . '/clue/ndjson-react/src',
+        ),
+        'BaconQrCode\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/bacon/bacon-qr-code/src',
         ),
     );
 

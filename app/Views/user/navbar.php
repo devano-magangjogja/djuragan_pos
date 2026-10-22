@@ -7,6 +7,8 @@ $namaInisial = strtoupper(mb_substr($namaSesi, 0, 1));
 
 $isTrxAktif   = url_is('user/invoices*');
 $isChartAktif = url_is('user/chart*');
+// katalog produk CS dilayani halaman yang sama dengan admin (read-only)
+$isProdukAktif = url_is('admin/produk*');
 ?>
 
 <!-- Topbar khusus layar kecil; di desktop lonceng notifikasi melayang sendiri
@@ -89,6 +91,12 @@ $isChartAktif = url_is('user/chart*');
                 <a class="sidebar-link <?= $isChartAktif ? 'active' : '' ?>" href="<?= site_url('user/chart') ?>">
                     <i class="sidebar-link-icon fal fa-chart-line"></i>
                     <span>Chart</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="sidebar-link <?= $isProdukAktif ? 'active' : '' ?>" href="<?= site_url('admin/produk') ?>">
+                    <i class="sidebar-link-icon fal fa-box-alt"></i>
+                    <span>Katalog Produk</span>
                 </a>
             </li>
         </ul>

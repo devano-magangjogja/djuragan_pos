@@ -76,7 +76,7 @@ $rincian_pesanan = baca_rincian($orderan->rincian);
                         </div>
                         <div class="col">
                             <?= form_label('Penanggung Jawab', 'label', ['class' => 'form-label']); ?>
-                            <?= form_input('label', '', ['class' => 'form-control', 'id' => 'label', 'placeholder' => 'penanggung jawab - opsional, max: 50 karakter']); ?>
+                            <?= form_input('label', '', ['class' => 'form-control', 'id' => 'label', 'placeholder' => 'nama admin/CS', 'maxlength' => '50']); ?>
                         </div>
                     </div>
                 </div>

@@ -1302,9 +1302,52 @@ class CrmModel extends Model
     }
 
     /**
-     * Mengambil daftar invoice belum lunas untuk Follow-up Tagihan
+     * Nomor tahap penutup produksi (packing) dari master tahap.
      */
-    public function getInvoiceBelumLunas(string $cari = '', int $limit = 50, int $offset = 0): array
+    private function tahapPacking(): int
+    {
+        helper('fungsi');
+
+        return (int) array_key_last(tahap_produksi());
+    }
+
+    /**
+     * Ringkasan perjalanan produksi per nota: apakah packing sudah selesai dan
+     * sampai tahap mana ia berjalan. Sama seperti tab "Siap Diambil" di Tracking
+     * Transaksi, yaitu tahap packing punya tanggal_selesai.
+     */
+    private function gabungTahap(): string
+    {
+        $pSta    = $this->db->prefixTable('invoice_status');
+        $packing = $this->tahapPacking();
+
+        return "LEFT JOIN (
+            SELECT invoice_id,
+                   MAX(CASE WHEN status = '{$packing}' AND tanggal_selesai IS NOT NULL THEN 1 ELSE 0 END) AS packing_selesai,
+                   MAX(CAST(status AS UNSIGNED)) AS tahap
+            FROM `{$pSta}` GROUP BY invoice_id
+        ) st ON st.invoice_id = inv.id_invoice";
+    }
+
+    /**
+     * Barang sudah selesai dikerjakan sehingga tagihannya layak ditagih:
+     * packing beres, ATAU paketnya sudah dikirim (pengiriman '3' pasti melewati
+     * packing, hanya saja tidak semua nota mencatat tanggal selesainya).
+     */
+    private function siapDitagih(): string
+    {
+        return "(COALESCE(st.packing_selesai, 0) = 1 OR inv.status_pengiriman = '3')";
+    }
+
+    /**
+     * Daftar invoice belum lunas untuk Follow-up Tagihan.
+     *
+     * $saring 'siap' membatasi pada nota yang barangnya sudah selesai/packing -
+     * inilah yang realistis ditagih; 'semua' menampilkan seluruh piutang seperti
+     * sebelumnya, hanya saja yang sudah selesai diurutkan lebih dulu. Keduanya
+     * menampilkan nota terbaru lebih dulu.
+     */
+    public function getInvoiceBelumLunas(string $cari = '', int $limit = 50, int $offset = 0, string $saring = 'semua'): array
     {
         $pInv  = $this->db->prefixTable('invoice');
         $pPel  = $this->db->prefixTable('pelanggan');
@@ -1321,12 +1364,26 @@ class CrmModel extends Model
             $params = ["%{$cari}%", "%{$cari}%", "%{$cari}%"];
         }
 
+        $siap  = $this->siapDitagih();
+        $hanya = $saring === 'siap' ? 'AND ' . $siap : '';
+
+        // yang siap ditagih didahulukan; di dalam kelompok itu nota terbaru datang
+        // lebih dulu, sama seperti daftar Semua, supaya yang baru selesai langsung
+        // terlihat begitu tab dibuka
+        $urut = $saring === 'siap'
+            ? 'ORDER BY inv.tanggal_pesan DESC, inv.id_invoice DESC'
+            : 'ORDER BY siap_ditagih DESC, inv.tanggal_pesan DESC, inv.id_invoice DESC';
+
         $sql = "SELECT 
             inv.id_invoice,
             inv.seri,
             inv.tanggal_pesan,
             inv.status_pembayaran,
             inv.status_pesanan,
+            inv.status_pengiriman,
+            COALESCE(st.tahap, 0) AS tahap,
+            COALESCE(st.packing_selesai, 0) AS packing_selesai,
+            {$siap} AS siap_ditagih,
             jur.nama_juragan,
             pel.id_pelanggan,
             pel.nama_pelanggan,
@@ -1337,6 +1394,7 @@ class CrmModel extends Model
         FROM `{$pInv}` inv
         JOIN `{$pPel}` pel ON pel.id_pelanggan = inv.pemesan_id
         JOIN `{$pJur}` jur ON jur.id_juragan = inv.juragan_id
+        {$this->gabungTahap()}
         LEFT JOIN (
             SELECT pelanggan_id, MIN(nomor_pure) as nomor 
             FROM `{$pKon}` GROUP BY pelanggan_id
@@ -1355,17 +1413,21 @@ class CrmModel extends Model
         ) pm ON pm.invoice_id = inv.id_invoice
         WHERE inv.deleted_at IS NULL 
           AND inv.status_pembayaran IN ('1','2','3','4')
+          {$hanya}
           {$whereCari}
-        ORDER BY inv.tanggal_pesan DESC, inv.id_invoice DESC
+        {$urut}
         LIMIT {$limit} OFFSET {$offset}";
 
         return $this->db->query($sql, $params)->getResultArray();
     }
 
     /**
-     * Menghitung total invoice belum lunas untuk badge tab Follow-up Tagihan
+     * Menghitung total invoice belum lunas untuk badge tab Follow-up Tagihan.
+     *
+     * JOIN dan saringannya harus sama persis dengan getInvoiceBelumLunas()
+     * supaya angka badge tidak pernah berbeda dari daftar yang tampil.
      */
-    public function countInvoiceBelumLunas(string $cari = ''): int
+    public function countInvoiceBelumLunas(string $cari = '', string $saring = 'semua'): int
     {
         $pInv  = $this->db->prefixTable('invoice');
         $pPel  = $this->db->prefixTable('pelanggan');
@@ -1378,105 +1440,23 @@ class CrmModel extends Model
             $params = ["%{$cari}%", "%{$cari}%", "%{$cari}%"];
         }
 
+        $hanya = $saring === 'siap' ? 'AND ' . $this->siapDitagih() : '';
+
         $sql = "SELECT COUNT(DISTINCT inv.id_invoice) as total
         FROM `{$pInv}` inv
         JOIN `{$pPel}` pel ON pel.id_pelanggan = inv.pemesan_id
+        {$this->gabungTahap()}
         LEFT JOIN (
             SELECT pelanggan_id, MIN(nomor_pure) as nomor 
             FROM `{$pKon}` GROUP BY pelanggan_id
         ) kon ON kon.pelanggan_id = pel.id_pelanggan
         WHERE inv.deleted_at IS NULL 
           AND inv.status_pembayaran IN ('1','2','3','4')
+          {$hanya}
           {$whereCari}";
 
         $row = $this->db->query($sql, $params)->getRowArray();
         return (int) ($row['total'] ?? 0);
-    }
-
-    /**
-     * Mengambil daftar invoice untuk notifikasi pengiriman resi
-     */
-    public function getInvoicePengiriman(string $cari = '', int $limit = 50, int $offset = 0): array
-    {
-        $pInv  = $this->db->prefixTable('invoice');
-        $pPel  = $this->db->prefixTable('pelanggan');
-        $pJur  = $this->db->prefixTable('juragan');
-        $pKir  = $this->db->prefixTable('pengiriman');
-        $pKon  = $this->db->prefixTable('pelanggan_kontak');
-
-        $whereCari = '';
-        $params = [];
-        if (!empty($cari)) {
-            $whereCari = "AND (inv.seri LIKE ? OR pel.nama_pelanggan LIKE ? OR kir.resi LIKE ? OR kon.nomor LIKE ?)";
-            $params = ["%{$cari}%", "%{$cari}%", "%{$cari}%", "%{$cari}%"];
-        }
-
-        $sql = "SELECT 
-            inv.id_invoice,
-            inv.seri,
-            inv.tanggal_pesan,
-            inv.status_pengiriman,
-            jur.nama_juragan,
-            pel.id_pelanggan,
-            pel.nama_pelanggan,
-            COALESCE(kon.nomor, '') as nomor_hp,
-            kir.kurir,
-            kir.resi,
-            kir.tanggal_kirim,
-            kir.ongkir
-        FROM `{$pInv}` inv
-        JOIN `{$pPel}` pel ON pel.id_pelanggan = inv.kirimKepada_id
-        JOIN `{$pJur}` jur ON jur.id_juragan = inv.juragan_id
-        JOIN `{$pKir}` kir ON kir.invoice_id = inv.id_invoice
-        LEFT JOIN (
-            SELECT pelanggan_id, MIN(nomor_pure) as nomor 
-            FROM `{$pKon}` GROUP BY pelanggan_id
-        ) kon ON kon.pelanggan_id = pel.id_pelanggan
-        WHERE inv.deleted_at IS NULL
-          AND kir.resi IS NOT NULL AND TRIM(kir.resi) != ''
-          {$whereCari}
-        ORDER BY kir.tanggal_kirim DESC, inv.id_invoice DESC
-        LIMIT {$limit} OFFSET {$offset}";
-
-        return $this->db->query($sql, $params)->getResultArray();
-    }
-
-    /**
-     * Jumlah baris daftar pengiriman ber-resi, dipakai pager halaman
-     * Pengiriman & Resi. JOIN dan saringannya harus sama persis dengan
-     * getInvoicePengiriman() supaya jumlah halamannya tidak meleset.
-     */
-    public function countInvoicePengiriman(string $cari = ''): int
-    {
-        $pInv  = $this->db->prefixTable('invoice');
-        $pPel  = $this->db->prefixTable('pelanggan');
-        $pJur  = $this->db->prefixTable('juragan');
-        $pKir  = $this->db->prefixTable('pengiriman');
-        $pKon  = $this->db->prefixTable('pelanggan_kontak');
-
-        $whereCari = '';
-        $params = [];
-        if (!empty($cari)) {
-            $whereCari = "AND (inv.seri LIKE ? OR pel.nama_pelanggan LIKE ? OR kir.resi LIKE ? OR kon.nomor LIKE ?)";
-            $params = ["%{$cari}%", "%{$cari}%", "%{$cari}%", "%{$cari}%"];
-        }
-
-        $sql = "SELECT COUNT(DISTINCT inv.id_invoice) as total
-        FROM `{$pInv}` inv
-        JOIN `{$pPel}` pel ON pel.id_pelanggan = inv.kirimKepada_id
-        JOIN `{$pJur}` jur ON jur.id_juragan = inv.juragan_id
-        JOIN `{$pKir}` kir ON kir.invoice_id = inv.id_invoice
-        LEFT JOIN (
-            SELECT pelanggan_id, MIN(nomor_pure) as nomor 
-            FROM `{$pKon}` GROUP BY pelanggan_id
-        ) kon ON kon.pelanggan_id = pel.id_pelanggan
-        WHERE inv.deleted_at IS NULL
-          AND kir.resi IS NOT NULL AND TRIM(kir.resi) != ''
-          {$whereCari}";
-
-        $baris = $this->db->query($sql, $params)->getRowArray();
-
-        return (int) ($baris['total'] ?? 0);
     }
 
     /**
