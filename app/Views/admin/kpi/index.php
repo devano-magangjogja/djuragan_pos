@@ -147,25 +147,29 @@ $tooltip = [
 
 <?= $this->section('css') ?>
 <style>
+/* Kolom pilih indikator memakan sisa lebar barisnya supaya tombol "Ganti" tetap
+   muat tanpa memaksa teks opsi terpotong lebih awal. Judulnya sendiri sudah naik
+   ke baris di atasnya, jadi tidak ada lagi perebutan lebar antara judul dan kotak. */
+.kpi-banding .form-select-sm {
+    flex: 1 1 auto;
+    min-width: 0;
+}
 @media (max-width: 767.98px) {
-    /* Judul pembanding bisa panjang ("Rata-rata SLA fulfillment per karyawan
-       (jam, makin kecil makin baik)"). Sejajar di baris sempit membuat labelnya
-       turun jadi tiga baris dan select-nya tergencet sampai teks opsinya
-       tertelan panah ">". Di responsif label mendapat barisnya sendiri, lalu
-       select dan tombol Ganti membagi sisa lebar. Desktop tidak diubah. */
-    .kpi-kepala-banding {
-        flex-wrap: wrap;
+    /* Angka kartu ikut turun satu langkah di ponsel: fs-5 = 20px bikin nilai
+       terpanjang ("Rp 187.766.650" = 132px) patah jadi dua baris di kotak isi
+       yang lebarnya cuma 118px, sementara angka lain satu baris sehingga
+       tingginya tidak rata. 1rem = 16px -> 106px, satu baris. .fs-5 Bootstrap
+       memakai !important, jadi aturan ini ikut !important. Desktop tetap 20px. */
+    .kpi-angka {
+        font-size: 1rem !important;
     }
-    .kpi-kepala-banding > span {
-        flex: 1 1 100%;
-    }
-    .kpi-banding {
-        flex: 1 1 auto;
-        min-width: 0;
-    }
-    .kpi-banding select {
-        flex: 1 1 auto;
-        min-width: 0;
+    /* Kanvas grafik ikut melebar: .card-body dikunci 1,25rem oleh style.css, jadi
+       40px dari lebar kartu habis hanya sebagai jarak pandang. Legenda grafik
+       "Tren" membutuhkan tiap piksel itu supaya tiga nama seri (masing-masing
+       106/112/78px) muat satu baris di layar 360px. */
+    .card-body.kpi-kanvas {
+        padding-left: 0.5rem !important;
+        padding-right: 0.5rem !important;
     }
 }
 </style>
@@ -180,7 +184,7 @@ $tooltip = [
     <p class="text-muted small mb-3">
         Semua angka dihitung dari catatan kerja yang tersimpan di database. Tanda
         <strong>&mdash;</strong> artinya datanya belum pernah tercatat, bukan bernilai nol.
-        Tahan ikon <i class="fal fa-circle-info"></i> di judul kartu untuk melihat cara angkanya didapat.
+        Tahan judul kartu untuk melihat cara angkanya didapat.
     </p>
 
     <?= $this->include('admin/kpi/saring') ?>
@@ -190,11 +194,10 @@ $tooltip = [
             <?php $st = $status($kunci, $k, $target); ?>
             <div class="col-6 col-lg-4 col-xl-3">
                 <div class="h-100 rounded-3 border border-ink-200 bg-white px-3 py-2">
-                    <div class="text-muted small text-uppercase">
-                        <i class="fal fa-circle-info me-1" title="<?= esc($tooltip[$kunci] ?? 'Angka dihitung dari catatan yang tersimpan di database.') ?>"></i>
+                    <div class="text-muted small text-uppercase" title="<?= esc($tooltip[$kunci] ?? 'Angka dihitung dari catatan yang tersimpan di database.') ?>">
                         <?= esc($k['label']) ?>
                     </div>
-                    <div class="fs-5 fw-bold <?= ($k['tersedia'] ?? true) ? '' : 'text-muted' ?>">
+                    <div class="fs-5 fw-bold kpi-angka <?= ($k['tersedia'] ?? true) ? '' : 'text-muted' ?>">
                         <?= $tampil($k) ?>
                     </div>
                     <?php if (($k['tersedia'] ?? true) === false) { ?>
@@ -238,15 +241,15 @@ $tooltip = [
                 <div class="card-header bg-white fw-semibold small">
                     Tren periode <?= esc($s['awal']) ?> &ndash; <?= esc($s['akhir']) ?> (<?= esc($periode[$s['periode']]) ?>)
                 </div>
-                <div class="card-body" style="height: 320px;">
+                <div class="card-body kpi-kanvas" style="height: 320px;">
                     <canvas id="trenKpi"></canvas>
                 </div>
             </div>
         </div>
         <div class="col-12 col-xl-5">
             <div class="card h-100">
-                <div class="card-header bg-white d-flex justify-content-between align-items-center gap-2 kpi-kepala-banding">
-                    <span class="fw-semibold small"><?= esc($judul_banding[$banding] ?? 'Perbandingan karyawan') ?></span>
+                <div class="card-header bg-white">
+                    <div class="fw-semibold small mb-2"><?= esc($judul_banding[$banding] ?? 'Perbandingan karyawan') ?></div>
                     <?= form_open('admin/kpi', ['method' => 'get', 'class' => 'd-flex align-items-center gap-1 kpi-banding']) ?>
                     <?php foreach (['awal' => $s['awal'], 'akhir' => $s['akhir'], 'periode' => $s['periode'],
                         'peran' => $s['peran'], 'pegawai' => $s['user_id'], 'juragan' => $s['juragan_id']] as $nama => $nilai) { ?>
@@ -264,7 +267,7 @@ $tooltip = [
                     <?= form_submit(['class' => 'btn btn-sm btn-outline-primary', 'value' => 'Ganti']) ?>
                     <?= form_close(); ?>
                 </div>
-                <div class="card-body" style="height: 320px;">
+                <div class="card-body kpi-kanvas" style="height: 320px;">
                     <canvas id="bandingKpi"></canvas>
                 </div>
             </div>
@@ -311,7 +314,7 @@ $tooltip = [
                             </td>
                             <td class="small"><?= esc($b['level']) ?></td>
                             <td class="text-end"><?= (int) $b['jumlah_order'] ?></td>
-                            <td class="text-end"><?= $rp($b['gmv']) ?></td>
+                            <td class="text-end text-nowrap"><?= $rp($b['gmv']) ?></td>
                             <td class="text-end"><?= (int) $b['lunas'] ?></td>
                             <td class="text-end"><?= $b['sla_jam'] === null ? '&mdash;' : number_format((float) $b['sla_jam'], 1, ',', '.') ?></td>
                             <td class="text-end">
@@ -352,9 +355,25 @@ $tooltip = [
 <?= $this->section('js') ?>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
 <?php
+// Legenda grafik "Tren" di ponsel: tiga nama seri lengkap + kotak warna default
+// 40px butuh ±333px sedangkan kanvas di 360px cuma 279px, jadi Chart.js
+// menumpuknya jadi tiga baris. Ruangnya dibeli dari bentuk, bukan dari kata:
+// kotak warna 8px, jarak antar butir 8px, teks 9,5px, plus padding kiri-kanan kartu
+// grafik 1,25rem -> 0,5rem (lihat .kpi-kanvas di blok css). Jauhnya warna pertama
+// dari tepi kartu = padding kartu + sisa ruang di dalam kanvas: 8 + 14 = 22px di
+// layar 360px (sebelumnya 4 + 9 = 13px dan ditolak: "terlalu mepet"), 8 + 29 = 37px
+// di 390px. Ketiganya tetap satu baris di 360/390/430px. Desktop: teks legenda
+// dinaikkan 12px -> 14px atas permintaan ("yng di dekstop ukurannya dibuat lebih
+// gede"), kotak 40px + jarak 10px tetap; terukur masih satu baris di 1280/1366/
+// 1440/1600/1920px dengan sisa ruang 13/38/60/94/146px di kiri.
+// Di 320px masih dua baris: butuh kanvas 283px sedangkan yang ada 263px. NAMA SERI TIDAK BOLEH DIPENDEKKAN — user menolak
+// "Nilai transaksi"/"SLA (jam)"/"Order": "penulisanya disesuaikan dengan yang
+// asli jangan engganti nama". Desktop dibiarkan apa adanya (40/10/12).
 $js = <<< JS
     \$(function() {
         'use strict';
+
+        var sempit = window.innerWidth < 768;
 
         var kanvas = document.getElementById('trenKpi');
 
@@ -390,6 +409,13 @@ $js = <<< JS
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    legend: {
+                        labels: {
+                            boxWidth: sempit ? 8 : 40,
+                            padding: sempit ? 8 : 10,
+                            fontSize: sempit ? 9.5 : 14
+                        }
+                    },
                     scales: {
                         yAxes: [{
                             id: 'y-axis-0',

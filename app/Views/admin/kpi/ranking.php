@@ -57,6 +57,29 @@ $petunjuk = [
 
 $nama_slug = array_column($aturan, 'nama', 'slug');
 
+// tautan halaman: filter yang sedang aktif selalu ikut dibawa, sama seperti di
+// halaman Ringkasan
+$tautan = static function (array $ubah) use ($s): string {
+    $q = array_merge([
+        'awal'    => $s['awal'],
+        'akhir'   => $s['akhir'],
+        'periode' => $s['periode'],
+        'peran'   => $s['peran'],
+        'pegawai' => $s['user_id'],
+        'juragan' => $s['juragan_id'],
+    ], $ubah);
+
+    return site_url('admin/kpi/ranking') . '?' . http_build_query(array_filter(
+        $q,
+        static fn ($v) => $v !== null && $v !== '' && $v !== 0
+    ));
+};
+
+$total_halaman = max(1, (int) ceil($jumlah / $batas));
+$nomor         = $halaman + 1;
+$awal_judul    = $jumlah === 0 ? 0 : $halaman * $batas + 1;
+$akhir_judul   = min($jumlah, $halaman * $batas + $batas);
+
 $maks     = 0.0;
 $tercatat = 0;
 foreach ($peringkat as $b) {
@@ -71,6 +94,75 @@ $bernilai  = array_filter($peringkat, static fn ($b) => array_sum($b['jumlah']) 
 $kosong    = count($peringkat) - count($bernilai);
 ?>
 <?= $this->extend('template/main') ?>
+
+<?= $this->section('css') ?>
+<style>
+/* Tabel "Aturan Poin" butuh 572px, sedangkan popusnya di ponsel/tablet cuma
+   280-451px, jadi isinya harus digeser ke samping dan kolom "Sumber data"
+   terpotong. Di bawah 992px tiap baris ditumpuk jadi satu kartu dengan label
+   kolom dari data-label — sama seperti mode kartu di halaman CRM. Modal-lg baru
+   tercapai di >=992px, jadi tampilan desktop tidak berubah sama sekali. */
+@media (max-width: 991.98px) {
+    /* Isi popus ini panjang (13 baris aturan), jadi jangan memakan seluruh
+       tinggi layar: dibatasi 80vh dan sisanya digulir di dalamnya
+       (modal-dialog-scrollable sudah memberi overflow pada .modal-body). */
+    #modalAturanPoin .modal-content {
+        max-height: 80vh;
+    }
+    /* Wadah tabelnya sendiri jangan jadi papan putih kedua di dalam popus */
+    #modalAturanPoin .table-responsive {
+        overflow: visible;
+        border: 0;
+        background: transparent;
+    }
+    #modalAturanPoin table,
+    #modalAturanPoin tbody,
+    #modalAturanPoin tr,
+    #modalAturanPoin td {
+        display: block;
+        width: 100%;
+    }
+    #modalAturanPoin thead {
+        display: none;
+    }
+    #modalAturanPoin tbody tr {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        column-gap: 0.6rem;
+        border: 1px solid #eaecf0;
+        border-radius: 10px;
+        margin-bottom: 0.6rem;
+        padding: 0.1rem 0.7rem;
+    }
+    /* Nama aktivitas dan sumber data butuh lebar penuh; dua angkanya berbagi
+       satu baris supaya kartu tidak memanjang ke bawah */
+    #modalAturanPoin tbody td:nth-child(1),
+    #modalAturanPoin tbody td:nth-child(2) {
+        grid-column: 1 / -1;
+    }
+    /* .table tbody td di style.css memakai padding dan border-bottom !important,
+       jadi keduanya harus dilawan dengan !important juga */
+    #modalAturanPoin tbody td {
+        padding: 0.3rem 0 !important;
+        border-bottom: 1px dashed #eaecf0 !important;
+        text-align: left !important;
+        white-space: normal !important;
+        overflow-wrap: anywhere;
+    }
+    #modalAturanPoin tbody tr td:last-child {
+        border-bottom: 0 !important;
+    }
+    /* Label kolom duduk SEBARIS dengan isinya ("Poin per satuan: +2 / nota"),
+       bukan di baris sendiri — inilah yang memotong tinggi kartu hampir separuh */
+    #modalAturanPoin tbody td[data-label]::before {
+        content: attr(data-label) ": ";
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: #98a2b3;
+    }
+}
+</style>
+<?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
 <?= $this->include('admin/navbar') ?>
@@ -104,6 +196,9 @@ $kosong    = count($peringkat) - count($bernilai);
             <span class="fw-semibold small">
                 Peringkat <?= esc($s['awal']) ?> &ndash; <?= esc($s['akhir']) ?>
                 <span class="text-muted fw-normal">&middot; <?= esc($peran[$s['peran']]) ?></span>
+                <?php if ($jumlah > 0) { ?>
+                    <span class="text-muted fw-normal">&middot; <?= $awal_judul ?> sampai <?= $akhir_judul ?> dari <?= (int) $jumlah ?> orang</span>
+                <?php } ?>
             </span>
             <a class="small" href="#" data-bs-toggle="modal" data-bs-target="#modalAturanPoin">
                 <i class="fal fa-circle-info me-1"></i>Aturan poin
@@ -123,9 +218,9 @@ $kosong    = count($peringkat) - count($bernilai);
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($peringkat as $b) { ?>
+                    <?php foreach ($baris as $b) { ?>
                         <tr>
-                            <td class="fw-semibold">
+                            <td class="fw-semibold text-nowrap">
                                 <?= (int) $b['peringkat'] ?>
                                 <?php if ((float) $b['total'] > 0 && (int) $b['peringkat'] <= 3) { ?>
                                     <i class="fal fa-trophy text-warning ms-1"></i>
@@ -174,7 +269,7 @@ $kosong    = count($peringkat) - count($bernilai);
                             </td>
                         </tr>
                     <?php } ?>
-                    <?php if ($peringkat === []) { ?>
+                    <?php if ($baris === []) { ?>
                         <tr>
                             <td colspan="<?= 4 + count($kelompok) ?>">
                                 Tidak ada akun yang dinilai pada saringan ini.
@@ -184,6 +279,23 @@ $kosong    = count($peringkat) - count($bernilai);
                 </tbody>
             </table>
         </div>
+        <?php if ($total_halaman > 1) { ?>
+            <div class="card-footer bg-white">
+                <nav aria-label="Halaman peringkat">
+                    <ul class="pagination pagination-sm mb-0">
+                        <?php for ($i = 1; $i <= $total_halaman; $i++) { ?>
+                            <?php if ($i === 1 || $i === $total_halaman || abs($i - $nomor) <= 2) { ?>
+                                <li class="page-item <?= $i === $nomor ? 'active' : '' ?>">
+                                    <a class="page-link" href="<?= $tautan(['halaman' => $i]) ?>"><?= $i ?></a>
+                                </li>
+                            <?php } elseif (abs($i - $nomor) === 3) { ?>
+                                <li class="page-item disabled"><span class="page-link">&hellip;</span></li>
+                            <?php } ?>
+                        <?php } ?>
+                    </ul>
+                </nav>
+            </div>
+        <?php } ?>
     </div>
 </div>
 
@@ -219,12 +331,12 @@ $kosong    = count($peringkat) - count($bernilai);
                                             <div class="small text-muted"><?= esc($a['catatan']) ?></div>
                                         <?php } ?>
                                     </td>
-                                    <td class="small text-muted"><code><?= esc($a['sumber']) ?></code></td>
-                                    <td class="text-end">
+                                    <td class="small text-muted" data-label="Sumber data"><code><?= esc($a['sumber']) ?></code></td>
+                                    <td class="text-end" data-label="Poin per satuan">
                                         <?= $poin((float) $a['poin']) ?>
                                         <span class="small text-muted"><?= esc($a['satuan']) ?></span>
                                     </td>
-                                    <td class="text-end">
+                                    <td class="text-end" data-label="Tercatat">
                                         <?= $sel((int) $a['tercatat']) ?>
                                         <?php if ((int) $a['belum_ternilai'] > 0) { ?>
                                             <div class="small text-muted">

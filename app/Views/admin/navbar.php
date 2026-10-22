@@ -92,35 +92,6 @@ if ($levelSesi === 'superadmin') {
 }
 ?>
 
-<style>
-    /* Lingkaran merah di topbar layar kecil: titik kecil berkedip yang menempel di
-       ujung kanan-atas lonceng. Angkanya tidak ditampilkan lagi. Kelas Bootstrap
-       (top-0 / start-100 / translate-middle / .badge) semuanya memakai !important,
-       jadi posisi dan ukurannya juga harus !important. */
-    .mobile-topbar .counter {
-        font-size: 0 !important;
-        padding: 0 !important;
-        width: 6px !important;
-        height: 6px !important;
-        top: 6px !important;
-        right: 5px !important;
-        left: auto !important;
-        transform: none !important;
-        animation: notif-kedip 1.2s ease-in-out infinite;
-    }
-
-    /* Loncengnya duduk 1px lebih tinggi dari hamburger, logo, dan avatar (kotak
-       <a>-nya pakai p-2 sedangkan tombol lain p-1/p-0), jadi geser 1px ke bawah
-       supaya sebaris. Titik merangnya ikut karena posisinya di dalam <a> ini. */
-    .mobile-topbar a[data-notif-toggle="1"] {
-        top: 1px;
-    }
-
-    @keyframes notif-kedip {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.2; }
-    }
-</style>
 <!-- Topbar khusus layar kecil; di desktop lonceng notifikasi melayang sendiri
      (lihat .notif-melayang di template/notif_bar.php), bukan bar penuh. -->
 <header class="mobile-topbar d-flex d-lg-none align-items-center justify-content-between px-2 sticky-top">

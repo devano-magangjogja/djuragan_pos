@@ -77,6 +77,72 @@ $kartu = LaporanModel::kartu($jenis, $r);
 ?>
 <?= $this->extend('template/main') ?>
 
+<?= $this->section('css') ?>
+<style>
+@media (max-width: 767.98px) {
+    /* Angka kartu ringkasan ("Rp 2.766.000" = 123px pada fs-5 20px) tidak muat di
+       kotak kartu yang isinya cuma 98-118px, jadi "Rp" jatuh ke baris di atas
+       angkanya. Sama seperti kartu KPI: satu langkah lebih kecil (1rem) + jarak
+       dalam kartu dipangkas px-3 -> px-2, dan text-nowrap di markup menjaga "Rp"
+       tidak pernah turun sendiri. */
+    .lap-kartu {
+        padding-left: 0.5rem !important;
+        padding-right: 0.5rem !important;
+    }
+    .lap-nilai {
+        font-size: 1rem !important;
+        /* hanya di ponsel: di desktop angka ini memang masih boleh pindah baris
+           (col-lg membagi lima kartu, isinya 117px sedang angkanya 123px) */
+        white-space: nowrap;
+    }
+    /* Di 320px kotak kartu tinggal 98px sedang angka terpanjang 99px: gutter
+       baris kartunya dipangkas 0,5rem -> 0,25rem, tiap kartu dapat +4px. */
+    @media (max-width: 575.98px) {
+        .lap-deret-kartu {
+            --bs-gutter-x: 0.25rem;
+        }
+    }
+    /* Sel uang di tabel laporan ikut pecah dua baris: padding .table-sm
+       (style.css: .8rem 1rem !important) menyisakan 75px untuk teks, sedangkan
+       "Rp 2.766.000" butuh 82px di badan tabel dan 98px di baris Total yang
+       ditulis tebal — jadi "Rp" duduk di atas angkanya. Angka uang tidak boleh
+       dipecah; tabelnya sendiri memang sudah digulir horizontal di ponsel. */
+    .table-responsive td.text-end {
+        white-space: nowrap;
+    }
+    /* Sel Faktur = nomor + pil status. Di kolom 140px pilnya jatuh ke baris di
+       bawah nomornya; di ponsel keduanya dipaksa tetap sebaris (nomor 91px +
+       jarak 8px + pil 100px). Tabelnya sendiri memang sudah digeser horizontal,
+       jadi melebarkan satu kolom tidak menambah hal baru untuk digeser. */
+    .lap-faktur {
+        white-space: nowrap;
+    }
+    /* Baris "Customer + Tampilkan + Reset" dibuat MEMENUHI kartu: kolom carinya
+       yang menyerap sisa ruang (flex-basis 0), bukan dibiarkan ada ruang kosong
+       di kanan. Efek sampingnya bagus: di 320px yang sebelumnya tidak muat,
+       sekarang ikut muat satu baris karena kolom cari yang menyesuaikan diri. */
+    .lap-cari {
+        flex: 1 1 0;
+        width: auto;
+        min-width: 0;
+    }
+    /* Sebagian gutter di antara dua tombol col-auto dihapus (-4px): tanpa itu
+       Reset terdorong turun ke baris sendiri. Tidak lebih rapat dari -4px karena
+       -12px membuat kotaknya bertumpuk 4px dengan Tampilkan. */
+    .lap-reset {
+        margin-left: -4px;
+    }
+    /* Kotak tombol yang hanya berisi ikon jadi 5px lebih pendek dari tetangganya
+       yang berisi teks (tingginya = line-height + padding, tanpa teks = 25px vs
+       30px), dan karena keduanya di-align ke bawah garis ia duduk lebih rendah.
+       1,875rem = tinggi tombol btn-sm berlabel di baris yang sama. */
+    .lap-reset .btn {
+        min-height: 1.875rem;
+    }
+}
+</style>
+<?= $this->endSection() ?>
+
 <?= $this->section('content') ?>
 <?= $this->include('admin/navbar') ?>
 
@@ -85,14 +151,14 @@ $kartu = LaporanModel::kartu($jenis, $r);
 
     <p class="text-muted small mb-3"><?= esc($pil_jenis[$jenis]['catatan']) ?></p>
 
-    <div class="row gx-2 gy-3 mb-3">
+    <div class="row gx-2 gy-3 mb-3 lap-deret-kartu">
         <?php foreach ($kartu as [$label, $nilai, $ikon]) { ?>
             <div class="col-6 col-lg">
-                <div class="h-100 rounded-3 border border-ink-200 bg-white px-3 py-2">
+                <div class="h-100 rounded-3 border border-ink-200 bg-white px-3 py-2 lap-kartu">
                     <div class="text-muted small text-uppercase">
                         <i class="fal <?= $ikon ?>"></i> <?= esc($label) ?>
                     </div>
-                    <div class="fs-5 fw-bold"><?= esc($nilai) ?></div>
+                    <div class="fs-5 fw-bold lap-nilai"><?= esc($nilai) ?></div>
                 </div>
             </div>
         <?php } ?>
@@ -151,7 +217,7 @@ $kartu = LaporanModel::kartu($jenis, $r);
                     'selected' => $f['bayar'],
                 ]) ?>
             </div>
-            <div class="col-6 col-md-3">
+            <div class="col-6 col-md-3 lap-cari">
                 <?= form_label('Customer', 'nama', ['class' => 'form-label small']) ?>
                 <?= form_input([
                     'class'       => 'form-control form-control-sm',
@@ -163,9 +229,9 @@ $kartu = LaporanModel::kartu($jenis, $r);
             <div class="col-auto">
                 <button class="btn btn-sm btn-dark" type="submit"><i class="fal fa-search"></i> Tampilkan</button>
             </div>
-            <div class="col-auto">
+            <div class="col-auto lap-reset">
                 <a class="btn btn-sm btn-outline-secondary" href="<?= site_url('admin/laporan/' . $jenis) ?>"
-                    title="Bulan ini, tanpa filter lain"><i class="fal fa-undo"></i> Reset</a>
+                    title="Bulan ini, tanpa filter lain" aria-label="Reset"><i class="fal fa-undo"></i><span class="d-none d-md-inline"> Reset</span></a>
             </div>
             <div class="col-md-auto ms-md-auto text-nowrap">
                 <a class="btn btn-sm btn-outline-success" href="<?= $tautan_unduh('xlsx') ?>"
@@ -412,11 +478,11 @@ $kartu = LaporanModel::kartu($jenis, $r);
                         <tbody>
                             <?php foreach ($baris as $b) { ?>
                                 <tr>
-                                    <td>
+                                    <td class="lap-faktur">
                                         <a href="<?= $tautan_orderan((string) $b['slug'], (string) $b['seri']) ?>">
                                             <?= esc($b['seri']) ?>
                                         </a>
-                                        <span class="badge rounded-pill bg-<?= $warna_bayar($b['status_pembayaran']) ?>">
+                                        <span class="badge rounded-pill ms-2 bg-<?= $warna_bayar($b['status_pembayaran']) ?>">
                                             <?= esc($label_bayar($b['status_pembayaran'])) ?>
                                         </span>
                                     </td>
