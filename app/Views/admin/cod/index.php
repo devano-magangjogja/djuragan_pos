@@ -465,6 +465,58 @@ $kotak_pilihan = static function (string $nama, string $id, array $daftar, strin
         padding: 0.2rem 0.45rem !important;
     }
 
+    /* Kartu ringkasan status: satu kartu per status yang sekaligus jadi tombol
+       penyaring. Kartunya disusun rata tepi dan sejajar tinggi (h-100 lewat
+       kelas Bootstrap di markup), jadi label di atas dan angka di bawah duduk
+       rapi apa pun panjang teksnya. Nama status yang kepanjangan dipotong dengan
+       elipsis, bukan melebarkan kartunya. Kartu aktif ikut menggelap seperti pil
+       navigasi di atasnya supaya jelas status mana yang sedang dibuka. */
+    .cod-kartu {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 0.1rem;
+        height: 100%;
+        padding: 0.7rem 0.9rem;
+        border: 1px solid #eaecf0;
+        border-radius: 0.85rem;
+        background: #ffffff;
+        text-decoration: none;
+        box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+        transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease, transform .05s ease;
+    }
+    .cod-kartu:hover {
+        border-color: #d0d5dd;
+        box-shadow: 0 3px 8px rgba(16, 24, 40, 0.08);
+    }
+    .cod-kartu:active {
+        transform: translateY(1px);
+    }
+    .cod-kartu__label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #667085;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .cod-kartu__angka {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #101828;
+        line-height: 1.15;
+    }
+    .cod-kartu.aktif {
+        background: #101828;
+        border-color: #101828;
+    }
+    .cod-kartu.aktif .cod-kartu__label {
+        color: rgba(255, 255, 255, 0.72);
+    }
+    .cod-kartu.aktif .cod-kartu__angka {
+        color: #ffffff;
+    }
+
     @media (max-width: 767.98px) {
         /* yang turun ke baris penuh adalah pembungkusnya, bukan strip pilnya:
            strip tetap berbagi baris dengan kedua tombol panah */
@@ -515,7 +567,7 @@ $kotak_pilihan = static function (string $nama, string $id, array $daftar, strin
             $link_semua = site_url('admin/cod') . ($kueri_lain !== [] ? '?' . http_build_query($kueri_lain) : '');
             ?>
             <a href="<?= $link_semua ?>" class="btn rounded-pill <?= empty($f['status']) ? 'btn-primary' : 'btn-outline-secondary' ?>" title="Semua catatan">
-                Semua <span class="badge rounded-pill <?= empty($f['status']) ? 'bg-white text-primary' : 'bg-ink-100 text-ink-600' ?>"><?= $total_semua ?></span>
+                Semua
             </a>
             <?php foreach ($pilihan['status'] as $s) : ?>
                 <?php
@@ -524,9 +576,6 @@ $kotak_pilihan = static function (string $nama, string $id, array $daftar, strin
                 ?>
                 <a href="<?= $link_tab ?>" class="btn rounded-pill <?= $aktif ? 'btn-primary' : 'btn-outline-secondary' ?>" title="Status <?= esc($s['label']) ?>">
                     <?= esc($s['label']) ?>
-                    <span class="badge rounded-pill <?= $aktif ? 'bg-white text-primary' : 'bg-ink-100 text-ink-600' ?>">
-                        <?= $status_counts[$s['id']] ?? 0 ?>
-                    </span>
                 </a>
             <?php endforeach; ?>
             </div>
@@ -539,6 +588,32 @@ $kotak_pilihan = static function (string $nama, string $id, array $daftar, strin
                 <i class="fal fa-plus"></i> Tambah Pencatatan COD
             </button>
         </div>
+    </div>
+
+    <!-- Kartu ringkasan status: satu kartu per status, sekaligus tombol penyaring.
+         Angkanya pindah ke sini, jadi bar pil di atas tetap jadi navigasi tanpa
+         jumlah. Menekan kartu memfilter daftar ke status itu; "Semua" membuka
+         kembali seluruh catatan. $kueri_lain & $link_semua sudah dihitung di bar
+         pil di atas, jadi filter lain (cari, cs, keperluan, tanggal) ikut terbawa. -->
+    <div class="row g-2 g-md-3 mb-4 cod-status-kartu">
+        <div class="col-6 col-md-4 col-lg-2">
+            <a href="<?= $link_semua ?>" class="cod-kartu <?= empty($f['status']) ? 'aktif' : '' ?>" title="Semua catatan">
+                <span class="cod-kartu__label">Semua</span>
+                <span class="cod-kartu__angka"><?= (int) $total_semua ?></span>
+            </a>
+        </div>
+        <?php foreach ($pilihan['status'] as $s) : ?>
+            <?php
+            $kartu_aktif = (int) $f['status'] === (int) $s['id'];
+            $kartu_link  = site_url('admin/cod') . '?' . http_build_query(array_merge($kueri_lain, ['status' => $s['id']]));
+            ?>
+            <div class="col-6 col-md-4 col-lg-2">
+                <a href="<?= $kartu_link ?>" class="cod-kartu <?= $kartu_aktif ? 'aktif' : '' ?>" title="Status <?= esc($s['label']) ?>">
+                    <span class="cod-kartu__label"><?= esc($s['label']) ?></span>
+                    <span class="cod-kartu__angka"><?= (int) ($status_counts[$s['id']] ?? 0) ?></span>
+                </a>
+            </div>
+        <?php endforeach; ?>
     </div>
 
     <!-- Filter dicari langsung di bawah pil status, bukan di dalam popus lagi.
