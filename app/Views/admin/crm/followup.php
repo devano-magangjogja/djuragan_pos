@@ -16,6 +16,10 @@
  * @var array  $invoicesTagihan     baris invoice belum lunas
  * @var array  $reminders           pengingat otomatis
  * @var string $templateTagihan     template pesan WA tagihan
+ * @var string $saring              saring daftar tagihan: siap|semua
+ * @var int    $jumlahSiap          invoice belum lunas yang barangnya sudah selesai
+ * @var int    $jumlahSemua         invoice belum lunas keseluruhan
+ * @var array  $tahap               master tahap produksi (nomor => [ikon, nama, slug])
  */
 ?>
 <?= $this->extend('template/main') ?>
@@ -431,21 +435,40 @@
 
             <!-- ================= SUB TAB 2: FOLLOW-UP TAGIHAN ================= -->
             <?php elseif ($tab === 'tagihan'): ?>
+                <?php $cariQuery = urlencode($cari); ?>
                 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-                    <p class="text-muted small mb-0 fup-teks">
-                        Daftar invoice yang statusnya belum lunas (Kredit, Belum Bayar, atau Menunggu Konfirmasi).
-                        <?php if (!empty($totalInvoicesTagihan) && $totalInvoicesTagihan > count($invoicesTagihan)): ?>
-                            Menampilkan <?= count($invoicesTagihan) ?> dari <strong><?= number_format($totalInvoicesTagihan) ?></strong> total invoice pending.
-                        <?php endif; ?>
-                    </p>
+                    <div class="btn-group btn-group-sm fup-segmen">
+                        <a href="<?= site_url('admin/crm/followup?tab=tagihan&saring=siap&cari=' . $cariQuery) ?>" class="btn <?= $saring === 'siap' ? 'btn-primary fw-semibold' : 'btn-outline-secondary' ?>">
+                            <i class="fal fa-box-check me-1"></i> Siap Ditagih
+                            <span class="badge <?= $saring === 'siap' ? 'bg-white text-primary' : 'bg-ink-100 text-ink-600' ?> ms-1"><?= number_format($jumlahSiap) ?></span>
+                        </a>
+                        <a href="<?= site_url('admin/crm/followup?tab=tagihan&saring=semua&cari=' . $cariQuery) ?>" class="btn <?= $saring === 'semua' ? 'btn-primary fw-semibold' : 'btn-outline-secondary' ?>">
+                            <i class="fal fa-receipt me-1"></i> Semua Belum Lunas
+                            <span class="badge <?= $saring === 'semua' ? 'bg-white text-primary' : 'bg-ink-100 text-ink-600' ?> ms-1"><?= number_format($jumlahSemua) ?></span>
+                        </a>
+                    </div>
                     <form action="<?= site_url('admin/crm/followup') ?>" method="get" class="d-flex gap-2">
                         <input type="hidden" name="tab" value="tagihan">
+                        <input type="hidden" name="saring" value="<?= esc($saring) ?>">
                         <div class="cari-merged" style="width: 250px; max-width: 100%;">
                             <button type="submit" class="cari-kirim" title="Cari"><i class="fal fa-search"></i></button>
                             <input type="text" name="cari" class="form-control form-control-sm" placeholder="Cari invoice / pelanggan..." value="<?= esc($cari) ?>">
                         </div>
                     </form>
                 </div>
+
+                <p class="text-muted small mb-3 fup-teks">
+                    <?php if ($saring === 'siap'): ?>
+                        Barang <strong>sudah selesai dikerjakan</strong> (packing beres atau paket sudah terkirim)
+                        tetapi pembayarannya belum lunas - inilah yang bisa langsung ditagih. Urut dari yang terbaru.
+                    <?php else: ?>
+                        Seluruh invoice yang belum lunas (Kredit, Belum Bayar, atau Menunggu Konfirmasi),
+                        termasuk yang barangnya masih dalam pengerjaan. Yang sudah selesai ditaruh lebih dulu.
+                    <?php endif; ?>
+                    <?php if (!empty($totalInvoicesTagihan) && $totalInvoicesTagihan > count($invoicesTagihan)): ?>
+                        Menampilkan <?= count($invoicesTagihan) ?> dari <strong><?= number_format($totalInvoicesTagihan) ?></strong> invoice.
+                    <?php endif; ?>
+                </p>
 
                 <?php if (empty($invoicesTagihan)): ?>
                     <?php if (trim((string) $cari) !== ''): ?>
@@ -457,8 +480,15 @@
                     <?php else: ?>
                         <div class="text-center py-5 text-muted">
                             <i class="fal fa-check-circle fa-3x mb-3 text-success"></i>
-                            <h5>Semua Tagihan Lunas!</h5>
-                            <p class="mb-0">Tidak ada piutang invoice pending saat ini.</p>
+                            <h5><?= $saring === 'siap' ? 'Belum Ada yang Siap Ditagih' : 'Semua Tagihan Lunas!' ?></h5>
+                            <p class="mb-0">
+                                <?php if ($saring === 'siap' && $jumlahSemua > 0): ?>
+                                    Semua barang yang sudah selesai sudah lunas. Masih ada
+                                    <strong><?= number_format($jumlahSemua) ?></strong> piutang yang barangnya masih dalam pengerjaan.
+                                <?php else: ?>
+                                    Tidak ada piutang invoice pending saat ini.
+                                <?php endif; ?>
+                            </p>
                         </div>
                     <?php endif; ?>
                 <?php else: ?>
@@ -468,6 +498,7 @@
                                 <tr>
                                     <th>Invoice</th>
                                     <th>Pelanggan</th>
+                                    <th>Status Barang</th>
                                     <th>Nomor WhatsApp</th>
                                     <th class="text-end">Total Tagihan</th>
                                     <th class="text-end">Telah Dibayar</th>
@@ -487,6 +518,22 @@
                                                 <?= esc($inv['nama_pelanggan']) ?>
                                             </a>
                                             <div class="small text-muted"><?= esc($inv['nama_juragan']) ?></div>
+                                        </td>
+                                        <td data-label="Status Barang">
+                                            <?php
+                                            // penanda yang sama dengan tab "Siap Diambil" di Tracking
+                                            // Transaksi: tahap packing selesai, atau paket sudah dikirim
+                                            if ((string) ($inv['status_pengiriman'] ?? '') === '3') {
+                                                $wama = 'success'; $teks = 'Terkirim';
+                                            } elseif ((int) ($inv['packing_selesai'] ?? 0) === 1) {
+                                                $wama = 'success'; $teks = 'Sudah Packing';
+                                            } elseif ((int) ($inv['tahap'] ?? 0) > 0) {
+                                                $wama = 'warning text-dark'; $teks = 'Tahap: ' . ($tahap[(int) $inv['tahap']][1] ?? '-');
+                                            } else {
+                                                $wama = 'secondary'; $teks = 'Belum diproses';
+                                            }
+                                            ?>
+                                            <span class="badge bg-<?= $wama ?>"><?= esc($teks) ?></span>
                                         </td>
                                         <td data-label="Nomor WhatsApp">
                                             <?php if (!empty($inv['nomor_hp'])): ?>
@@ -531,7 +578,7 @@
                             <ul class="pagination pagination-sm mb-0">
                                 <?php if ($page > 1) : ?>
                                     <li class="page-item">
-                                        <a class="page-link" href="<?= site_url('admin/crm/followup?tab=tagihan&page=' . ($page - 1) . '&cari=' . urlencode($cari)) ?>">« Sebelumnya</a>
+                                        <a class="page-link" href="<?= site_url('admin/crm/followup?tab=tagihan&saring=' . $saring . '&page=' . ($page - 1) . '&cari=' . $cariQuery) ?>">« Sebelumnya</a>
                                     </li>
                                 <?php endif; ?>
 
@@ -540,13 +587,13 @@
                                 $end   = min($totalPagesTagihan, $page + 2);
                                 for ($i = $start; $i <= $end; $i++) : ?>
                                     <li class="page-item <?= $i === $page ? 'active' : '' ?>">
-                                        <a class="page-link" href="<?= site_url('admin/crm/followup?tab=tagihan&page=' . $i . '&cari=' . urlencode($cari)) ?>"><?= $i ?></a>
+                                        <a class="page-link" href="<?= site_url('admin/crm/followup?tab=tagihan&saring=' . $saring . '&page=' . $i . '&cari=' . $cariQuery) ?>"><?= $i ?></a>
                                     </li>
                                 <?php endfor; ?>
 
                                 <?php if ($page < $totalPagesTagihan) : ?>
                                     <li class="page-item">
-                                        <a class="page-link" href="<?= site_url('admin/crm/followup?tab=tagihan&page=' . ($page + 1) . '&cari=' . urlencode($cari)) ?>">Berikutnya »</a>
+                                        <a class="page-link" href="<?= site_url('admin/crm/followup?tab=tagihan&saring=' . $saring . '&page=' . ($page + 1) . '&cari=' . $cariQuery) ?>">Berikutnya »</a>
                                     </li>
                                 <?php endif; ?>
                             </ul>

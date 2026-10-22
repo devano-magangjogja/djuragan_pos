@@ -171,7 +171,6 @@ $routes->group('admin', static function ($routes) {
         $routes->get('chat/cek_kontak', 'Admin\Crm::cek_kontak_wa');
         $routes->post('chat/buat_customer', 'Admin\Crm::buat_customer_wa');
         $routes->get('tagihan', 'Admin\Crm::tagihan');
-        $routes->get('pengiriman', 'Admin\Crm::pengiriman');
         $routes->get('broadcast', 'Admin\Crm::broadcast');
         $routes->get('template', 'Admin\Crm::template');
         $routes->get('log', 'Admin\Crm::log');

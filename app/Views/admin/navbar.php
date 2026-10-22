@@ -47,7 +47,6 @@ $crmSubmenu = [
     ['admin/crm/chat', 'Live Chat WA', 'fa-comments', str_starts_with($di_halaman, 'admin/crm/chat')],
     ['admin/crm/broadcast', 'Broadcast', 'fa-bullhorn', str_starts_with($di_halaman, 'admin/crm/broadcast')],
     ['admin/crm/duplikat', 'Akun Duplikat', 'fa-clone', str_starts_with($di_halaman, 'admin/crm/duplikat')],
-    ['admin/crm/pengiriman', 'Pengiriman & Resi', 'fa-shipping-fast', str_starts_with($di_halaman, 'admin/crm/pengiriman')],
     ['admin/crm/log', 'Riwayat Pesan', 'fa-history', str_starts_with($di_halaman, 'admin/crm/log')],
     ['admin/crm/template', 'Template Pesan', 'fa-file-alt', str_starts_with($di_halaman, 'admin/crm/template')],
     ['admin/crm/pengaturan', 'Pengaturan WA', 'fa-sliders-h', str_starts_with($di_halaman, 'admin/crm/pengaturan')],

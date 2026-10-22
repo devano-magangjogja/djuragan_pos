@@ -15,6 +15,7 @@
  * @var int        $per_halaman      jumlah kartu per halaman
  * @var array      $pilihan          master pilihan: ['keperluan'|'status'|'cs' => [['id','label'], ...]]
  * @var bool       $boleh_hapus      pengguna boleh menghapus pilihan (admin/superadmin)
+ * @var bool       $boleh_status_baru pengguna boleh menambah/menghapus status transaksi (superadmin saja)
  * @var array      $dipakai          [id pilihan => ['tampil' => int, 'hapus' => int]]
  * @var string     $hari_ini         tanggal hari ini (Y-m-d)
  * @var array      $f                nilai filter GET: cari, status, cs, keperluan, dari, sampai, periode
@@ -110,9 +111,11 @@ $peringatan_hapus = static function (array $c) use ($tanggal_panjang, $jam_ringk
  * (#modalPilihanBaru) supaya daftar dropdown tidak memanjang ke bawah; pilihan
  * baru langsung bisa dipakai dan baru masuk tabel master saat Simpan.
  *
- * Status transaksi tidak boleh ditambah baru ($bolehBaru false) karena status
- * adalah daftar tetap yang dipakai bersama tim; pilihan bebas tinggal keperluan
- * dan nama CS, sedangkan sumber informasi diketik langsung di kolomnya sendiri.
+ * Status transaksi adalah daftar yang dipakai bersama seluruh tim dan jadi
+ * dasar tab penyaring, jadi pensilnya hanya dirender untuk Superadmin
+ * ($boleh_status_baru); Admin dan CS memilih dari yang sudah ada. Pilihan bebas
+ * tinggal keperluan dan nama CS, sedangkan sumber informasi diketik langsung di
+ * kolomnya sendiri.
  *
  * $daftar berisi ['id' => .., 'label' => ..]. Id-nya dipakai untuk tong sampah
  * di kanan tiap pilihan, yang dirender untuk admin dan superadmin ($boleh_hapus):
@@ -648,7 +651,7 @@ $kotak_pilihan = static function (string $nama, string $id, array $daftar, strin
                 $keperluan = (string) ($catat['keperluan'] ?? '');
                 $judul    = trim((string) $catat['nama_customer']);
                 ?>
-                <div class="col-12 col-xl-6">
+                <div class="col-12">
                     <div class="kartu-invoice h-100">
                         <div class="p-3 lg:p-4">
                             <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
@@ -693,7 +696,12 @@ $kotak_pilihan = static function (string $nama, string $id, array $daftar, strin
                                     </div>
                                 </div>
                                 <div class="col-12 col-sm-5">
-                                    <div class="flex min-w-0 items-center gap-1 [&>.fal]:text-[0.85rem] [&>.fal]:text-ink-400">
+                                    <!-- sumber info sengaja dipalang ke tepi kanan kartu: ia
+                                         penanda terakhir baris ini, jadi duduknya sejajar dengan
+                                         tepi kanan catatan dan tombol aksi di bawahnya. Varian
+                                         sm- dipakai karena di layar kecil kolomnya full-width,
+                                         di sana rata kiri tetap lebih pas -->
+                                    <div class="flex min-w-0 items-center gap-1 justify-content-sm-end [&>.fal]:text-[0.85rem] [&>.fal]:text-ink-400">
                                         <i class="fal fa-share-from-square"></i>
                                         <span class="text-ink-500">Sumber Info:</span>
                                         <?= ($catat['sumber'] ?? '') !== '' ? esc($catat['sumber']) : '<span class="text-ink-400">belum diisi</span>' ?>
@@ -839,7 +847,7 @@ $kotak_pilihan = static function (string $nama, string $id, array $daftar, strin
 
                 <div class="col-6 mb-3">
                     <?= form_label('Status Transaksi', 'status_tambah', ['class' => 'form-label']) ?>
-                    <?= $kotak_pilihan('status', 'status_tambah', $pilihan['status'], (string) set_value('status'), (string) $err_tambah('status'), 'Pilih', false) ?>
+                    <?= $kotak_pilihan('status', 'status_tambah', $pilihan['status'], (string) set_value('status'), (string) $err_tambah('status'), 'Pilih', $boleh_status_baru) ?>
                 </div>
 
                 <div class="col-12 col-sm-6 mb-3">
@@ -974,7 +982,7 @@ $kotak_pilihan = static function (string $nama, string $id, array $daftar, strin
 
                 <div class="col-6 mb-3">
                     <?= form_label('Status Transaksi', 'status_sunting', ['class' => 'form-label']) ?>
-                    <?= $kotak_pilihan('status', 'status_sunting', $pilihan['status'], $gagal_sunting ? (string) set_value('status') : '', (string) $err_sunting('status'), 'Pilih', false) ?>
+                    <?= $kotak_pilihan('status', 'status_sunting', $pilihan['status'], $gagal_sunting ? (string) set_value('status') : '', (string) $err_sunting('status'), 'Pilih', $boleh_status_baru) ?>
                 </div>
 
                 <div class="col-12 col-sm-6 mb-3">

@@ -290,6 +290,10 @@ class Crm extends BaseController
      */
     public function followup()
     {
+        // nama tahap produksi diambil dari master helper yang sama dengan Tracking
+        // Transaksi, jadi label di daftar tagihan tidak pernah berbeda dengan di nota
+        helper('fungsi');
+
         $tab    = $this->request->getGet('tab') ?? 'tagihan'; // tagihan, reminder, customer
         $cari   = trim($this->request->getGet('cari') ?? '');
         $status = $this->request->getGet('status') ?? 'menunggu';
@@ -302,12 +306,29 @@ class Crm extends BaseController
         ], 50);
 
         // 2. Data Follow-up Tagihan
+        // 'siap' (bawaan): hanya nota yang barangnya sudah selesai/packing, karena
+        // itulah yang realistis ditagih hari ini. 'semua' menampilkan seluruh
+        // piutang, termasuk yang masih dikerjakan.
+        $saring = (string) ($this->request->getGet('saring') ?? 'siap');
+        if (! in_array($saring, ['siap', 'semua'], true)) {
+            $saring = 'siap';
+        }
+
         $page                 = max(1, (int) ($this->request->getGet('page') ?? 1));
         $limit                = 25;
         $offset               = ($page - 1) * $limit;
-        $invoicesTagihan      = $this->crmModel->getInvoiceBelumLunas($cari, $limit, $offset);
-        $totalInvoicesTagihan = $this->crmModel->countInvoiceBelumLunas($cari);
+        $invoicesTagihan      = $this->crmModel->getInvoiceBelumLunas($cari, $limit, $offset, $saring);
+        $totalInvoicesTagihan = $this->crmModel->countInvoiceBelumLunas($cari, $saring);
         $totalPagesTagihan    = (int) ceil($totalInvoicesTagihan / $limit);
+
+        // kedua angka dipakai tombol pengalih, supaya pengguna melihat berapa yang
+        // siap ditagih dan berapa total piutang tanpa perlu berganti tab
+        $jumlahSiap  = $saring === 'siap'
+            ? $totalInvoicesTagihan
+            : $this->crmModel->countInvoiceBelumLunas($cari, 'siap');
+        $jumlahSemua = $saring === 'semua'
+            ? $totalInvoicesTagihan
+            : $this->crmModel->countInvoiceBelumLunas($cari, 'semua');
 
         // 3. Data Reminder Otomatis
         $reminders = $this->crmModel->getReminders();
@@ -323,6 +344,10 @@ class Crm extends BaseController
             'status'               => $status,
             'page'                 => $page,
             'limit'                => $limit,
+            'saring'               => $saring,
+            'jumlahSiap'           => $jumlahSiap,
+            'jumlahSemua'          => $jumlahSemua,
+            'tahap'                => tahap_produksi(),
             'totalPagesTagihan'    => $totalPagesTagihan,
             'followupList'         => $followupList,
             'invoicesTagihan'      => $invoicesTagihan,
@@ -565,36 +590,6 @@ class Crm extends BaseController
         ];
 
         return view('admin/crm/tagihan', $data);
-    }
-
-    /**
-     * Notifikasi Pengiriman & Resi
-     */
-    public function pengiriman()
-    {
-        $cari       = trim($this->request->getGet('cari') ?? '');
-        $perHalaman = 25;
-        $total      = $this->crmModel->countInvoicePengiriman($cari);
-        $totalPages = (int) ceil($total / $perHalaman);
-        $page       = max(1, min(max($totalPages, 1), (int) ($this->request->getGet('page') ?: 1)));
-        $invoices   = $this->crmModel->getInvoicePengiriman($cari, $perHalaman, ($page - 1) * $perHalaman);
-
-        $db = Database::connect();
-        $template = $db->table('crm_template')->where('kode', 'notifikasi_resi')->get()->getRowArray();
-
-        $data = [
-            'title'      => 'Notifikasi Resi Pengiriman',
-            'invoices'   => $invoices,
-            'cari'       => $cari,
-            'template'   => $template['pesan'] ?? '',
-            'provider'   => $this->wa->getActiveProviderName(),
-            'isSandbox'  => ($this->wa->getActiveProviderName() === 'kapso') ? (int) $this->wa->getSetting('kapso_sandbox_mode', '1') : 0,
-            'total'      => $total,
-            'page'       => $page,
-            'totalPages' => $totalPages,
-        ];
-
-        return view('admin/crm/pengiriman', $data);
     }
 
     /**

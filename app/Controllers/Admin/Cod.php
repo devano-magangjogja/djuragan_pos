@@ -130,6 +130,8 @@ class Cod extends BaseController
                 'cs'        => $daftar_cs,
             ],
             'boleh_hapus'      => $boleh_hapus,
+            // menambah dan menghapus status transaksi khusus Superadmin
+            'boleh_status_baru' => $this->bolehStatusBaru(),
             'dipakai'          => $boleh_hapus ? $catatan->terpakai() : [],
             'hari_ini'         => $hari_ini,
             'f'                => [
@@ -167,7 +169,13 @@ class Cod extends BaseController
             return redirect()->to('/admin/cod')->withInput()->with('errors', ['tanggal' => 'Tanggal tidak boleh melebihi hari ini.']);
         }
 
-        (new PencatatanCodModel())->insert($this->isian());
+        $isian = $this->isian();
+
+        if ($isian['status_id'] === null) {
+            return redirect()->to('/admin/cod')->withInput()->with('errors', ['status' => 'Status transaksi tidak dikenali. Hanya Superadmin yang bisa menambah status baru.']);
+        }
+
+        (new PencatatanCodModel())->insert($isian);
 
         return redirect()->to('/admin/cod')->with('sukses', 'Pencatatan COD berhasil disimpan.');
     }
@@ -194,7 +202,13 @@ class Cod extends BaseController
             return redirect()->to('/admin/cod')->with('gagal', 'Pencatatan tidak ditemukan.');
         }
 
-        $model->update($id, $this->isian());
+        $isian = $this->isian();
+
+        if ($isian['status_id'] === null) {
+            return redirect()->to('/admin/cod')->withInput()->with('errors', ['status' => 'Status transaksi tidak dikenali. Hanya Superadmin yang bisa menambah status baru.']);
+        }
+
+        $model->update($id, $isian);
 
         return redirect()->to('/admin/cod')->with('sukses', 'Pencatatan COD berhasil diperbarui.');
     }
@@ -243,6 +257,12 @@ class Cod extends BaseController
 
         if ($baris === null) {
             return $this->jawaban($ajax, false, $id, 'Pilihan tidak ditemukan.');
+        }
+
+        // daftar status dijaga: Admin boleh menghapus pilihan lain, tetapi tidak
+        // status transaksi
+        if ($baris['jenis'] === 'status' && ! $this->bolehStatusBaru()) {
+            return $this->jawaban($ajax, false, $id, 'Hanya Superadmin yang bisa menghapus status transaksi.');
         }
 
         $catatan = new PencatatanCodModel();
@@ -294,14 +314,26 @@ class Cod extends BaseController
     }
 
     /**
+     * Status transaksi dipakai bersama oleh seluruh tim dan jadi dasar tab
+     * penyaring, jadi isinya hanya boleh ditambah/dibuang oleh Superadmin.
+     */
+    private function bolehStatusBaru(): bool
+    {
+        return (string) session()->get('level') === 'superadmin';
+    }
+
+    /**
      * Kemas kiriman form menjadi baris tabel.
      *
      * Pilihan yang diketik baru ikut dibuat di tabel master lebih dulu, jadi
      * saran untuk catatan berikutnya sudah tersedia begitu halaman dimuat ulang.
+     * Khusus status: label asing hanya dijadikan baris baru kalau yang mengirim
+     * Superadmin; selain itu nilainya jadi null dan ditolak pemanggil.
      */
     private function isian(): array
     {
         $pilihan = new PencatatanPilihanModel();
+        $status  = (string) $this->request->getPost('status');
 
         return [
             'tanggal'       => date('Y-m-d', (int) strtotime((string) $this->request->getPost('tanggal'))),
@@ -309,12 +341,28 @@ class Cod extends BaseController
             'nama_customer' => trim((string) $this->request->getPost('nama_customer')),
             'no_hp'         => trim((string) $this->request->getPost('no_hp')),
             'keperluan_id'  => $pilihan->jamin('keperluan', (string) $this->request->getPost('keperluan')),
-            'status_id'     => $pilihan->jamin('status', (string) $this->request->getPost('status')),
+            'status_id'     => $this->statusId($pilihan, $status),
             'catatan'       => trim((string) $this->request->getPost('catatan')),
             'cs_id'         => $pilihan->jamin('cs', (string) $this->request->getPost('cs')),
             'sumber_id'     => $pilihan->jamin('sumber', (string) $this->request->getPost('sumber')),
             'user_id'       => (int) session()->get('id'),
         ];
+    }
+
+    /**
+     * Status yang sudah ada selalu diterima; status baru hanya kalau pengirimnya
+     * Superadmin. Selain itu null, supaya pemanggil bisa menolak dengan pesan
+     * yang jelas alih-alih menabrak kolom NOT NULL di basis data.
+     */
+    private function statusId(PencatatanPilihanModel $pilihan, string $label): ?int
+    {
+        $ada = $pilihan->idUntuk('status', $label);
+
+        if ($ada !== null) {
+            return $ada;
+        }
+
+        return $this->bolehStatusBaru() ? $pilihan->jamin('status', $label) : null;
     }
 
     /**

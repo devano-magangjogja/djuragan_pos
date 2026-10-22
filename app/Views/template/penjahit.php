@@ -6,12 +6,18 @@
  * alamat/HP pelanggan. Ukuran rombongan justru lengkap di sini karena itu yang dikerjakan.
  */
 
+use App\Libraries\Barcode;
+
 /**
  * Var di bawah disuntik runtime oleh view() lewat extract() di framework;
  * dideklarasikan terpisah agar analyzer (Intelephense P1008) tidak salah lapor.
  *
  * @var object $invoice  satu baris nota dari InvoiceModel::getAll()
  */
+
+// QR nomor nota: sama persis dengan yang dicetak di invoice pelanggan, jadi satu
+// kode bisa discan dari lembar mana pun untuk mencari notanya di menu Transaksi
+$html_qr = Barcode::qrDataUri((string) $invoice->seri, 160);
 
 $tahap    = tahap_produksi();
 $terakhir = tahap_terakhir($invoice->status ?? []);
@@ -237,6 +243,12 @@ $baris = static function (string $label, ?string $nilai): string {
                 <div class="toko"><?= esc($invoice->juragan?->nama ?? 'Seven Inc') ?></div>
                 <div class="nomor"><?= count($invoice->barang) ?> jenis &nbsp;·&nbsp; <?= array_sum(array_map(static fn ($b): int => (int) $b->qty, $invoice->barang)) ?> potong</div>
             </td>
+            <?php if ($html_qr !== '') { ?>
+            <td align="center" valign="bottom" width="74">
+                <img src="<?= $html_qr ?>" width="60" height="60" alt="QR <?= esc($invoice->seri) ?>" />
+                <div class="nomor" style="font-size: 7px;">Scan: cari nota</div>
+            </td>
+            <?php } ?>
         </tr>
     </table>
 
@@ -414,6 +426,20 @@ $baris = static function (string $label, ?string $nilai): string {
             <td align="right">Nota <?= esc($invoice->seri) ?> &nbsp;·&nbsp; lembar kerja</td>
         </tr>
     </table>
+
+    <?php if ($html_qr !== '') { ?>
+        <table style="margin-top: 8px;">
+            <tr>
+                <td width="70" align="center" style="border: 1px solid #d6dde4; padding: 4px;">
+                    <img src="<?= $html_qr ?>" width="60" height="60" alt="QR <?= esc($invoice->seri) ?>" />
+                </td>
+                <td style="padding-left: 10px; vertical-align: middle;">
+                    <span class="cap">Scan untuk cari nota</span><br>
+                    <span class="nomor">Kode yang sama dengan yang tercetak di invoice pelanggan: <?= esc($invoice->seri) ?>.</span>
+                </td>
+            </tr>
+        </table>
+    <?php } ?>
 
 </body>
 
