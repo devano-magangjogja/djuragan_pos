@@ -33,6 +33,77 @@ $rincian_pesanan = baca_rincian($orderan->rincian);
 
 <?= $this->extend('template/main') ?>
 
+<?= $this->section('css') ?>
+<style>
+    /* Responsif modal Tambah/Edit Orderan saat ukuran Custom dipilih:
+       Tampilannya dibuat setengah tinggi layar (50vh), posisi pas di tengah-tengah
+       layar (centered), dan isinya bisa digulir sampai isian terakhir serta tombol simpan.
+       Hanya berlaku untuk layar responsif (mobile / tablet kecil). */
+    @media (max-width: 767.98px) {
+        #tambahProduk.is-custom-modal .modal-dialog {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: calc(100% - 1rem);
+            min-height: calc(100dvh - 1rem);
+            margin: 0.5rem auto;
+            padding: 0 0.5rem;
+        }
+
+        #tambahProduk.is-custom-modal .modal-content {
+            height: 50vh;
+            height: 50dvh;
+            max-height: 50vh;
+            max-height: 50dvh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border-radius: 0.85rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25), 0 8px 10px -6px rgba(0, 0, 0, 0.2);
+        }
+
+        #tambahProduk.is-custom-modal .modal-header {
+            flex-shrink: 0;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        #tambahProduk.is-custom-modal #nambahProduk {
+            display: flex;
+            flex-direction: column;
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        #tambahProduk.is-custom-modal .modal-body {
+            flex: 1 1 auto;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+            padding: 0.85rem 1rem 1.5rem 1rem;
+            scrollbar-width: thin;
+        }
+
+        #tambahProduk.is-custom-modal .modal-footer {
+            flex-shrink: 0;
+            padding: 0.6rem 1rem;
+            border-top: 1px solid #e2e8f0;
+            background: #fff;
+        }
+    }
+
+    @media (max-width: 767.98px) and (max-height: 550px) {
+        #tambahProduk.is-custom-modal .modal-content {
+            height: 85vh;
+            height: 85dvh;
+            max-height: 85vh;
+            max-height: 85dvh;
+        }
+    }
+</style>
+<?= $this->endSection() ?>
+
 <?= $this->section('content') ?>
 <?= $this->include('admin/navbar') ?>
 
@@ -638,16 +709,16 @@ $rincian_pesanan = baca_rincian($orderan->rincian);
             <?= form_open('', ['id' => 'nambahProduk']); ?>
             <div class="modal-body">
                 <?= stok_panel_form() ?>
-                <div class="row gx-2">
-                    <div class="col col-sm-6 col-md-3">
+                <div class="row gx-2 gy-2">
+                    <div class="col-6 col-sm-6 col-md-3">
                         <?= form_label('Kode Produk', 'kode_produk', ['class' => 'form-label']); ?>
                         <?= form_input(['name' => 'kode_produk', 'id' => 'kode_produk', 'class' => 'form-control', 'required' => '', 'placeholder' => 'cth: ' . random_element(['SK-45', 'BK-01', 'Z-01'])]); ?>
                     </div>
-                    <div class="col col-sm-6 col-md-3">
+                    <div class="col-6 col-sm-6 col-md-3">
                         <?= form_label('Harga Satuan', 'harga_satuan', ['class' => 'form-label']); ?>
                         <?= form_input(['name' => 'harga_satuan', 'min' => '0', 'id' => 'harga_satuan', 'class' => 'form-control', 'required' => '', 'placeholder' => 'cth: ' . random_element(['225000', '280000', '295000', '320000']), 'type' => 'number']); ?>
                     </div>
-                    <div class="col col-sm-6 col-md-3">
+                    <div class="col-6 col-sm-6 col-md-3">
                         <?= form_label('Ukuran', 'ukuran', ['class' => 'form-label']); ?>
                         <?= '<select name="ukuran" class="form-select" id="ukuran" required="">';
                         echo '<option value="" disabled="" selected="">Pilih ukuran</option>';
@@ -664,7 +735,7 @@ $rincian_pesanan = baca_rincian($orderan->rincian);
                         echo '</select>';
                         ?>
                     </div>
-                    <div class="col col-sm-6 col-md-3">
+                    <div class="col-6 col-sm-6 col-md-3">
                         <?= form_label('QTY', 'QTY', ['class' => 'form-label']); ?>
                         <?= form_input(['name' => 'QTY', 'id' => 'QTY', 'class' => 'form-control', 'required' => '', 'placeholder' => 'cth: ' . mt_rand(1, 20), 'type' => 'number', 'min' => '1']); ?>
                     </div>
@@ -1274,6 +1345,7 @@ $js = <<< JS
     	$('#ukuran').on('change', function() {
     		var custom = $(this).val() === 'custom';
     		$('#customDetail').toggleClass('d-none', !custom);
+    		$('#tambahProduk').toggleClass('is-custom-modal', custom);
     		if (!custom) {
     			$('#customDetail .ri-field').val('');
     			// panel yang tersembunyi tetap terbaca waktu baris dikirim,
@@ -1543,6 +1615,7 @@ $js = <<< JS
     	mPro.addEventListener('hidden.bs.modal',function(){
     		var a=$('#nambahProduk');
     		a.removeClass('was-validated')[0].reset();
+    		$('#tambahProduk').removeClass('is-custom-modal');
     		$('#customDetail').addClass('d-none');
     		$('#ukuranModal .uk-field').val('');
     		UKURAN.kosongkan('#ukuranModal');

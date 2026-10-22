@@ -73,10 +73,22 @@ class Kpi extends BaseController
         $s     = $this->saring();
         $model = new KpiModel();
 
+        $batas     = $this->batas((string) $this->request->getGet('batas'));
+        $halaman   = $this->halaman();
+        $peringkat = $model->peringkat($s);
+
+        // nomor halaman di luar daftar dijepit ke halaman terakhir supaya judul
+        // "X sampai Y dari Z orang" tidak pernah terbalik
+        $halaman = min($halaman, max(0, (int) ceil(count($peringkat) / $batas) - 1));
+
         return view('admin/kpi/ranking', [
             'title'     => 'Ranking Karyawan',
             's'         => $s,
-            'peringkat' => $model->peringkat($s),
+            'peringkat' => $peringkat,
+            'baris'     => array_slice($peringkat, $halaman * $batas, $batas),
+            'jumlah'    => count($peringkat),
+            'batas'     => $batas,
+            'halaman'   => $halaman,
             'aturan'    => $model->aturanPoin($s),
             'luar'      => KpiModel::TIDAK_TERNILAI,
             'pegawai'   => $model->pegawaiPilihan($s['peran']),

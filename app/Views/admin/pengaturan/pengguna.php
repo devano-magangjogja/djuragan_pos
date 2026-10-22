@@ -52,6 +52,50 @@ $per_halaman = (int) config('Pager')->perPage;
 .sandi-merged .sandi-lihat:hover {
     color: #101828;
 }
+/* Lebar kolom cari pengguna. Dulu inline style="width:18rem"; dipindah ke sini
+   supaya di ponsel bisa dilenturkan (inline style kalah oleh !important, kelas
+   tidak). */
+.cari-pengguna {
+    width: 18rem;
+}
+@media (max-width: 767.98px) {
+    /* Tombol "Tambah Pengguna" di ponsel tinggal ikon dan harus duduk SEBELAH
+       kolom cari: yang menyerap sisa ruang adalah kolom carinya, bukan tombolnya */
+    .cari-pengguna {
+        flex: 1 1 auto;
+        width: auto;
+        min-width: 0;
+    }
+    /* Popus tambah / sunting pengguna memakan 93% tinggi layar (747px di
+       360x800, sisa 27px saja di atas dan bawah) sehingga terasa terlalu
+       panjang. Dibatasi 70vh — dialog-nya sudah modal-dialog-scrollable, jadi
+       yang bergulir adalah body-nya dan header + tombol tetap kelihatan. */
+    #modalTambahPengguna .modal-content,
+    #modalSuntingPengguna .modal-content {
+        max-height: 70vh;
+    }
+    /* jarak dalam body ikut dipangkas: 16px -> 12px atas-bawah */
+    #modalTambahPengguna .modal-body,
+    #modalSuntingPengguna .modal-body {
+        padding-top: 0.75rem;
+        padding-bottom: 0.75rem;
+    }
+    /* Jarak antar isian ikut dipangkas supaya popusnya benar-benar lebih pendek,
+       bukan cuma dimasukkan ke dalam guliran. .mb-3/.my-4 Bootstrap !important. */
+    #modalTambahPengguna .modal-body > .mb-3,
+    #modalSuntingPengguna .modal-body > .mb-3 {
+        margin-bottom: 0.625rem !important;
+    }
+    #modalTambahPengguna .modal-body > h6,
+    #modalSuntingPengguna .modal-body > h6 {
+        margin-bottom: 0.5rem !important;
+    }
+    #modalTambahPengguna .modal-body > hr,
+    #modalSuntingPengguna .modal-body > hr {
+        margin-top: 0.75rem !important;
+        margin-bottom: 0.75rem !important;
+    }
+}
 </style>
 <?= $this->endSection() ?>
 
@@ -79,13 +123,14 @@ $per_halaman = (int) config('Pager')->perPage;
 
     <div class="card mb-5">
         <div class="card-header d-flex flex-wrap align-items-center gap-2">
-            <div class="cari-merged" style="width: 18rem">
+            <div class="cari-merged cari-pengguna">
                 <span class="cari-ikon"><i class="fal fa-search"></i></span>
                 <input type="search" class="form-control form-control-sm" id="cariPengguna" placeholder="nama, username, email, level" autocomplete="off">
             </div>
-            <span class="text-muted small ms-auto" id="jumlahPengguna">memuat ...</span>
-            <button type="button" class="btn btn-sm btn-dark" data-bs-toggle="modal" data-bs-target="#modalTambahPengguna">
-                <i class="fal fa-user-plus"></i> Tambah Pengguna
+            <span class="text-muted small ms-auto d-none d-md-block jumlah-pengguna">memuat ...</span>
+            <button type="button" class="btn btn-sm btn-dark" data-bs-toggle="modal" data-bs-target="#modalTambahPengguna"
+                aria-label="Tambah Pengguna" title="Tambah Pengguna">
+                <i class="fal fa-user-plus"></i><span class="d-none d-md-inline"> Tambah Pengguna</span>
             </button>
         </div>
         <div class="card-body">
@@ -102,6 +147,9 @@ $per_halaman = (int) config('Pager')->perPage;
                     <tbody id="listUsers"></tbody>
                 </table>
             </div>
+            <!-- versi ponsel: jumlah pengguna turun ke bawah, tepat di atas
+                 pagination; yang di kepala kartu hanya tampil di >=768px -->
+            <div class="small text-muted text-end d-md-none jumlah-pengguna mt-2">memuat ...</div>
             <div id="pagPengguna" data-per-halaman="<?= $per_halaman ?>"></div>
         </div>
     </div>
@@ -587,10 +635,12 @@ $js = <<< JS
     		if (isi.length === 0) {
     			$('#listUsers').html('<tr><td colspan="4" class="text-center text-muted py-4">Tidak ada pengguna yang cocok'
     				+ (kunciCari !== '' ? ' dengan "' + aman($.trim(kunciCari)) + '"' : '') + '.</td></tr>');
-    			$('#jumlahPengguna').text('0 pengguna');
+    			// dua salinan (kepala kartu di desktop, di atas pager di ponsel)
+    			// selalu diisi bersamaan
+    			$('.jumlah-pengguna').text('0 pengguna');
     		} else {
     			$('#listUsers').html(baris.join(''));
-    			$('#jumlahPengguna').text((mulai + 1) + '-' + (mulai + isi.length) + ' dari ' + hasil.length + ' pengguna');
+    			$('.jumlah-pengguna').text((mulai + 1) + '-' + (mulai + isi.length) + ' dari ' + hasil.length + ' pengguna');
     		}
 
     		gambarHalaman(hasil.length, terakhir);

@@ -45,6 +45,38 @@ $sunting_err = $validation->hasError('sunting_nama_bank') || $validation->hasErr
 ?>
 <?= $this->extend('template/main') ?>
 
+<?= $this->section('css') ?>
+<style>
+/* Di ponsel tabel rekening ini meluber 37-107px keluar kartu: kolom Logo dikunci
+   120px + logonya 100x50, dan padding .table (0,8rem 1rem !important) memakan
+   32px per kolom. Akibatnya tombol Sunting/Hapus jatuh ke LUAR kartu dan tidak
+   bisa disentuh sama sekali (terukur elementFromPoint gagal di 320 dan 360px).
+   Yang dikecilkan hanya logo + jarak dalam sel; tidak ada gulir horizontal baru. */
+@media (max-width: 767.98px) {
+    .bank-tabel th:first-child {
+        width: auto !important;
+    }
+    .bank-tabel thead th,
+    .bank-tabel tbody td {
+        padding-left: 0.5rem !important;
+        padding-right: 0.5rem !important;
+    }
+    /* logo_bank() menulis width:100px INLINE di <svg>-nya, dan kotak pengganti
+       akun tanpa logo juga 100x50 inline — dua-duanya butuh !important */
+    .bank-logo svg,
+    .bank-logo span {
+        width: 64px !important;
+        height: 32px !important;
+    }
+    /* Sisa 23px di 320px: nomor rekening panjang tidak punya spasi untuk patah,
+       jadi kolomnya menahan tabel tetap lebih lebar dari kartu. */
+    .bank-tabel tbody td:nth-child(2) {
+        overflow-wrap: anywhere;
+    }
+}
+</style>
+<?= $this->endSection() ?>
+
 <?= $this->section('content') ?>
 <?= $this->include('admin/navbar') ?>
 
@@ -71,7 +103,7 @@ $sunting_err = $validation->hasError('sunting_nama_bank') || $validation->hasErr
                     </button>
                 </div>
                 <div class="card-body">
-                    <table class="table align-middle">
+                    <table class="table align-middle bank-tabel">
                         <thead>
                             <tr>
                                 <th style="width: 120px">Logo</th>
@@ -89,7 +121,7 @@ $sunting_err = $validation->hasError('sunting_nama_bank') || $validation->hasErr
                             <?php } ?>
                             <?php foreach ($banks as $bank) { ?>
                                 <tr>
-                                    <td>
+                                    <td class="bank-logo">
                                         <?= $logo_akun($bank) ?>
                                     </td>
                                     <td>
@@ -118,9 +150,10 @@ $sunting_err = $validation->hasError('sunting_nama_bank') || $validation->hasErr
                                         </button>
                                         <?= form_open('admin/settings/bank/hapus', ['class' => 'd-inline']) ?>
                                         <?= form_hidden('id_bank', (string) $bank->id_bank) ?>
-                                        <button type="submit" class="btn btn-sm btn-outline-danger" aria-label="Hapus rekening"
+                                        <button type="button" class="btn btn-sm btn-outline-danger" aria-label="Hapus rekening"
                                             title="Hapus <?= esc($nama_rekening, 'attr') ?>"
-                                            onclick="return confirm('<?= esc($peringatan, 'js') ?>')">
+                                            data-bs-toggle="modal" data-bs-target="#modalHapusBank"
+                                            data-pesan="<?= esc($peringatan, 'attr') ?>">
                                             <i class="fal fa-trash"></i>
                                         </button>
                                         <?= form_close() ?>
@@ -258,6 +291,23 @@ $sunting_err = $validation->hasError('sunting_nama_bank') || $validation->hasErr
         <?= form_close() ?>
     </div>
 </div>
+<!-- Konfirmasi hapus satu modal untuk semua baris: isinya diisi lewat JS dari
+     data-pesan tombol yang dibuka, jadi tidak perlu satu popus per rekening -->
+<div class="modal fade" id="modalHapusBank" tabindex="-1" aria-labelledby="modalHapusBankLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalHapusBankLabel"><i class="fal fa-triangle-exclamation text-danger me-1"></i>Hapus rekening</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body small" id="modalHapusBankPesan"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-sm btn-danger" id="modalHapusBankYa"><i class="fal fa-trash"></i> Hapus</button>
+            </div>
+        </div>
+    </div>
+</div>
 <?= $this->endSection() ?>
 
 <?= $this->section('js') ?>
@@ -328,6 +378,29 @@ $js = <<< JS
             modalEditBank.querySelector('[name="sunting_nama_bank"]').value = data.nama_bank;
             modalEditBank.querySelector('[name="sunting_nomor_rekening"]').value = data.rekening;
             modalEditBank.querySelector('[name="sunting_atas_nama"]').value = data.atas_nama;
+        });
+
+        // konfirmasi hapus memakai popus halaman sendiri, bukan dialog bawaan
+        // peramban yang judulnya ikut alamat tunnel dan tampilannya tidak bisa diatur
+        const modalHapusBank = document.getElementById('modalHapusBank');
+        let formHapus = null;
+
+        modalHapusBank.addEventListener('show.bs.modal', event => {
+            const pemicu = event.relatedTarget;
+
+            if (! pemicu) {
+                return;
+            }
+
+            formHapus = pemicu.closest('form');
+            // textContent, bukan innerHTML: pesannya datang dari atribul data
+            document.getElementById('modalHapusBankPesan').textContent = pemicu.getAttribute('data-pesan') || '';
+        });
+
+        document.getElementById('modalHapusBankYa').addEventListener('click', () => {
+            if (formHapus) {
+                formHapus.submit();
+            }
         });
 
         // gagal simpan: modal yang mengirim dibuka lagi supaya pesannya kelihatan

@@ -300,16 +300,30 @@
 .timeliner::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
+/* Layar sempit / tablet: timeline jangan dibiarkan selebar isinya saja (±120px)
+   sehingga tiga langkah Buat-Bayar-Kirim berdesakan di kiri sementara separuh kanan
+   baris menganggur. Diambil lebar penuh, tiap langkah kebagian sama besar.
+   Kelas .timeliner hanya dipakai admin/invoice/lihat.php dan user/invoice/lihat.php;
+   yang pertama sudah punya aturan yang sama di <style> halamannya sendiri, jadi
+   tambahan di sini tidak mengubah tampilannya — hanya menyamakan kartu role CS. */
 @media (max-width: 1023.98px) {
   .timeliner {
     margin-left: 0 !important;
     margin-right: auto;
+    width: 100%;
   }
 }
 .timeliner > li {
   /* 0 0 auto: lebar li = lebar labelnya, tidak pernah menyusut lagi */
   flex: 0 0 auto;
   padding-top: 0.25rem;
+}
+/* SETELAH aturan .timeliner > li di atas: spesifisitasnya sama, jadi yang terakhir
+   yang menang — langkahnya boleh menyusut/memuai bareng pembagian lebar kartu. */
+@media (max-width: 1023.98px) {
+    .timeliner > li {
+        flex: 1 1 0;
+    }
 }
 /* garis penghubung: dari ikon langkah ini ke ikon langkah berikutnya */
 .timeliner > li::after {
@@ -848,6 +862,25 @@
     padding: 0.45rem 0.7rem;
     font-size: 0.82rem;
   }
+}
+
+/* Chevron "Produk" / "Anggota" pada kartu orderan (admin dan CS): kelas Tailwind
+   aria-expanded:rotate-0 menghasilkan pemilih .aria-expanded\:rotate-0[aria-expanded=true],
+   yaitu atribut pada ELEMEN ITU SENDIRI — padahal Bootstrap menaruh aria-expanded di
+   TOMBOL induknya, bukan di <i>. Jadi ikonnya membeku miring -90deg dan tidak pernah
+   berputar saat bloknya dibuka. Di sini statusnya dibaca dari tombolnya, dan
+   perpindahan rotate-nya dianimasikan. */
+[data-bs-toggle="collapse"][aria-expanded] .fa-chevron-down {
+    rotate: -90deg;
+    transition: rotate 0.2s ease;
+}
+[data-bs-toggle="collapse"][aria-expanded="true"] .fa-chevron-down {
+    rotate: 0deg;
+}
+@media (prefers-reduced-motion: reduce) {
+    [data-bs-toggle="collapse"][aria-expanded] .fa-chevron-down {
+        transition: none;
+    }
 }
 
 /* ------------------------------------------------------------------
@@ -1800,6 +1833,38 @@ a.rounded-3.border.border-ink-200:hover {
   padding: 0 0.7rem !important;
   border-radius: 0 8px 8px 0 !important;
 }
+/* Panel ukuran (dibangun ukuran-form.js): "cm" bukan kotak kedua di sebelah
+   angkanya, tapi bagian dari kotak yang sama. Kelas border-start-0 / bg-white
+   dari JS tidak pernah menang karena .input-group-text dan .form-control di atas
+   sama-sama mengunci border 1px !important, jadi yang dijadikan kotak adalah
+   WADAHNYA dan border kedua isinya dilucuti. */
+.ukuran-panel .input-group {
+    border-radius: 8px;
+    background-color: #ffffff;
+    /* garisnya box-shadow dalam, bukan border: border 1px menambah 2px tinggi
+       sehingga kolom bersatuan jadi lebih tinggi dari kolom tanpa satuan di
+       baris yang sama */
+    box-shadow: inset 0 0 0 1px #d0d5dd;
+    transition: box-shadow 0.15s ease;
+}
+.ukuran-panel .input-group > .form-control,
+.ukuran-panel .input-group > .input-group-text {
+    border: 0 !important;
+    border-radius: 0 !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+}
+.ukuran-panel .input-group > .form-control {
+    padding-right: 0.25rem !important;
+}
+.ukuran-panel .input-group > .input-group-text {
+    padding-left: 0.25rem !important;
+    padding-right: 0.6rem !important;
+}
+/* fokus dipindah dari kotak angka ke wadah yang sekarang jadi kotak */
+.ukuran-panel .input-group:focus-within {
+    box-shadow: inset 0 0 0 1px #101828, 0 0 0 3px rgba(16, 24, 40, 0.08);
+}
 
 /* 8. Modern Buttons */
 .btn {
@@ -1972,6 +2037,34 @@ a.rounded-3.border.border-ink-200:hover {
   background-color: #ef4444 !important;
   color: #ffffff !important;
   border: none !important;
+}
+/* Titik merah di topbar layar kecil: titik 6px berkedip di ujung kanan-atas
+   lonceng, angkanya tidak ditampilkan lagi. Kelas Bootstrap di markup-nya
+   (top-0 / start-100 / translate-middle / .badge) semuanya !important, jadi
+   posisi dan ukurannya juga harus !important. Pernah aturan ini hanya ada di
+   <style> admin/navbar.php, sehingga lonceng di topbar CS (user/navbar.php)
+   duduk 1px lebih tinggi dan titiknya masih badge besar — sekarang satu tempat
+   untuk kedua peran. */
+.mobile-topbar .counter {
+    font-size: 0 !important;
+    padding: 0 !important;
+    width: 6px !important;
+    height: 6px !important;
+    top: 6px !important;
+    right: 5px !important;
+    left: auto !important;
+    transform: none !important;
+    animation: notif-kedip 1.2s ease-in-out infinite;
+}
+/* Loncengnya duduk 1px lebih tinggi dari hamburger, logo, dan avatar (kotak
+   <a>-nya pakai p-2 sedangkan tombol lain p-1/p-0), jadi geser 1px ke bawah
+   supaya sebaris. Titik merangnya ikut karena posisinya di dalam <a> ini. */
+.mobile-topbar a[data-notif-toggle="1"] {
+    top: 1px;
+}
+@keyframes notif-kedip {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.2; }
 }
 
 /* 10. Nav Pills & Tab Filters */

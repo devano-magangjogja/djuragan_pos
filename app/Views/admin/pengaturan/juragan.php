@@ -58,7 +58,7 @@ $kotak_rekening = static function (array $opsi, array $terpilih, string $awalan)
 
 // satu baris daftar pemegang: label + pil nama, atau keterangan kosong
 $chip = static function (string $label, array $daftar): void { ?>
-    <div class="d-flex align-items-center flex-wrap gap-1">
+    <div class="d-flex align-items-center flex-wrap gap-2">
         <span class="text-muted"><?= esc($label) ?></span>
         <?php if ($daftar === []) { ?>
             <span class="badge rounded-pill fw-light bg-secondary">belum ada</span>
@@ -122,7 +122,7 @@ $chip = static function (string $label, array $daftar): void { ?>
                                     <?= esc(implode(', ', array_unique(array_map(static fn (object $b): string => strtoupper((string) $b->nama), $bank)))) ?>
                                 <?php } ?>
                             </td>
-                            <td class="small">
+                            <td class="small d-flex flex-column gap-1">
                                 <?php $chip('Admin', $pg['admin']); ?>
                                 <?php $chip('CS', $pg['cs']); ?>
                                 <?php if (count($pg['admin']) > 1 || count($pg['cs']) > 1) { ?>
