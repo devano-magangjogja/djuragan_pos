@@ -142,46 +142,59 @@ $routes->group('admin', static function ($routes) {
     });
 
     // crm: manajemen pelanggan, live chat WA, follow-up tagihan, notif resi, broadcast, pengaturan gateway WA
-    $routes->group('crm', ['filter' => 'auth:admin,superadmin'], static function ($routes) {
-        $routes->get('/', 'Admin\Crm::index', ['as' => 'hal.crm']);
+    // CS hanya boleh membuka & membalas Live Chat (lihat daftar + kirim pesan);
+    // seluruh kelola CRM (hapus/ubah chat, webhook, gateway, pelanggan, broadcast,
+    // template, log, dsb) tetap khusus admin & superadmin lewat grup bersarang di
+    // bawah. Filter grup bersarang digabung, jadi CS lolos pagar luar namun dipotong
+    // pagar dalam. Daftar percakapan tidak dipilah per pengguna (nomor WA satu),
+    // sehingga semua CS melihat inbox yang sama.
+    $routes->group('crm', ['filter' => 'auth:admin,superadmin,cs'], static function ($routes) {
+        // Live Chat WA yang boleh diakses CS: buka + balas + daftarkan lead +
+        // ubah/hapus chat, sama seperti superadmin. buat_customer menautkan
+        // pelanggan_id ke percakapan, syarat KPI "Konversi lead ke order".
         $routes->get('chat', 'Admin\Crm::chat');
         $routes->get('chat/percakapan', 'Admin\Crm::chat_percakapan');
         $routes->get('chat/pesan/(:num)', 'Admin\Crm::chat_pesan/$1');
         $routes->get('chat/polling/(:num)', 'Admin\Crm::chat_polling/$1');
         $routes->post('chat/kirim', 'Admin\Crm::chat_kirim');
-        $routes->post('chat/hapus', 'Admin\Crm::chat_hapus');
-        $routes->post('chat/nama', 'Admin\Crm::chat_ganti_nama');
         $routes->get('chat/status_pesan', 'Admin\Crm::chat_status_pesan');
         $routes->get('chat/token', 'Admin\Crm::chat_token');
-        $routes->get('chat/webhook_status', 'Admin\Crm::webhook_status');
-        $routes->post('chat/webhook_uji', 'Admin\Crm::webhook_uji');
-        $routes->get('pelanggan', 'Admin\Crm::pelanggan');
-        $routes->get('pelanggan/(:num)', 'Admin\Crm::pelanggan_detail/$1');
-        $routes->post('pelanggan/simpan_profil/(:num)', 'Admin\Crm::simpan_profil/$1');
-        $routes->post('pelanggan/simpan_ukuran/(:num)', 'Admin\Crm::simpan_ukuran/$1');
-        $routes->post('pelanggan/tambah_aktivitas/(:num)', 'Admin\Crm::tambah_aktivitas/$1');
-        $routes->post('pelanggan/tambah_tag/(:num)', 'Admin\Crm::tambah_tag/$1');
-        $routes->post('pelanggan/hapus_tag/(:num)/(:num)', 'Admin\Crm::hapus_tag/$1/$2');
-        $routes->post('pelanggan/kirim_pesan/(:num)', 'Admin\Crm::kirim_pesan_pelanggan/$1');
-        $routes->get('followup', 'Admin\Crm::followup');
-        $routes->post('followup/simpan', 'Admin\Crm::simpan_followup');
-        $routes->post('followup/selesai/(:num)', 'Admin\Crm::selesaikan_followup/$1');
-        $routes->get('duplikat', 'Admin\Crm::duplikat');
-        $routes->post('duplikat/merge', 'Admin\Crm::proses_merge');
-        $routes->get('chat/cek_kontak', 'Admin\Crm::cek_kontak_wa');
         $routes->post('chat/buat_customer', 'Admin\Crm::buat_customer_wa');
-        $routes->get('tagihan', 'Admin\Crm::tagihan');
-        $routes->get('broadcast', 'Admin\Crm::broadcast');
-        $routes->get('template', 'Admin\Crm::template');
-        $routes->get('log', 'Admin\Crm::log');
-        $routes->get('pengaturan', 'Admin\Crm::pengaturan');
-        $routes->post('kirim_wa', 'Admin\Crm::kirim_wa');
-        $routes->post('kirim_broadcast', 'Admin\Crm::kirim_broadcast');
-        $routes->post('simpan_template', 'Admin\Crm::simpan_template');
-        $routes->post('simpan_pengaturan', 'Admin\Crm::simpan_pengaturan');
-        $routes->post('tes_koneksi', 'Admin\Crm::tes_koneksi');
-        $routes->match(['GET', 'POST'], 'cek_status_fonnte', 'Admin\Crm::cek_status_fonnte');
-        $routes->match(['GET', 'POST'], 'ambil_qr_fonnte', 'Admin\Crm::ambil_qr_fonnte');
+        $routes->post('chat/hapus', 'Admin\Crm::chat_hapus');
+        $routes->post('chat/nama', 'Admin\Crm::chat_ganti_nama');
+
+        // selain itu: khusus admin & superadmin
+        $routes->group('', ['filter' => 'auth:admin,superadmin'], static function ($routes) {
+            $routes->get('/', 'Admin\Crm::index', ['as' => 'hal.crm']);
+            $routes->get('chat/webhook_status', 'Admin\Crm::webhook_status');
+            $routes->post('chat/webhook_uji', 'Admin\Crm::webhook_uji');
+            $routes->get('pelanggan', 'Admin\Crm::pelanggan');
+            $routes->get('pelanggan/(:num)', 'Admin\Crm::pelanggan_detail/$1');
+            $routes->post('pelanggan/simpan_profil/(:num)', 'Admin\Crm::simpan_profil/$1');
+            $routes->post('pelanggan/simpan_ukuran/(:num)', 'Admin\Crm::simpan_ukuran/$1');
+            $routes->post('pelanggan/tambah_aktivitas/(:num)', 'Admin\Crm::tambah_aktivitas/$1');
+            $routes->post('pelanggan/tambah_tag/(:num)', 'Admin\Crm::tambah_tag/$1');
+            $routes->post('pelanggan/hapus_tag/(:num)/(:num)', 'Admin\Crm::hapus_tag/$1/$2');
+            $routes->post('pelanggan/kirim_pesan/(:num)', 'Admin\Crm::kirim_pesan_pelanggan/$1');
+            $routes->get('followup', 'Admin\Crm::followup');
+            $routes->post('followup/simpan', 'Admin\Crm::simpan_followup');
+            $routes->post('followup/selesai/(:num)', 'Admin\Crm::selesaikan_followup/$1');
+            $routes->get('duplikat', 'Admin\Crm::duplikat');
+            $routes->post('duplikat/merge', 'Admin\Crm::proses_merge');
+            $routes->get('chat/cek_kontak', 'Admin\Crm::cek_kontak_wa');
+            $routes->get('tagihan', 'Admin\Crm::tagihan');
+            $routes->get('broadcast', 'Admin\Crm::broadcast');
+            $routes->get('template', 'Admin\Crm::template');
+            $routes->get('log', 'Admin\Crm::log');
+            $routes->get('pengaturan', 'Admin\Crm::pengaturan');
+            $routes->post('kirim_wa', 'Admin\Crm::kirim_wa');
+            $routes->post('kirim_broadcast', 'Admin\Crm::kirim_broadcast');
+            $routes->post('simpan_template', 'Admin\Crm::simpan_template');
+            $routes->post('simpan_pengaturan', 'Admin\Crm::simpan_pengaturan');
+            $routes->post('tes_koneksi', 'Admin\Crm::tes_koneksi');
+            $routes->match(['GET', 'POST'], 'cek_status_fonnte', 'Admin\Crm::cek_status_fonnte');
+            $routes->match(['GET', 'POST'], 'ambil_qr_fonnte', 'Admin\Crm::ambil_qr_fonnte');
+        });
     });
 
     // kebersihan kotak notifikasi: Admin dan Superadmin boleh menyapu manual dan

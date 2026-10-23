@@ -7,6 +7,12 @@
 // menjaga view tetap aman bila dirender dari jalur lain tanpa data itu
 // ($activeId di bagian js sudah lebih dulu diberi pola sama: $activeId ?? 0).
 $templates ??= [];
+
+// CS boleh membuka, membalas, mendaftarkan lead, serta mengubah/menghapus chat
+// (sama seperti superadmin). Yang tetap khusus admin/superadmin: webhook,
+// gateway, dan halaman kelola pelanggan (Profil 360).
+$level_sesi    = (string) (session()->get('level') ?? '');
+$boleh_kelola = in_array($level_sesi, ['admin', 'superadmin'], true);
 ?>
 
 <?= $this->section('css') ?>
@@ -347,19 +353,23 @@ $templates ??= [];
     height: 2.125rem;
 }
 
-/* Tiga chip di kanan kepala obrolan (status, order, Profil 360) disamakan
-   tingginya; badge dan .btn bawaan punya padding sendiri-sendiri sehingga
-   tingginya beda 22px vs 30px. */
+/* Chip di kanan kepala obrolan (status, order, Belum Terdaftar, Buat Customer,
+   Profil 360) dibuat kotak yang sama persis. Badge dan .btn bawaan punya padding
+   & line-height sendiri (dan .btn-sm memakai py-1/px-2 !important), jadi padding
+   dan line-height dipaksa lewat !important agar keduanya benar-benar sejajar dan
+   sama tinggi, bukan cuma sama height. */
 #customerBadge .badge,
 #customerBadge .btn {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     height: 2rem;
-    padding-left: 0.6rem;
-    padding-right: 0.6rem;
+    padding: 0 0.65rem !important;
     border-radius: 10px !important;
     font-size: 0.78rem !important;
-    line-height: 1.2;
+    line-height: 1 !important;
+    white-space: nowrap;
+    vertical-align: middle;
 }
 
 /* Layar sempit: kedua tombol ikon di composer (Template & Kirim) dibuat kotak
@@ -378,14 +388,16 @@ $templates ??= [];
 <?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
-<?= $this->include('admin/navbar') ?>
+<?= $this->include($boleh_kelola ? 'admin/navbar' : 'user/navbar') ?>
 
 <div class="container-xxl py-2 px-2 py-md-4 px-md-3">
     <div class="d-flex flex-wrap align-items-center gap-2 mb-2 mb-md-3">
         <h1 class="h4 h3-md mb-0 fw-bold">Live WhatsApp Chat</h1>
-        <button class="btn btn-outline-dark btn-sm" data-bs-toggle="modal" data-bs-target="#modalInfoWebhook">
-            <i class="fal fa-webhook me-1"></i> Webhook
-        </button>
+        <?php if ($boleh_kelola): ?>
+            <button class="btn btn-outline-dark btn-sm" data-bs-toggle="modal" data-bs-target="#modalInfoWebhook">
+                <i class="fal fa-webhook me-1"></i> Webhook
+            </button>
+        <?php endif; ?>
     </div>
 
     <div class="chat-container d-flex">
@@ -618,6 +630,7 @@ $(function() {
 
     var currentConvId   = null;
     var requestedConvId = <?= (int) ($activeId ?? 0) ?>;
+    var bolehKelola     = <?= $boleh_kelola ? 'true' : 'false' ?>; // admin-only: webhook & Profil 360
     var lastMsgId       = 0;     // ID pesan terakhir yang sudah dimuat
     var pollInterval    = null;
     var modalChatBaru   = new bootstrap.Modal(document.getElementById('modalChatBaru'));
@@ -680,6 +693,8 @@ $(function() {
                 ? '<i class="fal fa-check text-muted me-1"></i>'
                 : '<i class="fal fa-arrow-down-left text-success me-1"></i>';
 
+            // Menu dropdown (ganti nama + hapus) kini sama untuk CS dan admin;
+            // markup & CSS-nya identik sehingga perilakunya ikut responsif sama.
             var dropdownMenu = '<div class="dropdown chat-item-dropdown">'
                              + '  <button type="button" class="chat-conv-trigger btn-conv-aksi" data-bs-toggle="dropdown" aria-expanded="false" title="Menu chat">'
                              + '    <i class="fal fa-chevron-down"></i>'
@@ -1070,15 +1085,21 @@ $(function() {
                   + '<span class="d-none d-lg-inline"> ' + totalOrder + ' Order | Rp ' + totalBelanja
                   + (adaSisa ? ' | <span class="text-danger">Sisa: Rp ' + sisaPiutang + '</span>' : '')
                   + '</span></span>';
+            if (bolehKelola) {
             html += '<a href="<?= site_url('admin/crm/pelanggan/') ?>' + pelanggan.id_pelanggan + '" target="_blank" title="Profil 360°" class="btn btn-sm btn-primary py-1 px-2 fw-semibold" style="font-size:0.78rem;">'
                   + '<i class="fal fa-id-card"></i><span class="d-none d-lg-inline"> Profil 360°</span>'
                   + '</a>';
+            }
             html += '</div>';
             $badge.html(html);
         } else {
             var num = currentNumber || $('#activePhone').text() || '';
             var html = '<div class="d-flex align-items-center gap-1 gap-md-2">';
             html += '<span class="badge bg-light text-muted border d-none d-sm-inline"><i class="fal fa-user-times me-1 text-warning"></i> Belum Terdaftar</span>';
+            // "Jadikan Customer" tetap dibuka untuk CS: inilah yang menautkan
+            // pelanggan_id ke percakapan, syarat KPI "Konversi lead ke order"
+            // mengenali lead. Yang tetap khusus admin hanya Profil 360 (halaman
+            // kelola pelanggan), bukan pendaftaran lead dari chat.
             html += '<button type="button" class="btn btn-sm btn-outline-primary py-1 px-2 fw-semibold" id="btnJadikanCustomer" data-nomor="' + escapeAttr(num) + '" style="font-size:0.78rem;">'
                   + '<i class="fal fa-user-plus me-1"></i><span class="d-none d-sm-inline">+ Buat </span><span class="d-sm-none">+ </span>Customer'
                   + '</button>';
