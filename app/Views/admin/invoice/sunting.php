@@ -20,6 +20,11 @@ $ongkir   = new Ongkir();
 $sekarang = new Time('now');
 $session  = \Config\Services::session();
 
+// Halaman sunting juga dipakai CS yang diberi wewenang oleh Superadmin. Dia tidak
+// dipindah ke layar Admin: navbar dan daftar transaksi yang ia tuju tetap punyanya
+// sendiri, hanya formulir nota ini yang sama.
+$layarAdmin = in_array($session->get('level'), ['admin', 'superadmin'], true);
+
 $orderan  = $pesanan[0];
 $juragan  = $orderan->juragan;
 $pengguna = $orderan->pengguna;
@@ -27,6 +32,18 @@ $pemesan  = $orderan->pelanggan;
 $kirimKe  = $orderan->kirimKe;
 $dibeli   = $orderan->barang;
 $biaya    = $orderan->biaya;
+
+// pembuat nota sekarang; 0 kalau akunnya sudah tidak ada di tabel pengguna
+$id_pengguna = (int) ($pengguna->id ?? 0);
+
+// CS tidak memilih Admin/CS: penanggung jawab nota sudah sepaket dengan toko yang
+// ia pegang, jadi pembuatnya dipertahankan lewat isian tersembunyi. Tanpa isian ini
+// update() akan mengosongkan user_id nota begitu saja.
+$isian_tersembunyi = ['id_invoice' => $orderan->id_invoice];
+
+if (! $layarAdmin) {
+    $isian_tersembunyi['pengguna'] = (string) $id_pengguna;
+}
 
 $rincian_pesanan = baca_rincian($orderan->rincian);
 ?>
@@ -105,13 +122,13 @@ $rincian_pesanan = baca_rincian($orderan->rincian);
 <?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
-<?= $this->include('admin/navbar') ?>
+<?= $this->include($layarAdmin ? 'admin/navbar' : 'user/navbar') ?>
 
 <div class="container-xxl">
 
     <h1 class="h3 mt-5"><?= esc($title) ?></h1>
 
-    <?= form_open('admin/invoices/update', ['class' => 'row mb-5', 'id' => 'iForm'], ['id_invoice' => $orderan->id_invoice]); ?>
+    <?= form_open('admin/invoices/update', ['class' => 'row mb-5', 'id' => 'iForm'], $isian_tersembunyi); ?>
     <div class="col-12 col-lg-6 mb-3">
 
         <div class="h-full rounded-kartu border border-ink-200 bg-white shadow-kartu">
@@ -126,10 +143,12 @@ $rincian_pesanan = baca_rincian($orderan->rincian);
                             <?= form_label('Juragan', 'juragan', ['class' => 'form-label']); ?>
                             <?= form_dropdown('juragan', ['' => 'Pilih Juragan'], '', ['class' => 'form-select', 'id' => 'juragan', 'required' => '']); ?>
                         </div>
-                        <div class="col">
-                            <?= form_label('Admin/CS', 'pengguna', ['class' => 'form-label']); ?>
-                            <?= form_dropdown('pengguna', ['' => 'Pilih Admin/CS'], '', ['class' => 'form-select', 'id' => 'pengguna', 'required' => '']); ?>
-                        </div>
+                        <?php if ($layarAdmin) : ?>
+                            <div class="col">
+                                <?= form_label('Admin/CS', 'pengguna', ['class' => 'form-label']); ?>
+                                <?= form_dropdown('pengguna', ['' => 'Pilih Admin/CS'], '', ['class' => 'form-select', 'id' => 'pengguna', 'required' => '']); ?>
+                            </div>
+                        <?php endif; ?>
                     </div>
                     <div class="row gx-2">
                         <div class="col">
@@ -812,9 +831,12 @@ $link_api_kota           = site_url('rajaongkir/kota');
 $link_api_pengguna       = site_url('api/juragan/get_users/');
 $link_api_provinsi       = site_url('rajaongkir/provinsi');
 $link_cari_pelanggan     = site_url('pelanggan/cari');
-$link_invoice            = site_url('admin/invoices/lihat/');
+$link_invoice            = site_url($layarAdmin ? 'admin/invoices/lihat/' : 'user/invoices/lihat/');
 $link_post_pelanggan     = site_url('pelanggan/baru');
 $link_data_pelanggan     = rtrim(site_url('pelanggan/data'), '/') . '/';
+
+// daftar "Semua Juragan" hanya ada di layar admin: rute CS menuntut slug toko asli
+$semua_toko              = $layarAdmin ? 'true' : 'false';
 
 ?>
 <script>
@@ -844,7 +866,7 @@ $js = <<< JS
                     // akun yang cuma pegang satu toko tidak perlu memilih
                     var ada = 0;
                     $.each(b[id].juragan, function() { ada++; });
-                    if (ada > 1) {
+                    if (ada > 1 && {$semua_toko}) {
                         a.push('<a class="list-group-item text-light list-group-item-action" href="{$link_invoice}semua"><i class="fal fa-user-circle"></i> Semua Juragan</a>');
                     }
 
@@ -912,12 +934,16 @@ $js = <<< JS
 
     	// load admin/cs
     	// embed langsung ke form select - dropdown
-    	$.getJSON('{$link_api_pengguna}', { id: {$current_user_id} }, function(a){
-    		$.each(a,function(b,a){
-    			$('<option />',{value:a.id,text:a.nama}).appendTo($('select[name="pengguna"]'));
+    	// khusus layar Admin: CS tidak memilih Admin/CS, pembuat nota sudah tetap
+    	// lewat isian tersembunyi, jadi daftar ini tidak perlu diambil sama sekali
+    	if ($('select[name="pengguna"]').length) {
+    		$.getJSON('{$link_api_pengguna}', { id: {$current_user_id} }, function(a){
+    			$.each(a,function(b,a){
+    				$('<option />',{value:a.id,text:a.nama}).appendTo($('select[name="pengguna"]'));
+    			});
+    			$('select[name="pengguna"]').val('{$id_pengguna}'); // set selected pengguna
     		});
-    		$('select[name="pengguna"]').val('{$pengguna->id}'); // set selected pengguna
-    	});
+    	}
 
     	// set selected sumber orderan
     	$('select[name="asal_orderan"]').val('{$orderan->source->id}');

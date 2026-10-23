@@ -13,6 +13,7 @@ $isCrmAktif      = url_is('admin/crm*');
 $isKpiAktif      = url_is('admin/kpi*');
 $isLaporanAktif  = url_is('admin/laporan*');
 $isSettingsAktif = url_is('admin/settings*');
+$isMasukanAktif  = url_is('admin/masukan*');
 
 // Submenu Transaksi
 // 'invoices' tetap satu halaman dengan 'cod': yang pertama dipakai untuk orderan
@@ -31,12 +32,16 @@ if ($levelSesi === 'superadmin') {
     $produkSubmenu[] = ['admin/poin', 'Laporan Poin', 'fa-coins', str_starts_with($di_halaman, 'admin/poin')];
 }
 
-// Submenu KPI
+// Submenu KPI: Ringkasan dan Ranking untuk admin & superadmin. Menentukan target
+// dan bobot tetap hak Superadmin, jadi menunya tidak dirender untuk yang lain.
 $kpiSubmenu = [
     ['admin/kpi', 'Ringkasan', 'fa-chart-pie', $di_halaman === 'admin/kpi'],
     ['admin/kpi/ranking', 'Ranking', 'fa-trophy', str_starts_with($di_halaman, 'admin/kpi/ranking')],
-    ['admin/kpi/target', 'Target & Bobot', 'fa-bullseye', str_starts_with($di_halaman, 'admin/kpi/target')],
 ];
+
+if ($levelSesi === 'superadmin') {
+    $kpiSubmenu[] = ['admin/kpi/target', 'Target & Bobot', 'fa-bullseye', str_starts_with($di_halaman, 'admin/kpi/target')];
+}
 
 // Submenu CRM
 $crmSubmenu = [
@@ -282,9 +287,19 @@ if ($levelSesi === 'superadmin') {
             </li>
         </ul>
 
-        <?php if ($sistemSubmenu !== []) : ?>
+        <?php if ($sistemSubmenu !== [] || $levelSesi === 'superadmin') : ?>
             <div class="sidebar-heading mt-2">Sistem</div>
             <ul class="sidebar-nav">
+                <?php if ($levelSesi === 'superadmin') : ?>
+                    <!-- kotak masukan bukan bagian dari pengaturan: menunya berdiri
+                         sendiri karena yang membacanya hanya Superadmin -->
+                    <li class="nav-item">
+                        <a class="sidebar-link <?= $isMasukanAktif ? 'active' : '' ?>" href="<?= site_url('admin/masukan') ?>">
+                            <i class="sidebar-link-icon fal fa-headset"></i>
+                            <span>Kotak Masukan</span>
+                        </a>
+                    </li>
+                <?php endif; ?>
                 <!-- Submenu Pengaturan -->
                 <li class="nav-item">
                     <a class="sidebar-link <?= $isSettingsAktif ? 'active' : '' ?>" data-bs-toggle="collapse" href="#submenuSettings" role="button" aria-expanded="<?= $isSettingsAktif ? 'true' : 'false' ?>" aria-controls="submenuSettings">

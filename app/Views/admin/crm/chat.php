@@ -59,6 +59,50 @@ $boleh_kelola = in_array($level_sesi, ['admin', 'superadmin'], true);
     background: #e7f5ea;
     border-left: 4px solid #25d366;
 }
+/* Penyaring daftar percakapan: inbox biasa atau arsip. Dua tombol sejajar
+   penuh; .btn di style.css memaksa padding dan radius, jadi ukurannya di sini
+   juga dipaksa supaya keduanya benar-benar sama besar. */
+.conv-saring {
+    display: flex;
+    gap: 0.4rem;
+}
+.conv-saring .conv-saring-btn {
+    flex: 1 1 0;
+    min-width: 0;
+    height: 2rem;
+    padding: 0 0.5rem !important;
+    border: 1px solid #eaecf0;
+    border-radius: 9px !important;
+    background: #ffffff;
+    color: #667085;
+    font-size: 0.8rem !important;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.conv-saring .conv-saring-btn:hover {
+    background: #f9fafb;
+    border-color: #d0d5dd;
+    color: #101828;
+}
+.conv-saring .conv-saring-btn.active {
+    background: #e7f5ea;
+    border-color: #25d366;
+    color: #0b6b3a;
+}
+/* Baris yang sudah diarsipkan ditandai ikon kotak; teksnya sendiri dibiarkan
+   terbaca normal karena isinya masih perlu dibuka kapan-kapan. */
+.chat-conv-item .ikon-arsip {
+    color: #98a2b3;
+    font-size: 0.72rem;
+    flex-shrink: 0;
+}
+.chat-conv-item.terarsip .avatar-circle {
+    background: #98a2b3;
+}
 .chat-main {
     flex: 1;
     display: flex;
@@ -70,11 +114,55 @@ $boleh_kelola = in_array($level_sesi, ['admin', 'superadmin'], true);
     background-image: radial-gradient(#d1d7db 1px, transparent 1px);
     background-size: 20px 20px;
 }
+/* Kepala obrolan: dua kolom (identitas kontak di kiri, chip di kanan) yang
+   sama-sama ditaruh di garis tengah baris yang tingginya tetap. Dulu tingginya
+   mengikuti isi, jadi saat chip bertambah/berkurang barisnya ikut naik-turun dan
+   teks nama tampak tidak selevel dengan chip di sebelahnya. */
 .chat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    min-height: 68px;
     background: #ffffff;
     border-bottom: 1px solid #e2e8f0;
-    padding: 12px 20px;
+    padding: 10px 16px;
     flex-shrink: 0;
+}
+.chat-header-orang {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+/* Tombol kembali hanya muncul di HP; dibuat kotak kecil supaya tidak mendorong
+   nama kontak ke kiri seperti tombol beregu teks biasa. */
+#btnBackToConvList {
+    width: 2rem;
+    height: 2rem;
+    padding: 0 !important;
+    flex-shrink: 0;
+}
+.chat-header-nama {
+    min-width: 0;
+}
+.chat-header-nama .chat-header-isi {
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.25;
+    color: #111b21;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.chat-header-nama .chat-header-nomor {
+    font-size: 0.8rem;
+    line-height: 1.3;
+    color: #667085;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 .chat-body {
     flex: 1;
@@ -285,9 +373,20 @@ $boleh_kelola = in_array($level_sesi, ['admin', 'superadmin'], true);
         width: 100% !important;
     }
 
-    /* Header obrolan di HP */
+    /* Header obrolan di HP: tetap satu baris, hanya ruangnya dikecilkan */
     .chat-header {
         padding: 8px 12px !important;
+        min-height: 58px;
+        gap: 0.5rem;
+    }
+    .chat-header-orang {
+        gap: 0.5rem;
+    }
+    .chat-header-nama .chat-header-isi {
+        font-size: 0.92rem;
+    }
+    .chat-header-nama .chat-header-nomor {
+        font-size: 0.75rem;
     }
     .avatar-circle {
         width: 38px;
@@ -353,23 +452,36 @@ $boleh_kelola = in_array($level_sesi, ['admin', 'superadmin'], true);
     height: 2.125rem;
 }
 
-/* Chip di kanan kepala obrolan (status, order, Belum Terdaftar, Buat Customer,
-   Profil 360) dibuat kotak yang sama persis. Badge dan .btn bawaan punya padding
-   & line-height sendiri (dan .btn-sm memakai py-1/px-2 !important), jadi padding
-   dan line-height dipaksa lewat !important agar keduanya benar-benar sejajar dan
-   sama tinggi, bukan cuma sama height. */
-#customerBadge .badge,
-#customerBadge .btn {
-    display: inline-flex;
+/* Chip di kanan kepala obrolan (status, order, Terarsip, Belum Terdaftar, Buat
+   Customer, Profil 360). Wadahnya sendiri yang merapikan baris (gap + rata
+   tengah + boleh turun baris), tiap chip memakai kelas .chat-chip supaya
+   tingginya sama persis.
+   PENTING: .badge dan .btn punya padding/line-height sendiri di style.css, dan
+   kelas display Bootstrap (d-none/d-inline) itu !important — kalau kelas display
+   itu ditempel di chip-nya, ia mengalahkan inline-flex di sini dan isinya naik
+   ke tepi atas kotak (itulah sebabnya dulu "Belum Terdaftar" tampak tidak
+   sejajar). Jadi d-none/d-*-inline hanya boleh dipakai pada TEKS di dalam chip. */
+#customerBadge {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    flex-shrink: 0;
+}
+#customerBadge .chat-chip {
+    display: inline-flex !important;
     align-items: center;
     justify-content: center;
+    gap: 0.35rem;
     height: 2rem;
-    padding: 0 0.65rem !important;
+    padding: 0 0.7rem !important;
+    margin: 0 !important;
     border-radius: 10px !important;
     font-size: 0.78rem !important;
+    font-weight: 600;
     line-height: 1 !important;
     white-space: nowrap;
-    vertical-align: middle;
 }
 
 /* Layar sempit: kedua tombol ikon di composer (Template & Kirim) dibuat kotak
@@ -382,6 +494,52 @@ $boleh_kelola = in_array($level_sesi, ['admin', 'superadmin'], true);
         height: 2.375rem;
         padding: 0 !important;
         border-radius: 10px !important;
+    }
+}
+
+/* ==========================================================================
+   MODAL "JADIKAN CUSTOMER BARU"
+   Dialognya sempit dan ada ruang kosong aneh di bawah isian karena
+   .modal-dialog-centered di Bootstrap 5 adalah flex container: <form> polos
+   yang dulu disisipkan di antaranya tidak punya lebar tetap, jadi ikut
+   menyusut selebar isi (seharusnya .modal-content yang jadi anak langsung).
+   Sekarang form-nya sekaligus .modal-content, plus lebarnya dibatasi supaya
+   proporsinya enak dilihat di layar besar maupun kecil.
+   ========================================================================== */
+#modalBuatCustomerWa .modal-dialog {
+    max-width: 460px;
+    width: calc(100% - 2rem);
+}
+#modalBuatCustomerWa .modal-content {
+    width: 100%;
+}
+#modalBuatCustomerWa .modal-body {
+    padding: 1.25rem;
+}
+/* Semua isian sama tinggi dan labelnya rata kiri di satu garis yang sama;
+   jarak antarblok seragam, blok terakhir tanpa ruang bawah. */
+#modalBuatCustomerWa .form-control {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.88rem !important;
+}
+#modalBuatCustomerWa .form-label {
+    margin-bottom: 0.35rem !important;
+}
+#modalBuatCustomerWa .modal-footer {
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+#modalBuatCustomerWa .modal-footer .btn {
+    min-width: 8rem;
+}
+@media (max-width: 575.98px) {
+    #modalBuatCustomerWa .modal-footer {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+    #modalBuatCustomerWa .modal-footer .btn {
+        width: 100%;
+        min-width: 0;
     }
 }
 </style>
@@ -414,6 +572,16 @@ $boleh_kelola = in_array($level_sesi, ['admin', 'superadmin'], true);
                     <i class="fal fa-search text-muted position-absolute top-50 start-0 translate-middle-y ms-2"></i>
                     <input type="text" id="searchConv" class="form-control form-control-sm chat-cari" placeholder="Cari kontak / nomor...">
                 </div>
+                <!-- Inbox biasa vs arsip. CS boleh membuka daftar arsip, hanya
+                     admin & superadmin yang punya tombol arsipkan di menunya. -->
+                <div class="conv-saring mt-2" role="group" aria-label="Saring daftar percakapan">
+                    <button type="button" class="btn conv-saring-btn active" data-arsip="0">
+                        <i class="fal fa-comments me-1"></i> Aktif
+                    </button>
+                    <button type="button" class="btn conv-saring-btn" data-arsip="1" title="Percakapan yang sudah diarsipkan">
+                        <i class="fal fa-archive me-1"></i> Arsip
+                    </button>
+                </div>
             </div>
 
             <div class="chat-conversation-list" id="convList">
@@ -427,18 +595,18 @@ $boleh_kelola = in_array($level_sesi, ['admin', 'superadmin'], true);
         <!-- Area Obrolan Chat -->
         <div class="chat-main" id="chatArea">
             <!-- Header Chat Aktif -->
-            <div class="chat-header d-flex justify-content-between align-items-center" id="chatHeader" style="display: none !important;">
-                <div class="d-flex align-items-center min-w-0 me-2">
-                    <button type="button" class="btn btn-sm border-0 bg-transparent text-dark me-2 d-md-none flex-shrink-0" id="btnBackToConvList" title="Kembali ke daftar percakapan">
+            <div class="chat-header" id="chatHeader" style="display: none !important;">
+                <div class="chat-header-orang">
+                    <button type="button" class="btn btn-sm border-0 bg-transparent text-dark d-md-none flex-shrink-0" id="btnBackToConvList" title="Kembali ke daftar percakapan">
                         <i class="fal fa-arrow-left"></i>
                     </button>
-                    <div class="avatar-circle me-2 me-md-3 flex-shrink-0" id="activeAvatar">U</div>
-                    <div class="min-w-0">
-                        <h6 class="mb-0 fw-bold text-truncate" id="activeName">-</h6>
-                        <small class="text-muted font-monospace text-truncate d-block" id="activePhone">-</small>
+                    <div class="avatar-circle flex-shrink-0" id="activeAvatar">U</div>
+                    <div class="chat-header-nama">
+                        <div class="chat-header-isi" id="activeName">-</div>
+                        <div class="chat-header-nomor font-monospace" id="activePhone">-</div>
                     </div>
                 </div>
-                <div id="customerBadge" class="flex-shrink-0 ms-2"></div>
+                <div id="customerBadge"></div>
             </div>
 
             <!-- Pesan Percakapan -->
@@ -563,34 +731,35 @@ $boleh_kelola = in_array($level_sesi, ['admin', 'superadmin'], true);
 <!-- Modal Buat Customer Baru dari Chat WA -->
 <div class="modal fade" id="modalBuatCustomerWa" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <form id="formBuatCustomerWa">
+        <!-- form-nya sekaligus .modal-content: lihat catatan CSS di atas, kalau
+             keduanya dipisah dialog-nya menyusut dan isinya tidak seimbang -->
+        <form id="formBuatCustomerWa" class="modal-content">
             <?= csrf_field() ?>
-            <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title"><i class="fal fa-user-plus me-2"></i>Jadikan Customer Baru</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fal fa-user-plus text-primary me-2"></i>Jadikan Customer Baru</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+            </div>
+            <div class="modal-body">
+                <div id="alertBuatCustomer" class="alert d-none mb-3"></div>
+                <div class="mb-3">
+                    <label class="form-label" for="inputCustomerNomor">Nomor WhatsApp</label>
+                    <input type="text" name="nomor" id="inputCustomerNomor" class="form-control font-monospace" readonly required>
+                    <div class="form-text">Nomor inilah yang nanti ditautkan ke percakapan ini.</div>
                 </div>
-                <div class="modal-body">
-                    <div id="alertBuatCustomer" class="alert d-none"></div>
-                    <div class="mb-3">
-                        <label class="form-label small fw-bold">Nomor WhatsApp</label>
-                        <input type="text" name="nomor" id="inputCustomerNomor" class="form-control font-monospace bg-light" readonly required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label small fw-bold">Nama Lengkap Customer</label>
-                        <input type="text" name="nama" id="inputCustomerNama" class="form-control" placeholder="Masukkan nama pelanggan..." required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label small fw-bold">Alamat / Catatan Kota (Opsional)</label>
-                        <textarea name="alamat" id="inputCustomerAlamat" class="form-control" rows="2" placeholder="Alamat atau kota..."></textarea>
-                    </div>
+                <div class="mb-3">
+                    <label class="form-label" for="inputCustomerNama">Nama Lengkap Customer</label>
+                    <input type="text" name="nama" id="inputCustomerNama" class="form-control" placeholder="Masukkan nama pelanggan..." required>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary fw-bold" id="btnSubmitCustomerBaru">
-                        <i class="fal fa-save me-1"></i> Simpan ke CRM
-                    </button>
+                <div class="mb-0">
+                    <label class="form-label" for="inputCustomerAlamat">Alamat / Catatan Kota <span class="fw-normal text-muted">(opsional)</span></label>
+                    <textarea name="alamat" id="inputCustomerAlamat" class="form-control" rows="2" placeholder="Alamat atau kota..."></textarea>
                 </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="submit" class="btn btn-primary" id="btnSubmitCustomerBaru">
+                    <i class="fal fa-save me-1"></i> Simpan ke CRM
+                </button>
             </div>
         </form>
     </div>
@@ -630,7 +799,11 @@ $(function() {
 
     var currentConvId   = null;
     var requestedConvId = <?= (int) ($activeId ?? 0) ?>;
-    var bolehKelola     = <?= $boleh_kelola ? 'true' : 'false' ?>; // admin-only: webhook & Profil 360
+    var bolehKelola     = <?= $boleh_kelola ? 'true' : 'false' ?>; // admin/superadmin: webhook, Profil 360 & arsipkan chat
+    var saringArsip     = 0;     // daftar yang sedang tampil: 0 = aktif, 1 = arsip
+    var arsipAktif      = 0;     // status arsip percakapan yang sedang dibuka
+    var pelangganAktif  = null;  // data chip kepala obrolan, disimpan untuk render ulang
+    var nomorAktif      = '';
     var lastMsgId       = 0;     // ID pesan terakhir yang sudah dimuat
     var pollInterval    = null;
     var modalChatBaru   = new bootstrap.Modal(document.getElementById('modalChatBaru'));
@@ -645,7 +818,7 @@ $(function() {
     // ── Muat daftar percakapan ──────────────────────────────────────────────
     function loadConversations(keepActive) {
         keepActive = (keepActive === undefined) ? true : keepActive;
-        $.getJSON('<?= site_url('admin/crm/chat/percakapan') ?>', function(res) {
+        $.getJSON('<?= site_url('admin/crm/chat/percakapan') ?>', { arsip: saringArsip }, function(res) {
             if (res.status === 'success') {
                 renderConversations(res.data, keepActive);
             }
@@ -655,7 +828,8 @@ $(function() {
     function renderConversations(list, keepActive) {
         var container = $('#convList');
         if (list.length === 0) {
-            container.html('<div class="p-4 text-center text-muted small"><i class="fal fa-comments fa-2x mb-2 d-block"></i>Belum ada percakapan chat.</div>');
+            container.html('<div class="p-4 text-center text-muted small"><i class="fal ' + (saringArsip === 1 ? 'fa-archive' : 'fa-comments') + ' fa-2x mb-2 d-block"></i>'
+                + (saringArsip === 1 ? 'Belum ada chat yang diarsipkan.' : 'Belum ada percakapan chat.') + '</div>');
             if (!currentConvId) resetChatArea();
             return;
         }
@@ -668,7 +842,8 @@ $(function() {
         // Jika belum ada percakapan aktif yang terbuka:
         // Di DESKTOP (lebar >= 768px): otomatis buka obrolan yang diminta atau pertama.
         // Di MOBILE (< 768px): hanya buka otomatis jika ada ID spesifik yang diminta (requestedConvId > 0).
-        if (!currentConvId && list.length > 0) {
+        // Daftar arsip dilewati: membuka arsip harus keputusan sendiri, bukan efek samping berpindah tab.
+        if (!currentConvId && saringArsip === 0 && list.length > 0) {
             var targetItem = null;
             if (requestedConvId > 0) {
                 targetItem = list.find(function(it) { return it.id_percakapan === requestedConvId; });
@@ -693,8 +868,19 @@ $(function() {
                 ? '<i class="fal fa-check text-muted me-1"></i>'
                 : '<i class="fal fa-arrow-down-left text-success me-1"></i>';
 
-            // Menu dropdown (ganti nama + hapus) kini sama untuk CS dan admin;
-            // markup & CSS-nya identik sehingga perilakunya ikut responsif sama.
+            // Menu dropdown. Ganti nama & hapus sama untuk CS dan admin; hanya
+            // arsipkan/batalkan arsip yang khusus admin & superadmin (rutenya
+            // juga dipagari, jadi menu yang tidak muncul itu memang tidak bisa).
+            var terarsip  = Number(item.diarsipkan || 0) === 1;
+            var menuArsip = bolehKelola
+                ? '    <li><hr class="wa-dropdown-divider my-1"></li>'
+                  + '    <li>'
+                  + '      <button type="button" class="dropdown-item btn-arsip-chat d-flex align-items-center" data-id="' + item.id_percakapan + '" data-arsip="' + (terarsip ? 0 : 1) + '" data-nama="' + escapeAttr(item.nama_kontak) + '">'
+                  + '        <i class="fal ' + (terarsip ? 'fa-box-open' : 'fa-archive') + ' wa-dropdown-icon"></i>'
+                  + '        <span>' + (terarsip ? 'Batalkan arsip' : 'Arsipkan chat') + '</span>'
+                  + '      </button>'
+                  + '    </li>'
+                : '';
             var dropdownMenu = '<div class="dropdown chat-item-dropdown">'
                              + '  <button type="button" class="chat-conv-trigger btn-conv-aksi" data-bs-toggle="dropdown" aria-expanded="false" title="Menu chat">'
                              + '    <i class="fal fa-chevron-down"></i>'
@@ -706,6 +892,7 @@ $(function() {
                              + '        <span>Ganti nama chat</span>'
                              + '      </button>'
                              + '    </li>'
+                             + menuArsip
                              + '    <li><hr class="wa-dropdown-divider my-1"></li>'
                              + '    <li>'
                              + '      <button type="button" class="dropdown-item btn-hapus-chat text-danger d-flex align-items-center" data-id="' + item.id_percakapan + '" data-nama="' + escapeAttr(item.nama_kontak) + '">'
@@ -716,7 +903,7 @@ $(function() {
                              + '  </ul>'
                              + '</div>';
 
-            html += '<div class="chat-conv-item p-3 d-flex align-items-center' + activeClass + '"'
+            html += '<div class="chat-conv-item p-3 d-flex align-items-center' + activeClass + (terarsip ? ' terarsip' : '') + '"'
                   + ' data-id="' + item.id_percakapan + '"'
                   + ' data-nomor="' + escapeAttr(item.nomor_wa) + '"'
                   + ' data-nama="' + escapeAttr(item.nama_kontak) + '">';
@@ -724,7 +911,9 @@ $(function() {
             html += '  <div class="flex-grow-1 min-w-0">';
             html += '    <div class="d-flex justify-content-between align-items-baseline mb-1">';
             html += '      <strong class="text-truncate text-dark">' + escapeHtml(item.nama_kontak) + '</strong>';
-            html += '      <small class="text-muted font-monospace ms-2 flex-shrink-0" style="font-size:0.75rem;">' + item.waktu + '</small>';
+            html += '      <small class="text-muted ms-2 flex-shrink-0" style="font-size:0.75rem;">'
+                  + (terarsip ? '<i class="fal fa-archive ikon-arsip me-1" title="Sudah diarsipkan"></i>' : '')
+                  + '<span class="font-monospace">' + item.waktu + '</span></small>';
             html += '    </div>';
             html += '    <div class="d-flex justify-content-between align-items-center">';
             html += '      <div class="small text-muted text-truncate d-flex align-items-center pe-1">';
@@ -814,6 +1003,9 @@ $(function() {
     function resetChatArea() {
         currentConvId = null;
         lastMsgId     = 0;
+        arsipAktif    = 0;
+        pelangganAktif = null;
+        nomorAktif    = '';
         $('#chatHeader').attr('style', 'display: none !important;');
         $('#chatFooter').css('display', 'none');
         $('#customerBadge').empty();
@@ -838,6 +1030,7 @@ $(function() {
 
             if (res.status === 'success') {
                 var num = res.percakapan ? res.percakapan.nomor_wa : $('#activePhone').text();
+                arsipAktif = res.percakapan && Number(res.percakapan.diarsipkan) === 1 ? 1 : 0;
                 renderCustomerBadge(res.pelanggan, num);
                 renderMessages(res.messages, true);
                 if (res.messages.length > 0) {
@@ -1060,8 +1253,22 @@ $(function() {
     }
 
     // ── Render badge pelanggan & auto-match ─────────────────────────────────
+    // Semua chip di kanan kepala obrolan dibangun di sini. Wajib memakai kelas
+    // .chat-chip, dan kelas display Bootstrap (d-none/d-inline) hanya boleh
+    // menempel pada teks di dalamnya, bukan pada chip-nya (lihat catatan CSS).
     function renderCustomerBadge(pelanggan, currentNumber) {
         var $badge = $('#customerBadge');
+        pelangganAktif = (pelanggan === undefined) ? pelangganAktif : pelanggan;
+        nomorAktif     = currentNumber || nomorAktif;
+
+        var html = '';
+        // Percakapan yang sedang dibuka bisa saja sudah diarsipkan (misalnya
+        // dibuka dari daftar Arsip), jadi statusnya ikut tampil di kepala obrolan.
+        if (arsipAktif) {
+            html += '<span class="badge chat-chip bg-light text-muted border" title="Chat ini sudah diarsipkan">'
+                  + '<i class="fal fa-archive"></i><span class="d-none d-sm-inline"> Terarsip</span></span>';
+        }
+
         if (pelanggan) {
             var st = pelanggan.status_crm || 'prospek';
             var stBadge = st === 'loyal' ? 'badge bg-warning text-dark'
@@ -1074,38 +1281,34 @@ $(function() {
             var totalBelanja = Number(pelanggan.nilai || 0).toLocaleString('id-ID');
             var sisaPiutang = pelanggan.sisa ? Number(pelanggan.sisa).toLocaleString('id-ID') : '0';
 
-            var html = '<div class="d-flex align-items-center gap-1 gap-md-2 flex-wrap justify-content-end">';
-            /* Layar sempit: badge status dan tombol profil jadi ikon saja; katanya
-               dipindah ke title. Badge "Order | Rp" memang hanya tampil di >=992px. */
-            html += '<span class="' + stBadge + '" style="font-size:0.75rem;" title="' + stText + '"><i class="fal fa-check-circle"></i><span class="d-none d-lg-inline"> ' + stText + '</span></span>';
+            /* Layar sempit: chip status dan order jadi ikon saja; katanya
+               dipindah ke title. Teks lengkap chip "Order | Rp" hanya tampil di >=992px. */
+            html += '<span class="' + stBadge + ' chat-chip" title="' + stText + '"><i class="fal fa-check-circle"></i><span class="d-none d-lg-inline"> ' + stText + '</span></span>';
             var adaSisa = Number(pelanggan.sisa || 0) > 0;
             var ketOrder = totalOrder + ' Order | Rp ' + totalBelanja + (adaSisa ? ' | Sisa: Rp ' + sisaPiutang : '');
-            html += '<span class="badge bg-light text-dark border" style="font-size:0.75rem;" title="' + escapeAttr(ketOrder) + '">'
+            html += '<span class="badge bg-light text-dark border chat-chip" title="' + escapeAttr(ketOrder) + '">'
                   + '<i class="fal fa-shopping-bag text-primary"></i>'
                   + '<span class="d-none d-lg-inline"> ' + totalOrder + ' Order | Rp ' + totalBelanja
                   + (adaSisa ? ' | <span class="text-danger">Sisa: Rp ' + sisaPiutang + '</span>' : '')
                   + '</span></span>';
             if (bolehKelola) {
-            html += '<a href="<?= site_url('admin/crm/pelanggan/') ?>' + pelanggan.id_pelanggan + '" target="_blank" title="Profil 360°" class="btn btn-sm btn-primary py-1 px-2 fw-semibold" style="font-size:0.78rem;">'
+            html += '<a href="<?= site_url('admin/crm/pelanggan/') ?>' + pelanggan.id_pelanggan + '" target="_blank" title="Profil 360°" class="btn btn-primary chat-chip">'
                   + '<i class="fal fa-id-card"></i><span class="d-none d-lg-inline"> Profil 360°</span>'
                   + '</a>';
             }
-            html += '</div>';
-            $badge.html(html);
         } else {
-            var num = currentNumber || $('#activePhone').text() || '';
-            var html = '<div class="d-flex align-items-center gap-1 gap-md-2">';
-            html += '<span class="badge bg-light text-muted border d-none d-sm-inline"><i class="fal fa-user-times me-1 text-warning"></i> Belum Terdaftar</span>';
+            var num = nomorAktif || $('#activePhone').text() || '';
+            html += '<span class="badge bg-light text-muted border chat-chip" title="Nomor ini belum jadi customer">'
+                  + '<i class="fal fa-user-times text-warning"></i><span class="d-none d-sm-inline"> Belum Terdaftar</span></span>';
             // "Jadikan Customer" tetap dibuka untuk CS: inilah yang menautkan
             // pelanggan_id ke percakapan, syarat KPI "Konversi lead ke order"
             // mengenali lead. Yang tetap khusus admin hanya Profil 360 (halaman
             // kelola pelanggan), bukan pendaftaran lead dari chat.
-            html += '<button type="button" class="btn btn-sm btn-outline-primary py-1 px-2 fw-semibold" id="btnJadikanCustomer" data-nomor="' + escapeAttr(num) + '" style="font-size:0.78rem;">'
-                  + '<i class="fal fa-user-plus me-1"></i><span class="d-none d-sm-inline">+ Buat </span><span class="d-sm-none">+ </span>Customer'
+            html += '<button type="button" class="btn btn-outline-primary chat-chip" id="btnJadikanCustomer" data-nomor="' + escapeAttr(num) + '">'
+                  + '<i class="fal fa-user-plus"></i><span class="d-none d-sm-inline"> Buat Customer</span>'
                   + '</button>';
-            html += '</div>';
-            $badge.html(html);
         }
+        $badge.html(html);
     }
 
     // ── Kirim pesan dari Live Chat ───────────────────────────────────────────
@@ -1292,6 +1495,39 @@ $(function() {
         });
     });
 
+    // ── Arsipkan / batalkan arsip satu chat ──────────────────────────────────
+    // Hanya admin & superadmin yang punya menu ini (lihat bolehKelola); rutenya
+    // juga dikunci di grup auth:admin,superadmin. Arsip tidak menghapus apa pun:
+    // chat hanya pindah daftar dan terbuka lagi saat ada pesan masuk baru.
+    $(document).on('click', '.btn-arsip-chat', function(e) {
+        e.stopPropagation();
+        var $btn  = $(this);
+        var $item = $btn.closest('.chat-conv-item');
+        var id    = Number($btn.data('id') || $item.data('id'));
+        var mau   = Number($btn.data('arsip')) === 1 ? 1 : 0;
+        var nama  = ($btn.data('nama') !== undefined ? $btn.data('nama') : ($item.data('nama') || '')).toString();
+
+        if (mau === 1 && !window.confirm('Arsipkan chat "' + nama + '"?\nPesannya tidak dihapus, hanya dipindah ke daftar Arsip dan muncul lagi begitu ada pesan masuk.')) {
+            return;
+        }
+
+        $.post('<?= site_url('admin/crm/chat/arsip') ?>', { id_percakapan: id, diarsipkan: mau }, function(res) {
+            if (res.status !== 'success') {
+                alert(res.message || 'Gagal mengubah arsip chat.');
+                return;
+            }
+            // chat yang sedang dibuka tetap dibuka, hanya penanda arsipnya ikut
+            // berubah di kepala obrolan
+            if (currentConvId === id) {
+                arsipAktif = Number(res.diarsipkan) === 1 ? 1 : 0;
+                renderCustomerBadge(pelangganAktif, nomorAktif);
+            }
+            loadConversations(true);
+        }, 'json').fail(function() {
+            alert('Gagal menghubungi server.');
+        });
+    });
+
     // ── Ganti nama chat (label percakapan saja) ─────────────────────────────
     $(document).on('click', '.btn-ganti-nama', function(e) {
         e.stopPropagation();
@@ -1331,6 +1567,19 @@ $(function() {
             $btn.prop('disabled', false).html('<i class="fal fa-save me-1"></i> Simpan');
             $('#alertGantiNama').removeClass('d-none alert-success').addClass('alert-danger').text('Gagal menghubungi server.');
         });
+    });
+
+    // ── Beralih daftar: percakapan aktif vs arsip ────────────────────────────
+    $(document).on('click', '.conv-saring-btn', function() {
+        var $btn = $(this);
+        if ($btn.hasClass('active')) return;
+
+        $('.conv-saring-btn').removeClass('active');
+        $btn.addClass('active');
+        saringArsip = Number($btn.data('arsip')) === 1 ? 1 : 0;
+
+        $('#convList').html('<div class="p-4 text-center text-muted small"><i class="fal fa-spinner fa-spin fa-2x mb-2 d-block"></i>Memuat percakapan...</div>');
+        loadConversations(true);
     });
 
     // ── Filter search kontak ─────────────────────────────────────────────────

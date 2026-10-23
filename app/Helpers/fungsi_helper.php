@@ -2041,3 +2041,40 @@ if (! function_exists('tautan_invoice_notif')) {
         return site_url('user/invoices/lihat/' . rawurlencode($slug_juragan) . '/semua?' . $kueri);
     }
 }
+
+if (! function_exists('wewenang_sunting_transaksi')) {
+    /**
+     * Apakah akun ini boleh membuka layar sunting transaksi (Tracking Transaksi
+     * punyanya Admin). Admin dan superadmin selalu boleh; CS hanya kalau
+     * Superadmin menyalakan penanda `sunting_transaksi` di akunnya.
+     *
+     * Penanda dibaca dari basis data, bukan dari sesi, supaya perubahan Superadmin
+     * langsung berlaku tanpa perlu login ulang — sama seperti `lihat_semua_produk`.
+     * Hasilnya dihafal per permintaan karena filter, navbar, dan daftar transaksi
+     * menanyakannya dalam satu kali render.
+     */
+    function wewenang_sunting_transaksi(): bool
+    {
+        static $sudah = [];
+
+        $level = (string) session()->get('level');
+
+        if (in_array($level, ['admin', 'superadmin'], true)) {
+            return true;
+        }
+
+        $id = (int) session()->get('id');
+
+        if ($level !== 'cs' || $id <= 0) {
+            return false;
+        }
+
+        if (! array_key_exists($id, $sudah)) {
+            // find() diberi id skalar: mengembalikan satu baris (object) atau null
+            $akun             = (new \App\Models\UserModel())->find($id);
+            $sudah[$id]       = $akun !== null && (int) $akun->sunting_transaksi === 1;
+        }
+
+        return $sudah[$id];
+    }
+}

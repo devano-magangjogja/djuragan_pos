@@ -31,7 +31,7 @@ class Pengguna extends BaseController
     {
         $isian = [];
 
-        foreach (['id', 'username', 'nama', 'email', 'level', 'status', 'lihat_semua_produk'] as $kolom) {
+        foreach (['id', 'username', 'nama', 'email', 'level', 'status', 'lihat_semua_produk', 'sunting_transaksi'] as $kolom) {
             $isian[$kolom] = (string) $this->request->getPost($kolom);
         }
 
@@ -100,6 +100,8 @@ class Pengguna extends BaseController
             'status'   => strtolower($this->request->getPost('status')),
             // hak baca katalog semua juragan; hanya kotak centang CS yang mengirimnya
             'lihat_semua_produk' => $this->request->getPost('lihat_semua_produk') ? 1 : 0,
+            // hak sunting transaksi (layar Admin); sama, hanya kotak centang CS
+            'sunting_transaksi'  => $this->request->getPost('sunting_transaksi') ? 1 : 0,
         ]);
         $id = (int) $db->insertID();
 
@@ -165,6 +167,7 @@ class Pengguna extends BaseController
         $data['status'] = strtolower($this->request->getPost('status'));
         // non-CS tak pernah mengirim kotak ini, jadi nilainya ikut dinolkan
         $data['lihat_semua_produk'] = $this->request->getPost('lihat_semua_produk') ? 1 : 0;
+        $data['sunting_transaksi']  = $this->request->getPost('sunting_transaksi') ? 1 : 0;
 
         // dulu penghapusan relasi dijaga `affectedRows() > -1` yang selalu benar,
         // jadi relasi bisa terhapus sementara sisanya gagal tersimpan

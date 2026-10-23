@@ -1051,16 +1051,22 @@ class Crm extends BaseController
 
     /**
      * API: Ambil daftar percakapan Live Chat (JSON)
+     *
+     * Parameter `arsip` memilih salah satu daftar: 0 = inbox biasa (bawaan),
+     * 1 = percakapan yang sudah diarsipkan. Kedua peran boleh membuka daftar
+     * arsip; yang dibatasi hanya aksi mengarsipkan (lihat chat_arsip()).
      */
     public function chat_percakapan()
     {
-        $db = Database::connect();
-        $q  = trim($this->request->getGet('q') ?? '');
+        $db    = Database::connect();
+        $q     = trim($this->request->getGet('q') ?? '');
+        $arsip = (int) ($this->request->getGet('arsip') ?? 0) === 1 ? 1 : 0;
 
         $builder = $db->table('crm_chat_percakapan cp')
             ->select('cp.*, p.nama_pelanggan, pro.status_crm')
             ->join('pelanggan p', 'p.id_pelanggan = cp.pelanggan_id', 'left')
             ->join('crm_pelanggan_profil pro', 'pro.pelanggan_id = cp.pelanggan_id', 'left')
+            ->where('cp.diarsipkan', $arsip)
             ->orderBy('cp.waktu_terakhir', 'DESC');
 
         if (!empty($q)) {
@@ -1084,6 +1090,7 @@ class Crm extends BaseController
                 'pesan_terakhir' => $r['pesan_terakhir'] ?? '',
                 'arah_terakhir'  => $r['arah_terakhir'],
                 'unread_admin'   => (int) $r['unread_admin'],
+                'diarsipkan'     => (int) ($r['diarsipkan'] ?? 0),
                 'waktu'          => !empty($r['waktu_terakhir']) ? date('H:i', (int) $r['waktu_terakhir']) : '',
                 'tanggal'        => !empty($r['waktu_terakhir']) ? date('d/m/Y', (int) $r['waktu_terakhir']) : '',
             ];
@@ -1191,6 +1198,7 @@ class Crm extends BaseController
                 'nomor_wa'     => $conv['nomor_wa'],
                 'pelanggan_id' => $conv['pelanggan_id'] ? (int) $conv['pelanggan_id'] : null,
                 'nama_kontak'  => $conv['nama_kontak'] ?: $conv['nomor_wa'],
+                'diarsipkan'   => (int) ($conv['diarsipkan'] ?? 0),
             ],
             'pelanggan'   => $lastId === 0 ? $pelanggan : null,
             'messages'    => $messages,
@@ -1366,6 +1374,41 @@ class Crm extends BaseController
             ->update(['nama_kontak' => $nama]);
 
         return $this->response->setJSON(['status' => 'success', 'nama_kontak' => $nama]);
+    }
+
+    /**
+     * API: Arsipkan / batalkan arsip satu percakapan.
+     *
+     * Hanya memindahkan percakapan dari daftar utama ke daftar arsip (atau
+     * sebaliknya) — isi pesannya tidak disentuh sama sekali, beda dengan
+     * chat_hapus() yang membuang barisnya. Rutenya dipasang di dalam grup
+     * admin & superadmin, jadi CS cukup bisa membaca daftar arsipnya.
+     */
+    public function chat_arsip()
+    {
+        $idPercakapan = (int) $this->request->getPost('id_percakapan');
+        $diarsipkan   = (int) ($this->request->getPost('diarsipkan') ?? 1) === 1 ? 1 : 0;
+
+        if ($idPercakapan <= 0) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Pilih chat yang mau diarsipkan.']);
+        }
+
+        $db   = Database::connect();
+        $conv = $db->table('crm_chat_percakapan')->select('id_percakapan')
+            ->where('id_percakapan', $idPercakapan)->get()->getRowArray();
+        if (! $conv) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Chat tidak ditemukan.']);
+        }
+
+        // waktu_arsip hanya catatan kapan terakhir kali dipindahkan; dibersihkan
+        // lagi saat arsipnya dibuka supaya tidak meninggalkan tanggal palsu
+        $db->table('crm_chat_percakapan')->where('id_percakapan', $idPercakapan)->update([
+            'diarsipkan'  => $diarsipkan,
+            'waktu_arsip' => $diarsipkan === 1 ? time() : null,
+            'updated_at'  => time(),
+        ]);
+
+        return $this->response->setJSON(['status' => 'success', 'diarsipkan' => $diarsipkan]);
     }
 
     /**

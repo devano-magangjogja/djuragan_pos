@@ -291,7 +291,7 @@ $per_halaman = (int) config('Pager')->perPage;
                 </div>
                 <?php /* hak baca lintas toko: khusus CS, dipilih Superadmin. Tanpa hak
                    ini katalog CS hanya berisi juragan yang disematkan ke akunnya. */ ?>
-                <div class="form-check mb-3" data-hak-produk>
+                <div class="form-check mb-2" data-hak-cs data-hak-produk>
                     <?= form_checkbox([
                         'name'    => 'lihat_semua_produk',
                         'id'      => 'lihatSemuaProduk',
@@ -301,6 +301,19 @@ $per_halaman = (int) config('Pager')->perPage;
                     ]); ?>
                     <?= form_label('Boleh melihat katalog produk semua juragan', 'lihatSemuaProduk', ['class' => 'form-check-label']); ?>
                     <div class="form-text">Khusus CS: tanpa hak ini, katalog yang terlihat hanya dari juragan yang disematkan ke akun ini.</div>
+                </div>
+                <?php /* hak sunting transaksi: khusus CS, dipilih Superadmin. Yang
+                   diberi hak membuka Tracking Transaksi miliknya Admin untuk nota
+                   toko yang tertaut ke akunnya. */ ?>
+                <div class="form-check mb-3" data-hak-cs data-hak-transaksi>
+                    <?= form_checkbox([
+                        'name'    => 'sunting_transaksi',
+                        'id'      => 'suntingTransaksi',
+                        'value'   => '1',
+                        'class'   => 'form-check-input',
+                        'checked' => ($isi('sunting_transaksi') === '1'),
+                    ]); ?>
+                    <?= form_label('Boleh menyunting transaksi (mirip Admin)', 'suntingTransaksi', ['class' => 'form-check-label']); ?>
                 </div>
             </div>
             <div class="modal-footer">
@@ -392,7 +405,7 @@ $per_halaman = (int) config('Pager')->perPage;
                     <div class="form-text">klik untuk memilih, boleh lebih dari satu.</div>
                     <div class="form-text text-danger d-none" data-hint-cs>Level CS wajib punya minimal satu juragan.</div>
                 </div>
-                <div class="form-check mb-3" data-hak-produk>
+                <div class="form-check mb-2" data-hak-cs data-hak-produk>
                     <?= form_checkbox([
                         'name'  => 'lihat_semua_produk',
                         'id'    => 'lihatSemuaProduk_',
@@ -401,6 +414,15 @@ $per_halaman = (int) config('Pager')->perPage;
                     ]); ?>
                     <?= form_label('Boleh melihat katalog produk semua juragan', 'lihatSemuaProduk_', ['class' => 'form-check-label']); ?>
                     <div class="form-text">Khusus CS: tanpa hak ini, katalog yang terlihat hanya dari juragan yang disematkan ke akun ini.</div>
+                </div>
+                <div class="form-check mb-3" data-hak-cs data-hak-transaksi>
+                    <?= form_checkbox([
+                        'name'  => 'sunting_transaksi',
+                        'id'    => 'suntingTransaksi_',
+                        'value' => '1',
+                        'class' => 'form-check-input',
+                    ]); ?>
+                    <?= form_label('Boleh menyunting transaksi (mirip Admin)', 'suntingTransaksi_', ['class' => 'form-check-label']); ?>
                 </div>
 
             </div>
@@ -580,7 +602,8 @@ $js = <<< JS
     			+ '<button type="button" class="btn btn-sm btn-outline-secondary me-1" title="Sunting ' + aman(u.nama) + '" aria-label="Sunting ' + aman(u.nama) + '" data-bs-toggle="modal" data-bs-target="#modalSuntingPengguna"'
     			+ ' data-id="' + aman(u.id) + '" data-nama="' + aman(u.nama) + '" data-email="' + aman(u.email) + '"'
     			+ ' data-username="' + aman(u.username) + '" data-level="' + aman(u.level) + '" data-status="' + aman(u.status) + '"'
-    			+ ' data-lihat-semua="' + aman(u.lihat_semua_produk || 0) + '"><i class="fal fa-pencil"></i></button>'
+    			+ ' data-lihat-semua="' + aman(u.lihat_semua_produk || 0) + '"'
+    			+ ' data-sunting-transaksi="' + aman(u.sunting_transaksi || 0) + '"><i class="fal fa-pencil"></i></button>'
     			+ '<button type="button" class="btn btn-sm btn-outline-danger" title="Hapus ' + aman(u.nama) + '" aria-label="Hapus ' + aman(u.nama) + '"><i class="fal fa-trash"></i></button>'
     			+ '</td></tr>';
     	}
@@ -672,23 +695,27 @@ $js = <<< JS
     			$(this).find('i').attr('class', 'fal ' + (tampil ? 'fa-eye-slash' : 'fa-eye'));
     	});
 
-    	// aturan wajib juragan hanya berlaku untuk level cs, hint-nya ikut disembunyikan
+    	// aturan level cs: hint wajib juragan dan kedua kotak wewenang hanya
+    	// ditampilkan untuk akun CS
     	function sinkronHintLevel(popup) {
     			var opsi = popup.querySelector('select[name="level"]');
     			var hint = popup.querySelector('[data-hint-cs]');
-    			var hak  = popup.querySelector('[data-hak-produk]');
+    			var hak  = popup.querySelectorAll('[data-hak-cs]');
     			var isCs = !!opsi && opsi.value === 'cs';
 
     			if (hint) { hint.classList.toggle('d-none', ! isCs); }
-    			if (hak)  { hak.classList.toggle('d-none', ! isCs); }
+
+    			hak.forEach(function (el) { el.classList.toggle('d-none', ! isCs); });
     	}
 
-    // kotak centang hak "lihat semua produk" diisi dari baris pengguna saat popup
-    // sunting dibuka; checkbox tidak ikut ternilai lewat value= biasa
-    function sinkronHakProduk(popup, nilai) {
-    			var hakEl = popup.querySelector('input[name="lihat_semua_produk"]');
+    // kedua kotak wewenang CS diisi dari baris pengguna saat popup sunting dibuka;
+    // checkbox tidak ikut ternilai lewat value= biasa
+    	function sinkronHakCs(popup, a) {
+    			var produk = popup.querySelector('input[name="lihat_semua_produk"]');
+    			var transaksi = popup.querySelector('input[name="sunting_transaksi"]');
 
-    			if (hakEl) { hakEl.checked = ('' + nilai === '1'); }
+    			if (produk)    { produk.checked    = ('' + a.getAttribute('data-lihat-semua') === '1'); }
+    			if (transaksi) { transaksi.checked = ('' + a.getAttribute('data-sunting-transaksi') === '1'); }
     	}
 
     	$(document).on('change', 'select[name="level"]', function () {
@@ -749,7 +776,7 @@ $js = <<< JS
     		m.value=f,
     		n.value=g,
     		sinkronHintLevel(mP),
-    		sinkronHakProduk(mP, a.getAttribute('data-lihat-semua')),
+    		sinkronHakCs(mP, a),
 
     		$.ajax({
     			method:'GET',

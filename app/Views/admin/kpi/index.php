@@ -7,7 +7,7 @@
  * @var array<string, mixed>                        $s          Saringan: awal, akhir, periode, peran, user_id, juragan_id, juragan_ids
  * @var array<string, array<string, mixed>>         $kartu      Kartu indikator: kunci => [label, nilai, satuan, contoh, tersedia, ...]
  * @var array<string, array<string, mixed>>         $target     Target per indikator: kunci => [target, arah, bobot, aktif]
- * @var list<array<string, mixed>>                  $tren      Baris tren: baki, order, gmv, sla_jam
+ * @var list<array<string, mixed>>                  $tren      Baris tren: baki, order, gmv, lunas
  * @var array<int, string>                          $pegawai    Pilihan karyawan: id => "nama (level)"
  * @var array<int, string>                          $juragans   Pilihan toko: id => nama
  * @var array<string, string>                       $periode    Label periode: kunci => teks
@@ -115,15 +115,12 @@ $akhir_judul   = min($rekap['jumlah'], $halaman * $batas + $batas);
 $label_tren    = json_encode(array_column($tren, 'baki'));
 $order_tren    = json_encode(array_map('intval', array_column($tren, 'order')));
 $gmv_tren      = json_encode(array_map('intval', array_column($tren, 'gmv')));
-$sla_tren      = json_encode(array_map(static fn ($b) => $b['sla_jam'], $tren));
 $nama_banding  = json_encode(array_column($pembanding, 'pegawai'));
 $nilai_banding = json_encode(array_map(static fn ($p) => $p['nilai'], $pembanding));
 
 $judul_banding = [
     'gmv_cs'              => 'GMV per karyawan (Rp)',
     'order_diproses'      => 'Pesanan diproses per karyawan (nota)',
-    'sla_fulfillment'     => 'Rata-rata SLA fulfillment per karyawan (jam, makin kecil makin baik)',
-    'error_void_rate'     => 'Nota dibatalkan karena kesalahan per karyawan (jumlah)',
     'first_response_time' => 'Rata-rata first response time per karyawan (menit, makin kecil makin baik)',
     'konversi_lead'       => 'Lead menjadi order per karyawan (jumlah)',
     'resolution_time'     => 'Rata-rata waktu penyelesaian tindak lanjut (jam, makin kecil makin baik)',
@@ -133,10 +130,6 @@ $judul_banding = [
 $tooltip = [
     'pegawai_dinilai'       => 'Akun Customer Service yang masih aktif.',
     'order_diproses'        => 'Semua nota yang dibuat orang ini pada periode terpilih, sudah lunas maupun belum.',
-    'sla_fulfillment'       => 'Diukur dari pembayaran pertama yang tercatat sampai nota masuk packing atau kirim. Tanggal yang urutannya tidak masuk akal tidak ikut dihitung.',
-    'return_error_rate'     => 'Butuh pencatatan retur beserta alasannya. Kalau form retur belum dipakai, angkanya memang belum ada.',
-    'kecepatan_master_data' => 'Butuh waktu mulai input dan waktu stok masuk. Keduanya belum pernah direkam untuk data lama.',
-    'error_void_rate'       => 'Nota dibatalkan dengan alasan salah input; yang tanpa alasan tidak dianggap kesalahan. Nama pelakunya baru dicatat sejak 9 Oktober 2026.',
     'first_response_time'   => 'Dari pesan masuk pelanggan sampai balasan pertama manusia. Balasan otomatis dan pesan yang gagal kirim tidak dihitung. Satu percakapan dihitung satu kali.',
     'konversi_lead'         => 'Chat baru dari pelanggan yang belum pernah order, lalu jadi order dalam 14 hari.',
     'resolution_time'       => 'Dari tindak lanjut dibuat sampai ditandai selesai. Yang masih menunggu tidak dihitung.',
@@ -292,8 +285,6 @@ $tooltip = [
                         <th scope="col" class="text-end">Order</th>
                         <th scope="col" class="text-end">GMV</th>
                         <th scope="col" class="text-end" title="nota lunas (status pembayaran 5 atau 6)">Lunas</th>
-                        <th scope="col" class="text-end" title="rata-rata jam dari pembayaran terverifikasi ke packing atau kirim">SLA (jam)</th>
-                        <th scope="col" class="text-end" title="nota dihapus karena alasan kesalahan input">Void salah</th>
                         <th scope="col" class="text-end" title="menit sampai balasan manusia pertama per sesi chat">FRT (menit)</th>
                         <th scope="col" class="text-end" title="lead baru yang menjadi order dalam 14 hari">Lead jadi</th>
                         <th scope="col" class="text-end" title="jam dari tindak lanjut dibuat sampai diselesaikan">Selesai (jam)</th>
@@ -302,7 +293,7 @@ $tooltip = [
                 <tbody>
                     <?php if ($rekap['baris'] === []) { ?>
                         <tr>
-                            <td colspan="10" class="text-center text-muted py-4">
+                            <td colspan="8" class="text-center text-muted py-4">
                                 Tidak ada karyawan dengan data pada saringan ini.
                             </td>
                         </tr>
@@ -316,13 +307,6 @@ $tooltip = [
                             <td class="text-end"><?= (int) $b['jumlah_order'] ?></td>
                             <td class="text-end text-nowrap"><?= $rp($b['gmv']) ?></td>
                             <td class="text-end"><?= (int) $b['lunas'] ?></td>
-                            <td class="text-end"><?= $b['sla_jam'] === null ? '&mdash;' : number_format((float) $b['sla_jam'], 1, ',', '.') ?></td>
-                            <td class="text-end">
-                                <?= (int) $b['void_salah'] ?>
-                                <?php if ($b['void_persen'] !== null) { ?>
-                                    <span class="text-muted small">(<?= number_format((float) $b['void_persen'], 1, ',', '.') ?>%)</span>
-                                <?php } ?>
-                            </td>
                             <td class="text-end"><?= $b['frt_menit'] === null ? '&mdash;' : number_format((float) $b['frt_menit'], 1, ',', '.') ?></td>
                             <td class="text-end"><?= (int) $b['lead_jadi'] ?> / <?= (int) $b['lead'] ?></td>
                             <td class="text-end"><?= $b['resolusi'] === null ? '&mdash;' : number_format((float) $b['resolusi'], 1, ',', '.') ?></td>
@@ -355,20 +339,19 @@ $tooltip = [
 <?= $this->section('js') ?>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
 <?php
-// Legenda grafik "Tren" di ponsel: tiga nama seri lengkap + kotak warna default
-// 40px butuh ±333px sedangkan kanvas di 360px cuma 279px, jadi Chart.js
-// menumpuknya jadi tiga baris. Ruangnya dibeli dari bentuk, bukan dari kata:
-// kotak warna 8px, jarak antar butir 8px, teks 9,5px, plus padding kiri-kanan kartu
-// grafik 1,25rem -> 0,5rem (lihat .kpi-kanvas di blok css). Jauhnya warna pertama
-// dari tepi kartu = padding kartu + sisa ruang di dalam kanvas: 8 + 14 = 22px di
-// layar 360px (sebelumnya 4 + 9 = 13px dan ditolak: "terlalu mepet"), 8 + 29 = 37px
-// di 390px. Ketiganya tetap satu baris di 360/390/430px. Desktop: teks legenda
-// dinaikkan 12px -> 14px atas permintaan ("yng di dekstop ukurannya dibuat lebih
-// gede"), kotak 40px + jarak 10px tetap; terukur masih satu baris di 1280/1366/
-// 1440/1600/1920px dengan sisa ruang 13/38/60/94/146px di kiri.
-// Di 320px masih dua baris: butuh kanvas 283px sedangkan yang ada 263px. NAMA SERI TIDAK BOLEH DIPENDEKKAN — user menolak
-// "Nilai transaksi"/"SLA (jam)"/"Order": "penulisanya disesuaikan dengan yang
-// asli jangan engganti nama". Desktop dibiarkan apa adanya (40/10/12).
+// Legenda grafik "Tren" di ponsel: nama seri yang panjang pernah memaksa legenda
+// menumpuk jadi tiga baris, jadi ruangnya dibeli dari bentuk, bukan dari kata:
+// kotak warna 8px, jarak antar butir 8px, teks 9,5px, plus padding kiri-kanan
+// kartu grafik 1,25rem -> 0,5rem (lihat .kpi-kanvas di blok css). Jauhnya warna
+// pertama dari tepi kartu = padding kartu + sisa ruang di dalam kanvas: 8 + 14 =
+// 22px di layar 360px (sebelumnya 4 + 9 = 13px dan ditolak: "terlalu mepet"),
+// 8 + 29 = 37px di 390px. Desktop: teks legenda dinaikkan 12px -> 14px atas
+// permintaan ("yng di dekstop ukurannya dibuat lebih gede"), kotak 40px + jarak
+// 10px tetap; masih satu baris di 1280/1366/1440/1600/1920px.
+// Seri "SLA fulfillment (jam)" ikut dicabut bersama indikator admin, jadi legenda
+// cuma tinggal dua nama; ukuran di atas dibiarkan karena masih dipakai keduanya.
+// NAMA SERI TIDAK BOLEH DIPENDEKKAN — user menolak "Nilai transaksi"/"Order"
+// ditulis ulang: "penulisanya disesuaikan dengan yang asli jangan engganti nama".
 $js = <<< JS
     \$(function() {
         'use strict';
@@ -390,15 +373,6 @@ $js = <<< JS
                         backgroundColor: '#da251d',
                         fill: false,
                         yAxisID: 'y-axis-1'
-                    }, {
-                        label: 'SLA fulfillment (jam)',
-                        type: 'line',
-                        data: {$sla_tren},
-                        borderColor: '#0ea5e9',
-                        backgroundColor: '#0ea5e9',
-                        fill: false,
-                        steppedLine: true,
-                        yAxisID: 'y-axis-2'
                     }, {
                         label: 'Jumlah order',
                         data: {$order_tren},
@@ -426,10 +400,6 @@ $js = <<< JS
                             position: 'right',
                             gridLines: { drawOnChartArea: false },
                             ticks: { beginAtZero: true, callback: function (v) { return 'Rp ' + (v / 1000000).toFixed(0) + ' jt'; } }
-                        }, {
-                            id: 'y-axis-2',
-                            display: false,
-                            ticks: { beginAtZero: true }
                         }]
                     }
                 }

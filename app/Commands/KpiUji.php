@@ -49,10 +49,14 @@ class KpiUji extends BaseCommand
             'id_juragan'
         ));
 
+        // pelaku uji diambil dari akun CS kalau ada: KPI hanya menilai level cs
+        // (LEVEL_PERAN), jadi tiket atau nota yang dibuat akun admin tidak akan
+        // pernah terbaca oleh model dan skenarionya gagal tanpa sebab nyata
         $akun = $this->db->query('SELECT id, username, level FROM ' . $this->table('user')
-            . " WHERE level IN ('admin','superadmin') AND status = 'active' ORDER BY id LIMIT 1")->getRowArray();
+            . " WHERE status = 'active' AND level IN ('cs','admin','superadmin')"
+            . " ORDER BY FIELD(level, 'cs','admin','superadmin'), id LIMIT 1")->getRowArray();
 
-        if ($akun !== null) {
+        if (! empty($akun)) {
             session()->set('id', (int) $akun['id']);
             session()->set('level', $akun['level']);
             session()->set('name', $akun['username']);
@@ -73,15 +77,17 @@ class KpiUji extends BaseCommand
         return $this->gagal > 0 ? 1 : 0;
     }
 
-    /** @return list<array{int, string, string}> */
+    /**
+     * @return list<array{int, string, string}>
+     *
+     * Nomor 1-5 dulu menguji SLA fulfillment, return error rate, dan error/void
+     * rate. Ketiga indikator itu sudah ditarik dari KPI karena mengukur kerja
+     * admin, jadi skenarionya ikut dihapus; penomorannya dibiarkan mengikuti nama
+     * method-nya supaya riwayat uji lamanya masih terbaca.
+     */
     private function daftar(): array
     {
         return [
-            [1, 'paid -> ready to ship ikut SLA', 's1'],
-            [2, 'paid -> shipped ikut SLA', 's2'],
-            [3, 'banyak perubahan status, satu nota dihitung sekali', 's3'],
-            [4, 'retur dengan alasan salah SKU', 's4'],
-            [5, 'beberapa event void, satu transaksi unik', 's5'],
             [6, 'CS menerima pesan lalu membalas', 's6'],
             [7, 'pesan otomatis bukan respons manusia', 's7'],
             [8, 'webhook sama diterima berulang kali', 's8'],
@@ -100,70 +106,6 @@ class KpiUji extends BaseCommand
     // ------------------------------------------------------------------
     // skenario
     // ------------------------------------------------------------------
-
-    private function s1(): string
-    {
-        return $this->ujiSla($this->notaPacking(), 'packing');
-    }
-
-    private function s2(): string
-    {
-        return $this->ujiSla($this->notaKirim(), 'pengiriman');
-    }
-
-    private function s3(): string
-    {
-        $nota = $this->notaBanyakStatus();
-
-        if ($nota === null) {
-            return 'LEWATI|tidak ada nota dengan lebih dari satu baris tahap pengepakan';
-        }
-
-        $ikut = array_values(array_filter($this->slice('sla_fulfillment', $this->sempit($nota)),
-            static fn ($b) => (int) $b['id_invoice'] === (int) $nota['id_invoice']));
-
-        return count($ikut) === 1
-            ? 'OK|nota ' . $nota['id_invoice'] . ' punya ' . $nota['jumlah'] . ' baris status, tetap dihitung satu kali'
-            : 'GAGAL|nota ' . $nota['id_invoice'] . ' muncul ' . count($ikut) . ' kali di daftar SLA';
-    }
-
-    private function s4(): string
-    {
-        $kartu = $this->model->kartu($this->s());
-
-        return $kartu['return_error_rate']['tersedia'] === false
-            ? 'LEWATI|retur beralasan memang belum dicatat, kartu tampil kosong: ' . $kartu['return_error_rate']['alasan']
-            : 'GAGAL|return error rate memberi angka padahal pencatatan retur belum ada';
-    }
-
-    private function s5(): string
-    {
-        $nota = $this->notaTerakhir(20);
-
-        if ($nota === null) {
-            return 'LEWATI|tidak ada nota untuk diuji hapus';
-        }
-
-        $this->db->transStart();
-
-        $this->hapus((int) $nota['id_invoice'], (int) $nota['user_id'], time());
-        $pertama = $this->dalamDaftarVoid((int) $nota['id_invoice']);
-
-        // event kedua pada nota yang sama, tidak boleh membuatnya terhitung dua kali
-        $this->hapus((int) $nota['id_invoice'], (int) $nota['user_id'], time() - 60);
-        $kedua = $this->dalamDaftarVoid((int) $nota['id_invoice']);
-
-        $kartu = $this->model->kartu($this->s())['error_void_rate'];
-
-        $this->db->transRollback();
-
-        if ($pertama !== 1 || $kedua !== 1) {
-            return 'GAGAL|nota ' . $nota['id_invoice'] . ' terhitung ' . $pertama . ' lalu ' . $kedua . ' kali';
-        }
-
-        return 'OK|dua event void pada satu nota tetap satu transaksi unik'
-            . ' (kartu error/void: ' . var_export($kartu['nilai'], true) . ' ' . $kartu['satuan'] . ')';
-    }
 
     private function s6(): string
     {
@@ -401,8 +343,9 @@ class KpiUji extends BaseCommand
             . " COALESCE(SUM(CASE WHEN o.status_pembayaran IN ('5','6')"
             . '   THEN COALESCE(b.barang, 0) + COALESCE(bc.biaya, 0) ELSE 0 END), 0) gmv'
             . ' FROM ' . $in . ' o'
-            . ' JOIN ' . $un . ' u ON u.id = o.user_id AND u.status = \'active\' AND u.deleted_at IS NULL'
-            . " AND u.level IN ('admin','superadmin','cs')"
+            . ' JOIN ' . $un . " u ON u.id = o.user_id AND u.status = 'active' AND u.deleted_at IS NULL"
+            // sama seperti LEVEL_PERAN['semua']: yang dinilai hanya kerja CS
+            . " AND u.level IN ('cs')"
             . ' LEFT JOIN (SELECT invoice_id, SUM(qty * harga) barang FROM ' . $this->table('dibeli') . ' GROUP BY invoice_id) b'
             . ' ON b.invoice_id = o.id_invoice'
             . ' LEFT JOIN (SELECT invoice_id, SUM(nominal) biaya FROM ' . $this->table('biaya') . ' GROUP BY invoice_id) bc'
@@ -413,67 +356,19 @@ class KpiUji extends BaseCommand
         $selisihGmv = round((float) $manual['gmv'] - (float) $kartu['gmv_cs']['nilai'], 2);
         $selisihNota = (int) $manual['nota'] - (int) $kartu['order_diproses']['nilai'];
 
-        // fulfullment dan durasi disaring di WHERE luar: HAVING tidak boleh
-        // menyebut kolom tabel yang di-join di dalam SELECT subquery ini
-        $bati = '9999999999';
-        $sla = $this->db->query('SELECT COUNT(*) contoh, AVG(durasi) rata FROM ('
-            . ' SELECT (LEAST(IFNULL(st.packing, ' . $bati . '), IFNULL(kg.kirim, ' . $bati . '))'
-            . '   - CAST(pb.tanggal_bayar AS SIGNED)) / 3600 durasi,'
-            . ' LEAST(IFNULL(st.packing, ' . $bati . '), IFNULL(kg.kirim, ' . $bati . ')) fu'
-            . ' FROM ' . $in . " o JOIN (SELECT invoice_id, MIN(tanggal_pembayaran) tanggal_bayar FROM "
-            . $this->table('pembayaran') . " WHERE status = '3' GROUP BY invoice_id) pb ON pb.invoice_id = o.id_invoice"
-            . " LEFT JOIN (SELECT invoice_id, MIN(tanggal_masuk) packing FROM " . $this->table('invoice_status')
-            . " WHERE status = '7' GROUP BY invoice_id) st ON st.invoice_id = o.id_invoice"
-            . ' LEFT JOIN (SELECT invoice_id, MIN(tanggal_kirim) kirim FROM ' . $this->table('pengiriman')
-            . ' GROUP BY invoice_id) kg ON kg.invoice_id = o.id_invoice'
-            . " WHERE o.deleted_at IS NULL AND o.status_pembayaran IN ('5','6') AND o.status_pesanan <> '3'"
-            . " AND o.tanggal_pesan BETWEEN '" . $s['awal'] . "' AND '" . $s['akhir'] . "'"
-            . ') x WHERE x.durasi >= 0 AND x.fu < ' . $bati)->getRowArray();
-
-        $selisihSla = round((float) $sla['rata'] - (float) $kartu['sla_fulfillment']['nilai'], 1);
-
         if ($selisihGmv !== 0.0 || $selisihNota !== 0) {
             return 'GAGAL|GMV manual ' . $this->rp((float) $manual['gmv']) . ' vs model '
                 . $this->rp((float) $kartu['gmv_cs']['nilai']) . ' (selisih ' . $this->rp($selisihGmv)
                 . '), nota ' . $manual['nota'] . ' vs ' . $kartu['order_diproses']['nilai'];
         }
 
-        if ((int) $sla['contoh'] !== (int) $kartu['sla_fulfillment']['contoh']
-            || abs($selisihSla) > 0.5) {
-            return 'GAGAL|SLA manual ' . $sla['contoh'] . ' sampel rata ' . $sla['rata']
-                . ' vs model ' . $kartu['sla_fulfillment']['contoh'] . ' sampel rata '
-                . $kartu['sla_fulfillment']['nilai'];
-        }
-
         return 'OK|GMV ' . $this->rp((float) $kartu['gmv_cs']['nilai']) . ' dan ' . $manual['nota']
-            . ' nota cocok; SLA ' . $sla['contoh'] . ' sampel rata-rata ' . $kartu['sla_fulfillment']['nilai']
-            . ' jam cocok dengan query manual';
+            . ' nota cocok dengan query manual';
     }
 
     // ------------------------------------------------------------------
     // pembantu skenario
     // ------------------------------------------------------------------
-
-    private function ujiSla(?array $nota, string $sumber): string
-    {
-        if ($nota === null) {
-            return 'LEWATI|tidak ada nota lunas yang fulfillment-nya lewat ' . $sumber;
-        }
-
-        $baris = $this->cari('sla_fulfillment', $nota);
-
-        if ($baris === null) {
-            return 'GAGAL|nota ' . $nota['id_invoice'] . ' (' . $sumber . ') tidak muncul di daftar SLA';
-        }
-
-        $manual = round(($baris['waktu_fu'] - $baris['waktu_bayar']) / 3600, 1);
-
-        return $this->sama($manual, (float) $baris['durasi_jam'])
-            ? 'OK|nota ' . $nota['id_invoice'] . ' (' . $sumber . '): ' . $manual . ' jam, '
-                . $baris['durasi_jam'] . ' jam oleh model'
-            : 'GAGAL|nota ' . $nota['id_invoice'] . ' (' . $sumber . '): model ' . $baris['durasi_jam']
-                . ' vs manual ' . $manual;
-    }
 
     /** Sampel FRT diambil lalu salah satu syarat balasannya dilonggarkan. */
     private function ubahBalasan(string $kolom, ?string $nilai, string $penjelasan): string
@@ -645,50 +540,6 @@ class KpiUji extends BaseCommand
         return $this->db->prefixTable($nama);
     }
 
-    private function notaPacking(): ?array
-    {
-        return $this->db->query("SELECT o.id_invoice, o.juragan_id, o.tanggal_pesan, o.user_id"
-            . ' FROM ' . $this->table('invoice') . ' o'
-            . " JOIN " . $this->table('invoice_status') . " st ON st.invoice_id = o.id_invoice AND st.status = '7'"
-            . " JOIN " . $this->table('pembayaran') . ' pb ON pb.invoice_id = o.id_invoice AND pb.status = \'3\''
-            . " WHERE o.deleted_at IS NULL AND o.status_pesanan <> '3' AND o.status_pembayaran IN ('5','6')"
-            . ' AND st.tanggal_masuk > pb.tanggal_pembayaran'
-            . ' ORDER BY o.id_invoice DESC LIMIT 1')->getRowArray();
-    }
-
-    private function notaKirim(): ?array
-    {
-        return $this->db->query("SELECT o.id_invoice, o.juragan_id, o.tanggal_pesan, o.user_id"
-            . ' FROM ' . $this->table('invoice') . ' o'
-            . " JOIN " . $this->table('pengiriman') . ' kg ON kg.invoice_id = o.id_invoice'
-            . " JOIN " . $this->table('pembayaran') . ' pb ON pb.invoice_id = o.id_invoice AND pb.status = \'3\''
-            . ' LEFT JOIN ' . $this->table('invoice_status')
-            . " st ON st.invoice_id = o.id_invoice AND st.status = '7'"
-            . " WHERE o.deleted_at IS NULL AND o.status_pesanan <> '3' AND o.status_pembayaran IN ('5','6')"
-            . ' AND st.id_status IS NULL AND kg.tanggal_kirim > pb.tanggal_pembayaran'
-            . ' ORDER BY o.id_invoice DESC LIMIT 1')->getRowArray();
-    }
-
-    private function notaBanyakStatus(): ?array
-    {
-        $row = $this->db->query("SELECT o.id_invoice, o.juragan_id, o.tanggal_pesan, COUNT(*) jumlah"
-            . ' FROM ' . $this->table('invoice') . ' o'
-            . " JOIN " . $this->table('invoice_status') . " st ON st.invoice_id = o.id_invoice AND st.status = '7'"
-            . " JOIN " . $this->table('pembayaran') . ' pb ON pb.invoice_id = o.id_invoice AND pb.status = \'3\''
-            . " WHERE o.deleted_at IS NULL AND o.status_pembayaran IN ('5','6')"
-            . ' GROUP BY o.id_invoice, o.juragan_id, o.tanggal_pesan HAVING COUNT(*) > 1'
-            . ' ORDER BY jumlah DESC LIMIT 1')->getRowArray();
-
-        return $row ?: null;
-    }
-
-    private function notaTerakhir(int $offset): ?array
-    {
-        return $this->db->query('SELECT o.id_invoice, o.juragan_id, o.tanggal_pesan, o.user_id'
-            . ' FROM ' . $this->table('invoice') . ' o WHERE o.deleted_at IS NULL'
-            . ' ORDER BY o.id_invoice DESC LIMIT 1 OFFSET ' . $offset)->getRowArray();
-    }
-
     private function notaLunasTerbaru(): ?array
     {
         return $this->db->query("SELECT o.id_invoice, o.juragan_id, o.tanggal_pesan, o.user_id"
@@ -704,25 +555,6 @@ class KpiUji extends BaseCommand
             . ' WHERE invoice_id = ?), 0) nilai', [$id, $id])->getRowArray();
 
         return (float) ($row['nilai'] ?? 0);
-    }
-
-    private function hapus(int $id, int $oleh, int $waktu): void
-    {
-        $this->db->query('UPDATE ' . $this->table('invoice')
-            . ' SET deleted_at = ?, deleted_by = ?, alasan_batal = ? WHERE id_invoice = ?',
-            [$waktu, $oleh, 'salah_input', $id]);
-    }
-
-    private function dalamDaftarVoid(int $id): int
-    {
-        $isi = $this->db->query('SELECT COUNT(*) j FROM ' . $this->table('invoice')
-            . " WHERE id_invoice = ? AND deleted_at IS NOT NULL AND deleted_by IS NOT NULL AND alasan_batal = 'salah_input'",
-            [$id])->getRowArray();
-
-        $cocok = array_filter($this->slice('error_void_rate', $this->s()),
-            static fn ($b) => (int) $b['id_invoice'] === $id);
-
-        return (int) $isi['j'] === 1 ? count($cocok) : 0;
     }
 
     /** Sesi chat yang balasan manusianya pertama, beserta baris balasannya. */

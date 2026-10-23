@@ -68,24 +68,34 @@ $routes->group('admin', static function ($routes) {
         $routes->get('(:segment)', 'Notifikasi::index/$1');
     });
 
-    $routes->group('invoices', ['filter' => 'auth:admin,superadmin'], static function ($routes) {
-        $routes->get('/', 'Admin\Invoices::lihat', ['as' => 'hal.admin']);
-        $routes->get('tulis', 'Admin\Invoices::tulis');
+    // Transaksi (nota). Layar daftarnya tetap milik admin & superadmin. CS yang
+    // diberi wewenang sunting oleh Superadmin tidak dipindah ke layar admin: dia
+    // membuka daftar transaksinya sendiri (user/invoices) dan hanya jalur tulis
+    // di bawah ini yang ikut terbuka untuknya — sunting nota, status proses,
+    // dan pembayaran tokonya (dijaga filter kelola-transaksi + notaMilikToko).
+    $routes->group('invoices', ['filter' => ['auth:admin,superadmin,cs', 'kelola-transaksi']], static function ($routes) {
         $routes->get('sunting/(:any)', 'Admin\Invoices::sunting/$1');
-        $routes->get('lihat/(:juragan)', 'Admin\Invoices::lihat/$1');
-        $routes->get('lihat/(:juragan)/(:tab)', 'Admin\Invoices::lihat/$1/$2');
-        $routes->get('lihat/(:juragan)/(:tab)/(:segment)', 'Admin\Invoices::lihat/$1/$2/$3');
         $routes->get('info_pembayaran', 'Admin\Invoices::info_pembayaran');
         $routes->get('detail_status/(:any)', 'Admin\Invoices::detail_status/$1');
-        $routes->post('save', 'Admin\Invoices::save');
         $routes->post('update', 'Admin\Invoices::update');
         $routes->post('simpan_pembayaran', 'Admin\Invoices::simpan_pembayaran');
         $routes->post('save_progress', 'Admin\Invoices::save_progress');
         $routes->post('update_bayar', 'Admin\Invoices::update_bayar');
-        $routes->post('hapus_orderan', 'Admin\Invoices::hapus_orderan');
         // pencatatan barang sewaan kembali: dari sinilah nota sewa berhak masuk
         // Selesai, pulih di stok, dan dihitung poinnya
         $routes->post('sewa_kembali', 'Admin\Invoices::sewa_kembali');
+
+        // sisanya: layar daftar dan tulis orderan khusus admin & superadmin,
+        // termasuk menghapus nota (CS cukup melaporkan ke admin)
+        $routes->group('', ['filter' => 'auth:admin,superadmin'], static function ($routes) {
+            $routes->get('/', 'Admin\Invoices::lihat', ['as' => 'hal.admin']);
+            $routes->get('tulis', 'Admin\Invoices::tulis');
+            $routes->get('lihat/(:juragan)', 'Admin\Invoices::lihat/$1');
+            $routes->get('lihat/(:juragan)/(:tab)', 'Admin\Invoices::lihat/$1/$2');
+            $routes->get('lihat/(:juragan)/(:tab)/(:segment)', 'Admin\Invoices::lihat/$1/$2/$3');
+            $routes->post('save', 'Admin\Invoices::save');
+            $routes->post('hapus_orderan', 'Admin\Invoices::hapus_orderan');
+        });
     });
 
     // dasbor: ringkasan transaksi, pembayaran, dan stok
@@ -133,9 +143,16 @@ $routes->group('admin', static function ($routes) {
     // KPI karyawan: angka admin dan CS, dihitung dari jejak kerja yang tercatat
     $routes->group('kpi', ['filter' => 'auth:admin,superadmin'], static function ($routes) {
         $routes->get('/', 'Admin\Kpi::index', ['as' => 'hal.kpi']);
-        // target dipasang sebelum rute detail supaya 'target' tidak dikira indikator
-        $routes->get('target', 'Admin\Kpi::target');
-        $routes->post('target', 'Admin\Kpi::simpanTarget');
+
+        // menentukan target dan bobot khusus Superadmin; admin hanya melihat
+        // ringkasan, ranking, dan detail angkanya. Filter grup bersarang digabung,
+        // jadi admin lolos pagar luar namun dipotong pagar dalam.
+        $routes->group('', ['filter' => 'auth:superadmin'], static function ($routes) {
+            // target dipasang sebelum rute detail supaya 'target' tidak dikira indikator
+            $routes->get('target', 'Admin\Kpi::target');
+            $routes->post('target', 'Admin\Kpi::simpanTarget');
+        });
+
         $routes->get('ranking', 'Admin\Kpi::ranking');
         // (:segment), bukan (:alpha): nama indikator memakai garis bawah (gmv_cs)
         $routes->get('detail/(:segment)', 'Admin\Kpi::detail/$1');
@@ -152,6 +169,9 @@ $routes->group('admin', static function ($routes) {
         // Live Chat WA yang boleh diakses CS: buka + balas + daftarkan lead +
         // ubah/hapus chat, sama seperti superadmin. buat_customer menautkan
         // pelanggan_id ke percakapan, syarat KPI "Konversi lead ke order".
+        // Daftar arsip ikut terbaca di sini (CS boleh melihat isinya); yang
+        // khusus admin hanya aksi memindahkan chat ke/dari arsip, rutenya ada
+        // di grup di bawah.
         $routes->get('chat', 'Admin\Crm::chat');
         $routes->get('chat/percakapan', 'Admin\Crm::chat_percakapan');
         $routes->get('chat/pesan/(:num)', 'Admin\Crm::chat_pesan/$1');
@@ -165,6 +185,9 @@ $routes->group('admin', static function ($routes) {
 
         // selain itu: khusus admin & superadmin
         $routes->group('', ['filter' => 'auth:admin,superadmin'], static function ($routes) {
+            // CS boleh membuka daftar arsip (rutenya ada di atas), tapi hanya
+            // admin & superadmin yang boleh memindahkan chat ke/dari arsip
+            $routes->post('chat/arsip', 'Admin\Crm::chat_arsip');
             $routes->get('/', 'Admin\Crm::index', ['as' => 'hal.crm']);
             $routes->get('chat/webhook_status', 'Admin\Crm::webhook_status');
             $routes->post('chat/webhook_uji', 'Admin\Crm::webhook_uji');
@@ -204,6 +227,13 @@ $routes->group('admin', static function ($routes) {
         $routes->get('/', 'Admin\Settings\Notifikasi::index', ['as' => 'hal.notif_setelan']);
         $routes->post('hapus', 'Admin\Settings\Notifikasi::hapus');
         $routes->post('simpan', 'Admin\Settings\Notifikasi::simpan');
+    });
+
+    // kotak masukan: CS dan Admin mengirim lewat tombol melayang, hanya Superadmin
+    // yang membacanya. Menunya berdiri sendiri di sidebar, jadi rutenya juga tidak
+    // jadi anak grup settings di bawah
+    $routes->group('masukan', ['filter' => 'auth:superadmin'], static function ($routes) {
+        $routes->get('/', 'Admin\Masukan::index', ['as' => 'hal.masukan']);
     });
 
     $routes->group('settings', ['filter' => 'auth:superadmin'], static function ($routes) {

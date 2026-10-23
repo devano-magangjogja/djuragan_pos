@@ -1,3 +1,12 @@
+<?php
+/**
+ * Variabel dari Admin\Settings::index() (di-extract CI4 saat render, jadi tidak ada
+ * assignment yang terlihat oleh analyzer di berkas ini).
+ *
+ * @var string $title          judul halaman
+ * @var int    $jumlah_masukan banyaknya masukan yang masih menunggu dibaca
+ */
+?>
 <?= $this->extend('template/main') ?>
 
 <?= $this->section('content') ?>
@@ -26,6 +35,15 @@
         <div class="col-sm-6 col-md-4">
             <div class="d-grid gap-2 mb-3">
                 <?= anchor('admin/settings/notifikasi', 'Atur Notifikasi', ['class' => 'btn btn-lg btn-outline-dark']) ?>
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-4">
+            <div class="d-grid gap-2 mb-3">
+                <?php /* jalan pintas ke menu Kotak Masukan; angkanya berguna di sini
+                   walau menunya sendiri berdiri di sidebar (rutenya auth:superadmin) */ ?>
+                <?= anchor('admin/masukan', 'Kotak Masukan'
+                    . ($jumlah_masukan > 0 ? ' <span class="badge rounded-pill bg-danger ms-1">' . (int) $jumlah_masukan . '</span>' : ''),
+                    ['class' => 'btn btn-lg btn-outline-dark']) ?>
             </div>
         </div>
     </div>
