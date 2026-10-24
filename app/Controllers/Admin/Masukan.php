@@ -28,31 +28,62 @@ class Masukan extends BaseController
         $cari    = trim((string) ($this->request->getGet('cari') ?? ''));
         $dari    = $this->tanggal('dari');
         $sampai  = $this->tanggal('sampai');
+        $hanya   = (string) $this->request->getGet('prioritas') === '1';
 
         // tanggal dibalik lebih ramah daripada daftar kosong
         if ($dari !== '' && $sampai !== '' && $dari > $sampai) {
             [$dari, $sampai] = [$sampai, $dari];
         }
 
-        $jumlah = $masukan->jumlah($cari, $dari, $sampai);
+        $jumlah = $masukan->jumlah($cari, $dari, $sampai, $hanya);
         $total  = max(1, (int) ceil($jumlah / self::PER_HALAMAN));
 
         // nomor halaman di luar daftar dijepit ke halaman terakhir
         $halaman = min(max(1, (int) ($this->request->getGet('halaman') ?? 1)), $total);
 
         return view('admin/masukan', [
-            'title'   => 'Kotak Masukan',
-            'daftar'  => $masukan->daftar($cari, $dari, $sampai, self::PER_HALAMAN, ($halaman - 1) * self::PER_HALAMAN),
-            'cari'    => $cari,
-            'dari'    => $dari,
-            'sampai'  => $sampai,
-            'jumlah'  => $jumlah,
-            'semua'   => $masukan->jumlah(),
-            'total'   => $total,
-            'halaman' => $halaman,
-            'sukses'  => session('sukses'),
-            'gagal'   => session('gagal'),
+            'title'    => 'Kotak Masukan',
+            'daftar'   => $masukan->daftar($cari, $dari, $sampai, self::PER_HALAMAN, ($halaman - 1) * self::PER_HALAMAN, $hanya),
+            'cari'     => $cari,
+            'dari'     => $dari,
+            'sampai'   => $sampai,
+            'hanya'    => $hanya,
+            'jumlah'   => $jumlah,
+            'semua'    => $masukan->jumlah(),
+            'prioritas' => $masukan->hitungPrioritas(),
+            'total'    => $total,
+            'halaman'  => $halaman,
+            'sukses'   => session('sukses'),
+            'gagal'    => session('gagal'),
         ]);
+    }
+
+    /**
+     * Tandai satu masukan prioritas selesai / buka lagi. Hanya baris prioritas yang
+     * boleh diubah (dijaga di model), jadi masukan biasa tidak punya tombol ini dan
+     * tidak bisa kebetulan tersentuh.
+     */
+    public function toggle($id = '')
+    {
+        $id = substr((string) $id, 0, 6);
+
+        if ($id === '') {
+            return redirect()->to('/admin/masukan')->with('gagal', 'Masukan tidak ditemukan.');
+        }
+
+        $masukan = new FeedbackModel();
+        $baris   = $masukan->find($id);
+
+        if ($baris === null || (int) ($baris->prioritas ?? 0) !== 1) {
+            return redirect()->back()->with('gagal', 'Masukan itu bukan permintaan prioritas.');
+        }
+
+        $selesai = (int) ($baris->selesai ?? 0) === 1 ? false : true;
+        $masukan->tandaiSelesai($id, $selesai);
+
+        return redirect()->back()->with('sukses', $selesai
+            ? 'Permintaan ditandai selesai.'
+            : 'Permintaan dibuka lagi sebagai prioritas.');
     }
 
     /**

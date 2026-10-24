@@ -7,6 +7,35 @@ use CodeIgniter\Config\BaseConfig;
 class JuraganConfig extends BaseConfig
 {
     public $rajaongkir = '75f538ed88e26297a2fabed240ed8bf0'; // ID rajaongkir
+
+    /**
+     * Single Sign-On ke server Presensi eksternal.
+     *
+     * Login selalu dicoba lewat SSO lebih dulu; kalau kredensial ditolak atau
+     * server tidak terjangkau, Auth::index() jatuh ke verifikasi database lokal.
+     * User yang lolos SSO namun belum ada di DB lokal dibuat otomatis (lihat
+     * levelBaru) supaya muncul di daftar pengguna dan bisa ditata superadmin.
+     *
+     * Nilai tiap kunci boleh dioverride dari .env (sso.aktif, sso.endpoint,
+     * sso.api_key, sso.timeout, sso.level_baru); bawaannya array di bawah.
+     *
+     * 'verifikasi' + 'caBundle' mengatur pemeriksaan sertifikat TLS server
+     * Presensi. Windows/dev sering tidak punya CA bundle (php curl.cainfo kosong)
+     * sehingga panggilan SSO gagal "unable to get local issuer certificate" dan
+     * diam-diam jatuh ke login lokal. Untuk produksi idealnya verifikasi=true dan
+     * caBundle menunjuk file cacert.pem; kalau terpaksa, verifikasi=false lewat
+     * .env (sso.verify_ssl=false) sebatas lingkungan terpercaya.
+     */
+    public $sso = [
+        'aktif'      => true,
+        'endpoint'   => 'https://concierge-buffing-overact.ngrok-free.dev/api/auth/verify',
+        'apiKey'     => 'gp0U7DOgtGHSO0uSG0JGrm6v6P5oJM2x',
+        'timeout'    => 10,
+        'levelBaru'  => 'cs',
+        'verifikasi' => true,
+        'caBundle'   => '',
+    ];
+
     public $size       = [
         'atasan' => [
             's'    => 'S',
@@ -62,5 +91,8 @@ class JuraganConfig extends BaseConfig
         '21' => '<i class="fal fa-shipping-fast text-warning"></i> Orderan pada invoice {invoice} dikirim beberapa dulu',
         '22' => '<i class="fal fa-shipping-fast text-success"></i> Orderan pada invoice {invoice} telah dikirimkan',
         '23' => '<i class="fal fa-money-check-edit fa-flip-horizontal"></i> Resi Orderan pada invoice {invoice} telah diubah',
+        // permintaan dari akun CS baru yang belum ditautkan ke juragan mana pun;
+        // sengaja tanpa {invoice} karena permintaannya bukan soal sebuah nota
+        '24' => '<i class="fal fa-user-plus text-danger"></i> {nama} meminta ditautkan ke sebuah juragan',
     ];
 }

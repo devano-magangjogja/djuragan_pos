@@ -34,11 +34,14 @@ $js = <<< JS
     				a.push('');
 
     				$.each(data,function(c,b){
+    					var badge = b.prioritas
+    						? '<span class="badge rounded-pill" style="background:#d92d20;color:#fff;font-size:.68rem;font-weight:700;margin-right:.4rem">Prioritas</span>'
+    						: '';
     					a.push(`<div class="list-group-item list-group-item-action">
     						<div class="d-flex">
     							<div class="me-auto">
     								<div class="text-muted small">`+b.created_at +`</div>
-    								<a class="d-block text-decoration-none" href="`+(b.tautan || '#')+`">`+ b.notif+`</a>
+    								<a class="d-block text-decoration-none" href="`+(b.tautan || '#')+`">`+ badge + b.notif +`</a>
     							</div>
     							<div class="d-flex justify-content-right flex-column actionNotif">
     								<button data-id="`+b.id+`" class="markAs border-0 bg-transparent text-primary small" type="button"><i class="fal fa-circle"></i></button>

@@ -63,6 +63,7 @@ class Notifikasi extends \CodeIgniter\Controller
                 'created_at' => $tanggal->toLocalizedString('EEE, d MMM yyyy (HH:mm:ss)'),
                 'invoice'    => $notif->seri,
                 'juragan'    => $notif->juragan,
+                'prioritas'  => (int) ($notif->prioritas ?? 0) === 1,
                 'tautan'     => tautan_invoice_notif($notif->seri, $notif->juragan),
             ];
         }

@@ -5,7 +5,7 @@
  * bisa menelusuri asal variabelnya; blok @var ini hanya memberi tahu Intelephense.
  *
  * @var string                                             $title         Judul halaman
- * @var list<array{id: int, pesan: string, juragan: ?string, seri: ?string, dibaca: bool, waktu: string, tautan: ?string}> $daftar  Baris notifikasi per halaman
+ * @var list<array{id: int, pesan: string, juragan: ?string, seri: ?string, dibaca: bool, prioritas: bool, waktu: string, tautan: ?string}> $daftar  Baris notifikasi per halaman
  * @var string                                             $tab           Tab aktif: 'belum' atau 'semua'
  * @var int                                                $jumlah_belum  Jumlah notifikasi belum dibaca
  * @var int                                                $jumlah_semua  Total seluruh notifikasi
@@ -126,6 +126,26 @@
     background: #2563eb;
 }
 
+/* baris prioritas ditonjolkan dengan garis kiri merah + badge, selain urutan
+   teratas (NotifikasiModel::ambil mengurutkan prioritas lebih dulu) */
+.notif-baris--prioritas {
+    border-left: 3px solid #d92d20;
+    background: #fef8f8;
+}
+
+.notif-badge-prioritas {
+    display: inline-block;
+    margin-right: 0.4rem;
+    padding: 0.05rem 0.5rem;
+    border-radius: 9999px;
+    background: #d92d20;
+    color: #ffffff;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    vertical-align: middle;
+}
+
 .notif-baris__aksi {
     flex: 0 0 auto;
 }
@@ -206,13 +226,16 @@
             </div>
         <?php else : ?>
             <?php foreach ($daftar as $item) : ?>
-                <div class="notif-baris<?= $item['dibaca'] ? '' : ' notif-baris--baru' ?>">
+                <div class="notif-baris<?= $item['dibaca'] ? '' : ' notif-baris--baru' ?><?= ! empty($item['prioritas']) ? ' notif-baris--prioritas' : '' ?>">
                     <?php if (! $item['dibaca']) : ?>
                         <span class="notif-baris__titik" aria-hidden="true"></span>
                     <?php endif; ?>
 
                     <div class="notif-baris__isi">
                         <div class="notif-baris__pesan">
+                            <?php if (! empty($item['prioritas'])) : ?>
+                                <span class="notif-badge-prioritas">Prioritas</span>
+                            <?php endif; ?>
                             <?php /* teks dari config/JuraganConfig, nomor nota ikut ditautkan */ ?>
                             <?php if ($item['tautan'] !== '') : ?>
                                 <a href="<?= esc($item['tautan']) ?>"><?= $item['pesan'] ?></a>

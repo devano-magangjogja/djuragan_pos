@@ -15,6 +15,17 @@ $isLaporanAktif  = url_is('admin/laporan*');
 $isSettingsAktif = url_is('admin/settings*');
 $isMasukanAktif  = url_is('admin/masukan*');
 
+// badge merah Kotak Masukan: berapa permintaan prioritas yang masih menunggu.
+// Hanya Superadmin yang membaca kotak ini, jadi hitungannya tidak perlu dibuat
+// untuk level lain.
+$masukanPrioritas = 0;
+if ($levelSesi === 'superadmin') {
+    $masukanPrioritas = (new \App\Models\FeedbackModel())->hitungPrioritas();
+}
+
+// badge merah Live Chat WA: berapa pesan yang belum dibaca (belum dibuka)
+$chatBelumDibaca = (new \App\Models\CrmModel())->hitungChatBelumDibaca();
+
 // Submenu Transaksi
 // 'invoices' tetap satu halaman dengan 'cod': yang pertama dipakai untuk orderan
 // yang jadi nota, yang kedua untuk kunjungan customer yang tidak jadi orderan
@@ -230,6 +241,9 @@ if ($levelSesi === 'superadmin') {
                                     <a class="sidebar-submenu-link <?= $aktif ? 'active' : '' ?>" href="<?= site_url($url) ?>">
                                         <i class="fal <?= $ikon ?>"></i>
                                         <span><?= esc($label) ?></span>
+                                        <?php if ($url === 'admin/crm/chat' && $chatBelumDibaca > 0) : ?>
+                                            <span class="badge rounded-pill bg-danger ms-auto" title="<?= (int) $chatBelumDibaca ?> pesan belum dibaca"><?= (int) $chatBelumDibaca ?></span>
+                                        <?php endif; ?>
                                     </a>
                                 </li>
                             <?php endforeach; ?>
@@ -297,6 +311,9 @@ if ($levelSesi === 'superadmin') {
                         <a class="sidebar-link <?= $isMasukanAktif ? 'active' : '' ?>" href="<?= site_url('admin/masukan') ?>">
                             <i class="sidebar-link-icon fal fa-headset"></i>
                             <span>Kotak Masukan</span>
+                            <?php if ($masukanPrioritas > 0) : ?>
+                                <span class="badge rounded-pill bg-danger ms-auto" title="<?= (int) $masukanPrioritas ?> permintaan prioritas menunggu"><?= (int) $masukanPrioritas ?></span>
+                            <?php endif; ?>
                         </a>
                     </li>
                 <?php endif; ?>

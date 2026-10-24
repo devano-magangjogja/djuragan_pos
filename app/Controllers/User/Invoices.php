@@ -3,9 +3,11 @@
 namespace App\Controllers\User;
 
 use App\Controllers\BaseController;
+use App\Models\FeedbackModel;
 use App\Models\FotoModel;
 use App\Models\InvoiceModel;
 use App\Models\JuraganModel;
+use App\Models\NotifikasiModel;
 use App\Models\PembayaranModel;
 use App\Models\PoinPenjualanModel;
 use App\Models\StokModel;
@@ -196,9 +198,12 @@ class Invoices extends BaseController
             // override 404 di Config/Routes.php membuang semua pesan supaya detail internal
             // router tidak terbaca tamu.
             if (empty($juragan->juragan)) {
+                // halaman khusus (tetap berstatus 404) yang menawarkan tombol
+                // "minta ditautkan"; tombol mengirim notifikasi prioritas ke inbox
+                // Superadmin supaya akun baru ini bisa segera dipakai.
                 return response()->setStatusCode(404)->setBody(
-                    view('errors/html/error_page', [
-                        'message' => 'Akun ini belum ditautkan ke juragan mana pun, jadi belum ada orderan yang bisa dibuka. Hubungi admin untuk menautkan akun ke juragan.',
+                    view('user/belum_juragan', [
+                        'title' => 'Akun Belum Ditautkan',
                     ]),
                 );
             }
@@ -401,5 +406,78 @@ class Invoices extends BaseController
 
             return $this->response->setJSON($res);
         }
+    }
+
+    /**
+     * Permintaan dari akun CS yang belum ditautkan ke juragan mana pun.
+     *
+     * Menaruh satu notifikasi PRIORITAS (type 24) di kotak masuk setiap akun
+     * Superadmin aktif, supaya mereka tahu harus segera menautkan akun ini ke
+     * sebuah juragan. juragan_id/invoice_id diisi 0 karena kolomnya NOT NULL dan
+     * permintaan ini tidak menunjuk toko/nota tertentu. Klik berulang tidak
+     * membanjiri inbox: selama masih ada permintaan yang belum dibaca, tidak
+     * dibuat yang baru.
+     */
+    public function minta_juragan()
+    {
+        $user_id = (int) session()->get('id');
+
+        if ($user_id <= 0) {
+            return redirect()->to('/auth');
+        }
+
+        $akun = (new UserModel())->find($user_id);
+
+        if ($akun === null) {
+            return redirect()->to('/user');
+        }
+
+        $superadmin = (new UserModel())
+            ->select('id')
+            ->where('level', 'superadmin')
+            ->where('status', 'active')
+            ->where('deleted_at', null)
+            ->findAll();
+
+        if ($superadmin === []) {
+            return redirect()->to('/user')->with('gagal', 'Belum ada akun Superadmin yang aktif untuk menerima permintaan ini.');
+        }
+
+        // Selalu catat ke Kotak Masukan tiap klik, supaya permintaan tetap muncul
+        // (dan angkanya bertambah) walau diklik lebih dari sekali. Ini tidak boleh
+        // ditaruh di belakang dedup notifikasi: kalau tidak, permintaan susulan yang
+        // masih menunggu balasan jadi hilang dari menu.
+        (new FeedbackModel())->catatPrioritas(
+            (string) ($akun->name ?: $akun->username),
+            'Akun CS "' . (string) $akun->username . '" belum punya juragan dan meminta ditautkan.'
+        );
+
+        // Lonceng tetap di-dedup: cukup satu notifikasi belum dibaca per akun, supaya
+        // klik berulang tidak membanjiri kotak notifikasi Superadmin.
+        $notifikasi = new NotifikasiModel();
+
+        $menunggu = $notifikasi
+            ->where('type', 24)
+            ->where('from', $user_id)
+            ->where('read_at', null)
+            ->countAllResults();
+
+        if ($menunggu === 0) {
+            $waktu = Time::now(config('App')->appTimezone)->timestamp;
+
+            foreach ($superadmin as $s) {
+                $notifikasi->insert([
+                    'juragan_id' => 0,
+                    'from'       => $user_id,
+                    'for'        => (int) $s->id,
+                    'invoice_id' => 0,
+                    'type'       => 24,
+                    'prioritas'  => 1,
+                    'created_at' => $waktu,
+                ]);
+            }
+        }
+
+        return redirect()->to('/user')->with('sukses', 'Permintaan sudah dikirim ke Superadmin. Akun kamu akan segera ditautkan ke juragan.');
     }
 }

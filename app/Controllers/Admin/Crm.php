@@ -1079,6 +1079,10 @@ class Crm extends BaseController
 
         $rows = $builder->get(60)->getResultArray();
 
+        // jumlah bubble 'masuk' yang id-nya melewati pointer last_read_id tiap
+        // percakapan, sekali query (bukan per baris) supaya daftar tetap ringan
+        $unreadMap = $this->petaUnreadChat($rows ? array_column($rows, 'id_percakapan') : []);
+
         $list = [];
         foreach ($rows as $r) {
             $list[] = [
@@ -1090,6 +1094,7 @@ class Crm extends BaseController
                 'pesan_terakhir' => $r['pesan_terakhir'] ?? '',
                 'arah_terakhir'  => $r['arah_terakhir'],
                 'unread_admin'   => (int) $r['unread_admin'],
+                'unread'         => $unreadMap[(int) $r['id_percakapan']] ?? 0,
                 'diarsipkan'     => (int) ($r['diarsipkan'] ?? 0),
                 'waktu'          => !empty($r['waktu_terakhir']) ? date('H:i', (int) $r['waktu_terakhir']) : '',
                 'tanggal'        => !empty($r['waktu_terakhir']) ? date('d/m/Y', (int) $r['waktu_terakhir']) : '',
@@ -1097,6 +1102,39 @@ class Crm extends BaseController
         }
 
         return $this->response->setJSON(['status' => 'success', 'data' => $list]);
+    }
+
+    /**
+     * Peta id_percakapan => jumlah pesan masuk yang belum dibaca (id_pesan di atas
+     * last_read_id). Dipakai badge angka di daftar Live Chat.
+     *
+     * @param list<int|string> $ids
+     * @return array<int, int>
+     */
+    private function petaUnreadChat(array $ids): array
+    {
+        $ids = array_values(array_filter(array_map('intval', $ids)));
+
+        if ($ids === []) {
+            return [];
+        }
+
+        $db   = Database::connect();
+        $pMsg = $db->prefixTable('crm_chat_pesan');
+        $pPrc = $db->prefixTable('crm_chat_percakapan');
+        $in   = implode(',', $ids);
+
+        $baris = $db->query('SELECT pc.id_percakapan, COUNT(m.id_pesan) AS n FROM ' . $pPrc . ' pc'
+            . ' LEFT JOIN ' . $pMsg . " m ON m.percakapan_id = pc.id_percakapan"
+            . " AND m.arah = 'masuk' AND m.id_pesan > pc.last_read_id"
+            . ' WHERE pc.id_percakapan IN (' . $in . ') GROUP BY pc.id_percakapan')->getResultArray();
+
+        $map = [];
+        foreach ($baris as $b) {
+            $map[(int) $b['id_percakapan']] = (int) $b['n'];
+        }
+
+        return $map;
     }
 
     /**
@@ -1135,6 +1173,10 @@ class Crm extends BaseController
         if (!$conv) {
             return $this->response->setJSON(['status' => 'error', 'message' => 'Percakapan tidak ditemukan.']);
         }
+
+        // pointer baca SEBELUM percakapan ini dianggap dibaca; dipakai untuk
+        // menaruh pemisah "N pesan belum dibaca" di thread
+        $unreadStart = (int) ($conv['last_read_id'] ?? 0);
 
         if ($lastId === 0) {
             $db->table('crm_chat_percakapan')->where('id_percakapan', $id_percakapan)->update(['unread_admin' => 0]);
@@ -1190,18 +1232,44 @@ class Crm extends BaseController
             $db->table('crm_chat_percakapan')->where('id_percakapan', $id_percakapan)->update(['unread_admin' => 0]);
         }
 
+        // tandai dibaca: geser pointer ke pesan terbaru percakapan ini (dibuka atau
+        // sedang dipolling selagi terbuka = sudah terlihat)
+        $terbaru = $db->table('crm_chat_pesan')
+            ->select('MAX(id_pesan) AS max_id')
+            ->where('percakapan_id', $id_percakapan)
+            ->get()->getRowArray();
+        $maxId = (int) ($terbaru['max_id'] ?? 0);
+
+        if ($maxId > $unreadStart) {
+            $db->table('crm_chat_percakapan')->where('id_percakapan', $id_percakapan)
+                ->update(['last_read_id' => $maxId]);
+        }
+
+        // jumlah bubble masuk yang belum dibaca saat percakapan pertama dibuka;
+        // polling incremental tidak perlu mengirim ulang hitungan ini
+        $unreadCount = 0;
+        if ($lastId === 0) {
+            foreach ($messages as $m) {
+                if ($m['arah'] === 'masuk' && (int) $m['id_pesan'] > $unreadStart) {
+                    $unreadCount++;
+                }
+            }
+        }
+
         return $this->response->setJSON([
-            'status'      => 'success',
-            'incremental' => $lastId > 0,
-            'percakapan'  => [
+            'status'          => 'success',
+            'incremental'     => $lastId > 0,
+            'unread_start_id' => $lastId === 0 ? $unreadStart : 0,
+            'unread_count'    => $unreadCount,
+            'percakapan'      => [
                 'id'           => (int) $conv['id_percakapan'],
                 'nomor_wa'     => $conv['nomor_wa'],
                 'pelanggan_id' => $conv['pelanggan_id'] ? (int) $conv['pelanggan_id'] : null,
                 'nama_kontak'  => $conv['nama_kontak'] ?: $conv['nomor_wa'],
                 'diarsipkan'   => (int) ($conv['diarsipkan'] ?? 0),
             ],
-            'pelanggan'   => $lastId === 0 ? $pelanggan : null,
-            'messages'    => $messages,
+            'pelanggan'       => $lastId === 0 ? $pelanggan : null,
+            'messages'        => $messages,
         ]);
     }
 

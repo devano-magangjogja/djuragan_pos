@@ -173,6 +173,10 @@
 .fal.fa-key::before {
   content: "\f084";
 } /* key (free)            */
+/* notifikasi prioritas "tautkan akun CS ke juragan" */
+.fal.fa-user-plus::before {
+  content: "\f234";
+} /* user-plus (free)      */
 /* FA6 Free tidak punya glyf "webhook" (Pro only) — dipinjam "link" supaya
    tombol tidak lagi melebar di kiri hanya karena margin ikonnya. */
 .fal.fa-webhook::before {

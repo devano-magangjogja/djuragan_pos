@@ -11,6 +11,8 @@ $isChartAktif = url_is('user/chart*');
 $isProdukAktif = url_is('admin/produk*');
 // live chat WA: CS membuka & membalas chat dari halaman admin yang sama (baca/kirim saja)
 $isChatAktif   = url_is('admin/crm/chat*');
+// badge merah: berapa pesan WA yang belum dibaca (belum dibuka)
+$chatBelumDibaca = (new \App\Models\CrmModel())->hitungChatBelumDibaca();
 ?>
 
 <!-- Topbar khusus layar kecil; di desktop lonceng notifikasi melayang sendiri
@@ -105,6 +107,9 @@ $isChatAktif   = url_is('admin/crm/chat*');
                 <a class="sidebar-link <?= $isChatAktif ? 'active' : '' ?>" href="<?= site_url('admin/crm/chat') ?>">
                     <i class="sidebar-link-icon fal fa-comments"></i>
                     <span>Live Chat WA</span>
+                    <?php if ($chatBelumDibaca > 0) : ?>
+                        <span class="badge rounded-pill bg-danger ms-auto" title="<?= (int) $chatBelumDibaca ?> pesan belum dibaca"><?= (int) $chatBelumDibaca ?></span>
+                    <?php endif; ?>
                 </a>
             </li>
         </ul>

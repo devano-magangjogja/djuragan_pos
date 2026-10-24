@@ -45,15 +45,16 @@ class Notifikasi extends BaseController
                 : '';
 
             $daftar[] = [
-                'id'      => (int) $notif->id_notifikasi,
-                'pesan'   => $pesan,
-                'juragan' => $notif->juragan,
-                'seri'    => $notif->seri,
-                'dibaca'  => $notif->read_at !== null,
-                'waktu'   => Time::createFromTimestamp($notif->created_at)
+                'id'        => (int) $notif->id_notifikasi,
+                'pesan'     => $pesan,
+                'juragan'   => $notif->juragan,
+                'seri'      => $notif->seri,
+                'dibaca'    => $notif->read_at !== null,
+                'prioritas' => (int) ($notif->prioritas ?? 0) === 1,
+                'waktu'     => Time::createFromTimestamp($notif->created_at)
                     ->setTimezone($zona)
                     ->toLocalizedString('EEE, d MMM yyyy HH:mm'),
-                'tautan'  => tautan_invoice_notif($notif->seri, $notif->juragan),
+                'tautan'    => tautan_invoice_notif($notif->seri, $notif->juragan),
             ];
         }
 

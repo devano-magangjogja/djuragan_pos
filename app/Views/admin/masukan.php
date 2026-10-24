@@ -6,12 +6,14 @@
  * dideklarasikan di sini agar analyzer tidak menyangkanya tak terdefinisi).
  *
  * @var string       $title   judul halaman
- * @var list<object> $daftar  masukan pada halaman aktif: [id, nama, isi, created_at]
+ * @var list<object> $daftar  masukan pada halaman aktif: [id, nama, isi, prioritas, selesai, created_at]
  * @var string       $cari    kata kunci pencarian (boleh kosong)
  * @var string       $dari    batas bawah rentang tanggal, Y-m-d (boleh kosong)
  * @var string       $sampai  batas atas rentang tanggal, Y-m-d (boleh kosong)
+ * @var bool         $hanya   sedang menyaring khusus prioritas
  * @var int          $jumlah  banyaknya masukan sesuai saringan aktif
  * @var int          $semua   banyaknya seluruh masukan, tanpa saringan
+ * @var int          $prioritas banyaknya permintaan prioritas yang belum selesai
  * @var int          $total   banyaknya halaman
  * @var int          $halaman nomor halaman aktif (1-based)
  * @var ?string      $sukses
@@ -108,6 +110,33 @@ $tersaring = ($cari !== '' || $dari !== '' || $sampai !== '');
     width: 148px;
     max-width: 46%;
 }
+/* permintaan prioritas: titik merah + garis kiri supaya langsung tertangkap mata,
+   dan redup saat sudah ditandai selesai */
+.masukan-kartu--prioritas {
+    border-left: 3px solid #d92d20;
+}
+.masukan-kartu--selesai {
+    border-left-color: #12b76a;
+    opacity: 0.72;
+}
+.masukan-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 9999px;
+    background: #d92d20;
+}
+.masukan-badge {
+    display: inline-block;
+    padding: 0.05rem 0.5rem;
+    border-radius: 9999px;
+    background: #d92d20;
+    color: #ffffff;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    vertical-align: middle;
+}
 @media (min-width: 768px) {
     .masukan-tanggal {
         max-width: none;
@@ -124,6 +153,11 @@ $tersaring = ($cari !== '' || $dari !== '' || $sampai !== '');
         <div class="d-flex flex-wrap align-items-center gap-2 mt-5 mb-1">
             <h1 class="h5 mb-0"><i class="fal fa-headset text-primary me-1"></i>Kotak Masukan</h1>
             <span class="badge rounded-pill bg-light text-dark border"><?= esc((string) $semua) ?> total</span>
+            <a class="badge rounded-pill text-decoration-none <?= $hanya ? 'bg-danger' : 'border bg-white text-danger' ?>"
+                href="<?= $hanya ? site_url('admin/masukan') : $t(['prioritas' => '1']) ?>"
+                title="Lihat hanya permintaan prioritas">
+                <i class="fal fa-triangle-exclamation"></i> Prioritas: <?= (int) $prioritas ?>
+            </a>
         </div>
 
         <p class="text-muted small mb-3">Kendala dan permintaan fitur dari CS dan Admin.</p>
@@ -172,12 +206,23 @@ $tersaring = ($cari !== '' || $dari !== '' || $sampai !== '');
             </div>
         <?php } else { ?>
             <div class="d-flex flex-column gap-2 mb-4">
-                <?php foreach ($daftar as $m) { $w = $waktu($m->created_at ?? null); ?>
-                    <article class="masukan-kartu">
+                <?php foreach ($daftar as $m) { $w = $waktu($m->created_at ?? null); $prio = (int) ($m->prioritas ?? 0) === 1; $selesai = (int) ($m->selesai ?? 0) === 1; ?>
+                    <article class="masukan-kartu<?= $prio ? ' masukan-kartu--prioritas' : '' ?><?= ($prio && $selesai) ? ' masukan-kartu--selesai' : '' ?>">
                         <div class="d-flex flex-wrap align-items-center gap-2">
+                            <?php if ($prio) : ?>
+                                <span class="masukan-dot" aria-hidden="true"></span>
+                                <span class="masukan-badge">Prioritas</span>
+                            <?php endif; ?>
                             <span class="masukan-orang"><i class="fal fa-user-circle text-primary"></i><?= esc($m->nama) ?></span>
                             <span class="masukan-waktu" title="<?= esc($w['penuh']) ?>"><?= esc($w['lama']) ?></span>
                             <span class="masukan-kode font-monospace ms-auto" title="Nomor pengenal masukan">#<?= esc($m->id) ?></span>
+                            <?php if ($prio) : ?>
+                                <?= form_open('admin/masukan/toggle/' . urlencode((string) $m->id), ['class' => 'd-inline']) ?>
+                                <button type="submit" class="btn btn-sm <?= $selesai ? 'btn-outline-secondary' : 'btn-success' ?>">
+                                    <i class="fal fa-<?= $selesai ? 'rotate-left' : 'check' ?>"></i> <?= $selesai ? 'Buka lagi' : 'Tandai selesai' ?>
+                                </button>
+                                <?= form_close() ?>
+                            <?php endif; ?>
                         </div>
                         <p class="masukan-isi"><?= esc($m->isi) ?></p>
                     </article>
