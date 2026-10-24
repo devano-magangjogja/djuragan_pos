@@ -20,6 +20,11 @@ $ongkir   = new Ongkir();
 $sekarang = new Time('now');
 $session  = \Config\Services::session();
 
+// Halaman sunting juga dipakai CS yang diberi wewenang oleh Superadmin. Dia tidak
+// dipindah ke layar Admin: navbar dan daftar transaksi yang ia tuju tetap punyanya
+// sendiri, hanya formulir nota ini yang sama.
+$layarAdmin = in_array($session->get('level'), ['admin', 'superadmin'], true);
+
 $orderan  = $pesanan[0];
 $juragan  = $orderan->juragan;
 $pengguna = $orderan->pengguna;
@@ -28,19 +33,102 @@ $kirimKe  = $orderan->kirimKe;
 $dibeli   = $orderan->barang;
 $biaya    = $orderan->biaya;
 
+// pembuat nota sekarang; 0 kalau akunnya sudah tidak ada di tabel pengguna
+$id_pengguna = (int) ($pengguna->id ?? 0);
+
+// CS tidak memilih Admin/CS: penanggung jawab nota sudah sepaket dengan toko yang
+// ia pegang, jadi pembuatnya dipertahankan lewat isian tersembunyi. Tanpa isian ini
+// update() akan mengosongkan user_id nota begitu saja.
+$isian_tersembunyi = ['id_invoice' => $orderan->id_invoice];
+
+if (! $layarAdmin) {
+    $isian_tersembunyi['pengguna'] = (string) $id_pengguna;
+}
+
 $rincian_pesanan = baca_rincian($orderan->rincian);
 ?>
 
 <?= $this->extend('template/main') ?>
 
+<?= $this->section('css') ?>
+<style>
+    /* Responsif modal Tambah/Edit Orderan saat ukuran Custom dipilih:
+       Tampilannya dibuat setengah tinggi layar (50vh), posisi pas di tengah-tengah
+       layar (centered), dan isinya bisa digulir sampai isian terakhir serta tombol simpan.
+       Hanya berlaku untuk layar responsif (mobile / tablet kecil). */
+    @media (max-width: 767.98px) {
+        #tambahProduk.is-custom-modal .modal-dialog {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: calc(100% - 1rem);
+            min-height: calc(100dvh - 1rem);
+            margin: 0.5rem auto;
+            padding: 0 0.5rem;
+        }
+
+        #tambahProduk.is-custom-modal .modal-content {
+            height: 50vh;
+            height: 50dvh;
+            max-height: 50vh;
+            max-height: 50dvh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border-radius: 0.85rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25), 0 8px 10px -6px rgba(0, 0, 0, 0.2);
+        }
+
+        #tambahProduk.is-custom-modal .modal-header {
+            flex-shrink: 0;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        #tambahProduk.is-custom-modal #nambahProduk {
+            display: flex;
+            flex-direction: column;
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        #tambahProduk.is-custom-modal .modal-body {
+            flex: 1 1 auto;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+            padding: 0.85rem 1rem 1.5rem 1rem;
+            scrollbar-width: thin;
+        }
+
+        #tambahProduk.is-custom-modal .modal-footer {
+            flex-shrink: 0;
+            padding: 0.6rem 1rem;
+            border-top: 1px solid #e2e8f0;
+            background: #fff;
+        }
+    }
+
+    @media (max-width: 767.98px) and (max-height: 550px) {
+        #tambahProduk.is-custom-modal .modal-content {
+            height: 85vh;
+            height: 85dvh;
+            max-height: 85vh;
+            max-height: 85dvh;
+        }
+    }
+</style>
+<?= $this->endSection() ?>
+
 <?= $this->section('content') ?>
-<?= $this->include('admin/navbar') ?>
+<?= $this->include($layarAdmin ? 'admin/navbar' : 'user/navbar') ?>
 
 <div class="container-xxl">
 
     <h1 class="h3 mt-5"><?= esc($title) ?></h1>
 
-    <?= form_open('admin/invoices/update', ['class' => 'row mb-5', 'id' => 'iForm'], ['id_invoice' => $orderan->id_invoice]); ?>
+    <?= form_open('admin/invoices/update', ['class' => 'row mb-5', 'id' => 'iForm'], $isian_tersembunyi); ?>
     <div class="col-12 col-lg-6 mb-3">
 
         <div class="h-full rounded-kartu border border-ink-200 bg-white shadow-kartu">
@@ -55,10 +143,12 @@ $rincian_pesanan = baca_rincian($orderan->rincian);
                             <?= form_label('Juragan', 'juragan', ['class' => 'form-label']); ?>
                             <?= form_dropdown('juragan', ['' => 'Pilih Juragan'], '', ['class' => 'form-select', 'id' => 'juragan', 'required' => '']); ?>
                         </div>
-                        <div class="col">
-                            <?= form_label('Admin/CS', 'pengguna', ['class' => 'form-label']); ?>
-                            <?= form_dropdown('pengguna', ['' => 'Pilih Admin/CS'], '', ['class' => 'form-select', 'id' => 'pengguna', 'required' => '']); ?>
-                        </div>
+                        <?php if ($layarAdmin) : ?>
+                            <div class="col">
+                                <?= form_label('Admin/CS', 'pengguna', ['class' => 'form-label']); ?>
+                                <?= form_dropdown('pengguna', ['' => 'Pilih Admin/CS'], '', ['class' => 'form-select', 'id' => 'pengguna', 'required' => '']); ?>
+                            </div>
+                        <?php endif; ?>
                     </div>
                     <div class="row gx-2">
                         <div class="col">
@@ -638,16 +728,16 @@ $rincian_pesanan = baca_rincian($orderan->rincian);
             <?= form_open('', ['id' => 'nambahProduk']); ?>
             <div class="modal-body">
                 <?= stok_panel_form() ?>
-                <div class="row gx-2">
-                    <div class="col col-sm-6 col-md-3">
+                <div class="row gx-2 gy-2">
+                    <div class="col-6 col-sm-6 col-md-3">
                         <?= form_label('Kode Produk', 'kode_produk', ['class' => 'form-label']); ?>
                         <?= form_input(['name' => 'kode_produk', 'id' => 'kode_produk', 'class' => 'form-control', 'required' => '', 'placeholder' => 'cth: ' . random_element(['SK-45', 'BK-01', 'Z-01'])]); ?>
                     </div>
-                    <div class="col col-sm-6 col-md-3">
+                    <div class="col-6 col-sm-6 col-md-3">
                         <?= form_label('Harga Satuan', 'harga_satuan', ['class' => 'form-label']); ?>
                         <?= form_input(['name' => 'harga_satuan', 'min' => '0', 'id' => 'harga_satuan', 'class' => 'form-control', 'required' => '', 'placeholder' => 'cth: ' . random_element(['225000', '280000', '295000', '320000']), 'type' => 'number']); ?>
                     </div>
-                    <div class="col col-sm-6 col-md-3">
+                    <div class="col-6 col-sm-6 col-md-3">
                         <?= form_label('Ukuran', 'ukuran', ['class' => 'form-label']); ?>
                         <?= '<select name="ukuran" class="form-select" id="ukuran" required="">';
                         echo '<option value="" disabled="" selected="">Pilih ukuran</option>';
@@ -664,7 +754,7 @@ $rincian_pesanan = baca_rincian($orderan->rincian);
                         echo '</select>';
                         ?>
                     </div>
-                    <div class="col col-sm-6 col-md-3">
+                    <div class="col-6 col-sm-6 col-md-3">
                         <?= form_label('QTY', 'QTY', ['class' => 'form-label']); ?>
                         <?= form_input(['name' => 'QTY', 'id' => 'QTY', 'class' => 'form-control', 'required' => '', 'placeholder' => 'cth: ' . mt_rand(1, 20), 'type' => 'number', 'min' => '1']); ?>
                     </div>
@@ -741,9 +831,12 @@ $link_api_kota           = site_url('rajaongkir/kota');
 $link_api_pengguna       = site_url('api/juragan/get_users/');
 $link_api_provinsi       = site_url('rajaongkir/provinsi');
 $link_cari_pelanggan     = site_url('pelanggan/cari');
-$link_invoice            = site_url('admin/invoices/lihat/');
+$link_invoice            = site_url($layarAdmin ? 'admin/invoices/lihat/' : 'user/invoices/lihat/');
 $link_post_pelanggan     = site_url('pelanggan/baru');
 $link_data_pelanggan     = rtrim(site_url('pelanggan/data'), '/') . '/';
+
+// daftar "Semua Juragan" hanya ada di layar admin: rute CS menuntut slug toko asli
+$semua_toko              = $layarAdmin ? 'true' : 'false';
 
 ?>
 <script>
@@ -773,7 +866,7 @@ $js = <<< JS
                     // akun yang cuma pegang satu toko tidak perlu memilih
                     var ada = 0;
                     $.each(b[id].juragan, function() { ada++; });
-                    if (ada > 1) {
+                    if (ada > 1 && {$semua_toko}) {
                         a.push('<a class="list-group-item text-light list-group-item-action" href="{$link_invoice}semua"><i class="fal fa-user-circle"></i> Semua Juragan</a>');
                     }
 
@@ -841,12 +934,16 @@ $js = <<< JS
 
     	// load admin/cs
     	// embed langsung ke form select - dropdown
-    	$.getJSON('{$link_api_pengguna}', { id: {$current_user_id} }, function(a){
-    		$.each(a,function(b,a){
-    			$('<option />',{value:a.id,text:a.nama}).appendTo($('select[name="pengguna"]'));
+    	// khusus layar Admin: CS tidak memilih Admin/CS, pembuat nota sudah tetap
+    	// lewat isian tersembunyi, jadi daftar ini tidak perlu diambil sama sekali
+    	if ($('select[name="pengguna"]').length) {
+    		$.getJSON('{$link_api_pengguna}', { id: {$current_user_id} }, function(a){
+    			$.each(a,function(b,a){
+    				$('<option />',{value:a.id,text:a.nama}).appendTo($('select[name="pengguna"]'));
+    			});
+    			$('select[name="pengguna"]').val('{$id_pengguna}'); // set selected pengguna
     		});
-    		$('select[name="pengguna"]').val('{$pengguna->id}'); // set selected pengguna
-    	});
+    	}
 
     	// set selected sumber orderan
     	$('select[name="asal_orderan"]').val('{$orderan->source->id}');
@@ -1274,6 +1371,7 @@ $js = <<< JS
     	$('#ukuran').on('change', function() {
     		var custom = $(this).val() === 'custom';
     		$('#customDetail').toggleClass('d-none', !custom);
+    		$('#tambahProduk').toggleClass('is-custom-modal', custom);
     		if (!custom) {
     			$('#customDetail .ri-field').val('');
     			// panel yang tersembunyi tetap terbaca waktu baris dikirim,
@@ -1543,6 +1641,7 @@ $js = <<< JS
     	mPro.addEventListener('hidden.bs.modal',function(){
     		var a=$('#nambahProduk');
     		a.removeClass('was-validated')[0].reset();
+    		$('#tambahProduk').removeClass('is-custom-modal');
     		$('#customDetail').addClass('d-none');
     		$('#ukuranModal .uk-field').val('');
     		UKURAN.kosongkan('#ukuranModal');

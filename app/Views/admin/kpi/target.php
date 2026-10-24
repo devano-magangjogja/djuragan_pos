@@ -14,17 +14,15 @@
  * analyzer, bukan kode yang dijalankan.
  *
  * @var array  $target   daftar indikator: [['indikator','nama','peran','arah','satuan','target','bobot','aktif','definisi','aturan','updated_at','updated_by'], ...]
- * @var bool   $boleh    pengguna boleh mengubah target (admin/superadmin)
+ * @var bool   $boleh    pengguna boleh mengubah target; khusus Superadmin (admin
+ *                       sudah dibelokkan ke Ringkasan oleh Kpi::target(), jadi
+ *                       mode baca di bawah ini cuma cadangan kalau rutenya berubah)
  * @var string $kabar    pesan flash hasil simpan, kosong jika tidak ada
  * @var array  $pembaru  [user_id => nama] untuk mencantumkan siapa yang mengubah
  */
 
 /** Bahasa sehari-hari per indikator, tanpa istilah teknis. */
 $sederhana = [
-    'sla_fulfillment'       => 'Rata-rata lama pesanan disiapkan setelah dibayar.',
-    'return_error_rate'     => 'Berapa persen pesanan diretur karena salah input.',
-    'kecepatan_master_data' => 'Rata-rata waktu untuk memasukkan barang baru.',
-    'error_void_rate'       => 'Berapa persen nota dibatalkan karena salah input.',
     'first_response_time'   => 'Berapa lama pelanggan menunggu balasan pertama.',
     'konversi_lead'         => 'Berapa persen chat baru yang jadi order.',
     'resolution_time'       => 'Berapa lama komplain sampai benar-benar selesai.',
@@ -154,7 +152,7 @@ $isi = static function ($nilai, string $satuan): string {
 
     <?php if (! $boleh) { ?>
         <p class="alert alert-light border small">
-            Halaman ini untuk admin dan superadmin. Akun Anda hanya boleh membaca target yang berlaku.
+            Hanya Superadmin yang boleh menentukan target dan bobot. Akun Anda hanya bisa membaca angka yang berlaku.
         </p>
     <?php } ?>
 

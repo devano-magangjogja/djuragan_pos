@@ -253,9 +253,18 @@
         padding: 0.5rem 0.6rem !important;
     }
 }
-/* tombol filter segmen boleh turun baris, tidak mendorong tabel ke samping */
+/* tombol filter segmen boleh turun baris, tidak mendorong tabel ke samping.
+   btn-group bawaan Bootstrap menempelkan tombol-tombolnya (margin-left: -1px
+   dan hanya sudut terluar yang dibulatkan), jadi kedua tombol terlihat menyatu.
+   Di sini jarak antar tombol dikembalikan dan tiap tombol dibulatkan sendiri
+   supaya terbaca sebagai dua pilihan terpisah, termasuk saat turun baris. */
 .fup-segmen {
     flex-wrap: wrap;
+    gap: 0.5rem;
+}
+.fup-segmen > .btn {
+    margin-left: 0 !important;
+    border-radius: 0.375rem !important;
 }
 /* Kelas .cari-merged (kotak cari satu kolom) sekarang ada di style.css karena
    dipakai juga oleh halaman Pengiriman. */

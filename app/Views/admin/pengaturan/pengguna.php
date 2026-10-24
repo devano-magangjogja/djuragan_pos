@@ -52,6 +52,50 @@ $per_halaman = (int) config('Pager')->perPage;
 .sandi-merged .sandi-lihat:hover {
     color: #101828;
 }
+/* Lebar kolom cari pengguna. Dulu inline style="width:18rem"; dipindah ke sini
+   supaya di ponsel bisa dilenturkan (inline style kalah oleh !important, kelas
+   tidak). */
+.cari-pengguna {
+    width: 18rem;
+}
+@media (max-width: 767.98px) {
+    /* Tombol "Tambah Pengguna" di ponsel tinggal ikon dan harus duduk SEBELAH
+       kolom cari: yang menyerap sisa ruang adalah kolom carinya, bukan tombolnya */
+    .cari-pengguna {
+        flex: 1 1 auto;
+        width: auto;
+        min-width: 0;
+    }
+    /* Popus tambah / sunting pengguna memakan 93% tinggi layar (747px di
+       360x800, sisa 27px saja di atas dan bawah) sehingga terasa terlalu
+       panjang. Dibatasi 70vh — dialog-nya sudah modal-dialog-scrollable, jadi
+       yang bergulir adalah body-nya dan header + tombol tetap kelihatan. */
+    #modalTambahPengguna .modal-content,
+    #modalSuntingPengguna .modal-content {
+        max-height: 70vh;
+    }
+    /* jarak dalam body ikut dipangkas: 16px -> 12px atas-bawah */
+    #modalTambahPengguna .modal-body,
+    #modalSuntingPengguna .modal-body {
+        padding-top: 0.75rem;
+        padding-bottom: 0.75rem;
+    }
+    /* Jarak antar isian ikut dipangkas supaya popusnya benar-benar lebih pendek,
+       bukan cuma dimasukkan ke dalam guliran. .mb-3/.my-4 Bootstrap !important. */
+    #modalTambahPengguna .modal-body > .mb-3,
+    #modalSuntingPengguna .modal-body > .mb-3 {
+        margin-bottom: 0.625rem !important;
+    }
+    #modalTambahPengguna .modal-body > h6,
+    #modalSuntingPengguna .modal-body > h6 {
+        margin-bottom: 0.5rem !important;
+    }
+    #modalTambahPengguna .modal-body > hr,
+    #modalSuntingPengguna .modal-body > hr {
+        margin-top: 0.75rem !important;
+        margin-bottom: 0.75rem !important;
+    }
+}
 </style>
 <?= $this->endSection() ?>
 
@@ -79,13 +123,14 @@ $per_halaman = (int) config('Pager')->perPage;
 
     <div class="card mb-5">
         <div class="card-header d-flex flex-wrap align-items-center gap-2">
-            <div class="cari-merged" style="width: 18rem">
+            <div class="cari-merged cari-pengguna">
                 <span class="cari-ikon"><i class="fal fa-search"></i></span>
                 <input type="search" class="form-control form-control-sm" id="cariPengguna" placeholder="nama, username, email, level" autocomplete="off">
             </div>
-            <span class="text-muted small ms-auto" id="jumlahPengguna">memuat ...</span>
-            <button type="button" class="btn btn-sm btn-dark" data-bs-toggle="modal" data-bs-target="#modalTambahPengguna">
-                <i class="fal fa-user-plus"></i> Tambah Pengguna
+            <span class="text-muted small ms-auto d-none d-md-block jumlah-pengguna">memuat ...</span>
+            <button type="button" class="btn btn-sm btn-dark" data-bs-toggle="modal" data-bs-target="#modalTambahPengguna"
+                aria-label="Tambah Pengguna" title="Tambah Pengguna">
+                <i class="fal fa-user-plus"></i><span class="d-none d-md-inline"> Tambah Pengguna</span>
             </button>
         </div>
         <div class="card-body">
@@ -102,6 +147,9 @@ $per_halaman = (int) config('Pager')->perPage;
                     <tbody id="listUsers"></tbody>
                 </table>
             </div>
+            <!-- versi ponsel: jumlah pengguna turun ke bawah, tepat di atas
+                 pagination; yang di kepala kartu hanya tampil di >=768px -->
+            <div class="small text-muted text-end d-md-none jumlah-pengguna mt-2">memuat ...</div>
             <div id="pagPengguna" data-per-halaman="<?= $per_halaman ?>"></div>
         </div>
     </div>
@@ -243,7 +291,7 @@ $per_halaman = (int) config('Pager')->perPage;
                 </div>
                 <?php /* hak baca lintas toko: khusus CS, dipilih Superadmin. Tanpa hak
                    ini katalog CS hanya berisi juragan yang disematkan ke akunnya. */ ?>
-                <div class="form-check mb-3" data-hak-produk>
+                <div class="form-check mb-2" data-hak-cs data-hak-produk>
                     <?= form_checkbox([
                         'name'    => 'lihat_semua_produk',
                         'id'      => 'lihatSemuaProduk',
@@ -253,6 +301,19 @@ $per_halaman = (int) config('Pager')->perPage;
                     ]); ?>
                     <?= form_label('Boleh melihat katalog produk semua juragan', 'lihatSemuaProduk', ['class' => 'form-check-label']); ?>
                     <div class="form-text">Khusus CS: tanpa hak ini, katalog yang terlihat hanya dari juragan yang disematkan ke akun ini.</div>
+                </div>
+                <?php /* hak sunting transaksi: khusus CS, dipilih Superadmin. Yang
+                   diberi hak membuka Tracking Transaksi miliknya Admin untuk nota
+                   toko yang tertaut ke akunnya. */ ?>
+                <div class="form-check mb-3" data-hak-cs data-hak-transaksi>
+                    <?= form_checkbox([
+                        'name'    => 'sunting_transaksi',
+                        'id'      => 'suntingTransaksi',
+                        'value'   => '1',
+                        'class'   => 'form-check-input',
+                        'checked' => ($isi('sunting_transaksi') === '1'),
+                    ]); ?>
+                    <?= form_label('Boleh menyunting transaksi (mirip Admin)', 'suntingTransaksi', ['class' => 'form-check-label']); ?>
                 </div>
             </div>
             <div class="modal-footer">
@@ -344,7 +405,7 @@ $per_halaman = (int) config('Pager')->perPage;
                     <div class="form-text">klik untuk memilih, boleh lebih dari satu.</div>
                     <div class="form-text text-danger d-none" data-hint-cs>Level CS wajib punya minimal satu juragan.</div>
                 </div>
-                <div class="form-check mb-3" data-hak-produk>
+                <div class="form-check mb-2" data-hak-cs data-hak-produk>
                     <?= form_checkbox([
                         'name'  => 'lihat_semua_produk',
                         'id'    => 'lihatSemuaProduk_',
@@ -353,6 +414,15 @@ $per_halaman = (int) config('Pager')->perPage;
                     ]); ?>
                     <?= form_label('Boleh melihat katalog produk semua juragan', 'lihatSemuaProduk_', ['class' => 'form-check-label']); ?>
                     <div class="form-text">Khusus CS: tanpa hak ini, katalog yang terlihat hanya dari juragan yang disematkan ke akun ini.</div>
+                </div>
+                <div class="form-check mb-3" data-hak-cs data-hak-transaksi>
+                    <?= form_checkbox([
+                        'name'  => 'sunting_transaksi',
+                        'id'    => 'suntingTransaksi_',
+                        'value' => '1',
+                        'class' => 'form-check-input',
+                    ]); ?>
+                    <?= form_label('Boleh menyunting transaksi (mirip Admin)', 'suntingTransaksi_', ['class' => 'form-check-label']); ?>
                 </div>
 
             </div>
@@ -532,7 +602,8 @@ $js = <<< JS
     			+ '<button type="button" class="btn btn-sm btn-outline-secondary me-1" title="Sunting ' + aman(u.nama) + '" aria-label="Sunting ' + aman(u.nama) + '" data-bs-toggle="modal" data-bs-target="#modalSuntingPengguna"'
     			+ ' data-id="' + aman(u.id) + '" data-nama="' + aman(u.nama) + '" data-email="' + aman(u.email) + '"'
     			+ ' data-username="' + aman(u.username) + '" data-level="' + aman(u.level) + '" data-status="' + aman(u.status) + '"'
-    			+ ' data-lihat-semua="' + aman(u.lihat_semua_produk || 0) + '"><i class="fal fa-pencil"></i></button>'
+    			+ ' data-lihat-semua="' + aman(u.lihat_semua_produk || 0) + '"'
+    			+ ' data-sunting-transaksi="' + aman(u.sunting_transaksi || 0) + '"><i class="fal fa-pencil"></i></button>'
     			+ '<button type="button" class="btn btn-sm btn-outline-danger" title="Hapus ' + aman(u.nama) + '" aria-label="Hapus ' + aman(u.nama) + '"><i class="fal fa-trash"></i></button>'
     			+ '</td></tr>';
     	}
@@ -587,10 +658,12 @@ $js = <<< JS
     		if (isi.length === 0) {
     			$('#listUsers').html('<tr><td colspan="4" class="text-center text-muted py-4">Tidak ada pengguna yang cocok'
     				+ (kunciCari !== '' ? ' dengan "' + aman($.trim(kunciCari)) + '"' : '') + '.</td></tr>');
-    			$('#jumlahPengguna').text('0 pengguna');
+    			// dua salinan (kepala kartu di desktop, di atas pager di ponsel)
+    			// selalu diisi bersamaan
+    			$('.jumlah-pengguna').text('0 pengguna');
     		} else {
     			$('#listUsers').html(baris.join(''));
-    			$('#jumlahPengguna').text((mulai + 1) + '-' + (mulai + isi.length) + ' dari ' + hasil.length + ' pengguna');
+    			$('.jumlah-pengguna').text((mulai + 1) + '-' + (mulai + isi.length) + ' dari ' + hasil.length + ' pengguna');
     		}
 
     		gambarHalaman(hasil.length, terakhir);
@@ -622,23 +695,27 @@ $js = <<< JS
     			$(this).find('i').attr('class', 'fal ' + (tampil ? 'fa-eye-slash' : 'fa-eye'));
     	});
 
-    	// aturan wajib juragan hanya berlaku untuk level cs, hint-nya ikut disembunyikan
+    	// aturan level cs: hint wajib juragan dan kedua kotak wewenang hanya
+    	// ditampilkan untuk akun CS
     	function sinkronHintLevel(popup) {
     			var opsi = popup.querySelector('select[name="level"]');
     			var hint = popup.querySelector('[data-hint-cs]');
-    			var hak  = popup.querySelector('[data-hak-produk]');
+    			var hak  = popup.querySelectorAll('[data-hak-cs]');
     			var isCs = !!opsi && opsi.value === 'cs';
 
     			if (hint) { hint.classList.toggle('d-none', ! isCs); }
-    			if (hak)  { hak.classList.toggle('d-none', ! isCs); }
+
+    			hak.forEach(function (el) { el.classList.toggle('d-none', ! isCs); });
     	}
 
-    // kotak centang hak "lihat semua produk" diisi dari baris pengguna saat popup
-    // sunting dibuka; checkbox tidak ikut ternilai lewat value= biasa
-    function sinkronHakProduk(popup, nilai) {
-    			var hakEl = popup.querySelector('input[name="lihat_semua_produk"]');
+    // kedua kotak wewenang CS diisi dari baris pengguna saat popup sunting dibuka;
+    // checkbox tidak ikut ternilai lewat value= biasa
+    	function sinkronHakCs(popup, a) {
+    			var produk = popup.querySelector('input[name="lihat_semua_produk"]');
+    			var transaksi = popup.querySelector('input[name="sunting_transaksi"]');
 
-    			if (hakEl) { hakEl.checked = ('' + nilai === '1'); }
+    			if (produk)    { produk.checked    = ('' + a.getAttribute('data-lihat-semua') === '1'); }
+    			if (transaksi) { transaksi.checked = ('' + a.getAttribute('data-sunting-transaksi') === '1'); }
     	}
 
     	$(document).on('change', 'select[name="level"]', function () {
@@ -699,7 +776,7 @@ $js = <<< JS
     		m.value=f,
     		n.value=g,
     		sinkronHintLevel(mP),
-    		sinkronHakProduk(mP, a.getAttribute('data-lihat-semua')),
+    		sinkronHakCs(mP, a),
 
     		$.ajax({
     			method:'GET',

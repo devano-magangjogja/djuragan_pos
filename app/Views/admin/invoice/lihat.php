@@ -27,6 +27,11 @@ $pager    = \Config\Services::pager();
 $sekarang = new Time('now');
 $session  = \Config\Services::session();
 
+// Menilai apakah dana yang masuk benar-benar ada adalah keputusan pemilik toko,
+// jadi hanya Superadmin yang boleh mengecek pembayaran. Tombol "Cek Pembayaran"
+// sendiri tetap ada untuk semua orang: yang dibatasi cuma aksi penilaiannya.
+$cekBayar = ((string) $session->get('level')) === 'superadmin';
+
 ?>
 <?= $this->extend('template/main') ?>
 
@@ -673,6 +678,7 @@ $session  = \Config\Services::session();
                                                 'content'        => '<i class="fal fa-info-circle"></i> <span class="sr-only">info</span>',
                                                 'data-invoice'   => $pesanan->id_invoice,
                                                 'data-juragan'   => $pesanan->juragan_id,
+                                                'data-seri'      => $pesanan->seri,
                                                 'data-bs-target' => '#modalBayar',
                                                 'data-bs-toggle' => 'modal',
                                                 'style'          => 'border:none; background:transparent',
@@ -1059,20 +1065,47 @@ $session  = \Config\Services::session();
     </div>
 </div>
 
-<!-- Modal cek pembayaran -->
+<!-- Modal riwayat pembayaran -->
 <div class="modal fade" id="modalBayar" tabindex="-1" aria-labelledby="modalBayarLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="modalBayarLabel">Info Pembayaran</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="d-flex align-items-center gap-3 min-w-0">
+                    <span class="bayar-ikon"><i class="fal fa-wallet"></i></span>
+                    <div class="min-w-0">
+                        <h5 class="modal-title mb-0" id="modalBayarLabel">Riwayat Pembayaran</h5>
+                        <div class="small text-muted" id="bayarSeri"></div>
+                    </div>
+                </div>
+                <button type="button" class="btn-close ms-auto flex-shrink-0" data-bs-dismiss="modal" aria-label="Tutup"></button>
             </div>
             <div class="modal-body">
-                <div class="bg-warning p-2 rounded mb-2">
-                    Perlu diingat, detail pembayaran tidak bisa dihapus atau diubah
+                <div id="cek" class="daftar-bayar">
+                    <div class="text-muted small text-center py-3">memuat pembayaran ...</div>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-                <div id="cek">...</div>
+<!-- Modal konfirmasi nilai dana. Dialog bawaan browser tidak ikut tema halaman dan
+     tidak bisa menjelaskan bahwa penilaiannya permanen, jadi dipakai modal sendiri
+     (mengikuti pola konfirmasi hapus di halaman Produk). -->
+<div class="modal fade" id="modalCekBayar" tabindex="-1" aria-labelledby="cekBayarJudul" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content rounded-kartu">
+            <div class="modal-body p-4 text-center">
+                <div class="konfirmasi-tanda sukses d-inline-flex align-items-center justify-content-center mb-3" id="cekTanda">
+                    <i class="fal fa-circle-check cek-ikon-ada"></i>
+                    <i class="fal fa-circle-xmark cek-ikon-tidak"></i>
+                </div>
+                <h5 class="konfirmasi-judul mb-1" id="cekBayarJudul">Tandai dana diterima?</h5>
+                <p class="konfirmasi-objek mb-1" id="cekObjek">-</p>
+                <p class="small text-muted mb-4">Sekali disimpan, penilaiannya tidak bisa diubah lagi.</p>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-sm konfirmasi-batal flex-fill" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-sm konfirmasi-ya sukses flex-fill" id="cekBayarYa">Ya, diterima</button>
+                </div>
             </div>
         </div>
     </div>
@@ -1081,42 +1114,65 @@ $session  = \Config\Services::session();
 <!-- Modal tambah pembayaran -->
 <div class="modal fade" id="modalTambahBayar" tabindex="-1" aria-labelledby="modalTambahBayarLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="modalTambahBayarLabel">Tambah Pembayaran</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="bg-warning p-2 rounded mt-2">
-                    Perlu diingat, detail pembayaran tidak bisa dihapus atau diubah
+        <?= form_open('', ['class' => 'modal-content', 'id' => 'tambahPembayaran'], ['invoice_id' => '']) ?>
+        <div class="modal-header">
+            <div class="d-flex align-items-center gap-3 min-w-0">
+                <span class="bayar-ikon"><i class="fal fa-plus-circle"></i></span>
+                <div class="min-w-0">
+                    <h5 class="modal-title mb-0" id="modalTambahBayarLabel">Tambah Pembayaran</h5>
+                    <div class="small text-muted" id="tambahBayarSeri"></div>
                 </div>
+            </div>
+            <button type="button" class="btn-close ms-auto flex-shrink-0" data-bs-dismiss="modal" aria-label="Tutup"></button>
+        </div>
+        <div class="modal-body">
+            <div class="bayar-catatan mb-3">
+                <i class="fal fa-circle-info"></i>
+                <span>Pembayaran yang tersimpan tidak bisa dihapus atau diubah, jadi pastikan rekening, tanggal, dan nominalnya sudah benar.</span>
+            </div>
 
-                <div class="tab-content mt-3" id="myTabContent">
-                    <?= form_open('', ['id' => 'tambahPembayaran'], ['invoice_id' => '']) ?>
-                    <div class="row mb-0 gx-2">
-                        <div class="col-6 form-group mb-3">
-                            <?= form_label('Tujuan Bayar', 'tujuan', ['class' => 'form-label']) ?>
-                            <?= form_dropdown('sumber_dana', [], '', ['class' => 'form-select', 'required' => '', 'id' => 'tujuan']) ?>
-                            <div class="small text-danger mt-1 d-none" id="tujuan-galat">
-                                Toko ini belum punya rekening pembayaran. Tambahkan dulu di
-                                <a href="<?= esc(site_url('admin/settings/juragan')) ?>">Pengaturan › Juragan</a>.
-                            </div>
-                        </div>
-                        <div class="col-6 form-group mb-3">
-                            <?= form_label('Tanggal Bayar', 'tanggal_bayar', ['class' => 'form-label']) ?>
-                            <?= form_input('tanggal_pembayaran', set_value('tanggal_pembayaran', $sekarang->toDateString()), ['class' => 'form-control', 'id' => 'tanggal_pembayaran', 'required' => '', 'max' => $sekarang->toDateString()], 'date') ?>
-                        </div>
-                        <div class="col-6 form-group mb-3">
-                            <?= form_label('Jumlah Dana', 'jumlah_dana', ['class' => 'form-label']) ?>
-                            <?= form_input(['name' => 'total_pembayaran', 'class' => 'form-control', 'id' => 'jumlah_dana', 'required' => '', 'placeholder' => '200000', 'type' => 'number', 'min' => '1']) ?>
-                        </div>
+            <div class="row gx-2">
+                <div class="col-12 col-sm-6 form-group mb-3">
+                    <?= form_label('Tujuan Bayar', 'tujuan', ['class' => 'form-label']) ?>
+                    <?= form_dropdown('sumber_dana', [], '', ['class' => 'form-select', 'required' => '', 'id' => 'tujuan']) ?>
+                    <div class="small text-danger mt-1 d-none" id="tujuan-galat">
+                        Toko ini belum punya rekening pembayaran. Tambahkan dulu di
+                        <a href="<?= esc(site_url('admin/settings/juragan')) ?>">Pengaturan › Juragan</a>.
                     </div>
-                    <hr>
-                    <button class="btn btn-primary" type="submit">Simpan</button>
-                    <?= form_close(); ?>
+                </div>
+                <div class="col-12 col-sm-6 form-group mb-3">
+                    <?= form_label('Tanggal Bayar', 'tanggal_bayar', ['class' => 'form-label']) ?>
+                    <?= form_input('tanggal_pembayaran', set_value('tanggal_pembayaran', $sekarang->toDateString()), ['class' => 'form-control', 'id' => 'tanggal_pembayaran', 'required' => '', 'max' => $sekarang->toDateString()], 'date') ?>
+                </div>
+                <?php /* type=text + inputmode=numeric + saringan JS: kolom number
+                   bawaan browser masih membolehkan tanda minus, titik, dan huruf e
+                   diketik, dan form ini dikirim lewat AJAX sehingga validasi native
+                   tidak pernah sempat menolaknya */ ?>
+                <div class="col-12 form-group mb-0">
+                    <?= form_label('Jumlah Dana', 'jumlah_dana', ['class' => 'form-label']) ?>
+                    <div class="bayar-rp">
+                        <span class="mata">Rp</span>
+                        <?= form_input([
+                            'name'         => 'total_pembayaran',
+                            'class'        => 'form-control',
+                            'id'           => 'jumlah_dana',
+                            'required'     => '',
+                            'placeholder'  => '299000',
+                            'type'         => 'text',
+                            'inputmode'    => 'numeric',
+                            'autocomplete' => 'off',
+                            'pattern'      => '[0-9]+',
+                        ]) ?>
+                    </div>
+                    <div class="form-text bayar-pratinjau" id="jumlah-bantuan">Hanya angka bulat &mdash; tanpa minus, titik, atau koma.</div>
                 </div>
             </div>
         </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-link text-decoration-none" data-bs-dismiss="modal">Batal</button>
+            <button class="btn btn-primary" type="submit"><i class="fal fa-save me-1"></i>Simpan</button>
+        </div>
+        <?= form_close(); ?>
     </div>
 </div>
 
@@ -1929,6 +1985,9 @@ $link_tambah_pembayaran  = site_url('admin/invoices/simpan_pembayaran');
 $link_update_pembayaran  = site_url('admin/invoices/update_bayar');
 $link_api_counter_tab    = site_url('api/invoice/counter_tab/' . $juragan_id);
 
+// dropdown "dana ada / tidak ada" di dalam modal Info Pembayaran
+$boleh_cek_js            = $cekBayar ? 'true' : 'false';
+
 $codvalue = 'COD' . $sekarang->toLocalizedString('ddMMyyyy');
 
 $js = <<< JS
@@ -2064,101 +2123,174 @@ $js = <<< JS
     		});
     	});
 
-    	// cek pembayaran
-    	$('.pesanBayar').on('click',function(){
-    		let juragan = $(this).data('juragan'),
-    			id = $(this).data('invoice'),
-    			dv_list =$("<div/>").addClass('list-group list-group-flushs').attr('id', 'list_pembayaran');
+    	// wewenang cek pembayaran: Superadmin saja. Tanpa ini riwayat pembayaran
+    	// tetap tampil lengkap, hanya tanpa tombol nilai
+    	var boleh_cek_bayar = {$boleh_cek_js};
 
-    		$.getJSON('{$link_api_get_pembayaran}', {id:id}, function(bayar){
-    			for (let i = 0; i < bayar.length; i++) {
-    				var label = $('<div/>').addClass('list-group-item list-group-action');
+    	var modalInfoBayar = bootstrap.Modal.getOrCreateInstance(document.getElementById('modalBayar'));
+    	var modalKonfirm   = bootstrap.Modal.getOrCreateInstance(document.getElementById('modalCekBayar'));
+    	var cekTunda       = null;
 
-    				var info = '';
-    				var ico = '';
-    				var btn = '';
+    	// riwayat pembayaran: satu kartu per pembayaran, dengan pil status yang bisa
+    	// dibaca sekilas dan tombol nilai untuk yang berhak
+    	$('.pesanBayar').on('click', function() {
+    		let id   = $(this).data('invoice'),
+    			seri = $(this).data('seri') || '';
 
-    				switch (bayar[i].status) {
-    					case 2:
-    						btn = ``;
-    						ico = 'times-circle text-danger';
-    						info = 'dana tidak ada, sudah cek pada: '+ tanggal(bayar[i].tanggal_cek);
-    						break;
+    		$('#modalBayar #bayarSeri').text(seri === '' ? '' : 'Nota ' + seri);
+    		$('#modalBayar #cek').html('<div class="text-muted small text-center py-3">memuat pembayaran ...</div>');
 
-    					case 3:
-    						btn = ``;
-    						ico = 'check-circle text-success';
-    						info = 'dana ada, sudah cek pada: '+ tanggal(bayar[i].tanggal_cek);
-    						break;
+    		$.getJSON('{$link_api_get_pembayaran}', { id: id }, function(bayar){
+    			var daftar = $('<div/>').addClass('daftar-bayar');
 
-    					default:
-    						btn = `<li>
-    									<button class="dropdown-item" data-val="3" data-invoice="`+id+`" data-id="`+ bayar[i].id +`">
-    										Dana ada
-    									</button>
-    								</li>
-    								<li>
-    									<button class="dropdown-item" data-val="2" data-invoice="`+id+`" data-id="`+ bayar[i].id +`">
-    										Dana tidak ada
-    									</button>
-    								</li>`;
-    						ico = 'minus-circle text-info';
-    						info = 'dana belum dicek';
-    						break;
-    				}
-
-    				var bta = `<div>
-    					<div class="dropdown">
-    						<button class="btn btn-outline-secondary btn-sm" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
-    							<i class="fal fa-ellipsis-h"></i>
-    						</button>
-    						<ul class="dropdown-menu btn-action" aria-labelledby="dropdownMenuButton">`+ btn +`</ul>
-    					</div>
-    				</div>`;
-
-    				if (bayar[i].status !== 1) {
-    					bta = '';
-    				}
-
-    				var bank = bayar[i].atas_nama;
-    				if (bayar[i].sumber > 2) {
-    					bank = bayar[i].nama + ' (' + bayar[i].atas_nama + ')';
-    				}
-
-    				var dv = $(`
-    				<div class="d-flex justify-content-between">
-    					<div class="d-flex justify-content-start align-items-center">
-    						<i class="fal fa-`+ ico +` fa-2x me-3"></i>
-    						<div>
-    							<span class="me-1">`+ bank.toUpperCase() +`</span> <span class="me-1">`+ bayar[i].nominal +`</span> <span>(`+ tanggal(bayar[i].tanggal_bayar) +`)</span>
-    							<div class="text-muted small">`+ info +`</div>
-    						</div>
-    					</div>
-    					`+ bta +`
-    				</div>
-    				`);
-
-    				label.append(dv);
-    				dv_list.append(label);
-
-    				$('#modalBayar #cek').empty().append(dv_list);
+    			if (! bayar.length) {
+    				$('#modalBayar #cek').html('<div class="text-muted small text-center py-3">Belum ada pembayaran tercatat pada nota ini.</div>');
+    				return;
     			}
+
+    			for (let i = 0; i < bayar.length; i++) {
+    				var sumber = bayar[i].sumber > 2
+    					? bayar[i].nama + ' (' + bayar[i].atas_nama + ')'
+    					: bayar[i].nama;
+
+    				var status = '<span class="bayar-status"><i class="fal fa-question"></i> Belum dicek</span>';
+
+    				if (bayar[i].status === 3) {
+    					status = '<span class="bayar-status ada"><i class="fal fa-check"></i> Dana ada</span>';
+    				} else if (bayar[i].status === 2) {
+    					status = '<span class="bayar-status tidak"><i class="fal fa-xmark"></i> Dana tidak ada</span>';
+    				}
+
+    				var dinilai = bayar[i].tanggal_cek === null
+    					? ''
+    					: '<div class="bayar-waktu">dinilai ' + tanggal(bayar[i].tanggal_cek) + '</div>';
+
+    				var aksi = '';
+
+    				if (boleh_cek_bayar && bayar[i].status === 1) {
+    					aksi = '<div class="bayar-aksi">'
+    						+ '<button type="button" class="btn bayar-ya" data-val="3" data-invoice="' + id + '" data-id="' + bayar[i].id + '"><i class="fal fa-check"></i> Dana ada</button>'
+    						+ '<button type="button" class="btn bayar-tidak" data-val="2" data-invoice="' + id + '" data-id="' + bayar[i].id + '"><i class="fal fa-xmark"></i> Tidak ada</button>'
+    						+ '</div>';
+    				}
+
+    				daftar.append($(
+    					'<div class="bayar-kartu">'
+    						+ '<div class="d-flex align-items-center gap-3">'
+    							+ '<span class="bayar-ikon' + (bayar[i].sumber > 2 ? '' : ' tunai') + '">'
+    								+ '<i class="fal ' + (bayar[i].sumber > 2 ? 'fa-university' : 'fa-wallet') + '"></i>'
+    							+ '</span>'
+    							+ '<div class="flex-grow-1 min-w-0">'
+    								+ '<div class="bayar-sumber">' + sumber + '</div>'
+    								+ '<div class="d-flex flex-wrap align-items-baseline gap-2">'
+    									+ '<span class="bayar-nominal">' + bayar[i].nominal + '</span>'
+    									+ '<span class="bayar-waktu">' + tanggal(bayar[i].tanggal_bayar) + '</span>'
+    								+ '</div>'
+    								+ dinilai
+    							+ '</div>'
+    							+ status
+    						+ '</div>'
+    						+ aksi
+    					+ '</div>'
+    				));
+    			}
+
+    			$('#modalBayar #cek').empty().append(daftar);
     		});
     	});
 
+    	// menilai dana dikonfirmasi lewat modal bertema, bukan dialog bawaan browser;
+    	// riwayatnya ditutup dulu supaya dua modal tidak berebut backdrop
+    	$(document).on('click', '.bayar-ya, .bayar-tidak', function() {
+    		var tombol = $(this),
+    			kartu = tombol.closest('.bayar-kartu'),
+    			ada = tombol.hasClass('bayar-ya');
+
+    		cekTunda = {
+    			id: tombol.data('id'),
+    			invoice: tombol.data('invoice'),
+    			val: tombol.data('val')
+    		};
+
+    		$('#cekObjek').text(kartu.find('.bayar-sumber').text() + ' · ' + kartu.find('.bayar-nominal').text());
+    		$('#cekTanda').toggleClass('tidak', ! ada);
+    		$('#cekBayarJudul').text(ada ? 'Tandai dana diterima?' : 'Tandai dana tidak ditemukan?');
+    		$('#cekBayarYa').toggleClass('sukses', ada).text(ada ? 'Ya, diterima' : 'Ya, tandai');
+
+    		modalInfoBayar.hide();
+    	});
+
+    	// riwayat selesai ditutup -> baru buka konfirmasinya
+    	document.getElementById('modalBayar').addEventListener('hidden.bs.modal', function () {
+    		if (cekTunda) { modalKonfirm.show(); }
+    	});
+
+    	// konfirmasinya ditutup tanpa disimpan -> kembalikan ke riwayat nota tadi
+    	document.getElementById('modalCekBayar').addEventListener('hidden.bs.modal', function () {
+    		if (cekTunda) { modalInfoBayar.show(); }
+    	});
+
+    	$('#cekBayarYa').on('click', function() {
+    		if (! cekTunda) { return; }
+
+    		var kirim = cekTunda;
+    		cekTunda = null;
+
+    		modalKonfirm.hide();
+
+    		$.post("{$link_update_pembayaran}", {
+    			id_pembayaran: kirim.id, status: kirim.val, invoice_id: kirim.invoice
+    		}, function (msg) {
+    			document.location.href = msg.url;
+    		}, 'json').fail(function (xhr) {
+    			var galat = (xhr.responseJSON && xhr.responseJSON.status)
+    				? xhr.responseJSON.status
+    				: 'Penilaian pembayaran gagal disimpan.';
+
+    			cekTunda = kirim;
+    			modalKonfirm.show();
+    			alert(galat);
+    		});
+    	});
+
+    	// jumlah dana: hanya angka bulat positif. Kolomnya sengaja type=text supaya
+    	// tanda minus, titik, dan huruf e tidak bisa masuk sama sekali; nol ikut
+    	// dibuang karena pembayaran bernilai nol tidak berarti apa-apa
+    	function rapiJumlahDana() {
+    		var kolom = document.getElementById('jumlah_dana');
+
+    		if (! kolom) { return; }
+
+    		var bersih = kolom.value.replace(/\D/g, '').replace(/^0+/, '');
+
+    		if (bersih !== kolom.value) {
+    			kolom.value = bersih;
+    		}
+
+    		$('#jumlah-bantuan').text(bersih === ''
+    			? 'Hanya angka bulat - tanpa minus, titik, atau koma.'
+    			: 'Akan dicatat: Rp ' + bersih.replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
+    	}
+
+    	$('#jumlah_dana').on('input blur', rapiJumlahDana);
+
     	// tambah pembayaran
     	$('.tambahBayar').on('click',function(){
-    		let juragan = $(this).data('juragan'),
-    			id = $(this).data('invoice'),
-    			kekurangan = $(this).data('kurang'),
-    			ttl = $('#myTabContent [name="total_pembayaran"]');
+    		let tombol = $(this),
+    			juragan = tombol.data('juragan'),
+    			id = tombol.data('invoice'),
+    			kekurangan = tombol.data('kurang'),
+    			ttl = $('#jumlah_dana');
 
     		// invoice_id
-    		$('#myTabContent [name="invoice_id"]').val(id);
+    		$('#tambahPembayaran [name="invoice_id"]').val(id);
+    		$('#tambahBayarSeri').text(tombol.data('seri') ? 'Nota ' + tombol.data('seri') : '');
     		ttl.val('');
     		if (parseInt(kekurangan)>0) {
     			ttl.val(kekurangan);
     		}
+
+    		rapiJumlahDana();
 
     		// set dropdown sumber_dana
     		$.getJSON('{$link_api_get_bank}', function(data){
@@ -2185,6 +2317,16 @@ $js = <<< JS
     	tambah_pay.on('submit',function(f){
     		f.preventDefault(),
     		f.stopPropagation();
+
+    		// minus dan nol sudah dibuang saat mengetik; ini jaring pengaman kalau
+    		// kolomnya ditinggalkan kosong atau nilainya diisi lewat alat lain
+    		var nominal = parseInt($('#jumlah_dana').val(), 10);
+
+    		if (! nominal || nominal < 1) {
+    			alert('Jumlah dana harus angka, lebih dari nol.');
+
+    			return false;
+    		}
 
     		// Abort any pending request
     		if (req_pay) {
@@ -2241,26 +2383,6 @@ $js = <<< JS
     			inputs.prop("disabled", false);
 
     		});
-    	});
-
-    	// set dana
-    	$(document).on('click', '.btn-action .dropdown-item',function() {
-    		var id = $(this).data('id'),
-    			invoice = $(this).data('invoice'),
-    			status = $(this).data('val');
-
-    		if(confirm("Sudah yakin, ini tidak bisa diubah lho?"))
-    		{
-    			$.ajax({
-    				method: "POST",
-    				url: "{$link_update_pembayaran}",
-    				data: { id_pembayaran: id, status: status, invoice_id: invoice }
-    			})
-    			.done(function( msg ) {
-    				// console.log( "Data Saved: " + msg );
-    				document.location.href = msg.url;
-    			});
-    		}
     	});
 
     	// hapus orderan: alasannya wajib dipilih dan ikut tersimpan di nota

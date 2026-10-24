@@ -12,7 +12,7 @@
  *
  * @var string $title        judul tab browser, dipakai layout template/main
  * @var array  $s            hasil saring(): awal, akhir, periode, peran, user_id, juragan_id, juragan_ids
- * @var string $indikator    kode indikator pada segmen URL, mis. sla_fulfillment
+ * @var string $indikator    kode indikator pada segmen URL, mis. first_response_time
  * @var ?array $aturan       baris kpi_target untuk indikator ini, null bila belum ada
  * @var int    $jumlah       total baris pencatat untuk indikator ini pada saringan aktif
  * @var array  $baris        baris pembentuk angka, satu halaman: list<array<string, mixed>>
@@ -33,27 +33,8 @@ $durasi = static fn ($v, string $satuan): string => $v === null
     ? '&mdash;'
     : $angka($v) . ' ' . $satuan;
 
-$label_alasan = array_map(static fn ($a) => $a['label'], alasan_batal());
-
 // satu baris = definisi kolom, label, dan cara menampilkan
 $kolom = match ($indikator) {
-    'sla_fulfillment' => [
-        ['id_invoice', 'Nota', $th],
-        ['juragan_id', 'Toko', static fn ($v) => $juragans[(int) $v] ?? (string) $v],
-        ['tanggal_pesan', 'Tanggal pesan', $th],
-        ['waktu_bayar', 'Pembayaran terverifikasi', $tw],
-        ['waktu_fu', 'Packing / kirim', $tw],
-        ['durasi_jam', 'Durasi', static fn ($v) => $durasi($v, 'jam')],
-        ['pelaku', 'Pelaksana', $th],
-    ],
-    'error_void_rate' => [
-        ['id_invoice', 'Nota', $th],
-        ['seri', 'Nomor seri', $th],
-        ['tanggal_pesan', 'Tanggal pesan', $th],
-        ['deleted_at', 'Dihapus', $tw],
-        ['alasan_batal', 'Alasan', static fn ($v) => esc($label_alasan[$v] ?? (string) $v)],
-        ['pelaku', 'Dihapus oleh', $th],
-    ],
     'first_response_time' => [
         ['percakapan_id', 'Percakapan', $th],
         ['nomor', 'Nomor (4 akhir)', $th],

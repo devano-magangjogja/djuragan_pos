@@ -300,16 +300,30 @@
 .timeliner::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
+/* Layar sempit / tablet: timeline jangan dibiarkan selebar isinya saja (±120px)
+   sehingga tiga langkah Buat-Bayar-Kirim berdesakan di kiri sementara separuh kanan
+   baris menganggur. Diambil lebar penuh, tiap langkah kebagian sama besar.
+   Kelas .timeliner hanya dipakai admin/invoice/lihat.php dan user/invoice/lihat.php;
+   yang pertama sudah punya aturan yang sama di <style> halamannya sendiri, jadi
+   tambahan di sini tidak mengubah tampilannya — hanya menyamakan kartu role CS. */
 @media (max-width: 1023.98px) {
   .timeliner {
     margin-left: 0 !important;
     margin-right: auto;
+    width: 100%;
   }
 }
 .timeliner > li {
   /* 0 0 auto: lebar li = lebar labelnya, tidak pernah menyusut lagi */
   flex: 0 0 auto;
   padding-top: 0.25rem;
+}
+/* SETELAH aturan .timeliner > li di atas: spesifisitasnya sama, jadi yang terakhir
+   yang menang — langkahnya boleh menyusut/memuai bareng pembagian lebar kartu. */
+@media (max-width: 1023.98px) {
+  .timeliner > li {
+    flex: 1 1 0;
+  }
 }
 /* garis penghubung: dari ikon langkah ini ke ikon langkah berikutnya */
 .timeliner > li::after {
@@ -847,6 +861,25 @@
   .kartu-invoice .aksi .btn {
     padding: 0.45rem 0.7rem;
     font-size: 0.82rem;
+  }
+}
+
+/* Chevron "Produk" / "Anggota" pada kartu orderan (admin dan CS): kelas Tailwind
+   aria-expanded:rotate-0 menghasilkan pemilih .aria-expanded\:rotate-0[aria-expanded=true],
+   yaitu atribut pada ELEMEN ITU SENDIRI — padahal Bootstrap menaruh aria-expanded di
+   TOMBOL induknya, bukan di <i>. Jadi ikonnya membeku miring -90deg dan tidak pernah
+   berputar saat bloknya dibuka. Di sini statusnya dibaca dari tombolnya, dan
+   perpindahan rotate-nya dianimasikan. */
+[data-bs-toggle="collapse"][aria-expanded] .fa-chevron-down {
+  rotate: -90deg;
+  transition: rotate 0.2s ease;
+}
+[data-bs-toggle="collapse"][aria-expanded="true"] .fa-chevron-down {
+  rotate: 0deg;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-bs-toggle="collapse"][aria-expanded] .fa-chevron-down {
+    transition: none;
   }
 }
 
@@ -1800,6 +1833,40 @@ a.rounded-3.border.border-ink-200:hover {
   padding: 0 0.7rem !important;
   border-radius: 0 8px 8px 0 !important;
 }
+/* Panel ukuran (dibangun ukuran-form.js): "cm" bukan kotak kedua di sebelah
+   angkanya, tapi bagian dari kotak yang sama. Kelas border-start-0 / bg-white
+   dari JS tidak pernah menang karena .input-group-text dan .form-control di atas
+   sama-sama mengunci border 1px !important, jadi yang dijadikan kotak adalah
+   WADAHNYA dan border kedua isinya dilucuti. */
+.ukuran-panel .input-group {
+  border-radius: 8px;
+  background-color: #ffffff;
+  /* garisnya box-shadow dalam, bukan border: border 1px menambah 2px tinggi
+       sehingga kolom bersatuan jadi lebih tinggi dari kolom tanpa satuan di
+       baris yang sama */
+  box-shadow: inset 0 0 0 1px #d0d5dd;
+  transition: box-shadow 0.15s ease;
+}
+.ukuran-panel .input-group > .form-control,
+.ukuran-panel .input-group > .input-group-text {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+.ukuran-panel .input-group > .form-control {
+  padding-right: 0.25rem !important;
+}
+.ukuran-panel .input-group > .input-group-text {
+  padding-left: 0.25rem !important;
+  padding-right: 0.6rem !important;
+}
+/* fokus dipindah dari kotak angka ke wadah yang sekarang jadi kotak */
+.ukuran-panel .input-group:focus-within {
+  box-shadow:
+    inset 0 0 0 1px #101828,
+    0 0 0 3px rgba(16, 24, 40, 0.08);
+}
 
 /* 8. Modern Buttons */
 .btn {
@@ -1972,6 +2039,39 @@ a.rounded-3.border.border-ink-200:hover {
   background-color: #ef4444 !important;
   color: #ffffff !important;
   border: none !important;
+}
+/* Titik merah di topbar layar kecil: titik 6px berkedip di ujung kanan-atas
+   lonceng, angkanya tidak ditampilkan lagi. Kelas Bootstrap di markup-nya
+   (top-0 / start-100 / translate-middle / .badge) semuanya !important, jadi
+   posisi dan ukurannya juga harus !important. Pernah aturan ini hanya ada di
+   <style> admin/navbar.php, sehingga lonceng di topbar CS (user/navbar.php)
+   duduk 1px lebih tinggi dan titiknya masih badge besar — sekarang satu tempat
+   untuk kedua peran. */
+.mobile-topbar .counter {
+  font-size: 0 !important;
+  padding: 0 !important;
+  width: 6px !important;
+  height: 6px !important;
+  top: 6px !important;
+  right: 5px !important;
+  left: auto !important;
+  transform: none !important;
+  animation: notif-kedip 1.2s ease-in-out infinite;
+}
+/* Loncengnya duduk 1px lebih tinggi dari hamburger, logo, dan avatar (kotak
+   <a>-nya pakai p-2 sedangkan tombol lain p-1/p-0), jadi geser 1px ke bawah
+   supaya sebaris. Titik merangnya ikut karena posisinya di dalam <a> ini. */
+.mobile-topbar a[data-notif-toggle="1"] {
+  top: 1px;
+}
+@keyframes notif-kedip {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.2;
+  }
 }
 
 /* 10. Nav Pills & Tab Filters */
@@ -2178,6 +2278,203 @@ a.rounded-3.border.border-ink-200:hover {
   border-top: 1px solid #eaecf0 !important;
   background: #f9fafb !important;
   padding: 0.85rem 1.25rem !important;
+}
+/* ---------------------------------------------------------------------------
+   Modal "Info Pembayaran". Dulu isinya list-group polos dengan satu strip kuning
+   lebar; sekarang tiap pembayaran jadi kartu: ikon sumber dana, nominal, tanggal,
+   dan pil status. Aksi menilai dana (khusus Superadmin) tampil sebagai dua tombol
+   jelas, bukan menu titik-titik yang harus dibuka lebih dulu.
+   --------------------------------------------------------------------------- */
+.daftar-bayar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.bayar-kartu {
+  border: 1px solid #eaecf0;
+  border-radius: 14px;
+  background: #ffffff;
+  padding: 0.8rem 0.9rem;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    background-color 0.15s ease;
+}
+.bayar-kartu:hover {
+  border-color: #d0d5dd;
+  background: #fcfcfd;
+  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.06);
+}
+.bayar-ikon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.3rem;
+  height: 2.3rem;
+  flex: 0 0 auto;
+  border-radius: 11px;
+  font-size: 0.95rem;
+  background: #eff8ff;
+  border: 1px solid #b2ddff;
+  color: #175cd3;
+}
+.bayar-ikon.tunai {
+  background: #f9f2ff;
+  border-color: #e9d7fe;
+  color: #9810fa;
+}
+.bayar-sumber {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #98a2b3;
+  overflow-wrap: anywhere;
+}
+.bayar-nominal {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #101828;
+  white-space: nowrap;
+}
+.bayar-waktu {
+  font-size: 0.78rem;
+  color: #667085;
+  white-space: nowrap;
+}
+.bayar-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  flex: 0 0 auto;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  white-space: nowrap;
+  border: 1px solid #eaecf0;
+  background: #f2f4f7;
+  color: #475467;
+}
+.bayar-status.ada {
+  border-color: #a6f4c5;
+  background: #ecfdf5;
+  color: #027a48;
+}
+.bayar-status.tidak {
+  border-color: #fecdca;
+  background: #fef3f2;
+  color: #b42318;
+}
+/* catatan lembut pengganti strip kuning yang menonjol */
+.bayar-catatan {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #eaecf0;
+  border-radius: 12px;
+  background: #f9fafb;
+  color: #475467;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+.bayar-catatan > i {
+  color: #98a2b3;
+  flex-shrink: 0;
+  margin-top: 0.05rem;
+}
+/* imbuhan "Rp" di dalam kolom jumlah dana. input-group sengaja tidak dipakai:
+   .form-control di atas memaksa border-radius sendiri sehingga sambungannya pecah */
+.bayar-rp {
+  position: relative;
+}
+.bayar-rp > .mata {
+  position: absolute;
+  top: 50%;
+  left: 0.75rem;
+  transform: translateY(-50%);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #98a2b3;
+  pointer-events: none;
+}
+.bayar-rp > .form-control {
+  padding-left: 2.15rem;
+  font-variant-numeric: tabular-nums;
+}
+/* angka ribuan yang sedang diketik, biar jelas tidak ada minus atau desimal */
+.bayar-pratinjau {
+  font-variant-numeric: tabular-nums;
+}
+/* ruang aksi hanya ada kalau akun ini boleh menilai pembayaran */
+.bayar-aksi {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.7rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid #f2f4f7;
+}
+.bayar-aksi .btn {
+  flex: 1 1 0;
+  min-width: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 10px;
+  padding: 0.4rem 0.5rem;
+}
+.bayar-ya {
+  border: 1px solid #a6f4c5;
+  background: #ecfdf5;
+  color: #027a48;
+}
+.bayar-ya:hover,
+.bayar-ya:focus {
+  border-color: #12b76a;
+  background: #d1fadf;
+  color: #027a48;
+}
+.bayar-tidak {
+  border: 1px solid #fecdca;
+  background: #fef3f2;
+  color: #b42318;
+}
+.bayar-tidak:hover,
+.bayar-tidak:focus {
+  border-color: #f04438;
+  background: #fee4e2;
+  color: #b42318;
+}
+/* varian hijau untuk konfirmasi aksi yang menguntungkan ("dana ada");
+   .konfirmasi-tanda/.konfirmasi-judul/.konfirmasi-objek/.konfirmasi-batal/.konfirmasi-ya
+   sudah ada untuk konfirmasi berbahaya, ini padanannya saja */
+.konfirmasi-tanda.sukses {
+  background: #ecfdf5;
+  color: #027a48;
+}
+.konfirmasi-ya.sukses {
+  border-color: #12b76a;
+  background: #12b76a;
+}
+.konfirmasi-ya.sukses:hover,
+.konfirmasi-ya.sukses:focus {
+  border-color: #027a48;
+  background: #027a48;
+}
+/* konfirmasi nilai dana: satu lingkaran tanda, ikonnya ditukar lewat kelas .tidak
+   pada pembungkusnya (hijau = diterima, merah = tidak ditemukan) */
+#cekTanda .cek-ikon-tidak {
+  display: none;
+}
+#cekTanda.tidak {
+  background: #fef3f2;
+  color: #b42318;
+}
+#cekTanda.tidak .cek-ikon-ada {
+  display: none;
+}
+#cekTanda.tidak .cek-ikon-tidak {
+  display: inline-block;
 }
 .dropdown-menu {
   border-radius: 12px !important;

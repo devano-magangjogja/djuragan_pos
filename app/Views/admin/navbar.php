@@ -13,6 +13,7 @@ $isCrmAktif      = url_is('admin/crm*');
 $isKpiAktif      = url_is('admin/kpi*');
 $isLaporanAktif  = url_is('admin/laporan*');
 $isSettingsAktif = url_is('admin/settings*');
+$isMasukanAktif  = url_is('admin/masukan*');
 
 // Submenu Transaksi
 // 'invoices' tetap satu halaman dengan 'cod': yang pertama dipakai untuk orderan
@@ -31,12 +32,16 @@ if ($levelSesi === 'superadmin') {
     $produkSubmenu[] = ['admin/poin', 'Laporan Poin', 'fa-coins', str_starts_with($di_halaman, 'admin/poin')];
 }
 
-// Submenu KPI
+// Submenu KPI: Ringkasan dan Ranking untuk admin & superadmin. Menentukan target
+// dan bobot tetap hak Superadmin, jadi menunya tidak dirender untuk yang lain.
 $kpiSubmenu = [
     ['admin/kpi', 'Ringkasan', 'fa-chart-pie', $di_halaman === 'admin/kpi'],
     ['admin/kpi/ranking', 'Ranking', 'fa-trophy', str_starts_with($di_halaman, 'admin/kpi/ranking')],
-    ['admin/kpi/target', 'Target & Bobot', 'fa-bullseye', str_starts_with($di_halaman, 'admin/kpi/target')],
 ];
+
+if ($levelSesi === 'superadmin') {
+    $kpiSubmenu[] = ['admin/kpi/target', 'Target & Bobot', 'fa-bullseye', str_starts_with($di_halaman, 'admin/kpi/target')];
+}
 
 // Submenu CRM
 $crmSubmenu = [
@@ -92,35 +97,6 @@ if ($levelSesi === 'superadmin') {
 }
 ?>
 
-<style>
-    /* Lingkaran merah di topbar layar kecil: titik kecil berkedip yang menempel di
-       ujung kanan-atas lonceng. Angkanya tidak ditampilkan lagi. Kelas Bootstrap
-       (top-0 / start-100 / translate-middle / .badge) semuanya memakai !important,
-       jadi posisi dan ukurannya juga harus !important. */
-    .mobile-topbar .counter {
-        font-size: 0 !important;
-        padding: 0 !important;
-        width: 6px !important;
-        height: 6px !important;
-        top: 6px !important;
-        right: 5px !important;
-        left: auto !important;
-        transform: none !important;
-        animation: notif-kedip 1.2s ease-in-out infinite;
-    }
-
-    /* Loncengnya duduk 1px lebih tinggi dari hamburger, logo, dan avatar (kotak
-       <a>-nya pakai p-2 sedangkan tombol lain p-1/p-0), jadi geser 1px ke bawah
-       supaya sebaris. Titik merangnya ikut karena posisinya di dalam <a> ini. */
-    .mobile-topbar a[data-notif-toggle="1"] {
-        top: 1px;
-    }
-
-    @keyframes notif-kedip {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.2; }
-    }
-</style>
 <!-- Topbar khusus layar kecil; di desktop lonceng notifikasi melayang sendiri
      (lihat .notif-melayang di template/notif_bar.php), bukan bar penuh. -->
 <header class="mobile-topbar d-flex d-lg-none align-items-center justify-content-between px-2 sticky-top">
@@ -311,9 +287,19 @@ if ($levelSesi === 'superadmin') {
             </li>
         </ul>
 
-        <?php if ($sistemSubmenu !== []) : ?>
+        <?php if ($sistemSubmenu !== [] || $levelSesi === 'superadmin') : ?>
             <div class="sidebar-heading mt-2">Sistem</div>
             <ul class="sidebar-nav">
+                <?php if ($levelSesi === 'superadmin') : ?>
+                    <!-- kotak masukan bukan bagian dari pengaturan: menunya berdiri
+                         sendiri karena yang membacanya hanya Superadmin -->
+                    <li class="nav-item">
+                        <a class="sidebar-link <?= $isMasukanAktif ? 'active' : '' ?>" href="<?= site_url('admin/masukan') ?>">
+                            <i class="sidebar-link-icon fal fa-headset"></i>
+                            <span>Kotak Masukan</span>
+                        </a>
+                    </li>
+                <?php endif; ?>
                 <!-- Submenu Pengaturan -->
                 <li class="nav-item">
                     <a class="sidebar-link <?= $isSettingsAktif ? 'active' : '' ?>" data-bs-toggle="collapse" href="#submenuSettings" role="button" aria-expanded="<?= $isSettingsAktif ? 'true' : 'false' ?>" aria-controls="submenuSettings">

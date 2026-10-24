@@ -7,7 +7,7 @@
  * @var array<string, mixed>                        $s          Saringan: awal, akhir, periode, peran, user_id, juragan_id, juragan_ids
  * @var array<string, array<string, mixed>>         $kartu      Kartu indikator: kunci => [label, nilai, satuan, contoh, tersedia, ...]
  * @var array<string, array<string, mixed>>         $target     Target per indikator: kunci => [target, arah, bobot, aktif]
- * @var list<array<string, mixed>>                  $tren      Baris tren: baki, order, gmv, sla_jam
+ * @var list<array<string, mixed>>                  $tren      Baris tren: baki, order, gmv, lunas
  * @var array<int, string>                          $pegawai    Pilihan karyawan: id => "nama (level)"
  * @var array<int, string>                          $juragans   Pilihan toko: id => nama
  * @var array<string, string>                       $periode    Label periode: kunci => teks
@@ -115,15 +115,12 @@ $akhir_judul   = min($rekap['jumlah'], $halaman * $batas + $batas);
 $label_tren    = json_encode(array_column($tren, 'baki'));
 $order_tren    = json_encode(array_map('intval', array_column($tren, 'order')));
 $gmv_tren      = json_encode(array_map('intval', array_column($tren, 'gmv')));
-$sla_tren      = json_encode(array_map(static fn ($b) => $b['sla_jam'], $tren));
 $nama_banding  = json_encode(array_column($pembanding, 'pegawai'));
 $nilai_banding = json_encode(array_map(static fn ($p) => $p['nilai'], $pembanding));
 
 $judul_banding = [
     'gmv_cs'              => 'GMV per karyawan (Rp)',
     'order_diproses'      => 'Pesanan diproses per karyawan (nota)',
-    'sla_fulfillment'     => 'Rata-rata SLA fulfillment per karyawan (jam, makin kecil makin baik)',
-    'error_void_rate'     => 'Nota dibatalkan karena kesalahan per karyawan (jumlah)',
     'first_response_time' => 'Rata-rata first response time per karyawan (menit, makin kecil makin baik)',
     'konversi_lead'       => 'Lead menjadi order per karyawan (jumlah)',
     'resolution_time'     => 'Rata-rata waktu penyelesaian tindak lanjut (jam, makin kecil makin baik)',
@@ -133,10 +130,6 @@ $judul_banding = [
 $tooltip = [
     'pegawai_dinilai'       => 'Akun Customer Service yang masih aktif.',
     'order_diproses'        => 'Semua nota yang dibuat orang ini pada periode terpilih, sudah lunas maupun belum.',
-    'sla_fulfillment'       => 'Diukur dari pembayaran pertama yang tercatat sampai nota masuk packing atau kirim. Tanggal yang urutannya tidak masuk akal tidak ikut dihitung.',
-    'return_error_rate'     => 'Butuh pencatatan retur beserta alasannya. Kalau form retur belum dipakai, angkanya memang belum ada.',
-    'kecepatan_master_data' => 'Butuh waktu mulai input dan waktu stok masuk. Keduanya belum pernah direkam untuk data lama.',
-    'error_void_rate'       => 'Nota dibatalkan dengan alasan salah input; yang tanpa alasan tidak dianggap kesalahan. Nama pelakunya baru dicatat sejak 9 Oktober 2026.',
     'first_response_time'   => 'Dari pesan masuk pelanggan sampai balasan pertama manusia. Balasan otomatis dan pesan yang gagal kirim tidak dihitung. Satu percakapan dihitung satu kali.',
     'konversi_lead'         => 'Chat baru dari pelanggan yang belum pernah order, lalu jadi order dalam 14 hari.',
     'resolution_time'       => 'Dari tindak lanjut dibuat sampai ditandai selesai. Yang masih menunggu tidak dihitung.',
@@ -147,25 +140,29 @@ $tooltip = [
 
 <?= $this->section('css') ?>
 <style>
+/* Kolom pilih indikator memakan sisa lebar barisnya supaya tombol "Ganti" tetap
+   muat tanpa memaksa teks opsi terpotong lebih awal. Judulnya sendiri sudah naik
+   ke baris di atasnya, jadi tidak ada lagi perebutan lebar antara judul dan kotak. */
+.kpi-banding .form-select-sm {
+    flex: 1 1 auto;
+    min-width: 0;
+}
 @media (max-width: 767.98px) {
-    /* Judul pembanding bisa panjang ("Rata-rata SLA fulfillment per karyawan
-       (jam, makin kecil makin baik)"). Sejajar di baris sempit membuat labelnya
-       turun jadi tiga baris dan select-nya tergencet sampai teks opsinya
-       tertelan panah ">". Di responsif label mendapat barisnya sendiri, lalu
-       select dan tombol Ganti membagi sisa lebar. Desktop tidak diubah. */
-    .kpi-kepala-banding {
-        flex-wrap: wrap;
+    /* Angka kartu ikut turun satu langkah di ponsel: fs-5 = 20px bikin nilai
+       terpanjang ("Rp 187.766.650" = 132px) patah jadi dua baris di kotak isi
+       yang lebarnya cuma 118px, sementara angka lain satu baris sehingga
+       tingginya tidak rata. 1rem = 16px -> 106px, satu baris. .fs-5 Bootstrap
+       memakai !important, jadi aturan ini ikut !important. Desktop tetap 20px. */
+    .kpi-angka {
+        font-size: 1rem !important;
     }
-    .kpi-kepala-banding > span {
-        flex: 1 1 100%;
-    }
-    .kpi-banding {
-        flex: 1 1 auto;
-        min-width: 0;
-    }
-    .kpi-banding select {
-        flex: 1 1 auto;
-        min-width: 0;
+    /* Kanvas grafik ikut melebar: .card-body dikunci 1,25rem oleh style.css, jadi
+       40px dari lebar kartu habis hanya sebagai jarak pandang. Legenda grafik
+       "Tren" membutuhkan tiap piksel itu supaya tiga nama seri (masing-masing
+       106/112/78px) muat satu baris di layar 360px. */
+    .card-body.kpi-kanvas {
+        padding-left: 0.5rem !important;
+        padding-right: 0.5rem !important;
     }
 }
 </style>
@@ -180,7 +177,7 @@ $tooltip = [
     <p class="text-muted small mb-3">
         Semua angka dihitung dari catatan kerja yang tersimpan di database. Tanda
         <strong>&mdash;</strong> artinya datanya belum pernah tercatat, bukan bernilai nol.
-        Tahan ikon <i class="fal fa-circle-info"></i> di judul kartu untuk melihat cara angkanya didapat.
+        Tahan judul kartu untuk melihat cara angkanya didapat.
     </p>
 
     <?= $this->include('admin/kpi/saring') ?>
@@ -190,11 +187,10 @@ $tooltip = [
             <?php $st = $status($kunci, $k, $target); ?>
             <div class="col-6 col-lg-4 col-xl-3">
                 <div class="h-100 rounded-3 border border-ink-200 bg-white px-3 py-2">
-                    <div class="text-muted small text-uppercase">
-                        <i class="fal fa-circle-info me-1" title="<?= esc($tooltip[$kunci] ?? 'Angka dihitung dari catatan yang tersimpan di database.') ?>"></i>
+                    <div class="text-muted small text-uppercase" title="<?= esc($tooltip[$kunci] ?? 'Angka dihitung dari catatan yang tersimpan di database.') ?>">
                         <?= esc($k['label']) ?>
                     </div>
-                    <div class="fs-5 fw-bold <?= ($k['tersedia'] ?? true) ? '' : 'text-muted' ?>">
+                    <div class="fs-5 fw-bold kpi-angka <?= ($k['tersedia'] ?? true) ? '' : 'text-muted' ?>">
                         <?= $tampil($k) ?>
                     </div>
                     <?php if (($k['tersedia'] ?? true) === false) { ?>
@@ -238,15 +234,15 @@ $tooltip = [
                 <div class="card-header bg-white fw-semibold small">
                     Tren periode <?= esc($s['awal']) ?> &ndash; <?= esc($s['akhir']) ?> (<?= esc($periode[$s['periode']]) ?>)
                 </div>
-                <div class="card-body" style="height: 320px;">
+                <div class="card-body kpi-kanvas" style="height: 320px;">
                     <canvas id="trenKpi"></canvas>
                 </div>
             </div>
         </div>
         <div class="col-12 col-xl-5">
             <div class="card h-100">
-                <div class="card-header bg-white d-flex justify-content-between align-items-center gap-2 kpi-kepala-banding">
-                    <span class="fw-semibold small"><?= esc($judul_banding[$banding] ?? 'Perbandingan karyawan') ?></span>
+                <div class="card-header bg-white">
+                    <div class="fw-semibold small mb-2"><?= esc($judul_banding[$banding] ?? 'Perbandingan karyawan') ?></div>
                     <?= form_open('admin/kpi', ['method' => 'get', 'class' => 'd-flex align-items-center gap-1 kpi-banding']) ?>
                     <?php foreach (['awal' => $s['awal'], 'akhir' => $s['akhir'], 'periode' => $s['periode'],
                         'peran' => $s['peran'], 'pegawai' => $s['user_id'], 'juragan' => $s['juragan_id']] as $nama => $nilai) { ?>
@@ -264,7 +260,7 @@ $tooltip = [
                     <?= form_submit(['class' => 'btn btn-sm btn-outline-primary', 'value' => 'Ganti']) ?>
                     <?= form_close(); ?>
                 </div>
-                <div class="card-body" style="height: 320px;">
+                <div class="card-body kpi-kanvas" style="height: 320px;">
                     <canvas id="bandingKpi"></canvas>
                 </div>
             </div>
@@ -289,8 +285,6 @@ $tooltip = [
                         <th scope="col" class="text-end">Order</th>
                         <th scope="col" class="text-end">GMV</th>
                         <th scope="col" class="text-end" title="nota lunas (status pembayaran 5 atau 6)">Lunas</th>
-                        <th scope="col" class="text-end" title="rata-rata jam dari pembayaran terverifikasi ke packing atau kirim">SLA (jam)</th>
-                        <th scope="col" class="text-end" title="nota dihapus karena alasan kesalahan input">Void salah</th>
                         <th scope="col" class="text-end" title="menit sampai balasan manusia pertama per sesi chat">FRT (menit)</th>
                         <th scope="col" class="text-end" title="lead baru yang menjadi order dalam 14 hari">Lead jadi</th>
                         <th scope="col" class="text-end" title="jam dari tindak lanjut dibuat sampai diselesaikan">Selesai (jam)</th>
@@ -299,7 +293,7 @@ $tooltip = [
                 <tbody>
                     <?php if ($rekap['baris'] === []) { ?>
                         <tr>
-                            <td colspan="10" class="text-center text-muted py-4">
+                            <td colspan="8" class="text-center text-muted py-4">
                                 Tidak ada karyawan dengan data pada saringan ini.
                             </td>
                         </tr>
@@ -311,15 +305,8 @@ $tooltip = [
                             </td>
                             <td class="small"><?= esc($b['level']) ?></td>
                             <td class="text-end"><?= (int) $b['jumlah_order'] ?></td>
-                            <td class="text-end"><?= $rp($b['gmv']) ?></td>
+                            <td class="text-end text-nowrap"><?= $rp($b['gmv']) ?></td>
                             <td class="text-end"><?= (int) $b['lunas'] ?></td>
-                            <td class="text-end"><?= $b['sla_jam'] === null ? '&mdash;' : number_format((float) $b['sla_jam'], 1, ',', '.') ?></td>
-                            <td class="text-end">
-                                <?= (int) $b['void_salah'] ?>
-                                <?php if ($b['void_persen'] !== null) { ?>
-                                    <span class="text-muted small">(<?= number_format((float) $b['void_persen'], 1, ',', '.') ?>%)</span>
-                                <?php } ?>
-                            </td>
                             <td class="text-end"><?= $b['frt_menit'] === null ? '&mdash;' : number_format((float) $b['frt_menit'], 1, ',', '.') ?></td>
                             <td class="text-end"><?= (int) $b['lead_jadi'] ?> / <?= (int) $b['lead'] ?></td>
                             <td class="text-end"><?= $b['resolusi'] === null ? '&mdash;' : number_format((float) $b['resolusi'], 1, ',', '.') ?></td>
@@ -352,9 +339,24 @@ $tooltip = [
 <?= $this->section('js') ?>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
 <?php
+// Legenda grafik "Tren" di ponsel: nama seri yang panjang pernah memaksa legenda
+// menumpuk jadi tiga baris, jadi ruangnya dibeli dari bentuk, bukan dari kata:
+// kotak warna 8px, jarak antar butir 8px, teks 9,5px, plus padding kiri-kanan
+// kartu grafik 1,25rem -> 0,5rem (lihat .kpi-kanvas di blok css). Jauhnya warna
+// pertama dari tepi kartu = padding kartu + sisa ruang di dalam kanvas: 8 + 14 =
+// 22px di layar 360px (sebelumnya 4 + 9 = 13px dan ditolak: "terlalu mepet"),
+// 8 + 29 = 37px di 390px. Desktop: teks legenda dinaikkan 12px -> 14px atas
+// permintaan ("yng di dekstop ukurannya dibuat lebih gede"), kotak 40px + jarak
+// 10px tetap; masih satu baris di 1280/1366/1440/1600/1920px.
+// Seri "SLA fulfillment (jam)" ikut dicabut bersama indikator admin, jadi legenda
+// cuma tinggal dua nama; ukuran di atas dibiarkan karena masih dipakai keduanya.
+// NAMA SERI TIDAK BOLEH DIPENDEKKAN — user menolak "Nilai transaksi"/"Order"
+// ditulis ulang: "penulisanya disesuaikan dengan yang asli jangan engganti nama".
 $js = <<< JS
     \$(function() {
         'use strict';
+
+        var sempit = window.innerWidth < 768;
 
         var kanvas = document.getElementById('trenKpi');
 
@@ -372,15 +374,6 @@ $js = <<< JS
                         fill: false,
                         yAxisID: 'y-axis-1'
                     }, {
-                        label: 'SLA fulfillment (jam)',
-                        type: 'line',
-                        data: {$sla_tren},
-                        borderColor: '#0ea5e9',
-                        backgroundColor: '#0ea5e9',
-                        fill: false,
-                        steppedLine: true,
-                        yAxisID: 'y-axis-2'
-                    }, {
                         label: 'Jumlah order',
                         data: {$order_tren},
                         backgroundColor: '#e2e8f0',
@@ -390,6 +383,13 @@ $js = <<< JS
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    legend: {
+                        labels: {
+                            boxWidth: sempit ? 8 : 40,
+                            padding: sempit ? 8 : 10,
+                            fontSize: sempit ? 9.5 : 14
+                        }
+                    },
                     scales: {
                         yAxes: [{
                             id: 'y-axis-0',
@@ -400,10 +400,6 @@ $js = <<< JS
                             position: 'right',
                             gridLines: { drawOnChartArea: false },
                             ticks: { beginAtZero: true, callback: function (v) { return 'Rp ' + (v / 1000000).toFixed(0) + ' jt'; } }
-                        }, {
-                            id: 'y-axis-2',
-                            display: false,
-                            ticks: { beginAtZero: true }
                         }]
                     }
                 }

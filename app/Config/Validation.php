@@ -187,9 +187,20 @@ class Validation extends BaseConfig
     public $tambahPembayaran = [
         'invoice_id'       => 'required|integer',
         'sumber_dana'      => 'required',
-        'total_pembayaran' => 'required|integer',
+        // nominal wajib lebih dari nol: minus akan mengurangi pembayaran yang sudah
+        // masuk, nol hanya membuat baris kosong yang tidak pernah bisa dinilai
+        'total_pembayaran' => 'required|integer|greater_than[0]',
         // 'status' 			=> 'required',
         'tanggal_pembayaran' => 'required',
+    ];
+    // aturan ini dipakai halaman admin dan CS, jadi pesannya dibahasakan di sini
+    public $tambahPembayaran_errors = [
+        'total_pembayaran' => [
+            'required'     => 'Jumlah dana belum diisi.',
+            'integer'      => 'Jumlah dana hanya boleh angka bulat, tanpa minus atau desimal.',
+            'numeric'      => 'Jumlah dana hanya boleh angka bulat, tanpa minus atau desimal.',
+            'greater_than' => 'Jumlah dana harus lebih dari nol.',
+        ],
     ];
     public $updatePembayaran = [
         'id_pembayaran' => 'required|integer',

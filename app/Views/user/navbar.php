@@ -9,6 +9,8 @@ $isTrxAktif   = url_is('user/invoices*');
 $isChartAktif = url_is('user/chart*');
 // katalog produk CS dilayani halaman yang sama dengan admin (read-only)
 $isProdukAktif = url_is('admin/produk*');
+// live chat WA: CS membuka & membalas chat dari halaman admin yang sama (baca/kirim saja)
+$isChatAktif   = url_is('admin/crm/chat*');
 ?>
 
 <!-- Topbar khusus layar kecil; di desktop lonceng notifikasi melayang sendiri
@@ -97,6 +99,12 @@ $isProdukAktif = url_is('admin/produk*');
                 <a class="sidebar-link <?= $isProdukAktif ? 'active' : '' ?>" href="<?= site_url('admin/produk') ?>">
                     <i class="sidebar-link-icon fal fa-box-alt"></i>
                     <span>Katalog Produk</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="sidebar-link <?= $isChatAktif ? 'active' : '' ?>" href="<?= site_url('admin/crm/chat') ?>">
+                    <i class="sidebar-link-icon fal fa-comments"></i>
+                    <span>Live Chat WA</span>
                 </a>
             </li>
         </ul>

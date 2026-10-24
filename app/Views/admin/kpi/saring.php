@@ -64,7 +64,12 @@ $ikut = array_filter([
                 'selected' => $s['user_id'] ?? 0,
             ]) ?>
         </div>
-        <div class="col-6 col-md-2">
+        <!-- Toko adalah isian ganjil (5 field, dipasangkan dua per baris), jadi di
+             layar sempit ia sendirian di barisnya. Kalau tetap col-6, separuh baris
+             kosong dan teks panjangnya (Semua toko milik akun ini) terpotong.
+             col-12 membuatnya mengisi penuh baris terakhir di mobile; col-md-2
+             tetap sama seperti isian lain di layar sedang ke besar. -->
+        <div class="col-12 col-md-2">
             <?= form_label('Toko', 'juragan', ['class' => 'form-label small']) ?>
             <?= form_dropdown([
                 'class'    => 'form-select form-select-sm',
@@ -73,9 +78,17 @@ $ikut = array_filter([
                 'selected' => $s['juragan_id'],
             ]) ?>
         </div>
-        <div class="col-12 text-end pt-1">
-            <?= form_submit(['class' => 'btn btn-sm btn-primary', 'value' => 'Terapkan']) ?>
-            <a class="btn btn-sm btn-link text-muted" href="<?= site_url($aksi) ?>">Reset</a>
+        <!-- Tombol duduk sebaris dengan isian (rata kanan, sejajar dasar field)
+             di layar lebar lewat kolomnya sendiri; row sudah align-items-end jadi
+             dasar tombol menempel rata dengan dasar kotak input. Di layar sempit
+             ia turun ke barisnya sendiri tetapi tetap rata kanan. Flex internal
+             dengan align-items-center membuat "Terapkan" dan "Reset" sejajar satu
+             sama lain, bukan sekadar sebaris teks yang baselinenya beda. -->
+        <div class="col-12 col-lg-2">
+            <div class="d-flex flex-wrap align-items-center justify-content-end gap-2">
+                <?= form_submit(['class' => 'btn btn-sm btn-primary', 'value' => 'Terapkan']) ?>
+                <a class="btn btn-sm btn-link text-muted px-1" href="<?= site_url($aksi) ?>">Reset</a>
+            </div>
         </div>
         <?= form_close(); ?>
     </div>

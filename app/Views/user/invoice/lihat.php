@@ -27,6 +27,12 @@ $pager    = \Config\Services::pager();
 $sekarang = new Time('now');
 $session  = \Config\Services::session();
 
+// CS pada layar ini hanya membuat orderan, mencatat pembayaran, dan mencatat barang
+// sewaan yang kembali. Kalau Superadmin memberi wewenang sunting transaksi di
+// akunnya, tombol Sunting dan Proses Orderan ikut muncul di daftar ini juga —
+// bukan di layar Admin. Batas tokonya tetap sama seperti sebelumnya.
+$kelolaTransaksi = wewenang_sunting_transaksi();
+
 ?>
 <?= $this->extend('template/main') ?>
 
@@ -473,6 +479,7 @@ $session  = \Config\Services::session();
                                                 'content'        => '<i class="fal fa-info-circle"></i> <span class="sr-only">info</span>',
                                                 'data-invoice'   => $pesanan->id_invoice,
                                                 'data-juragan'   => $pesanan->juragan_id,
+                                                'data-seri'      => $pesanan->seri,
                                                 'data-bs-target' => '#modalBayar',
                                                 'data-bs-toggle' => 'modal',
                                                 'style'          => 'border:none; background:transparent',
@@ -694,6 +701,23 @@ $session  = \Config\Services::session();
                 <hr class="my-3 border-0 border-t border-ink-200 opacity-100" />
 
                 <div class="aksi flex flex-wrap items-center gap-1.5 sm:gap-2">
+                    <?php if ($kelolaTransaksi) : ?>
+                        <?= anchor('admin/invoices/sunting/' . esc($pesanan->seri), '<i class="fal fa-pen-to-square"></i> Sunting', [
+                            'class' => 'btn btn-sm rounded-lg btn-outline-secondary',
+                            'role'  => 'button',
+                            'title' => 'Ubah isi nota, ukuran, harga, dan pelanggan',
+                        ]) ?>
+                        <?php if ((int) $pesanan->status_pembayaran > 2 && ! $dipacking) : ?>
+                            <?= form_button([
+                                'class'          => 'btn btn-sm rounded-lg btn-dark pesanStatus',
+                                'content'        => '<i class="fal fa-comment-alt-plus"></i> Proses Orderan',
+                                'data-invoice'   => $pesanan->id_invoice,
+                                'data-seri'      => $pesanan->seri,
+                                'data-bs-target' => '#modalProgress',
+                                'data-bs-toggle' => 'modal',
+                            ]) ?>
+                        <?php endif; ?>
+                    <?php endif; ?>
                     <?php if (! $sudah_lunas) : ?>
                         <?= form_button([
                             'class'          => 'btn btn-sm rounded-lg btn-outline-secondary tambahBayar',
@@ -770,18 +794,82 @@ $session  = \Config\Services::session();
 
 <?= $this->section('modal') ?>
 
-<!-- Modal cek pembayaran -->
-<div class="modal fade" id="modalBayar" tabindex="-1" aria-labelledby="modalBayarLabel" aria-hidden="true">
+<?php if ($kelolaTransaksi) : ?>
+<!-- Modal status proses orderan: sama seperti di layar Admin, satu baris catatan per
+     tahap dan tidak bisa diubah setelah tersimpan -->
+<div class="modal fade" id="modalProgress" tabindex="-1" aria-labelledby="modalProgressLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
+        <?= form_open('', ['class' => 'modal-content', 'id' => 'newStatus'], ['id_invoice' => '']) ?>
+        <div class="modal-header">
+            <h5 class="modal-title" id="modalProgressLabel">Status Proses Orderan</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <div class="mb-3">
+                <?= form_label('Pilih Status', 'status', ['class' => 'form-label']) ?>
+                <div class="row g-2">
+                    <div class="col-7 col-sm-8">
+                        <?php
+                        $list_status = [
+                            ''  => 'Pilih status',
+                            '1' => 'Data Pesanan',
+                            '2' => 'Bahan Produk',
+                            '3' => 'Sablon',
+                            '4' => 'Bordir',
+                            '5' => 'Penjahit',
+                            '6' => 'QC',
+                            '7' => 'Packing',
+                        ];
+                        echo form_dropdown('status', $list_status, '', ['class' => 'form-select', 'id' => 'status', 'required' => '']);
+                        ?>
+                    </div>
+                    <div class="col-5 col-sm-4">
+                        <?= form_dropdown('stat', ['' => 'Pilih', '1' => 'Ada', '0' => 'Tidak Ada'], '', ['class' => 'form-select', 'id' => 'stat', 'required' => '', 'disabled' => '']); ?>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <?= form_label('Note / Keterangan', 'keterangan', ['class' => 'form-label']); ?>
+                <?= form_input(['name' => 'keterangan', 'id' => 'keterangan', 'class' => 'form-control', 'placeholder' => 'opsional']) ?>
+            </div>
+
+            <div class="bg-warning p-2 border rounded">
+                Perlu diingat, penambahan "status proses orderan" ini tidak bisa diubah.
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-link text-decoration-none" data-bs-dismiss="modal">Batal</button>
+            <button type="submit" class="btn btn-primary">Simpan</button>
+        </div>
+        <?= form_close() ?>
+    </div>
+</div>
+<?php endif; ?>
+
+<!-- Modal riwayat pembayaran -->
+<div class="modal fade" id="modalBayar" tabindex="-1" aria-labelledby="modalBayarLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="modalBayarLabel">Info Pembayaran</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-
-                </button>
+                <div class="d-flex align-items-center gap-3 min-w-0">
+                    <span class="bayar-ikon"><i class="fal fa-wallet"></i></span>
+                    <div class="min-w-0">
+                        <h5 class="modal-title mb-0" id="modalBayarLabel">Riwayat Pembayaran</h5>
+                        <div class="small text-muted" id="bayarSeri"></div>
+                    </div>
+                </div>
+                <button type="button" class="btn-close ms-auto flex-shrink-0" data-bs-dismiss="modal" aria-label="Tutup"></button>
             </div>
             <div class="modal-body">
-                <div id="cek">...</div>
+                <div class="bayar-catatan mb-3">
+                    <i class="fal fa-circle-info"></i>
+                    <span>Catatannya permanen: pembayaran yang sudah tersimpan tidak bisa dihapus atau diubah. Yang menilai apakah dananya benar-benar masuk hanya Superadmin.</span>
+                </div>
+
+                <div id="cek" class="daftar-bayar">
+                    <div class="text-muted small text-center py-3">memuat pembayaran ...</div>
+                </div>
             </div>
         </div>
     </div>
@@ -790,44 +878,65 @@ $session  = \Config\Services::session();
 <!-- Modal tambah pembayaran -->
 <div class="modal fade" id="modalTambahBayar" tabindex="-1" aria-labelledby="modalTambahBayarLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="modalTambahBayarLabel">Tambah Pembayaran</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="bg-warning p-2 rounded mt-2">
-                    Perlu diingat, detail pembayaran tidak bisa dihapus atau diubah
+        <?= form_open('', ['class' => 'modal-content', 'id' => 'tambahPembayaran'], ['invoice_id' => '']) ?>
+        <div class="modal-header">
+            <div class="d-flex align-items-center gap-3 min-w-0">
+                <span class="bayar-ikon"><i class="fal fa-plus-circle"></i></span>
+                <div class="min-w-0">
+                    <h5 class="modal-title mb-0" id="modalTambahBayarLabel">Tambah Pembayaran</h5>
+                    <div class="small text-muted" id="tambahBayarSeri"></div>
                 </div>
+            </div>
+            <button type="button" class="btn-close ms-auto flex-shrink-0" data-bs-dismiss="modal" aria-label="Tutup"></button>
+        </div>
+        <div class="modal-body">
+            <div class="bayar-catatan mb-3">
+                <i class="fal fa-circle-info"></i>
+                <span>Pembayaran yang tersimpan tidak bisa dihapus atau diubah, jadi pastikan rekening, tanggal, dan nominalnya sudah benar.</span>
+            </div>
 
-                <div class="tab-content mt-3" id="myTabContent">
-                    <?= form_open('', ['id' => 'tambahPembayaran'], ['invoice_id' => '']) ?>
-                    <div class="row mb-0 gx-2">
-                        <div class="col-6 form-group mb-3">
-                            <?= form_label('Tujuan Bayar', 'tujuan', ['class' => 'form-label']) ?>
-                            <?= form_dropdown('sumber_dana', [], '', ['class' => 'form-select', 'required' => '', 'id' => 'tujuan']) ?>
-                            <div class="small text-danger mt-1 d-none" id="tujuan-galat">
-                                Toko ini belum punya rekening pembayaran. Hubungi Admin toko
-                                untuk menambahkannya di Pengaturan › Juragan.
-                            </div>
-                        </div>
-                        <div class="col-6 form-group mb-3">
-                            <?= form_label('Tanggal Bayar', 'tanggal_bayar', ['class' => 'form-label']) ?>
-                            <?= form_input('tanggal_pembayaran', set_value('tanggal_pembayaran', $sekarang->toDateString()), ['class' => 'form-control', 'id' => 'tanggal_pembayaran', 'required' => '', 'max' => $sekarang->toDateString()], 'date') ?>
-                        </div>
-                        <div class="col-6 form-group mb-3">
-                            <?= form_label('Jumlah Dana', 'jumlah_dana', ['class' => 'form-label']) ?>
-                            <?= form_input(['name' => 'total_pembayaran', 'class' => 'form-control', 'id' => 'jumlah_dana', 'required' => '', 'placeholder' => '200000', 'type' => 'number', 'min' => '1']) ?>
-                        </div>
+            <div class="row gx-2">
+                <div class="col-12 col-sm-6 form-group mb-3">
+                    <?= form_label('Tujuan Bayar', 'tujuan', ['class' => 'form-label']) ?>
+                    <?= form_dropdown('sumber_dana', [], '', ['class' => 'form-select', 'required' => '', 'id' => 'tujuan']) ?>
+                    <div class="small text-danger mt-1 d-none" id="tujuan-galat">
+                        Toko ini belum punya rekening pembayaran. Hubungi Admin toko
+                        untuk menambahkannya di Pengaturan › Juragan.
                     </div>
-                    <hr>
-                    <button class="btn btn-primary" type="submit">Simpan</button>
-                    <?= form_close(); ?>
+                </div>
+                <div class="col-12 col-sm-6 form-group mb-3">
+                    <?= form_label('Tanggal Bayar', 'tanggal_bayar', ['class' => 'form-label']) ?>
+                    <?= form_input('tanggal_pembayaran', set_value('tanggal_pembayaran', $sekarang->toDateString()), ['class' => 'form-control', 'id' => 'tanggal_pembayaran', 'required' => '', 'max' => $sekarang->toDateString()], 'date') ?>
+                </div>
+                <?php /* type=text + inputmode=numeric + saringan JS: kolom number bawaan
+                   browser masih membolehkan tanda minus, titik, dan huruf e diketik,
+                   dan form ini dikirim lewat AJAX sehingga validasi native tidak pernah
+                   sempat menolaknya */ ?>
+                <div class="col-12 form-group mb-0">
+                    <?= form_label('Jumlah Dana', 'jumlah_dana', ['class' => 'form-label']) ?>
+                    <div class="bayar-rp">
+                        <span class="mata">Rp</span>
+                        <?= form_input([
+                            'name'         => 'total_pembayaran',
+                            'class'        => 'form-control',
+                            'id'           => 'jumlah_dana',
+                            'required'     => '',
+                            'placeholder'  => '299000',
+                            'type'         => 'text',
+                            'inputmode'    => 'numeric',
+                            'autocomplete' => 'off',
+                            'pattern'      => '[0-9]+',
+                        ]) ?>
+                    </div>
+                    <div class="form-text bayar-pratinjau" id="jumlah-bantuan">Hanya angka bulat &mdash; tanpa minus, titik, atau koma.</div>
                 </div>
             </div>
         </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-link text-decoration-none" data-bs-dismiss="modal">Batal</button>
+            <button class="btn btn-primary" type="submit"><i class="fal fa-save me-1"></i>Simpan</button>
+        </div>
+        <?= form_close(); ?>
     </div>
 </div>
 
@@ -919,6 +1028,12 @@ $link_tambah_pembayaran  = site_url('user/invoices/simpan_pembayaran');
 $link_sewa_kembali       = site_url('user/invoices/sewa_kembali');
 $link_api_counter_tab    = site_url('api/invoice/counter_tab/' . $juragan_id);
 
+// jalur sunting (tahap proses orderan) tinggal ada di sisi admin; tombol yang
+// memanggilnya pun tidak dirender tanpa wewenang
+$link_get_status_invoice = site_url('admin/invoices/detail_status/');
+$link_save_progress      = site_url('admin/invoices/save_progress');
+$boleh_sunting_js        = $kelolaTransaksi ? 'true' : 'false';
+
 $js = <<< JS
     $(function() {
     	'use strict';
@@ -941,69 +1056,156 @@ $js = <<< JS
     	});
 
 
-    	// cek pembayaran
-    	$('.pesanBayar').on('click',function(){
-    		let juragan = $(this).data('juragan'),
-    			id = $(this).data('invoice'),
-    			dv_list =$("<div/>").addClass('list-group list-group-flushs').attr('id', 'list_pembayaran');
+    	// wewenang sunting transaksi; dihitung PHP di atas. Tanpa wewenang itu tombol
+    	// Proses Orderan memang tidak dirender, jadi penangan di bawah tidak pernah
+    	// punya pemanggil
+    	var boleh_sunting = {$boleh_sunting_js};
 
-    			$.getJSON('{$link_api_get_pembayaran}', {id:id}, function(bayar){
-    			for (let i = 0; i < bayar.length; i++) {
-    				var label = $('<div/>').addClass('list-group-item list-group-action');
+    	// status proses orderan: tahap mana yang boleh dipilih ditentukan dari catatan
+    	// terakhir nota ini, supaya tidak ada tahap yang dilompati
+    	$('.pesanStatus').on('click', function() {
+    		if (! boleh_sunting) { return; }
 
-    				var info = '';
-    				var ico = '';
-    				var btn = '';
+    		let id = $(this).data('invoice');
 
-    				switch (bayar[i].status) {
-    					case 2:
-    						btn = ``;
-    						ico = 'times-circle text-danger';
-    						info = 'dana tidak ada, sudah cek pada: '+ tanggal(bayar[i].tanggal_cek);
-    						break;
+    		$('#newStatus [name="id_invoice"]').val(id);
+    		$("#status option").prop('disabled', false);
+    		$('#stat option').prop('disabled', false);
 
-    					case 3:
-    						btn = ``;
-    						ico = 'check-circle text-success';
-    						info = 'dana ada, sudah cek pada: '+ tanggal(bayar[i].tanggal_cek);
-    						break;
-
-    					default:
-    						btn = ``;
-    						ico = 'minus-circle text-info';
-    						info = 'dana belum dicek';
-    						break;
-    				}
-
-    				var bta = ``;
-
-    				if (bayar[i].status !== 1) {
-    					bta = '';
-    				}
-
-    				var bank = bayar[i].atas_nama;
-    				if (bayar[i].sumber > 2) {
-    					bank = bayar[i].nama + ' (' + bayar[i].atas_nama + ')';
-    				}
-
-    				var dv = $(`
-    				<div class="d-flex justify-content-between">
-    					<div class="d-flex justify-content-start align-items-center">
-    						<i class="fal fa-`+ ico +` fa-2x me-3"></i>
-    						<div>
-    							<span class="me-1">`+ bank.toUpperCase() +`</span> <span class="me-1">`+ bayar[i].nominal +`</span> <span>(`+ tanggal(bayar[i].tanggal_bayar) +`)</span>
-    							<div class="text-muted small">`+ info +`</div>
-    						</div>
-    					</div>
-    					`+ bta +`
-    				</div>
-    				`);
-
-    				label.append(dv);
-    				dv_list.append(label);
-
-    				$('#modalBayar #cek').empty().append(dv_list);
+    		$.get("{$link_get_status_invoice}" + id, function(data) {
+    			if (data.length === 0) {
+    				$("#status option").not('option[value=1]').each(function (index) {
+    					$(this).prop('disabled', true);
+    				});
+    			} else if (data[0].tanggal_selesai === null) {
+    				$("#status option").not('option[value=' + data[0].status + ']').each(function (index) {
+    					$(this).prop('disabled', true);
+    				});
+    				$('#stat option').not('option[value=1]').prop('disabled', true);
     			}
+    		});
+    	});
+
+    	// label kolom kedua ikut tahap yang dipilih: "Selesai/Masuk", "Ada/Belum Ada"
+    	$("#status").change(function() {
+    		let val = this.value;
+    		let stat = $('#stat');
+    		let v1 = $('#stat option[value=1]');
+    		let v0 = $('#stat option[value=0]');
+
+    		stat.val('');
+
+    		if (val !== '') {
+    			stat.prop('disabled', false);
+    		} else {
+    			stat.prop('disabled', true);
+    		}
+
+    		if (val == 1) {
+    			v1.text('Lengkap');
+    			v0.text('Tidak Lengkap');
+    		} else if (val == 2) {
+    			v1.text('Ada');
+    			v0.text('Belum Ada');
+    		} else {
+    			v1.text('Selesai');
+    			v0.text('Masuk');
+    		}
+    	});
+
+    	// simpan satu catatan tahap; server menjawab alamat daftar milik akun ini,
+    	// jadi CS kembali ke layar transaksinya sendiri, bukan ke layar Admin
+    	var requestStatus;
+    	$('#newStatus').on('submit', function(f) {
+    		f.preventDefault();
+    		f.stopPropagation();
+
+    		if (requestStatus) {
+    			requestStatus.abort();
+    		}
+
+    		var form = $(this);
+    		var inputs = form.find("input, select, button, textarea");
+    		var data = form.serialize();
+
+    		inputs.prop("disabled", true);
+
+    		requestStatus = $.ajax({
+    			url: "{$link_save_progress}",
+    			type: "post",
+    			data: data
+    		});
+
+    		requestStatus.done(function (response) {
+    			document.location.href = response.url;
+    		});
+
+    		requestStatus.fail(function (jqXHR) {
+    			var err = jqXHR.responseJSON || {};
+
+    			for (var k in err) { alert(err[k]); break; }
+    		});
+
+    		requestStatus.always(function () {
+    			inputs.prop("disabled", false);
+    		});
+    	});
+
+    	// riwayat pembayaran: kartu yang sama seperti di layar Admin, hanya tanpa
+    	// tombol nilai -- menilai dana masuk adalah hak Superadmin
+    	$('.pesanBayar').on('click', function() {
+    		let id   = $(this).data('invoice'),
+    			seri = $(this).data('seri') || '';
+
+    		$('#modalBayar #bayarSeri').text(seri === '' ? '' : 'Nota ' + seri);
+    		$('#modalBayar #cek').html('<div class="text-muted small text-center py-3">memuat pembayaran ...</div>');
+
+    		$.getJSON('{$link_api_get_pembayaran}', { id: id }, function(bayar){
+    			var daftar = $('<div/>').addClass('daftar-bayar');
+
+    			if (! bayar.length) {
+    				$('#modalBayar #cek').html('<div class="text-muted small text-center py-3">Belum ada pembayaran tercatat pada nota ini.</div>');
+    				return;
+    			}
+
+    			for (let i = 0; i < bayar.length; i++) {
+    				var sumber = bayar[i].sumber > 2
+    					? bayar[i].nama + ' (' + bayar[i].atas_nama + ')'
+    					: bayar[i].nama;
+
+    				var status = '<span class="bayar-status"><i class="fal fa-question"></i> Belum dicek</span>';
+
+    				if (bayar[i].status === 3) {
+    					status = '<span class="bayar-status ada"><i class="fal fa-check"></i> Dana ada</span>';
+    				} else if (bayar[i].status === 2) {
+    					status = '<span class="bayar-status tidak"><i class="fal fa-xmark"></i> Dana tidak ada</span>';
+    				}
+
+    				var dinilai = bayar[i].tanggal_cek === null
+    					? ''
+    					: '<div class="bayar-waktu">dinilai ' + tanggal(bayar[i].tanggal_cek) + '</div>';
+
+    				daftar.append($(
+    					'<div class="bayar-kartu">'
+    						+ '<div class="d-flex align-items-center gap-3">'
+    							+ '<span class="bayar-ikon' + (bayar[i].sumber > 2 ? '' : ' tunai') + '">'
+    								+ '<i class="fal ' + (bayar[i].sumber > 2 ? 'fa-university' : 'fa-wallet') + '"></i>'
+    							+ '</span>'
+    							+ '<div class="flex-grow-1 min-w-0">'
+    								+ '<div class="bayar-sumber">' + sumber + '</div>'
+    								+ '<div class="d-flex flex-wrap align-items-baseline gap-2">'
+    									+ '<span class="bayar-nominal">' + bayar[i].nominal + '</span>'
+    									+ '<span class="bayar-waktu">' + tanggal(bayar[i].tanggal_bayar) + '</span>'
+    								+ '</div>'
+    								+ dinilai
+    							+ '</div>'
+    							+ status
+    						+ '</div>'
+    					+ '</div>'
+    				));
+    			}
+
+    			$('#modalBayar #cek').empty().append(daftar);
     		});
     	});
 
@@ -1040,19 +1242,44 @@ $js = <<< JS
     		});
     	});
 
+    	// jumlah dana: hanya angka bulat positif. Kolomnya sengaja type=text supaya
+    	// tanda minus, titik, dan huruf e tidak bisa masuk sama sekali; nol ikut
+    	// dibuang karena pembayaran bernilai nol tidak berarti apa-apa
+    	function rapiJumlahDana() {
+    		var kolom = document.getElementById('jumlah_dana');
+
+    		if (! kolom) { return; }
+
+    		var bersih = kolom.value.replace(/\D/g, '').replace(/^0+/, '');
+
+    		if (bersih !== kolom.value) {
+    			kolom.value = bersih;
+    		}
+
+    		$('#jumlah-bantuan').text(bersih === ''
+    			? 'Hanya angka bulat - tanpa minus, titik, atau koma.'
+    			: 'Akan dicatat: Rp ' + bersih.replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
+    	}
+
+    	$('#jumlah_dana').on('input blur', rapiJumlahDana);
+
     	// tambah pembayaran
     	$('.tambahBayar').on('click',function(){
-    		let juragan = $(this).data('juragan'),
-    			id = $(this).data('invoice'),
-    			kekurangan = $(this).data('kurang'),
-    			ttl = $('#myTabContent [name="total_pembayaran"]');
+    		let tombol = $(this),
+    			juragan = tombol.data('juragan'),
+    			id = tombol.data('invoice'),
+    			kekurangan = tombol.data('kurang'),
+    			ttl = $('#jumlah_dana');
 
     		// invoice_id
-    		$('#myTabContent [name="invoice_id"]').val(id);
+    		$('#tambahPembayaran [name="invoice_id"]').val(id);
+    		$('#tambahBayarSeri').text(tombol.data('seri') ? 'Nota ' + tombol.data('seri') : '');
     		ttl.val('');
     		if (parseInt(kekurangan)>0) {
     			ttl.val(kekurangan);
     		}
+
+    		rapiJumlahDana();
 
     		// set dropdown sumber_dana
     		$.getJSON('{$link_api_get_bank}', function(data){
@@ -1079,6 +1306,16 @@ $js = <<< JS
     	tambah_pay.on('submit',function(f){
     		f.preventDefault(),
     		f.stopPropagation();
+
+    		// minus dan nol sudah dibuang saat mengetik; ini jaring pengaman kalau
+    		// kolomnya ditinggalkan kosong atau nilainya diisi lewat alat lain
+    		var nominal = parseInt($('#jumlah_dana').val(), 10);
+
+    		if (! nominal || nominal < 1) {
+    			alert('Jumlah dana harus angka, lebih dari nol.');
+
+    			return false;
+    		}
 
     		// Abort any pending request
     		if (req_pay) {

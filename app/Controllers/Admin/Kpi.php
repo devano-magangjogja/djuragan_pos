@@ -73,10 +73,22 @@ class Kpi extends BaseController
         $s     = $this->saring();
         $model = new KpiModel();
 
+        $batas     = $this->batas((string) $this->request->getGet('batas'));
+        $halaman   = $this->halaman();
+        $peringkat = $model->peringkat($s);
+
+        // nomor halaman di luar daftar dijepit ke halaman terakhir supaya judul
+        // "X sampai Y dari Z orang" tidak pernah terbalik
+        $halaman = min($halaman, max(0, (int) ceil(count($peringkat) / $batas) - 1));
+
         return view('admin/kpi/ranking', [
             'title'     => 'Ranking Karyawan',
             's'         => $s,
-            'peringkat' => $model->peringkat($s),
+            'peringkat' => $peringkat,
+            'baris'     => array_slice($peringkat, $halaman * $batas, $batas),
+            'jumlah'    => count($peringkat),
+            'batas'     => $batas,
+            'halaman'   => $halaman,
             'aturan'    => $model->aturanPoin($s),
             'luar'      => KpiModel::TIDAK_TERNILAI,
             'pegawai'   => $model->pegawaiPilihan($s['peran']),
@@ -123,10 +135,19 @@ class Kpi extends BaseController
     /**
      * Daftar target dan bobot, sekaligus tempat mengubahnya.
      *
-     * @return string
+     * Khusus Superadmin. Admin hanya menilai hasilnya (Ringkasan, Ranking, Detail),
+     * karena angka target adalah keputusan manajemen, bukan kerja harian toko.
+     *
+     * @return string|\CodeIgniter\HTTP\RedirectResponse
      */
     public function target()
     {
+        // rutenya sudah memagari; ini pagar kedua sekaligus jawaban yang lebih
+        // sopan daripada halaman login: admin dikembalikan ke Ringkasan KPI
+        if (! $this->bolehUbah()) {
+            return redirect()->to('admin/kpi');
+        }
+
         $model = new KpiModel();
 
         return view('admin/kpi/target', [
@@ -281,10 +302,13 @@ class Kpi extends BaseController
         return in_array((int) $batas, self::HALAMAN, true) ? (int) $batas : self::HALAMAN[0];
     }
 
-    /** Hanya admin dan superadmin; rutenya sudah membatasi, ini pagar kedua. */
+    /**
+     * Menentukan target dan bobot hanya boleh Superadmin. Rutenya sudah membatasi,
+     * ini pagar kedua: admin cukup melihat ringkasan dan ranking.
+     */
     private function bolehUbah(): bool
     {
-        return in_array(session()->get('level'), ['admin', 'superadmin'], true);
+        return (string) session()->get('level') === 'superadmin';
     }
 
     private function tanggal(string $nilai): string

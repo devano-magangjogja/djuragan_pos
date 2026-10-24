@@ -381,7 +381,9 @@ class Invoices extends BaseController
             }
 
             // dua-duanya harus milik akun ini: notasinya dan toko tujuan pemindahannya
-            if (! $this->notaMilikToko($invoice_id) || ! $this->bolehToko((int) $this->request->getPost('juragan'))) {
+            $nota = $this->notaMilikToko($invoice_id);
+
+            if ($nota === null || ! $this->bolehToko((int) $this->request->getPost('juragan'))) {
                 $this->response->setStatusCode(406);
 
                 return $this->response->setJSON(['juragan' => 'Toko ini tidak berada di bawah akun Anda.']);
@@ -394,7 +396,13 @@ class Invoices extends BaseController
                 'pemesan_id'     => $this->request->getPost('id_pemesan'),
                 'kirimKepada_id' => $this->request->getPost('id_kirimKe'),
                 'juragan_id'     => $this->request->getPost('juragan'),
-                'user_id'        => $user_id,
+                // memindah penanggung jawab nota khusus admin & superadmin: CS tidak
+                // melihat pilihan itu di form-nya (pembuatnya sudah sepaket dengan
+                // tokonya) dan nilai kiriman palsu diabaikan, jadi GMV/KPI orang lain
+                // tidak bisa digeser lewat suntingan
+                'user_id'        => in_array((string) session()->get('level'), ['admin', 'superadmin'], true)
+                    ? $user_id
+                    : $nota->user_id,
                 'keterangan'     => ($this->request->getPost('keterangan') !== '' ? $this->request->getPost('keterangan') : null),
             ];
 
@@ -480,7 +488,7 @@ class Invoices extends BaseController
 
             $ret = [
                 'status' => 'data tersimpan',
-                'url'    => site_url('admin/invoices/lihat/semua/semua?cari[kolom]=id&cari[q]=' . $invoice_id),
+                'url'    => $this->urlKembaliNota($invoice_id, (int) $this->request->getPost('juragan')),
             ];
 
             return $this->response->setJSON($ret);
@@ -508,7 +516,9 @@ class Invoices extends BaseController
             $keterangan = $this->request->getPost('keterangan');
 
             // progres hanya boleh diisi untuk nota di toko sendiri
-            if ($this->notaMilikToko((int) $invoice_id) === null) {
+            $nota = $this->notaMilikToko((int) $invoice_id);
+
+            if ($nota === null) {
                 return $this->tolakToko();
             }
 
@@ -548,7 +558,7 @@ class Invoices extends BaseController
 
             $response = [
                 'status' => 200,
-                'url'    => site_url('admin/invoices/lihat/semua/semua?cari[kolom]=id&cari[q]=' . $invoice_id),
+                'url'    => $this->urlKembaliNota((int) $invoice_id, (int) $nota->juragan_id),
             ];
 
             return $this->response->setJSON($response);
@@ -700,9 +710,24 @@ class Invoices extends BaseController
         }
     }
 
-    // update status pembayaran
+    /**
+     * Nilai satu pembayaran: "dana ada" atau "dana tidak ada".
+     *
+     * Khusus Superadmin. Memastikan uang benar-benar masuk adalah keputusan
+     * pemilik toko, dan sekali dinilai statusnya tidak bisa dikembalikan lagi —
+     * jadi admin, CS bersertifikat sunting, dan akun lain hanya melihat riwayat
+     * pembayarannya saja. Tombolnya memang tidak dirender untuk mereka; ini pagar
+     * keduanya, supaya panggilan langsung ke alamat ini juga ditolak.
+     */
     public function update_bayar()
     {
+        // hanya Superadmin yang boleh mengecek pembayaran
+        if ((string) session()->get('level') !== 'superadmin') {
+            $this->response->setStatusCode(403);
+
+            return $this->response->setJSON(['status' => 'Hanya Superadmin yang boleh mengecek pembayaran.']);
+        }
+
         $validation = \Config\Services::validation();
 
         if ($this->request->getPost()) {
@@ -743,7 +768,7 @@ class Invoices extends BaseController
 
             $res = [
                 'status' => 'data tersimpan',
-                'url'    => site_url('admin/invoices/lihat/semua/semua?cari[kolom]=id&cari[q]=' . $invoice_id),
+                'url'    => $this->urlKembaliNota((int) $invoice_id, (int) $nota->juragan_id),
             ];
 
             return $this->response->setJSON($res);
@@ -789,6 +814,26 @@ class Invoices extends BaseController
         }
 
         throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+    }
+
+    /**
+     * Tujuan setelah satu nota berubah: kembali ke daftar transaksi milik akun ini.
+     *
+     * Admin dan superadmin memakai layar Tracking Transaksi. CS yang diberi wewenang
+     * sunting tidak dipindah ke layar itu — dia balik ke daftar transaksinya sendiri,
+     * tab Semua di toko tempat nota itu berada, dengan notasinya terpilih.
+     */
+    private function urlKembaliNota(int $invoice_id, int $juragan_id): string
+    {
+        $kueri = http_build_query(['cari' => ['kolom' => 'id', 'q' => $invoice_id]]);
+
+        if (in_array((string) session()->get('level'), ['admin', 'superadmin'], true)) {
+            return site_url('admin/invoices/lihat/semua/semua?' . $kueri);
+        }
+
+        $slug = (new JuraganModel())->select('juragan')->where('id_juragan', $juragan_id)->first()?->juragan ?? '';
+
+        return site_url('user/invoices/lihat/' . rawurlencode((string) $slug) . '/semua?' . $kueri);
     }
 
     public function detail_status($invoice_id)

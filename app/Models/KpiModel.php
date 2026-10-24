@@ -5,11 +5,16 @@ namespace App\Models;
 use CodeIgniter\Model;
 
 /**
- * Perhitungan KPI Admin dan Customer Service.
+ * Perhitungan KPI Customer Service.
  *
  * Semua agregasi dikerjakan MySQL; yang kembali ke controller hanya baris per
  * pegawai (puluhan baris) atau baris detail yang sudah dipaging, bukan transaksi
  * utuh, supaya halaman tetap ringan walau nota sudah puluhan ribu.
+ *
+ * Halaman ini dulu juga menampung indikator kerja admin (SLA fulfillment, return
+ * error rate, kecepatan master data, error/void rate). Semuanya sudah ditarik:
+ * KPI dipakai menilai produktivitas CS, dan tiga dari empat indikator itu tidak
+ * pernah punya jalur pencatatan sehingga selamanya tampil kosong.
  *
  * Aturan yang dipakai bersama, dan alasannya:
  *
@@ -39,12 +44,15 @@ class KpiModel extends Model
         'semua' => ['cs'],
     ];
 
-    /** Indikator yang punya jalur angka dan bisa dibuka detailnya. */
+    /**
+     * Indikator yang punya jalur angka dan bisa dibuka detailnya.
+     *
+     * Hanya yang mengukur kerja CS; sla_fulfillment dan error_void_rate ikut
+     * dikeluarkan karena keduanya indikator admin.
+     */
     public const INDIKATOR = [
         'gmv_cs',
         'order_diproses',
-        'sla_fulfillment',
-        'error_void_rate',
         'first_response_time',
         'konversi_lead',
         'resolution_time',
@@ -74,7 +82,7 @@ class KpiModel extends Model
     // ------------------------------------------------------------------
 
     /**
-     * Isi sepuluh kartu di halaman KPI.
+     * Isi kartu di halaman KPI.
      *
      * Tiap kartu membawa contoh (banyaknya sampel di balik angka) dan, kalau
      * angkanya belum bisa dihitung, alasan singkat yang bisa dibaca orang.
@@ -85,18 +93,12 @@ class KpiModel extends Model
     public function kartu(array $s): array
     {
         $nota   = $this->notePerPegawai($s);
-        $sla    = $this->slaRingkas($s);
-        $void   = $this->voidPerPegawai($s);
         $frt    = $this->frtRingkas($s);
         $lead   = $this->konversiPerPegawai($s);
         $resolusi = $this->resolusiPerPegawai($s);
 
         $order   = (int) array_sum(array_column($nota, 'jumlah_order'));
         $gmv     = (float) array_sum(array_map(static fn ($n) => $n['gmv'], $nota));
-        $diproses = (int) array_sum(array_column($nota, 'diproses'));
-        $salah   = (int) array_sum(array_column($void, 'salah'));
-        $tanpa   = (int) array_sum(array_column($void, 'tanpa_alasan'));
-        $tercatat = (int) array_sum(array_column($void, 'total'));
         $lead_i  = (int) array_sum(array_column($lead, 'lead'));
         $lead_k  = (int) array_sum(array_column($lead, 'terkonversi'));
         $res_c   = (int) array_sum(array_column($resolusi, 'contoh'));
@@ -115,45 +117,6 @@ class KpiModel extends Model
                 'satuan'        => 'nota',
                 'contoh'        => count($nota),
                 'contoh_label'  => 'karyawan',
-            ],
-            'sla_fulfillment' => [
-                'label'         => 'SLA fulfillment Admin',
-                'nilai'         => $this->bulat($sla['rata']),
-                'median'        => $this->bulat($sla['median']),
-                'satuan'        => 'jam',
-                'contoh'        => $sla['contoh'],
-                'contoh_label'  => 'nota',
-                'buang'         => $sla['buang'],
-                'tersedia'      => $sla['contoh'] > 0,
-                'alasan'        => $sla['contoh'] > 0 ? null
-                    : 'Belum ada nota lunas yang tercatat waktu bayar dan waktu siap kirimnya.',
-            ],
-            'return_error_rate' => [
-                'label'    => 'Return error rate',
-                'nilai'    => null,
-                'satuan'   => '%',
-                'contoh'   => 0,
-                'tersedia' => false,
-                'alasan'   => 'Belum ada catatan retur, jadi angkanya belum bisa dihitung.',
-            ],
-            'kecepatan_master_data' => [
-                'label'    => 'Kecepatan input master data',
-                'nilai'    => null,
-                'satuan'   => 'menit',
-                'contoh'   => 0,
-                'tersedia' => false,
-                'alasan'   => 'Belum ada catatan waktu input barang, jadi angkanya belum bisa dihitung.',
-            ],
-            'error_void_rate' => [
-                'label'         => 'Error/void rate',
-                'nilai'         => $tercatat > 0 && $diproses > 0 ? round($salah / $diproses * 100, 1) : null,
-                'satuan'        => '%',
-                'contoh'        => $diproses,
-                'contoh_label'  => 'nota',
-                'buang'         => $tanpa,
-                'tersedia'      => $tercatat > 0,
-                'alasan'        => $tercatat > 0 ? null
-                    : 'Belum ada nota dibatalkan yang tercatat siapa pembuatnya.',
             ],
             'first_response_time' => [
                 'label'         => 'First response time CS',
@@ -215,8 +178,6 @@ class KpiModel extends Model
     public function rekap(array $s, int $limit, int $offset): array
     {
         $nota  = $this->notePerPegawai($s);
-        $sla   = $this->slaPerPegawai($s);
-        $void  = $this->voidPerPegawai($s);
         $frt   = $this->frtPerPegawai($s);
         $lead  = $this->konversiPerPegawai($s);
         $resol = $this->resolusiPerPegawai($s);
@@ -224,12 +185,6 @@ class KpiModel extends Model
         foreach ($nota as &$pegawai) {
             $id = (int) $pegawai['user_id'];
 
-            $pegawai['sla_jam']     = $this->bulat($sla[$id]['rata'] ?? null);
-            $pegawai['sla_contoh']  = $sla[$id]['contoh'] ?? 0;
-            $pegawai['void_salah']  = $void[$id]['salah'] ?? 0;
-            $pegawai['void_persen'] = ($void[$id]['salah'] ?? 0) > 0 && (int) $pegawai['diproses'] > 0
-                ? round($void[$id]['salah'] / (int) $pegawai['diproses'] * 100, 1)
-                : null;
             $pegawai['frt_menit']  = $this->bulat($frt[$id]['rata'] ?? null);
             $pegawai['frt_contoh'] = $frt[$id]['contoh'] ?? 0;
             $pegawai['lead']       = $lead[$id]['lead'] ?? 0;
@@ -251,8 +206,7 @@ class KpiModel extends Model
             $nota[] = [
                 'user_id' => $id, 'pegawai' => $this->namaPegawai($id), 'level' => 'cs',
                 'jumlah_order' => 0, 'pelanggan' => 0, 'gmv' => 0, 'dibayar' => 0, 'lunas' => 0,
-                'diproses' => 0, 'sla_jam' => null, 'sla_contoh' => 0, 'void_salah' => 0,
-                'void_persen' => null, 'frt_menit' => $this->bulat($frt[$id]['rata'] ?? null),
+                'frt_menit' => $this->bulat($frt[$id]['rata'] ?? null),
                 'frt_contoh' => $frt[$id]['contoh'] ?? 0,
                 'lead' => $lead[$id]['lead'] ?? 0, 'lead_jadi' => $lead[$id]['terkonversi'] ?? 0,
                 'resolusi' => $this->bulat($resol[$id]['rata'] ?? null),
@@ -267,7 +221,7 @@ class KpiModel extends Model
     /**
      * Deretan waktu untuk grafik tren.
      *
-     * @return list<array{baki: string, order: int, gmv: float, lunas: int, sla_jam: float|null, frt_menit: float|null, void_salah: int}>
+     * @return list<array{baki: string, order: int, gmv: float, lunas: int, frt_menit: float|null}>
      */
     public function tren(array $s): array
     {
@@ -275,9 +229,7 @@ class KpiModel extends Model
         // dengan only_full_group_by menolak ekspresi tanggal yang tidak muncul di
         // GROUP BY walau aliasnya sudah dipakai
         $bakiNota  = $this->baki('o.tanggal_pesan', $s['periode']);
-        $bakiSla   = $this->baki('m.tanggal_pesan', $s['periode']);
         $bakiSesi  = $this->baki('FROM_UNIXTIME(f.waktu_masuk)', $s['periode']);
-        $bakiVoid  = $this->baki('FROM_UNIXTIME(o.deleted_at)', $s['periode']);
 
         $nota = [];
         foreach ($this->db->query('SELECT ' . $bakiNota . ' baki, COUNT(*) orderan,'
@@ -289,15 +241,6 @@ class KpiModel extends Model
             $nota[$baris['baki']] = $baris;
         }
 
-        $sla = [];
-        foreach ($this->db->query('SELECT ' . $bakiSla . ' baki,'
-            . ' COUNT(*) orderan, AVG(m.durasi_jam) rata'
-            . ' FROM (' . $this->slaDasar($s) . ') m'
-            . ' WHERE ' . $this->kondisiSla()
-            . ' GROUP BY ' . $bakiSla, $this->params($s))->getResultArray() as $baris) {
-            $sla[$baris['baki']] = $baris;
-        }
-
         $frt = [];
         foreach ($this->db->query('SELECT ' . $bakiSesi . ' baki, AVG(f.frt_menit) rata'
             . ' FROM (' . $this->frtDasar($s) . ') f'
@@ -306,28 +249,14 @@ class KpiModel extends Model
             $frt[$baris['baki']] = $baris;
         }
 
-        $void = [];
-        foreach ($this->db->query('SELECT ' . $bakiVoid . ' baki,'
-            . ' COUNT(*) jumlah FROM ' . $this->t('invoice') . ' o'
-            . ' WHERE o.deleted_at IS NOT NULL AND o.deleted_by IS NOT NULL'
-            . ' AND o.deleted_at BETWEEN :awal_unix: AND :akhir_unix:'
-            . ' AND o.juragan_id IN (' . $this->daftarId($s['juragan_ids']) . ')'
-            . ' AND o.alasan_batal IN (' . $this->daftarKutip($this->slugKesalahan()) . ')'
-            . $this->klausulPelaku($s, 'o.deleted_by')
-            . ' GROUP BY ' . $bakiVoid, $this->paramsUnix($s))->getResultArray() as $baris) {
-            $void[$baris['baki']] = $baris;
-        }
-
         $deretan = [];
-        foreach (array_unique(array_merge(array_keys($nota), array_keys($sla), array_keys($frt), array_keys($void))) as $baki) {
+        foreach (array_unique(array_merge(array_keys($nota), array_keys($frt))) as $baki) {
             $deretan[] = [
                 'baki'       => $baki,
                 'order'      => (int) ($nota[$baki]['orderan'] ?? 0),
                 'gmv'        => round((float) ($nota[$baki]['gmv'] ?? 0)),
                 'lunas'      => (int) ($nota[$baki]['lunas'] ?? 0),
-                'sla_jam'    => isset($sla[$baki]['rata']) ? round((float) $sla[$baki]['rata'], 1) : null,
                 'frt_menit'  => isset($frt[$baki]['rata']) ? round((float) $frt[$baki]['rata'], 1) : null,
-                'void_salah' => (int) ($void[$baki]['jumlah'] ?? 0),
             ];
         }
 
@@ -344,8 +273,6 @@ class KpiModel extends Model
     public function pembanding(array $s, string $indikator): array
     {
         $peta = match ($indikator) {
-            'sla_fulfillment' => fn () => $this->slaPerPegawai($s),
-            'error_void_rate' => fn () => $this->voidPerPegawai($s),
             'first_response_time' => fn () => $this->frtPerPegawai($s),
             'konversi_lead' => fn () => $this->konversiPerPegawai($s),
             'resolution_time' => fn () => $this->resolusiPerPegawai($s),
@@ -353,17 +280,14 @@ class KpiModel extends Model
         };
 
         $kolom = match ($indikator) {
-            'sla_fulfillment'     => 'rata',
             'first_response_time' => 'rata',
             'resolution_time'     => 'rata',
-            'error_void_rate'     => 'salah',
             'konversi_lead'       => 'terkonversi',
             'order_diproses'      => 'jumlah_order',
             default               => 'gmv',
         };
 
         $contoh = match ($indikator) {
-            'error_void_rate' => 'total',
             'konversi_lead'   => 'lead',
             'gmv_cs', 'order_diproses' => 'jumlah_order',
             default           => 'contoh',
@@ -419,27 +343,6 @@ class KpiModel extends Model
     private function sqlDetail(array $s, string $indikator): array
     {
         switch ($indikator) {
-            case 'sla_fulfillment':
-                return ['SELECT m.id_invoice, m.juragan_id, m.tanggal_pesan, m.waktu_bayar, m.waktu_fu, m.durasi_jam,'
-                    . ' COALESCE(u.name, ' . $this->kutip(self::TANPA_PELAKU) . ') AS pelaku'
-                    . ' FROM (' . $this->slaDasar($s) . ') m'
-                    . ' LEFT JOIN ' . $this->t('user') . ' u ON u.id = m.pelaksana'
-                    . ' WHERE ' . $this->kondisiSla() . ' ORDER BY m.durasi_jam DESC',
-                    $this->params($s)];
-
-            case 'error_void_rate':
-                return ['SELECT o.id_invoice, o.seri, o.tanggal_pesan, o.deleted_at, o.alasan_batal,'
-                    . ' u.name AS pelaku, o.user_id AS pembuat'
-                    . ' FROM ' . $this->t('invoice') . ' o'
-                    . ' LEFT JOIN ' . $this->t('user') . ' u ON u.id = o.deleted_by'
-                    . ' WHERE o.deleted_at IS NOT NULL AND o.deleted_by IS NOT NULL'
-                    . ' AND o.deleted_at BETWEEN :awal_unix: AND :akhir_unix:'
-                    . ' AND o.juragan_id IN (' . $this->daftarId($s['juragan_ids']) . ')'
-                    . ' AND o.alasan_batal IN (' . $this->daftarKutip($this->slugKesalahan()) . ')'
-                    . $this->klausulPelaku($s, 'o.deleted_by')
-                    . ' ORDER BY o.deleted_at DESC',
-                    $this->paramsUnix($s)];
-
             case 'first_response_time':
                 return ['SELECT f.percakapan_id, f.nomor, f.waktu_masuk, f.waktu_balas, f.frt_menit,'
                     . ' COALESCE(u.name, ' . $this->kutip(self::TANPA_PELAKU) . ') AS pelaku'
@@ -565,104 +468,15 @@ class KpiModel extends Model
             . $this->joinUser() . $this->joinNilai() . $this->whereNota($s)
             . ' GROUP BY u.id, u.name, u.level', $bind)->getResultArray();
 
-        // penyebut void rate: semua nota yang pernah dipegang orang ini, termasuk
-        // yang kemudian dihapus, supaya menghapus tidak menghapus dirinya sendiri
-        $diproses = [];
-        foreach ($this->db->query('SELECT o.user_id id, COUNT(*) jumlah FROM ' . $this->t('invoice') . ' o'
-            . ' JOIN ' . $this->t('user') . " u ON u.id = o.user_id AND u.status = 'active' AND u.deleted_at IS NULL"
-            . ' WHERE o.tanggal_pesan BETWEEN :awal: AND :akhir:'
-            . ' AND o.juragan_id IN (' . $this->daftarId($s['juragan_ids']) . ')'
-            . ' AND u.level IN (' . $this->daftarKutip($this->levelPeran($s['peran'])) . ')'
-            . ' GROUP BY o.user_id', $bind)->getResultArray() as $baris) {
-            $diproses[(int) $baris['id']] = (int) $baris['jumlah'];
-        }
-
         $hasil = [];
         foreach ($valid as $baris) {
             $id                = (int) $baris['user_id'];
-            $baris['diproses'] = $diproses[$id] ?? (int) $baris['jumlah_order'];
             $baris['gmv']      = round((float) $baris['gmv']);
             $baris['dibayar']  = round((float) $baris['dibayar']);
             $hasil[$id]        = $baris;
         }
 
         return $hasil;
-    }
-
-    /**
-     * Durasi bayar -> packing/kirim per nota, hanya untuk nota lunas.
-     *
-     * Penanggung jawabnya pelaksana tahap pengepakan (invoice_status.user_id).
-     * Nota yang hanya punya tanggal kirim tidak punya pelaku tercatat, karena
-     * order_pengiriman tidak menyimpan siapa yang mengirim.
-     */
-    private function slaDasar(array $s): string
-    {
-        // Dua-duanya dibungkus CAST: tanpa itu selisih kolom INT UNSIGNED yang
-        // bernilai negatif (tanggal kirim diisi sebelum tanggal bayar) langsung
-        // error "BIGINT UNSIGNED value is out of range", bukan mengembalikan minus.
-        $bati = '9999999999';
-        $selesai = 'CAST(LEAST(IFNULL(st.tanggal_packing, ' . $bati . '), IFNULL(kg.tanggal_kirim, ' . $bati . ')) AS SIGNED)';
-
-        return 'SELECT o.id_invoice, o.juragan_id, o.user_id AS pembuat, o.tanggal_pesan,'
-            . ' pb.tanggal_bayar AS waktu_bayar,'
-            . ' st.user_id AS pelaksana,'
-            . ' LEAST(IFNULL(st.tanggal_packing, ' . $bati . '), IFNULL(kg.tanggal_kirim, ' . $bati . ')) AS waktu_fu,'
-            . ' (' . $selesai . ' - CAST(pb.tanggal_bayar AS SIGNED)) / 3600 AS durasi_jam'
-            . ' FROM ' . $this->t('invoice') . ' o'
-            . ' JOIN (SELECT invoice_id, MIN(tanggal_pembayaran) tanggal_bayar FROM ' . $this->t('pembayaran')
-            . " WHERE status = '3' GROUP BY invoice_id) pb ON pb.invoice_id = o.id_invoice"
-            . ' LEFT JOIN (SELECT invoice_id, tanggal_masuk AS tanggal_packing, user_id,'
-            . ' ROW_NUMBER() OVER (PARTITION BY invoice_id ORDER BY tanggal_masuk) urut'
-            . ' FROM ' . $this->t('invoice_status') . " WHERE status = '7') st"
-            . ' ON st.invoice_id = o.id_invoice AND st.urut = 1'
-            . ' LEFT JOIN (SELECT invoice_id, MIN(tanggal_kirim) tanggal_kirim FROM ' . $this->t('pengiriman')
-            . ' GROUP BY invoice_id) kg ON kg.invoice_id = o.id_invoice'
-            . ' WHERE o.deleted_at IS NULL AND o.status_pembayaran IN (\'5\',\'6\')'
-            . " AND o.status_pesanan <> '3'"
-            . ' AND o.tanggal_pesan BETWEEN :awal: AND :akhir:'
-            . ' AND o.juragan_id IN (' . $this->daftarId($s['juragan_ids']) . ')'
-            . $this->klausulPelaku($s, 'st.user_id');
-    }
-
-    /** Baris yang ikut dihitung: punya waktu fulfillment dan durasinya tidak negatif. */
-    private function kondisiSla(string $alias = 'm'): string
-    {
-        return $alias . '.waktu_fu < 9999999999 AND ' . $alias . '.durasi_jam >= 0';
-    }
-
-    /** @return array{contoh: int, rata: float|null, median: float|null, buang: int} */
-    private function slaRingkas(array $s): array
-    {
-        $dasar = $this->slaDasar($s);
-
-        $ringkas = $this->db->query('SELECT COUNT(*) contoh, AVG(m.durasi_jam) rata,'
-            . ' SUM(CASE WHEN m.waktu_fu < 9999999999 AND m.durasi_jam < 0 THEN 1 ELSE 0 END) buang'
-            . ' FROM (' . $dasar . ') m WHERE ' . $this->kondisiSla(), $this->params($s))->getRowArray();
-
-        $median = $this->median($this->kondisiSla(), $dasar, $this->params($s), 'durasi_jam', 'm');
-
-        return [
-            'contoh' => (int) $ringkas['contoh'],
-            'rata'   => $ringkas['rata'],
-            'median' => $median,
-            'buang'  => (int) $ringkas['buang'],
-        ];
-    }
-
-    /** @return array<int, array{contoh: int, rata: float|null}> indexed by user_id */
-    private function slaPerPegawai(array $s): array
-    {
-        $dasar = $this->slaDasar($s);
-
-        return $this->indexPegawai($this->db->query('SELECT m.pelaksana user_id, u.name pegawai,'
-            . ' COUNT(*) contoh, AVG(m.durasi_jam) rata'
-            . ' FROM (' . $dasar . ') m'
-            . ' JOIN ' . $this->t('user') . " u ON u.id = m.pelaksana AND u.status = 'active' AND u.deleted_at IS NULL"
-            . ' WHERE ' . $this->kondisiSla()
-            . ' AND m.pelaksana IS NOT NULL'
-            . ' AND u.level IN (' . $this->daftarKutip($this->levelPeran($s['peran'])) . ')'
-            . ' GROUP BY m.pelaksana, u.name', $this->params($s))->getResultArray());
     }
 
     /**

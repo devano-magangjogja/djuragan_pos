@@ -364,6 +364,10 @@ class WhatsAppManager
                 'waktu_terakhir' => $now,
                 'arah_terakhir'  => 'masuk',
                 'unread_admin'   => 1,
+                // chat yang diarsipkan terbuka lagi begitu pelanggannya membalas,
+                // supaya tidak ada pertanyaan yang menguap dari inbox CS
+                'diarsipkan'     => 0,
+                'waktu_arsip'    => null,
                 'updated_at'     => $now,
             ];
             // Perbarui nama_kontak jika belum ada nama asli (masih nomor/kosong) dan sekarang ada nama

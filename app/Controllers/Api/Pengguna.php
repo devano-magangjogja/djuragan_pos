@@ -28,8 +28,10 @@ class Pengguna extends \CodeIgniter\Controller
                 'level'          => $user->level,
                 'status'         => $user->status,
                 'login_terakhir' => $user->login_terakhir,
-                // dipakai popup sunting untuk mencentang hak baca katalog semua juragan
+                // dipakai popup sunting untuk mencentang hak baca katalog semua
+                // juragan dan hak sunting transaksi (keduanya khusus CS)
                 'lihat_semua_produk' => (int) $user->lihat_semua_produk,
+                'sunting_transaksi'  => (int) ($user->sunting_transaksi ?? 0),
             ];
         }
 
