@@ -110,14 +110,17 @@ class Validation extends BaseConfig
         'password' => 'required|min_length[6]',
         'nama'     => 'required|min_length[3]|max_length[50]',
         'email'    => 'required|valid_email|max_length[100]|is_unique[user.email]',
-        'level'    => 'required|in_list[superadmin,admin,cs,viewer,reseller]',
+        // viewer/reseller tidak lagi ditawarkan untuk akun baru
+        'level'    => 'required|in_list[superadmin,admin,cs]',
         'status'   => 'required|in_list[pending,inactive,active,blocked]',
     ];
     public $editPengguna = [
         'id'     => 'required|numeric',
         'nama'   => 'required|min_length[3]|max_length[50]',
         'email'  => 'required|valid_email|max_length[100]|is_unique[user.email,id,{id}]',
-        'level'  => 'required|in_list[superadmin,admin,cs,viewer,reseller]',
+        // viewer masih diterima di sini: 239 akun lama menyandangnya, dan suntingan
+        // apa pun pada akun itu tidak boleh gagal hanya karena levelnya tidak ditawarkan
+        'level'  => 'required|in_list[superadmin,admin,cs,viewer]',
         'status' => 'required|in_list[pending,inactive,active,blocked]',
     ];
     public $editProfil = [

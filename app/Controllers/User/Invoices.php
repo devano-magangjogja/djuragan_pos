@@ -158,7 +158,7 @@ class Invoices extends BaseController
     }
 
     // menampilkan semua invoice
-    public function lihat($juragan = '', $hal = 'dalam-proses', $kategori = '')
+    public function lihat($juragan = '', $hal = 'semua', $kategori = '')
     {
         if (! in_array($hal, ['semua', 'pembayaran', 'cek-bayar', 'dalam-proses', 'belum-proses', 'selesai', 'saring', 'masih-disewa'], true)) {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();

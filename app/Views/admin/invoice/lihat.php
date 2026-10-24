@@ -145,6 +145,15 @@ $cekBayar = ((string) $session->get('level')) === 'superadmin';
         white-space: nowrap;
         text-align: left;
     }
+    /* Tombol aksi ikut mengisi lebar baris. Sebelumnya hanya pemilih toko yang
+       melebar sedangkan Cari/Scan/Tulis menciut di kiri, jadi di akun yang
+       tokonya cuma satu — pemilih toko memang tidak dirender — separuh baris
+       menganggur. Nama tokonya tetap dapat bagian terbesar karena basisnya
+       auto, sementara tombol mulai dari nol. */
+    .toolbar-transaksi__aksi > .btn {
+        flex: 1 1 0;
+        min-width: 0;
+    }
 }
 
 /* Baris "juragan: / admin/cs:" dan tombol cetak di kepala kartu. Dua-duanya

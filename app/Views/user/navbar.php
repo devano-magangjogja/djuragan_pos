@@ -23,8 +23,7 @@ $chatBelumDibaca = (new \App\Models\CrmModel())->hitungChatBelumDibaca();
             <i class="fal fa-bars fs-5"></i>
         </button>
         <a href="<?= site_url('') ?>" class="d-flex align-items-center gap-2 mobile-topbar-brand text-decoration-none">
-            <div class="sidebar-brand-icon" style="width:28px;height:28px;font-size:0.85rem;">
-                <i class="fal fa-layer-group"></i>
+            <div class="sidebar-brand-icon" style="width:28px;height:28px;"><?= $this->include('template/merek') ?>
             </div>
             <span class="fw-bold small sidebar-brand-text-label">Djuragan POS</span>
         </a>
@@ -61,12 +60,10 @@ $chatBelumDibaca = (new \App\Models\CrmModel())->hitungChatBelumDibaca();
     <!-- Header Brand -->
     <div class="sidebar-header">
         <a href="<?= site_url('') ?>" class="sidebar-brand">
-            <div class="sidebar-brand-icon">
-                <i class="fal fa-layer-group"></i>
+            <div class="sidebar-brand-icon"><?= $this->include('template/merek') ?>
             </div>
             <div class="sidebar-brand-text">
                 <span>Djuragan POS</span>
-                <span class="role-badge"><?= esc(strtoupper($levelSesi ?: 'CS')) ?></span>
             </div>
         </a>
         <div class="d-flex align-items-center">
