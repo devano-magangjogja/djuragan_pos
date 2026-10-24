@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Libraries\PresensiSso;
 use App\Models\UserModel;
 use CodeIgniter\I18n\Time;
 use PHPMailer\PHPMailer\Exception;
@@ -26,48 +27,174 @@ class Auth extends BaseController
 
             return view('masuk', $data);
         }
-        $userModel = new UserModel();
 
-        $get = $userModel->where('username', $this->request->getPost('username'))->first();
+        $username = (string) $this->request->getPost('username');
+        $password = (string) $this->request->getPost('password');
 
-        if ($get === null || empty($get)) {
-            $arr = [
-                'sesi' => [
-                    'logged' => false,
-                ],
-                'redirect' => '/auth/index',
-                'status' => '<div class="alert alert-danger"><strong class="d-block">Nay!</strong>Kamu siapa? daftar aja dulu.</div>',
-            ];
-        } else {
-            $post_pswd = $this->request->getPost('password');
-            // cek length password in db
-            if (strlen($get->password) === 32) {
-                // jika password gunakan md5()
-                // ini berguna untuk edit password lewat phpmyadmin
-
-                if (md5($post_pswd) === $get->password) {
-                    // jika password sama
-                    $arr = $this->_pass($get, $post_pswd);
-                }
-            } else {
-                if (password_verify($this->request->getPost('password'), $get->password)) {
-                    // jika password menggunakan password_hash()
-                    $arr = $this->_pass($get);
-                } else {
-                    $arr = [
-                        'sesi' => [
-                            'logged' => false,
-                        ],
-                        'redirect' => '/auth/index',
-                        'status' => '<div class="alert alert-warning"><strong class="d-block">Nay!</strong>Ingat lagi apa kata sandimu, ku tungguin deh.</div>',
-                    ];
-                }
-            }
-        }
+        // SSO Presensi didahulukan; kalau SSO tidak aktif, menolak kredensial,
+        // atau server tak terjangkau, verifikasi jatuh ke database lokal apa
+        // adanya (akun lama admin/superadmin/viewer tetap bisa masuk).
+        $arr = $this->verifikasiSso($username, $password)
+            ?? $this->verifikasiLokal($username, $password);
 
         session()->set($arr['sesi']);
 
         return redirect()->to($arr['redirect'])->with('status', $arr['status']);
+    }
+
+    /**
+     * Coba login lewat SSO Presensi.
+     *
+     * Mengembalikan susunan sesi (`$arr`) saat Presensi mengonfirmasi kredensial,
+     * atau null saat pemanggil harus lanjut ke verifikasi lokal (SSO mati,
+     * kredensial ditolak, atau server tak terjangkau).
+     */
+    private function verifikasiSso(string $username, string $password): ?array
+    {
+        $sso = new PresensiSso();
+
+        if (! $sso->aktif()) {
+            return null;
+        }
+
+        $hasil = $sso->verifikasi($username, $password);
+
+        if (($hasil['state'] ?? '') !== 'valid') {
+            // invalid / unavailable -> serahkan ke database lokal
+            return null;
+        }
+
+        $get = $this->sinkronkanUserSso((array) ($hasil['data'] ?? []), $sso->levelBaru());
+
+        if ($get === null) {
+            return null;
+        }
+
+        // kata sandi tidak pernah diambil dari input SSO, jadi tidak ada migrasi
+        // md5 di jalur ini; _pass cukup membaca status/level dari baris lokal.
+        return $this->_pass($get);
+    }
+
+    /**
+     * Verifikasi memakai database lokal, logika lama (md5 warisan + bcrypt).
+     *
+     * @return array{sesi:array<string,mixed>,redirect:string,status:string}
+     */
+    private function verifikasiLokal(string $username, string $password): array
+    {
+        $userModel = new UserModel();
+        $get       = $userModel->where('username', $username)->first();
+
+        if ($get === null || empty($get)) {
+            return [
+                'sesi'     => ['logged' => false],
+                'redirect' => '/auth/index',
+                'status'   => '<div class="alert alert-danger"><strong class="d-block">Nay!</strong>Kamu siapa? daftar aja dulu.</div>',
+            ];
+        }
+
+        // cek length password in db
+        if (strlen($get->password) === 32) {
+            // jika password gunakan md5() — berguna untuk edit password lewat
+            // phpmyadmin; kalau cocok, naikkan simpanan ke bcrypt lewat _pass()
+            if (md5($password) === $get->password) {
+                return $this->_pass($get, $password);
+            }
+
+            return $this->gagalSandi();
+        }
+
+        if (password_verify($password, $get->password)) {
+            return $this->_pass($get);
+        }
+
+        return $this->gagalSandi();
+    }
+
+    /** @return array{sesi:array<string,mixed>,redirect:string,status:string} */
+    private function gagalSandi(): array
+    {
+        return [
+            'sesi'     => ['logged' => false],
+            'redirect' => '/auth/index',
+            'status'   => '<div class="alert alert-warning"><strong class="d-block">Nay!</strong>Ingat lagi apa kata sandimu, ku tungguin deh.</div>',
+        ];
+    }
+
+    /**
+     * Samakan satu akun lokal dengan data yang dikirim Presensi.
+     *
+     * Cocokkan lewat sso_id, lalu username, lalu email. Bila belum ada, akun
+     * baru dibuat dengan level bawaan SSO (cs) dan status active tanpa relasi
+     * juragan, lalu langsung muncul di daftar pengguna untuk ditata superadmin.
+     * Bila sudah ada, hanya jejak SSO yang kosong yang diisi; level & status
+     * TIDAK disentuh karena itu hak superadmin.
+     *
+     * @param array<string, mixed> $data
+     */
+    private function sinkronkanUserSso(array $data, string $levelBaru): ?object
+    {
+        $userModel   = new UserModel();
+        $ssoUsername = mb_strtolower(trim((string) ($data['username'] ?? '')));
+        $ssoEmail    = mb_strtolower(trim((string) ($data['email'] ?? '')));
+        $nama        = trim((string) ($data['nama'] ?? ''));
+        $nip         = trim((string) ($data['nip'] ?? ''));
+        $ssoId       = isset($data['id']) ? (int) $data['id'] : null;
+
+        if ($ssoUsername === '' && $ssoEmail === '') {
+            // tanpa pegangan unik apa pun, tidak aman untuk mencocokkan/membuat akun
+            return null;
+        }
+
+        $get = null;
+
+        if ($ssoId !== null && $ssoId > 0) {
+            $get = $userModel->where('sso_id', $ssoId)->first();
+        }
+
+        if ($get === null && $ssoUsername !== '') {
+            $get = $userModel->where('username', $ssoUsername)->first();
+        }
+
+        if ($get === null && $ssoEmail !== '') {
+            $get = $userModel->where('email', $ssoEmail)->first();
+        }
+
+        if ($get === null) {
+            $userModel->insert([
+                'username'       => $ssoUsername !== '' ? $ssoUsername : $ssoEmail,
+                'password'       => password_hash(bin2hex(random_bytes(16)), PASSWORD_BCRYPT),
+                'name'           => $nama !== '' ? $nama : ($ssoUsername !== '' ? $ssoUsername : $ssoEmail),
+                'email'          => $ssoEmail,
+                'level'          => $levelBaru,
+                'status'         => 'active',
+                'sso_id'         => $ssoId,
+                'nip'            => $nip !== '' ? $nip : null,
+                'sumber'         => 'sso',
+                'login_terakhir' => now(),
+            ]);
+
+            return $userModel->where('username', $ssoUsername !== '' ? $ssoUsername : $ssoEmail)->first();
+        }
+
+        // sudah ada: isi jejak SSO yang masih kosong, jangan sentuh level/status
+        $ubah = ['id' => $get->id, 'login_terakhir' => now()];
+
+        if ($ssoId !== null && $ssoId > 0 && (int) ($get->sso_id ?? 0) === 0) {
+            $ubah['sso_id'] = $ssoId;
+        }
+
+        if ($nip !== '' && (string) ($get->nip ?? '') === '') {
+            $ubah['nip'] = $nip;
+        }
+
+        if (($get->sumber ?? '') === '' || $get->sumber === null) {
+            $ubah['sumber'] = 'sso';
+        }
+
+        $userModel->save($ubah);
+
+        return $userModel->find($get->id);
     }
 
     protected function _pass($db, $password_to_update = false)

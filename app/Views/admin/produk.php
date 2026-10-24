@@ -140,6 +140,22 @@ $kueriTab = array_filter([
         .toolbar-produk > .btn {
             width: 100%;
         }
+
+        /* Pil kolam "Untuk Dijual" / "Untuk Disewa" adalah cara berpindah tab
+           utama di halaman ini; dulu keduanya cuma seukuran tulisannya dan duduk
+           di kiri sementara separuh kanan baris menganggur. */
+        .kolam-pilih > .btn {
+            flex: 1 1 0;
+            min-width: 0;
+        }
+
+        /* Angka ringkasan "Rp 5.000.000" jangan pecah di belakang "Rp". Di kolom
+           6/12 fs-4 (1.5rem — Bootstrap menguncinya dengan !important, jadi ikut
+           !important) tidak muat, jadi turun satu langkah dan dipaksa satu baris. */
+        .ringkas-nilai {
+            font-size: 1.15rem !important;
+            white-space: nowrap;
+        }
     }
 
     /* Pil "sedang disewa" di bawah kartu produk: seukuran isinya, ditempel di
@@ -193,7 +209,7 @@ $kueriTab = array_filter([
 
     <?php /* stok dipisah dua kolam: unit yang boleh dijual dan unit yang boleh
        disewa; satu tab hanya menampilkan dan menyaring kolamnya sendiri */ ?>
-    <div class="d-flex flex-wrap gap-2 mb-4">
+    <div class="d-flex flex-wrap gap-2 mb-4 kolam-pilih">
         <?php foreach ($kolams as $slug => $label) {
             $tautan = $kueriTab + ['kolam' => $slug];
             ?>
@@ -228,7 +244,7 @@ $kueriTab = array_filter([
                     <div class="text-muted small text-uppercase <?= esc($warna) ?>">
                         <i class="fal <?= $ikon ?>"></i> <?= esc($label) ?>
                     </div>
-                    <div class="fs-4 fw-bold <?= esc($warna) ?>"><?= esc($nilai) ?></div>
+                    <div class="fs-4 fw-bold ringkas-nilai <?= esc($warna) ?>"><?= esc($nilai) ?></div>
                 </div>
             </div>
         <?php } ?>

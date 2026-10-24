@@ -34,7 +34,7 @@ class NotifikasiModel extends Model
     protected $returnType = 'object';
     // protected $useSoftDeletes = true;
 
-    protected $allowedFields = ['juragan_id', 'from', 'for', 'invoice_id', 'type', 'read_at', 'created_at'];
+    protected $allowedFields = ['juragan_id', 'from', 'for', 'invoice_id', 'type', 'prioritas', 'read_at', 'created_at'];
 
     public function ambil($user_id, $dibaca = false, $limit = null, $offset = null)
     {
@@ -60,6 +60,7 @@ class NotifikasiModel extends Model
             $notif->limit($limit, $offset);
         }
 
+        $notif->orderBy('n.prioritas', 'DESC');
         $notif->orderBy('n.created_at', 'DESC');
 
         return $notif;

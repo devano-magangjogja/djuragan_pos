@@ -341,6 +341,21 @@ $boleh_kelola = in_array($level_sesi, ['admin', 'superadmin'], true);
     animation: blink 1.2s ease-in-out infinite;
 }
 
+/* Badge angka unread ala WhatsApp: lingkaran hijau kecil di kanan item chat */
+.wa-unread-badge {
+    min-width: 1.5rem;
+    height: 1.5rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 0.4rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    line-height: 1;
+    color: #ffffff;
+    background: #25d366 !important;
+}
+
 /* ==========================================================================
    ATURAN RESPONSIF (HP / LAYAR SEMPIT: < 768px)
    ========================================================================== */
@@ -861,8 +876,9 @@ $(function() {
         list.forEach(function(item) {
             var activeClass  = (keepActive && currentConvId === item.id_percakapan) ? ' active' : '';
             var initial      = (item.nama_kontak || 'U').charAt(0).toUpperCase();
-            var unreadBadge  = item.unread_admin > 0
-                ? '<span class="badge bg-success rounded-pill blink-badge">Baru</span>'
+            var unreadCount  = Number(item.unread || 0);
+            var unreadBadge  = unreadCount > 0
+                ? '<span class="badge bg-success rounded-pill wa-unread-badge">' + (unreadCount > 99 ? '99+' : unreadCount) + '</span>'
                 : '';
             var prefixArah   = item.arah_terakhir === 'keluar'
                 ? '<i class="fal fa-check text-muted me-1"></i>'
@@ -1032,7 +1048,7 @@ $(function() {
                 var num = res.percakapan ? res.percakapan.nomor_wa : $('#activePhone').text();
                 arsipAktif = res.percakapan && Number(res.percakapan.diarsipkan) === 1 ? 1 : 0;
                 renderCustomerBadge(res.pelanggan, num);
-                renderMessages(res.messages, true);
+                renderMessages(res.messages, true, res.unread_start_id || 0, res.unread_count || 0);
                 if (res.messages.length > 0) {
                     lastMsgId = res.messages[res.messages.length - 1].id_pesan;
                 }
@@ -1120,17 +1136,27 @@ $(function() {
     }
 
     // ── Render semua pesan (full load) ──────────────────────────────────────
-    function renderMessages(messages, scrollToBottom) {
+    function renderMessages(messages, scrollToBottom, unreadStart, unreadCount) {
         var container = $('#chatMessages');
         if (messages.length === 0) {
             container.html('<div class="text-center text-muted my-auto no-msg-placeholder"><i class="fal fa-comment-dots fa-2x mb-2 d-block"></i>Belum ada pesan. Kirim pesan pertama Anda!</div>');
             return;
         }
 
-        var html    = '';
-        var lastDate = '';
+        unreadStart  = Number(unreadStart || 0);
+        unreadCount  = Number(unreadCount || 0);
+
+        var html         = '';
+        var lastDate     = '';
+        var dividerShown = false;
 
         messages.forEach(function(m) {
+            // pemisah ala WhatsApp: satu kali, tepat sebelum bubble pertama yang
+            // belum dibaca (id-nya melewati pointer baca saat percakapan dibuka)
+            if (!dividerShown && unreadCount > 0 && Number(m.id_pesan) > unreadStart) {
+                html += buildUnreadDivider(unreadCount);
+                dividerShown = true;
+            }
             html += buildMessageHtml(m, lastDate);
             lastDate = m.tanggal;
         });
@@ -1140,6 +1166,13 @@ $(function() {
         if (scrollToBottom) {
             scrollBottom();
         }
+    }
+
+    // ── Pemisah "N pesan belum dibaca" ──────────────────────────────────────
+    function buildUnreadDivider(count) {
+        return '<div class="text-center my-2">'
+             + '<span style="display:inline-block;background:#ffffff;color:#54656f;border-radius:10px;padding:5px 12px;font-size:0.75rem;box-shadow:0 1px 1px rgba(0,0,0,0.08);">'
+             + '<i class="fal fa-circle-info me-1"></i>' + count + ' pesan belum dibaca</span></div>';
     }
 
     // ── Append pesan baru (incremental) ─────────────────────────────────────

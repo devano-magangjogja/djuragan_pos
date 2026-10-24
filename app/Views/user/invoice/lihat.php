@@ -51,6 +51,115 @@ $kelolaTransaksi = wewenang_sunting_transaksi();
         width: 100%;
     }
 }
+
+/* Pemilih toko di kepala daftar. Satu akun bisa pegang puluhan toko; tanpa batas
+   tinggi, daftar ini tumbuh sampai ke luar layar dan sisanya tidak terjangkau
+   (halaman di belakangnya yang ikut bergulir, bukan daftarnya). Di halaman admin
+   sudah dibatasi inline, di CS belum — sekarang sama, plus overscroll-behavior
+   supaya setelah mentok gulir, jari tidak mulai menggulir halaman. */
+.dropdown-toko {
+    max-height: 60vh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Baris "pilih toko · cari · tulis orderan" di layar sempit mengisi lebar.
+   Pemilih toko tetap mendapat bagian terbesar karena basisnya auto (selebar
+   namanya), sedangkan tombol ikon Cari/Tulis membagi sisa barisnya rata. Untuk
+   akun CS yang cuma memegang satu toko, pemilih toko tidak dirender sama sekali
+   — tanpa aturan di bawah, kedua tombol itu menciut di kiri dan separuh kanan
+   baris menganggur. */
+@media (max-width: 767.98px) {
+    .aksi-toko {
+        width: 100%;
+        gap: 0.35rem;
+    }
+    .aksi-toko > .dropdown {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+    .aksi-toko > .dropdown > .btn {
+        width: 100%;
+    }
+    /* nama tokonya yang panjang tidak boleh mendorong panah dropdown keluar;
+           dipotong dengan elipsis, teks lengkapnya tetap ada di title tombol */
+    .aksi-toko .label-toko {
+        flex: 1 1 auto;
+        min-width: 0;
+        text-align: left;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .aksi-toko > .btn {
+        flex: 1 1 0;
+        min-width: 0;
+    }
+}
+
+/* Di layar lebar kedua pembungkus ini tidak boleh mengubah apa pun: display:contents
+   menghapus kotaknya dari pohon layout sehingga pil tetap anak langsung dari baris
+   menu — persis seperti sebelum ada panah. Tombol panahnya sendiri hanya hidup di
+   layar sempit. */
+.tab-transaksi,
+.tab-transaksi__gulung {
+    display: contents;
+}
+.tab-transaksi__panah {
+    display: none;
+}
+
+/* Menu tab transaksi di layar sempit: enam pil membungkus jadi 2-3 baris sehingga
+   separuh layar habis sebelum kartu pertama kelihatan. Sekarang satu baris saja dan
+   isinya digeser; tombol panahnya hanya muncul kalau pilnya benar-benar tidak muat,
+   jadi di tablet yang masih lega tidak ada tombol yang menganggur. */
+@media (max-width: 767.98px) {
+    .tab-transaksi {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        width: 100%;
+        min-width: 0;
+    }
+    .tab-transaksi__gulung {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        flex: 1 1 auto;
+        min-width: 0;
+        overflow-x: auto;
+        /* gulir tetap bisa, tapi tanpa bilah gulir: yang menunjukkan arah adalah
+           panahnya, bukan strip tipis yang nyaris tak kelihatan di layar sentuh */
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        padding: 2px 0;
+    }
+    .tab-transaksi__gulung::-webkit-scrollbar {
+        display: none;
+    }
+    .tab-transaksi__gulung > .btn {
+        flex: 0 0 auto;
+    }
+    .tab-transaksi__panah {
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+        /* 2rem: bulat kecil tapi masih seukuran sasaran sentuh yang layak —
+           28px terasa miss di layar 360px */
+        width: 2rem;
+        height: 2rem;
+        padding: 0;
+        border: 1px solid #eaecf0;
+        border-radius: 50%;
+        background: #fff;
+        color: #64748b;
+        font-size: 0.8rem;
+    }
+    .tab-transaksi__panah.lagi {
+        display: inline-flex;
+    }
+}
 </style>
 <?= $this->endSection() ?>
 
@@ -73,20 +182,30 @@ $kelolaTransaksi = wewenang_sunting_transaksi();
     ];
     ?>
     <div class="mb-4 flex flex-wrap items-center gap-x-1 gap-y-2">
-        <?php
-        foreach ($tab as [$slug, $label, $counter, $keterangan]) {
-            echo anchor(
-                'user/invoices/lihat/' . $juragan . '/' . $slug,
-                $label . ' <span class="badge rounded-pill bg-ink-100 text-ink-600" id="' . $counter . '">0</span>',
-                [
-                    'class' => 'btn rounded-pill btn-' . ($hal === $slug ? 'primary' : 'outline-secondary'),
-                    'title' => $keterangan,
-                ]
-            );
-        }
-        ?>
+        <div class="tab-transaksi">
+            <button type="button" class="tab-transaksi__panah kiri" data-arah="-1" aria-label="Menu sebelumnya" title="Menu sebelumnya">
+                <i class="fal fa-chevron-left"></i>
+            </button>
+            <div class="tab-transaksi__gulung" id="tabTransaksi">
+                <?php
+                foreach ($tab as [$slug, $label, $counter, $keterangan]) {
+                    echo anchor(
+                        'user/invoices/lihat/' . $juragan . '/' . $slug,
+                        $label . ' <span class="badge rounded-pill bg-ink-100 text-ink-600" id="' . $counter . '">0</span>',
+                        [
+                            'class' => 'btn rounded-pill btn-' . ($hal === $slug ? 'primary' : 'outline-secondary'),
+                            'title' => $keterangan,
+                        ]
+                    );
+                }
+                ?>
+            </div>
+            <button type="button" class="tab-transaksi__panah kanan" data-arah="1" aria-label="Menu berikutnya" title="Menu berikutnya">
+                <i class="fal fa-chevron-right"></i>
+            </button>
+        </div>
 
-        <div class="ms-sm-auto flex items-center gap-1">
+        <div class="aksi-toko ms-sm-auto flex items-center gap-1">
             <?php
             // akun CS selalu melihat satu tokonya saja, tidak ada "semua", jadi
             // pemilih ini hanya muncul kalau akun itu memegang lebih dari satu toko
@@ -95,9 +214,9 @@ $kelolaTransaksi = wewenang_sunting_transaksi();
             <?php if (count($daftar_toko) > 1) : ?>
                 <div class="dropdown">
                     <button type="button" class="btn rounded-pill btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="Pilih djuragan">
-                        <i class="fal fa-user-circle me-1"></i> <?= esc($nama_toko) ?>
+                        <i class="fal fa-user-circle me-1"></i> <span class="label-toko"><?= esc($nama_toko) ?></span>
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end">
+                    <ul class="dropdown-menu dropdown-menu-end dropdown-toko">
                         <?php foreach ($daftar_toko as $slug => $nama) : ?>
                             <li>
                                 <a class="dropdown-item<?= $juragan === $slug ? ' active' : '' ?>" href="<?= esc(site_url('user/invoices/lihat/' . rawurlencode($slug) . '/' . $hal . '/' . $kategori) . $kueri_cari) ?>"><?= esc($nama) ?></a>
@@ -1448,8 +1567,57 @@ $js = <<< JS
             pasangBadge('#counterDalamProses', counter.dalam_proses);
             pasangBadge('#counterSelesai', counter.selesai);
             pasangBadge('#counterMasihDisewa', counter.masih_disewa);
+            aturPanahTab();
         });
+
+        aturPanahTab();
     });
+
+    // Panah kiri/kanan pada menu tab: hanya boleh muncul kalau pilnya benar-benar
+    // tidak muat, dan panah kiri baru muncul setelah barisnya digeser. Tab aktif
+    // ikut ditengahkan saat halaman dibuka supaya tidak terlihat "tab terakhir".
+    var tabGulung = document.getElementById('tabTransaksi');
+
+    function sempit() {
+        return window.matchMedia('(max-width: 767.98px)').matches;
+    }
+
+    function aturPanahTab() {
+        if (! tabGulung) {
+            return;
+        }
+
+        var sisa   = tabGulung.scrollWidth - tabGulung.clientWidth,
+            kiri   = document.querySelector('.tab-transaksi__panah.kiri'),
+            kanan = document.querySelector('.tab-transaksi__panah.kanan'),
+            boleh  = sempit() && sisa > 2;
+
+        kiri.classList.toggle('lagi', boleh && tabGulung.scrollLeft > 2);
+        kanan.classList.toggle('lagi', boleh && tabGulung.scrollLeft < sisa - 2);
+    }
+
+    if (tabGulung) {
+        [document.querySelector('.tab-transaksi__panah.kiri'),
+         document.querySelector('.tab-transaksi__panah.kanan')].forEach(function (tombol) {
+            tombol.addEventListener('click', function () {
+                tabGulung.scrollBy({
+                    left: this.getAttribute('data-arah') * tabGulung.clientWidth * 0.8,
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        var tabAktif = tabGulung.querySelector('.btn-primary');
+
+        if (tabAktif && sempit()) {
+            tabGulung.scrollLeft = tabAktif.offsetLeft
+                - (tabGulung.clientWidth - tabAktif.offsetWidth) / 2;
+        }
+
+        tabGulung.addEventListener('scroll', aturPanahTab);
+        window.addEventListener('resize', aturPanahTab);
+        window.addEventListener('load', aturPanahTab);
+    }
     JS;
 
 $packer    = new Tholu\Packer\Packer($js, 'Normal', true, false, true);

@@ -52,6 +52,21 @@ $per_halaman = (int) config('Pager')->perPage;
 .sandi-merged .sandi-lihat:hover {
     color: #101828;
 }
+/* Username tidak bisa diganti, jadi kolomnya memang dikunci. Tapi style.css punya
+   aturan global yang membuat SEMUA field nonaktif terbaca "mati" — latar abu,
+   teks pudar, border pucat, label ikut meredup, semuanya !important — sehingga di
+   popup sunting kolom ini beda rupa dengan kolom kata sandinya sendiri dan dengan
+   popup Tambah Pengguna. Warnanya dikembalikan ke putih seperti kolom isian biasa;
+   kursor not-allowed tetap tinggal sebagai penanda kolomnya tidak bisa diketik.
+   Butuh !important karena aturan global itu juga memakai !important. */
+#username_:disabled {
+    background-color: #ffffff !important;
+    border-color: #d0d5dd !important;
+    color: #101828 !important;
+}
+#modalSuntingPengguna label[for="username_"] {
+    color: #344054 !important;
+}
 /* Lebar kolom cari pengguna. Dulu inline style="width:18rem"; dipindah ke sini
    supaya di ponsel bisa dilenturkan (inline style kalah oleh !important, kelas
    tidak). */
@@ -238,12 +253,12 @@ $per_halaman = (int) config('Pager')->perPage;
                     <div class="col-6">
                         <?= form_label('Level', 'level', ['class' => 'form-label']); ?>
                         <?php
+                        // viewer dan reseller sengaja tidak ditawarkan lagi untuk akun
+                        // baru: tidak ada satu pun hak akses yang menunjuk namanya
                         $options_level = [
                             'superadmin' => 'Superadmin',
                             'admin'      => 'Admin',
                             'cs'         => 'CS',
-                            'viewer'     => 'Viewer',
-                            'reseller'   => 'Reseller',
                         ];
 
                         echo form_dropdown('level', $options_level, $isi('level', 'cs'), ['class' => 'form-select' . ($err('level') ? ' is-invalid' : ''), 'id' => 'level', 'required' => '']);
@@ -336,7 +351,7 @@ $per_halaman = (int) config('Pager')->perPage;
             <div class="modal-body">
                 <h6 class="text-uppercase small text-muted mb-3">Akun</h6>
 
-                <div class="mb-3 row gx-2 bg-warning rounded pb-1">
+                <div class="mb-3 row gx-2">
                     <div class="col-6">
                         <?= form_label('Username', 'username_', ['class' => 'form-label']); ?>
                         <?= form_input('username', '', ['class' => 'form-control', 'id' => 'username_', 'required' => '', 'placeholder' => 'username', 'disabled' => '']); ?>
@@ -363,12 +378,15 @@ $per_halaman = (int) config('Pager')->perPage;
                     <div class="col-6">
                         <?= form_label('Level', 'level_', ['class' => 'form-label']); ?>
                         <?php
+                        // Level lama (viewer) tidak dipasang di sini: daftar penggunanya
+                        // dibangun JavaScript, jadi opsi untuk akun yang sudah menyandang
+                        // level itu ditambahkan show.bs.modal di bawah — tanpa opsi itu,
+                        // kotak ini jadi kosong dan menyimpan suntingan apa pun akan
+                        // mengubah level akun tersebut tanpa sengaja.
                         $options_level = [
                             'superadmin' => 'Superadmin',
                             'admin'      => 'Admin',
                             'cs'         => 'CS',
-                            'viewer'     => 'Viewer',
-                            'reseller'   => 'Reseller',
                         ];
 
                         echo form_dropdown('level', $options_level, 'cs', ['class' => 'form-select', 'id' => 'level_', 'required' => '']);
@@ -424,7 +442,6 @@ $per_halaman = (int) config('Pager')->perPage;
                     ]); ?>
                     <?= form_label('Boleh menyunting transaksi (mirip Admin)', 'suntingTransaksi_', ['class' => 'form-check-label']); ?>
                 </div>
-
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-link text-decoration-none" data-bs-dismiss="modal">Batal</button>
@@ -486,8 +503,7 @@ $js = <<< JS
     		superadmin: 'bg-dark',
     		admin: 'bg-primary',
     		cs: 'bg-secondary',
-    		viewer: 'bg-light text-dark border',
-    		reseller: 'bg-light text-dark border'
+    		viewer: 'bg-light text-dark border'
     	};
     	var lokaStatus = {
     		active: 'bg-success',
@@ -564,17 +580,25 @@ $js = <<< JS
     			for (var i = 0; i < dipilih.length; i++) { punya.push({ id: dipilih[i], nama: '' }); }
 
     			gambarJuragan($('#pilihJuragan'), punya, 'tambah');
+    			// pilihan yang dipulihkan baru ada sekarang, jadi pesannya dihitung ulang
+    			sinkronHintLevel(document.getElementById('modalTambahPengguna'));
     	});
 
     	// daftar tokonya bisa berpuluh pil; tombol ini mencontreng (atau mengosongkan)
     	// seluruh isi satu wadah supaya tidak perlu klik satu-satu. Name field-nya tetap
     	// juragan[], jadi jalur simpan controller tidak ikut berubah.
     	$(document).on('click', '[data-pilih-semua]', function () {
-    			$('#' + $(this).data('pilih-semua')).find('input[type="checkbox"]').prop('checked', true);
+    			var wadah = $('#' + $(this).data('pilih-semua'));
+
+    			wadah.find('input[type="checkbox"]').prop('checked', true);
+    			sinkronHintLevel(wadah.closest('.modal').get(0));
     	});
 
     	$(document).on('click', '[data-kosongkan]', function () {
-    			$('#' + $(this).data('kosongkan')).find('input[type="checkbox"]').prop('checked', false);
+    			var wadah = $('#' + $(this).data('kosongkan'));
+
+    			wadah.find('input[type="checkbox"]').prop('checked', false);
+    			sinkronHintLevel(wadah.closest('.modal').get(0));
     	});
 
     	function saringPengguna() {
@@ -695,21 +719,31 @@ $js = <<< JS
     			$(this).find('i').attr('class', 'fal ' + (tampil ? 'fa-eye-slash' : 'fa-eye'));
     	});
 
-    	// aturan level cs: hint wajib juragan dan kedua kotak wewenang hanya
-    	// ditampilkan untuk akun CS
+    	// aturan wajib juragan berlaku untuk level cs dan admin (dua-duanya butuh
+    	// minimal satu toko); pesannya ikut padam begitu satu toko dicentang, dan
+    	// kalimatnya menyebut level yang sedang dipilih supaya tidak membingungkan.
+    	// Kotak wewenang produk & transaksi hanya ditampilkan untuk level CS.
     	function sinkronHintLevel(popup) {
-    			var opsi = popup.querySelector('select[name="level"]');
-    			var hint = popup.querySelector('[data-hint-cs]');
-    			var hak  = popup.querySelectorAll('[data-hak-cs]');
-    			var isCs = !!opsi && opsi.value === 'cs';
+    			var opsi  = popup.querySelector('select[name="level"]');
+    			var hint  = popup.querySelector('[data-hint-cs]');
+    			var wadah = popup.querySelector('.gulir-pilihan');
+    			var hak   = popup.querySelectorAll('[data-hak-cs]');
+    			var isCs  = !!opsi && opsi.value === 'cs';
+    			var perlu = !!opsi && (isCs || opsi.value === 'admin');
+    			var ada   = !!wadah && wadah.querySelectorAll('input:checked').length > 0;
 
-    			if (hint) { hint.classList.toggle('d-none', ! isCs); }
+    			if (hint) {
+    				if (perlu) {
+    					hint.textContent = 'Level ' + (opsi.value === 'admin' ? 'Admin' : 'CS') + ' wajib punya minimal satu juragan.';
+    				}
+    				hint.classList.toggle('d-none', ! perlu || ada);
+    			}
 
     			hak.forEach(function (el) { el.classList.toggle('d-none', ! isCs); });
     	}
 
-    // kedua kotak wewenang CS diisi dari baris pengguna saat popup sunting dibuka;
-    // checkbox tidak ikut ternilai lewat value= biasa
+    	// kedua kotak wewenang CS diisi dari baris pengguna saat popup sunting dibuka;
+    	// checkbox tidak ikut ternilai lewat value= biasa
     	function sinkronHakCs(popup, a) {
     			var produk = popup.querySelector('input[name="lihat_semua_produk"]');
     			var transaksi = popup.querySelector('input[name="sunting_transaksi"]');
@@ -717,6 +751,10 @@ $js = <<< JS
     			if (produk)    { produk.checked    = ('' + a.getAttribute('data-lihat-semua') === '1'); }
     			if (transaksi) { transaksi.checked = ('' + a.getAttribute('data-sunting-transaksi') === '1'); }
     	}
+
+    	$(document).on('change', '.gulir-pilihan input[type="checkbox"]', function () {
+    			sinkronHintLevel($(this).closest('.modal').get(0));
+    	});
 
     	$(document).on('change', 'select[name="level"]', function () {
     			sinkronHintLevel($(this).closest('.modal').get(0));
@@ -773,6 +811,14 @@ $js = <<< JS
     		j.value=c,
     		k.value=d,
     		l.value=e,
+    		// level lama yang tidak lagi ditawarkan (viewer) tetap harus bisa
+    		// ditampilkan, kalau tidak nilainya hilang dan tersimpan jadi level lain
+    		(function(){
+    			if (f && ! m.querySelector('option[value="'+f+'"]')) {
+    				var o=document.createElement('option');
+    				o.value=f, o.textContent=f.charAt(0).toUpperCase()+f.slice(1)+' (lama)', m.appendChild(o);
+    			}
+    		})(),
     		m.value=f,
     		n.value=g,
     		sinkronHintLevel(mP),
@@ -786,6 +832,8 @@ $js = <<< JS
     				var punya = keDaftar((a[b] && a[b].juragan) || []);
 
     				gambarJuragan($('#pilihJuraganSunting'), punya, 'sunting');
+    				// tokonya baru digambar sekarang, jadi centangannya baru bisa dihitung di sini
+    				sinkronHintLevel(mP);
     		});
     	});
     });

@@ -225,5 +225,24 @@
                     $item.removeClass('active').eq(i).addClass('active');
                 }
             });
+
+                // Tombol kosongkan milik sendiri. ✕ bawaan peramban tidak bisa digeser
+        // ke tempat yang diinginkan (lihat .kosongkan-cari di style.css), jadi
+        // disembunyikan dan diganti tombol ini. Muncul-hilang dan posisinya
+        // diatur CSS (:placeholder-shown + :focus), jadi tidak ada lagi status
+        // tertinggal ketika skrip mengosongkan kolom dengan .val('').
+        $('.tambah-dalam .cari_pelanggan').each(function () {
+            var $input = $(this),
+                $kosong = $('<button type="button" class="kosongkan-cari" title="Kosongkan pencarian" aria-label="Kosongkan pencarian"><i class="fal fa-times"></i></button>')
+                    .appendTo($input.closest('.input-group'));
+
+            $kosong.on('mousedown', function (e) {
+                    e.preventDefault();
+                })
+                .on('click', function () {
+                    $input.val('').trigger('focus');
+                    daftar($input).hide();
+                });
+        });
     });
 }(jQuery));

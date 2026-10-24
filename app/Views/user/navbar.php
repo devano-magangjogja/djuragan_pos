@@ -11,6 +11,8 @@ $isChartAktif = url_is('user/chart*');
 $isProdukAktif = url_is('admin/produk*');
 // live chat WA: CS membuka & membalas chat dari halaman admin yang sama (baca/kirim saja)
 $isChatAktif   = url_is('admin/crm/chat*');
+// badge merah: berapa pesan WA yang belum dibaca (belum dibuka)
+$chatBelumDibaca = (new \App\Models\CrmModel())->hitungChatBelumDibaca();
 ?>
 
 <!-- Topbar khusus layar kecil; di desktop lonceng notifikasi melayang sendiri
@@ -21,8 +23,7 @@ $isChatAktif   = url_is('admin/crm/chat*');
             <i class="fal fa-bars fs-5"></i>
         </button>
         <a href="<?= site_url('') ?>" class="d-flex align-items-center gap-2 mobile-topbar-brand text-decoration-none">
-            <div class="sidebar-brand-icon" style="width:28px;height:28px;font-size:0.85rem;">
-                <i class="fal fa-layer-group"></i>
+            <div class="sidebar-brand-icon" style="width:28px;height:28px;"><?= $this->include('template/merek') ?>
             </div>
             <span class="fw-bold small sidebar-brand-text-label">Djuragan POS</span>
         </a>
@@ -59,12 +60,10 @@ $isChatAktif   = url_is('admin/crm/chat*');
     <!-- Header Brand -->
     <div class="sidebar-header">
         <a href="<?= site_url('') ?>" class="sidebar-brand">
-            <div class="sidebar-brand-icon">
-                <i class="fal fa-layer-group"></i>
+            <div class="sidebar-brand-icon"><?= $this->include('template/merek') ?>
             </div>
             <div class="sidebar-brand-text">
                 <span>Djuragan POS</span>
-                <span class="role-badge"><?= esc(strtoupper($levelSesi ?: 'CS')) ?></span>
             </div>
         </a>
         <div class="d-flex align-items-center">
@@ -105,6 +104,9 @@ $isChatAktif   = url_is('admin/crm/chat*');
                 <a class="sidebar-link <?= $isChatAktif ? 'active' : '' ?>" href="<?= site_url('admin/crm/chat') ?>">
                     <i class="sidebar-link-icon fal fa-comments"></i>
                     <span>Live Chat WA</span>
+                    <?php if ($chatBelumDibaca > 0) : ?>
+                        <span class="badge rounded-pill bg-danger ms-auto" title="<?= (int) $chatBelumDibaca ?> pesan belum dibaca"><?= (int) $chatBelumDibaca ?></span>
+                    <?php endif; ?>
                 </a>
             </li>
         </ul>

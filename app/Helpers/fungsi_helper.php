@@ -785,6 +785,17 @@ if (! function_exists('pengguna_sesi')) {
 }
 
 if (! function_exists('simpan_notif')) {
+    /**
+     * Siapa yang diberi tahu sebuah aksi. Bukan semua orang yang tertaut ke
+     * tokonya, tapi yang memang berwenang menindaklanjuti:
+     *
+     *   admin mengubah      -> CS + superadmin
+     *   CS mengubah         -> admin + superadmin
+     *   superadmin mengubah -> admin + CS
+     *
+     * Level di luar itu (viewer) dan aksi tanpa sesi (mis. webhook) jatuh ke
+     * aturan lama: semua yang tertaut, kecuali pembuatnya sendiri.
+     */
     function simpan_notif($type, $juragan_id, $invoice_id)
     {
         $juragan    = new \App\Models\JuraganModel();
@@ -792,20 +803,37 @@ if (! function_exists('simpan_notif')) {
         $session    = \Config\Services::session();
 
         $user_id = $session->get('id');
+        $level   = (string) $session->get('level');
+
+        $petaPenerima = [
+            'admin'      => ['cs', 'superadmin'],
+            'cs'         => ['admin', 'superadmin'],
+            'superadmin' => ['admin', 'cs'],
+        ];
+        $boleh = $petaPenerima[$level] ?? null;
 
         $r_users = $juragan->getUsersByJuragan($juragan_id)->getResult();
 
         foreach ($r_users as $v) {
-            if ($v->id !== $user_id) {
-                $notifikasi->save([
-                    'juragan_id' => $juragan_id,
-                    'from'       => $user_id,
-                    'for'        => $v->id,
-                    'invoice_id' => $invoice_id,
-                    'type'       => $type,
-                    'created_at' => Time::now(config('App')->appTimezone)->timestamp,
-                ]);
+            // Pembuat aksi tidak dikirimi notifikasi atas aksinya sendiri. Kedua
+            // sisi dibandingkan sebagai int karena kolom id dari MySQLi datang
+            // sebagai string sedangkan session()->get('id') bisa int.
+            if ((int) $v->id === (int) $user_id) {
+                continue;
             }
+
+            if ($boleh !== null && ! in_array((string) $v->level, $boleh, true)) {
+                continue;
+            }
+
+            $notifikasi->save([
+                'juragan_id' => $juragan_id,
+                'from'       => $user_id,
+                'for'        => $v->id,
+                'invoice_id' => $invoice_id,
+                'type'       => $type,
+                'created_at' => Time::now(config('App')->appTimezone)->timestamp,
+            ]);
         }
     }
 }

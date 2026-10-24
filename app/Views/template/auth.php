@@ -7,7 +7,7 @@
         <aside class="auth-hero">
             <h1 class="auth-hero-title"><?= $this->renderSection('authTitle') ?></h1>
             <div class="auth-hero-brand">
-                <?= $this->include('template/logo') ?>
+                <?= $this->include('template/merek') ?>
             </div>
         </aside>
 

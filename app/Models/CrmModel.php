@@ -7,6 +7,24 @@ use CodeIgniter\Model;
 class CrmModel extends Model
 {
     /**
+     * Jumlah pesan Live Chat WA yang belum dibaca.
+     *
+     * Dihitung dari bubble 'masuk' yang id_pesan-nya masih di atas pointer baca
+     * tiap percakapan (last_read_id), pada chat yang tidak diarsipkan. Begitu chat
+     * dibuka, pointer maju ke pesan terbaru sehingga hitungannya (dan badge angka
+     * di menu Live Chat navbar admin maupun CS) hilang untuk percakapan itu.
+     */
+    public function hitungChatBelumDibaca(): int
+    {
+        return (int) $this->db->table('crm_chat_pesan m')
+            ->join('crm_chat_percakapan p', 'p.id_percakapan = m.percakapan_id')
+            ->where('m.arah', 'masuk')
+            ->where('p.diarsipkan', 0)
+            ->where('m.id_pesan > p.last_read_id', null, false)
+            ->countAllResults();
+    }
+
+    /**
      * Mengambil ringkasan metrik CRM pelanggan yang bercerita
      */
     public function getRingkasan(): array

@@ -31,227 +31,359 @@
   text-rendering: auto;
   -webkit-font-smoothing: antialiased;
 }
+
 .fal.fa-user-circle::before {
   content: "\f2bd";
-} /* circle-user   */
+}
+
+/* circle-user   */
 .fal.fa-plus::before {
   content: "\2b";
-} /* FA6 free memakai U+002B */
+}
+
+/* FA6 free memakai U+002B */
 .fal.fa-save::before {
   content: "\f0c7";
-} /* floppy-disk   */
+}
+
+/* floppy-disk   */
 .fal.fa-circle::before {
   content: "\f111";
 }
+
 .fal.fa-bell-slash::before {
   content: "\f1f6";
 }
+
 .fal.fa-trash-alt::before {
   content: "\f2ed";
-} /* trash-can     */
+}
+
+/* trash-can     */
 .fal.fa-trash::before {
   content: "\f1f8";
 }
+
 .fal.fa-info-circle::before {
   content: "\f05a";
-} /* circle-info   */
+}
+
+/* circle-info   */
 .fal.fa-wallet::before {
   content: "\f555";
 }
+
 .fal.fa-pencil::before {
   content: "\f304";
-} /* pen           */
+}
+
+/* pen           */
 .fal.fa-user::before {
   content: "\f007";
 }
+
 .fal.fa-search::before {
   content: "\f002";
 }
+
 .fal.fa-plus-circle::before {
   content: "\f055";
-} /* circle-plus   */
+}
+
+/* circle-plus   */
 .fal.fa-align-left::before {
   content: "\f036";
 }
+
 .fal.fa-shipping-fast::before {
   content: "\f48b";
 }
+
 .fal.fa-paper-plane::before {
   content: "\f1d8";
 }
+
 .fal.fa-money-check-edit::before {
   content: "\f53d";
-} /* money-check-dollar (Pro→free) */
+}
+
+/* money-check-dollar (Pro→free) */
 .fal.fa-ellipsis-h-alt::before {
   content: "\f141";
-} /* ellipsis (Pro→free) */
+}
+
+/* ellipsis (Pro→free) */
 .fal.fa-ellipsis-h::before {
   content: "\f141";
 }
+
 .fal.fa-comment-alt-plus::before {
   content: "\f075";
-} /* comment (f4b5 Pro-only) */
+}
+
+/* comment (f4b5 Pro-only) */
 .fal.fa-cogs::before {
   content: "\f085";
-} /* gears */
+}
+
+/* gears */
 .fal.fa-ballot-check::before {
   content: "\f14a";
-} /* square-check (Pro→free) */
+}
+
+/* square-check (Pro→free) */
 .fal.fa-arrow-alt-to-right::before {
   content: "\f101";
-} /* angles-right (pager) */
+}
+
+/* angles-right (pager) */
 .fal.fa-arrow-alt-to-left::before {
   content: "\f100";
-} /* angles-left  (pager) */
+}
+
+/* angles-left  (pager) */
 .fal.fa-arrow-alt-right::before {
   content: "\f178";
-} /* arrow-right-long */
+}
+
+/* arrow-right-long */
 .fal.fa-arrow-alt-left::before {
   content: "\f30a";
-} /* arrow-left-long  */
+}
+
+/* arrow-left-long  */
 /* ikon timeline dari fungsi_helper.php */
 .fal.fa-file-alt::before {
   content: "\f15c";
-} /* file-text     */
+}
+
+/* file-text     */
 .fal.fa-layer-group::before {
   content: "\f5fd";
-} /* f5be = squarespace */
+}
+
+/* f5be = squarespace */
 .fal.fa-print::before {
   content: "\f02f";
 }
+
 .fal.fa-waveform-path::before {
   content: "\f83e";
-} /* wave-square (Pro→free) */
+}
+
+/* wave-square (Pro→free) */
 .fal.fa-cut::before {
   content: "\f0c4";
-} /* scissors    */
+}
+
+/* scissors    */
 .fal.fa-tasks::before {
   content: "\f0ae";
-} /* list-check  */
+}
+
+/* list-check  */
 .fal.fa-box-alt::before {
   content: "\f466";
-} /* box (Pro→free) */
+}
+
+/* box (Pro→free) */
 .fal.fa-inbox-in::before {
   content: "\f01c";
-} /* inbox (Pro→free) */
+}
+
+/* inbox (Pro→free) */
 .fal.fa-ruler-combined::before {
   content: "\f5af";
-} /* ruler-combined (free) */
+}
+
+/* ruler-combined (free) */
 .fal.fa-users::before {
   content: "\f0c0";
-} /* users (free)          */
+}
+
+/* users (free)          */
 .fal.fa-user-plus::before {
   content: "\f234";
-} /* user-plus (free)      */
+}
+
+/* user-plus (free)      */
 .fal.fa-chevron-down::before {
   content: "\f078";
-} /* chevron-down (free)   */
+}
+
+/* chevron-down (free)   */
 .fal.fa-eye::before {
   content: "\f06e";
-} /* eye (free)            */
+}
+
+/* eye (free)            */
 .fal.fa-eye-slash::before {
   content: "\f070";
-} /* eye-slash (free)      */
+}
+
+/* eye-slash (free)      */
 .fal.fa-tshirt::before,
 .fal.fa-shirt::before {
   content: "\f553";
-} /* shirt (free)          */
+}
+
+/* shirt (free)          */
 .fal.fa-camera::before {
   content: "\f030";
-} /* camera (free)         */
+}
+
+/* camera (free)         */
 .fal.fa-image::before {
   content: "\f03e";
-} /* image (free)          */
+}
+
+/* image (free)          */
 .fal.fa-spinner::before {
   content: "\f110";
-} /* spinner (free)        */
+}
+
+/* spinner (free)        */
 /* penanda poin gaji di kartu Produk (FA6 Free memakai nama yang sama) */
 .fal.fa-coins::before {
   content: "\f52e";
-} /* coins (free)          */
+}
+
+/* coins (free)          */
 /* ikon menu Kunci API + tombol buat kunci (FA6 Free memakai nama yang sama) */
 .fal.fa-key::before {
   content: "\f084";
-} /* key (free)            */
+}
+
+/* key (free)            */
+/* notifikasi prioritas "tautkan akun CS ke juragan" */
+.fal.fa-user-plus::before {
+  content: "\f234";
+}
+
+/* user-plus (free)      */
 /* FA6 Free tidak punya glyf "webhook" (Pro only) — dipinjam "link" supaya
    tombol tidak lagi melebar di kiri hanya karena margin ikonnya. */
 .fal.fa-webhook::before {
   content: "\f0c1";
-} /* link (free)           */
+}
+
+/* link (free)           */
 .fal.fa-home::before {
   content: "\f015";
-} /* home */
+}
+
+/* home */
 .fal.fa-receipt::before {
   content: "\f543";
-} /* receipt */
+}
+
+/* receipt */
 .fal.fa-comments-alt::before,
 .fal.fa-comments::before {
   content: "\f086";
-} /* comments */
+}
+
+/* comments */
 .fal.fa-chart-pie::before {
   content: "\f200";
-} /* chart-pie */
+}
+
+/* chart-pie */
 .fal.fa-file-invoice-dollar::before,
 .fal.fa-file-invoice::before {
   content: "\f570";
-} /* file-invoice-dollar */
+}
+
+/* file-invoice-dollar */
 .fal.fa-bullhorn::before {
   content: "\f0a1";
-} /* bullhorn */
+}
+
+/* bullhorn */
 .fal.fa-clone::before {
   content: "\f24d";
-} /* clone */
+}
+
+/* clone */
 .fal.fa-history::before,
 .fal.fa-clock-rotate-left::before {
   content: "\f1da";
-} /* clock-rotate-left */
+}
+
+/* clock-rotate-left */
 .fal.fa-sliders-h::before,
 .fal.fa-sliders::before {
   content: "\f1de";
-} /* sliders */
+}
+
+/* sliders */
 .fal.fa-chart-line::before {
   content: "\f201";
-} /* chart-line */
+}
+
+/* chart-line */
 .fal.fa-bell::before {
   content: "\f0f3";
-} /* bell */
+}
+
+/* bell */
 .fal.fa-bars::before {
   content: "\f0c9";
-} /* bars */
+}
+
+/* bars */
 .fal.fa-times::before,
 .fal.fa-xmark::before {
   content: "\f00d";
-} /* xmark */
+}
+
+/* xmark */
 .fal.fa-sign-out-alt::before,
 .fal.fa-sign-out::before,
 .fal.fa-right-from-bracket::before {
   content: "\f2f5";
-} /* right-from-bracket */
+}
+
+/* right-from-bracket */
 .fal.fa-user-edit::before,
 .fal.fa-user-pen::before {
   content: "\f4ff";
-} /* user-pen */
+}
+
+/* user-pen */
 .fal.fa-university::before,
 .fal.fa-building-columns::before {
   content: "\f19c";
-} /* building-columns */
+}
+
+/* building-columns */
 .fal.fa-store::before,
 .fal.fa-shop::before {
   content: "\f54f";
-} /* store */
+}
+
+/* store */
 .fal.fa-user-tie::before {
   content: "\f502";
-} /* user-tie */
+}
+
+/* user-tie */
 .fal.fa-users-cog::before,
 .fal.fa-users-gear::before {
   content: "\f509";
-} /* users-gear */
+}
+
+/* users-gear */
 .fal.fa-chevron-right::before {
   content: "\f054";
-} /* chevron-right */
+}
+
+/* chevron-right */
 .fal.fa-chevron-up::before {
   content: "\f077";
-} /* chevron-up */
+}
+
+/* chevron-up */
 
 /* ------------------------------------------------------------------
    Wadah pilihan bergulir — pemilih juragan di Pengaturan > Pengguna.
@@ -286,20 +418,25 @@
   scrollbar-width: thin;
   -webkit-overflow-scrolling: touch;
 }
+
 .timeliner::-webkit-scrollbar {
   height: 4px;
 }
+
 .timeliner::-webkit-scrollbar-track {
   background: #f1f5f9;
   border-radius: 999px;
 }
+
 .timeliner::-webkit-scrollbar-thumb {
   background: #cbd5e1;
   border-radius: 999px;
 }
+
 .timeliner::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
+
 /* Layar sempit / tablet: timeline jangan dibiarkan selebar isinya saja (±120px)
    sehingga tiga langkah Buat-Bayar-Kirim berdesakan di kiri sementara separuh kanan
    baris menganggur. Diambil lebar penuh, tiap langkah kebagian sama besar.
@@ -313,20 +450,23 @@
     width: 100%;
   }
 }
-.timeliner > li {
+
+.timeliner>li {
   /* 0 0 auto: lebar li = lebar labelnya, tidak pernah menyusut lagi */
   flex: 0 0 auto;
   padding-top: 0.25rem;
 }
+
 /* SETELAH aturan .timeliner > li di atas: spesifisitasnya sama, jadi yang terakhir
    yang menang — langkahnya boleh menyusut/memuai bareng pembagian lebar kartu. */
 @media (max-width: 1023.98px) {
-  .timeliner > li {
+  .timeliner>li {
     flex: 1 1 0;
   }
 }
+
 /* garis penghubung: dari ikon langkah ini ke ikon langkah berikutnya */
-.timeliner > li::after {
+.timeliner>li::after {
   content: "";
   position: absolute;
   top: 1.25rem;
@@ -337,15 +477,19 @@
   border-radius: 2px;
   z-index: 0;
 }
-.timeliner > li.full::after {
+
+.timeliner>li.full::after {
   background: #198754;
 }
-.timeliner > li.half::after {
+
+.timeliner>li.half::after {
   background: linear-gradient(90deg, #198754 50%, #dee2e6 50%);
 }
-.timeliner > li.end::after {
+
+.timeliner>li.end::after {
   display: none;
 }
+
 /* ikon ditaruh di atas bulatan berlatar supaya garis tidak menimpa glifnya */
 .timeliner .icon {
   position: relative;
@@ -361,14 +505,17 @@
   font-size: 0.95rem;
   color: #adb5bd;
 }
-.timeliner > li.full .icon {
+
+.timeliner>li.full .icon {
   border-color: #198754;
   color: #198754;
 }
-.timeliner > li.half .icon {
+
+.timeliner>li.half .icon {
   border-color: #ffc107;
   color: #b88600;
 }
+
 .timeliner .tl-label {
   display: block;
   margin-top: 0.3rem;
@@ -379,12 +526,14 @@
   color: #64748b;
   white-space: nowrap;
 }
+
 .timeliner .tl-date {
   display: block;
   font-size: 0.72rem;
   color: #94a3b8;
   white-space: nowrap;
 }
+
 .timeliner .tl-date abbr {
   text-decoration: none;
   cursor: default;
@@ -398,11 +547,13 @@
   background-color: transparent;
   border-color: rgba(255, 255, 255, 0.125);
 }
+
 #juragan .list-group-item:hover,
 #juragan .list-group-item:focus {
   background-color: rgba(255, 255, 255, 0.08);
   color: #fff;
 }
+
 #juragan .list-group-item .fal {
   margin-right: 0.4rem;
 }
@@ -419,6 +570,7 @@
   padding: 1.5rem 1rem;
   background: #eef1f5;
 }
+
 .auth-card {
   width: 100%;
   max-width: 62rem;
@@ -441,21 +593,22 @@
   color: #fff;
   background: #0b1120 url("../img/login-bg.png") center / cover no-repeat;
 }
+
 .auth-hero::before {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    160deg,
-    rgba(6, 10, 24, 0.82) 0%,
-    rgba(6, 10, 24, 0.45) 45%,
-    rgba(6, 10, 24, 0.88) 100%
-  );
+  background: linear-gradient(160deg,
+      rgba(6, 10, 24, 0.82) 0%,
+      rgba(6, 10, 24, 0.45) 45%,
+      rgba(6, 10, 24, 0.88) 100%);
 }
-.auth-hero > * {
+
+.auth-hero>* {
   position: relative;
   z-index: 1;
 }
+
 .auth-hero-title {
   margin: 0;
   font-weight: 800;
@@ -464,22 +617,26 @@
   letter-spacing: -0.02em;
   color: #fff;
 }
+
 .auth-hero-brand {
   display: flex;
   align-items: center;
   gap: 0.75rem;
 }
+
 .auth-hero-brand .seven-logo {
   width: 2.75rem;
   height: auto;
   flex: none;
 }
+
 .auth-hero-brand-text {
   font-weight: 700;
   font-size: 1.05rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
 }
+
 .auth-hero-brand-inc {
   color: #da251d;
 }
@@ -491,6 +648,7 @@
   justify-content: center;
   padding: 3rem clamp(1.5rem, 3.5vw, 3.25rem);
 }
+
 .auth-panel-title {
   margin: 0 0 0.25rem;
   font-weight: 800;
@@ -498,25 +656,30 @@
   letter-spacing: -0.01em;
   color: #0f172a;
 }
+
 .auth-panel-sub {
   margin: 0 0 1.75rem;
   font-size: 0.925rem;
   color: #64748b;
 }
+
 .auth-status .alert {
   border: 0;
   border-radius: 0.75rem;
   font-size: 0.875rem;
 }
+
 .auth-field {
   margin-bottom: 1rem;
 }
+
 .auth-panel .form-label {
   margin-bottom: 0.3rem;
   font-weight: 600;
   font-size: 0.825rem;
   color: #334155;
 }
+
 .auth-panel .form-control {
   padding: 0.7rem 0.9rem;
   border: 1px solid #e2e8f0;
@@ -524,11 +687,13 @@
   background-color: #f8fafc;
   color: #0f172a;
 }
+
 .auth-panel .form-control:focus {
   background-color: #fff;
   border-color: #0f172a;
   box-shadow: 0 0 0 0.2rem rgba(15, 23, 42, 0.08);
 }
+
 .auth-submit {
   width: 100%;
   margin-top: 0.5rem;
@@ -539,24 +704,29 @@
   color: #fff;
   font-weight: 600;
 }
+
 .auth-submit:hover,
 .auth-submit:focus {
   background-color: #1e293b;
   color: #fff;
 }
+
 .auth-hint {
   margin: 1.5rem 0 0;
   font-size: 0.85rem;
   text-align: center;
   color: #64748b;
 }
+
 .auth-hint a {
   color: #0f172a;
   font-weight: 600;
 }
+
 .auth-hint a:hover {
   text-decoration: underline;
 }
+
 .auth-hint-sep {
   margin: 0 0.4rem;
   color: #cbd5e1;
@@ -567,15 +737,18 @@
   .auth-page {
     padding: 1rem 0.75rem;
   }
+
   .auth-card {
     grid-template-columns: 1fr;
     max-width: 30rem;
   }
+
   .auth-hero {
     min-height: 15rem;
     padding: 1.75rem;
     gap: 1.25rem;
   }
+
   .auth-panel {
     padding: 2rem 1.5rem 2.25rem;
   }
@@ -587,6 +760,7 @@
   -webkit-appearance: none;
   margin: 0;
 }
+
 .hp-num {
   -moz-appearance: textfield;
   appearance: textfield;
@@ -596,11 +770,13 @@
 .list-orderan td {
   vertical-align: middle;
 }
+
 .list-orderan .hapus_row {
   color: #dc2626;
   opacity: 0.5;
   transition: opacity 0.15s ease;
 }
+
 .list-orderan .hapus_row:hover {
   opacity: 1;
 }
@@ -609,6 +785,7 @@
 .list-orderan .flex-grow-1 {
   min-width: 0;
 }
+
 .list-orderan .uk-ringkas {
   display: block;
   overflow: hidden;
@@ -627,9 +804,11 @@
   font-size: 0.75rem;
   line-height: 1.25;
 }
+
 .rotate-180 {
   transform: rotate(180deg);
 }
+
 .transition-transform {
   transition: transform 0.2s ease-in-out;
 }
@@ -640,16 +819,20 @@
     border-color 0.15s ease,
     box-shadow 0.15s ease;
 }
+
 .anggota-baris:hover {
   border-color: #cbd5e1;
 }
+
 .anggota-baris .hapus-anggota {
   color: #94a3b8;
   transition: color 0.15s ease;
 }
+
 .anggota-baris .hapus-anggota:hover {
   color: #ef4444;
 }
+
 .anggota-baris .ukuran-subcard {
   background: #f8fafc;
   border: 1px solid #e2e8f0;
@@ -657,9 +840,11 @@
   padding: 0.85rem;
   margin-top: 0.5rem;
 }
+
 .anggota-baris .uk-field:focus {
   background-color: #fff !important;
 }
+
 .anggota-baris .uk-ringkas {
   max-width: 480px;
   overflow: hidden;
@@ -684,12 +869,14 @@
     background-color 0.15s ease,
     color 0.15s ease;
 }
+
 .foto-pilih:hover,
 .foto-pilih.foto-seret {
   border-color: #0d6efd;
   background: #eef4ff;
   color: #0d6efd;
 }
+
 .foto-pilih-ikon {
   display: block;
   font-size: 1.35rem;
@@ -697,6 +884,7 @@
   margin-bottom: 0.35rem;
   color: #94a3b8;
 }
+
 .foto-pilih:hover .foto-pilih-ikon,
 .foto-pilih.foto-seret .foto-pilih-ikon {
   color: inherit;
@@ -712,9 +900,11 @@
   background: #f1f5f9;
   transition: border-color 0.15s ease;
 }
+
 .foto-kotak:hover {
   border-color: #0d6efd;
 }
+
 .foto-buka,
 .foto-gambar {
   position: absolute;
@@ -723,9 +913,11 @@
   width: 100%;
   height: 100%;
 }
+
 .foto-gambar {
   object-fit: cover;
 }
+
 .foto-nama {
   margin-top: 0.25rem;
   font-size: 0.72rem;
@@ -734,6 +926,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
 .foto-buang {
   position: absolute;
   top: 0.25rem;
@@ -751,10 +944,12 @@
   opacity: 0;
   transition: opacity 0.15s ease;
 }
+
 .foto-kotak:hover .foto-buang,
 .foto-buang:focus {
   opacity: 1;
 }
+
 /* layar sentuh tidak punya hover, jadi tombolnya memang selalu kelihatan */
 @media (hover: none) {
   .foto-buang {
@@ -766,6 +961,7 @@
 .foto-bawaan .foto-kotak {
   border-style: dashed;
 }
+
 .foto-bawaan-label {
   position: absolute;
   left: 0.25rem;
@@ -785,6 +981,7 @@
   position: relative;
   opacity: 0.45;
 }
+
 .foto-dibuang .foto-kotak::after {
   content: "\f1f8";
   font-family: "Font Awesome 6 Pro", "Font Awesome 6 Free";
@@ -799,6 +996,7 @@
   color: #fff;
   font-size: 1.3rem;
 }
+
 .foto-dibuang .foto-buang {
   background: #dc3545;
   color: #fff;
@@ -815,20 +1013,25 @@
   color: #0d6efd;
   font-size: 1.1rem;
 }
+
 .foto-kartu.proses .foto-tunggu {
   display: flex;
 }
+
 .foto-kartu.proses .foto-buang {
   display: none;
 }
+
 .foto-kartu.proses .foto-nama {
   color: #94a3b8;
 }
+
 @keyframes foto-putar {
   to {
     transform: rotate(360deg);
   }
 }
+
 .foto-tunggu i {
   display: inline-block;
   animation: foto-putar 0.9s linear infinite;
@@ -840,24 +1043,30 @@
    tidak makan beberapa layar di HP. !important-nya wajib: utilitas spasi
    Bootstrap (py-4, mt-4, my-1) juga pakai !important dan dimuat lebih dulu. */
 @media (max-width: 575.98px) {
-  .kartu-invoice > div > .mt-4 {
+  .kartu-invoice>div>.mt-4 {
     margin-top: 0.55rem !important;
   }
+
   .kartu-invoice .blok {
     padding: 0.85rem 0.9rem !important;
   }
+
   .kartu-invoice .blok.blok-lipat {
     padding: 0 !important;
   }
-  .kartu-invoice .blok-lipat > h6 > button {
+
+  .kartu-invoice .blok-lipat>h6>button {
     padding: 0.8rem 0.95rem !important;
   }
-  .kartu-invoice .blok-lipat .collapse > div {
+
+  .kartu-invoice .blok-lipat .collapse>div {
     padding: 0.6rem 0.95rem 0.85rem !important;
   }
+
   .kartu-invoice hr {
     margin: 0.45rem 0 !important;
   }
+
   .kartu-invoice .aksi .btn {
     padding: 0.45rem 0.7rem;
     font-size: 0.82rem;
@@ -874,9 +1083,11 @@
   rotate: -90deg;
   transition: rotate 0.2s ease;
 }
+
 [data-bs-toggle="collapse"][aria-expanded="true"] .fa-chevron-down {
   rotate: 0deg;
 }
+
 @media (prefers-reduced-motion: reduce) {
   [data-bs-toggle="collapse"][aria-expanded] .fa-chevron-down {
     transition: none;
@@ -922,6 +1133,7 @@ body.has-app-sidebar {
   body.has-app-sidebar {
     padding-left: calc(var(--sidebar-width) + (var(--sidebar-gap) * 2));
   }
+
   body.has-app-sidebar.sidebar-collapsed {
     padding-left: calc(var(--sidebar-rail-width) + (var(--sidebar-gap) * 2));
   }
@@ -931,6 +1143,7 @@ body.has-app-sidebar {
   body.has-app-sidebar {
     padding-left: 0;
   }
+
   .mobile-topbar {
     display: flex !important;
   }
@@ -962,6 +1175,7 @@ body.has-app-sidebar {
   .app-sidebar {
     transform: translateX(calc(-100% - (var(--sidebar-gap) * 2)));
   }
+
   .app-sidebar.show {
     transform: translateX(0);
   }
@@ -973,85 +1187,52 @@ body.has-app-sidebar {
   body.sidebar-collapsed .app-sidebar {
     width: var(--sidebar-rail-width);
   }
+
   body.sidebar-collapsed .app-sidebar:hover,
   body.sidebar-collapsed .app-sidebar:focus-within {
     width: var(--sidebar-width);
     box-shadow: 0 12px 32px rgba(16, 24, 40, 0.16);
   }
 
-  body.sidebar-collapsed
-    .app-sidebar:not(:hover):not(:focus-within)
-    .sidebar-brand-text,
-  body.sidebar-collapsed
-    .app-sidebar:not(:hover):not(:focus-within)
-    .sidebar-heading,
-  body.sidebar-collapsed
-    .app-sidebar:not(:hover):not(:focus-within)
-    .sidebar-link
-    > span,
-  body.sidebar-collapsed
-    .app-sidebar:not(:hover):not(:focus-within)
-    .sidebar-chevron,
-  body.sidebar-collapsed
-    .app-sidebar:not(:hover):not(:focus-within)
-    .sidebar-submenu,
-  body.sidebar-collapsed
-    .app-sidebar:not(:hover):not(:focus-within)
-    .sidebar-user-info,
-  body.sidebar-collapsed
-    .app-sidebar:not(:hover):not(:focus-within)
-    .sidebar-user-actions,
-  body.sidebar-collapsed
-    .app-sidebar:not(:hover):not(:focus-within)
-    .sidebar-footer-link
-    > span,
-  body.sidebar-collapsed
-    .app-sidebar:not(:hover):not(:focus-within)
-    .sidebar-footer-link
-    > .counter,
-  body.sidebar-collapsed
-    .app-sidebar:not(:hover):not(:focus-within)
-    .sidebar-collapse-btn {
+  body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-brand-text,
+  body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-heading,
+  body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-link>span,
+  body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-chevron,
+  body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-submenu,
+  body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-user-info,
+  body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-user-actions,
+  body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-footer-link>span,
+  body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-footer-link>.counter,
+  body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-collapse-btn {
     display: none;
   }
 
-  body.sidebar-collapsed
-    .app-sidebar:not(:hover):not(:focus-within)
-    .sidebar-header,
-  body.sidebar-collapsed
-    .app-sidebar:not(:hover):not(:focus-within)
-    .sidebar-brand {
+  body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-header,
+  body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-brand {
     justify-content: center;
   }
-  body.sidebar-collapsed
-    .app-sidebar:not(:hover):not(:focus-within)
-    .sidebar-link,
-  body.sidebar-collapsed
-    .app-sidebar:not(:hover):not(:focus-within)
-    .sidebar-footer-link {
+
+  body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-link,
+  body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-footer-link {
     justify-content: center;
     padding-left: 0;
     padding-right: 0;
   }
-  body.sidebar-collapsed
-    .app-sidebar:not(:hover):not(:focus-within)
-    .sidebar-link-icon {
+
+  body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-link-icon {
     margin-right: 0;
     font-size: 1.02rem;
   }
+
   /* Ikon lonceng di footer bukan .sidebar-link-icon, tapi ikut membawa
        margin-right 0.7rem dari .sidebar-footer-link i. Di rail ikon margin itu
        membuat lonceng bergeser ~11px ke kiri sehingga tidak sejajar dengan
        kolom ikon di atasnya. */
-  body.sidebar-collapsed
-    .app-sidebar:not(:hover):not(:focus-within)
-    .sidebar-footer-link
-    i {
+  body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-footer-link i {
     margin-right: 0;
   }
-  body.sidebar-collapsed
-    .app-sidebar:not(:hover):not(:focus-within)
-    .sidebar-user-card {
+
+  body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-user-card {
     justify-content: center;
     padding: 0.4rem 0;
     /* Kotak kartunya hanya dipakai di sidebar yang terbuka. Di rail ikon
@@ -1060,9 +1241,8 @@ body.has-app-sidebar {
     background: transparent;
     border-color: transparent;
   }
-  body.sidebar-collapsed
-    .app-sidebar:not(:hover):not(:focus-within)
-    .sidebar-menu {
+
+  body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-menu {
     padding-left: 0.5rem;
     padding-right: 0.5rem;
   }
@@ -1076,6 +1256,7 @@ body.has-app-sidebar {
 .app-sidebar .sidebar-collapse-btn {
   display: none;
 }
+
 @media (min-width: 992px) {
   .app-sidebar .sidebar-collapse-btn {
     display: inline-flex;
@@ -1091,6 +1272,7 @@ body.has-app-sidebar {
   backdrop-filter: blur(2px);
   z-index: 1040;
 }
+
 .sidebar-backdrop.show {
   display: block;
 }
@@ -1106,6 +1288,7 @@ body.has-app-sidebar {
   min-height: 60px;
   flex-shrink: 0;
 }
+
 .sidebar-brand {
   display: flex;
   align-items: center;
@@ -1113,9 +1296,11 @@ body.has-app-sidebar {
   text-decoration: none;
   color: var(--sidebar-text-hover);
 }
+
 .sidebar-brand:hover {
   color: var(--sidebar-text-hover);
 }
+
 .sidebar-brand-icon {
   width: 32px;
   height: 32px;
@@ -1128,6 +1313,7 @@ body.has-app-sidebar {
   font-size: 0.95rem;
   flex-shrink: 0;
 }
+
 .sidebar-brand-text {
   font-size: 0.95rem;
   font-weight: 600;
@@ -1136,6 +1322,7 @@ body.has-app-sidebar {
   display: flex;
   flex-direction: column;
 }
+
 .sidebar-brand-text .role-badge {
   font-size: 0.62rem;
   font-weight: 600;
@@ -1161,6 +1348,7 @@ body.has-app-sidebar {
   align-items: center;
   justify-content: center;
 }
+
 .sidebar-close-btn:hover {
   color: var(--sidebar-text-hover);
   background: var(--sidebar-active-bg);
@@ -1175,16 +1363,20 @@ body.has-app-sidebar {
   scrollbar-width: thin;
   scrollbar-color: #d0d5dd transparent;
 }
+
 .sidebar-menu::-webkit-scrollbar {
   width: 4px;
 }
+
 .sidebar-menu::-webkit-scrollbar-track {
   background: transparent;
 }
+
 .sidebar-menu::-webkit-scrollbar-thumb {
   background: #d0d5dd;
   border-radius: 4px;
 }
+
 .sidebar-menu::-webkit-scrollbar-thumb:hover {
   background: #98a2b3;
 }
@@ -1197,6 +1389,7 @@ body.has-app-sidebar {
   color: var(--sidebar-muted);
   padding: 0.8rem 0.65rem 0.3rem;
 }
+
 .sidebar-heading:first-child {
   padding-top: 0;
 }
@@ -1207,9 +1400,11 @@ body.has-app-sidebar {
   padding: 0;
   margin: 0;
 }
+
 .sidebar-nav .nav-item {
   margin-bottom: 0.2rem;
 }
+
 .sidebar-link {
   display: flex;
   align-items: center;
@@ -1225,15 +1420,18 @@ body.has-app-sidebar {
   position: relative;
   user-select: none;
 }
+
 .sidebar-link:hover {
   color: var(--sidebar-text-hover);
   background: var(--sidebar-hover-bg);
 }
+
 .sidebar-link.active {
   color: var(--sidebar-active-color);
   background: var(--sidebar-active-bg);
   font-weight: 600;
 }
+
 .sidebar-link-icon {
   width: 1.25rem;
   text-align: center;
@@ -1242,16 +1440,19 @@ body.has-app-sidebar {
   flex-shrink: 0;
   color: #667085;
 }
+
 .sidebar-link:hover .sidebar-link-icon,
 .sidebar-link.active .sidebar-link-icon {
   color: var(--sidebar-active-color);
 }
+
 .sidebar-link .sidebar-chevron {
   margin-left: auto;
   font-size: 0.72rem;
   color: var(--sidebar-muted);
   transition: transform 0.2s ease;
 }
+
 .sidebar-link[aria-expanded="true"] .sidebar-chevron {
   transform: rotate(180deg);
   color: var(--sidebar-text);
@@ -1264,9 +1465,11 @@ body.has-app-sidebar {
   margin: 0.15rem 0 0.35rem 1.15rem;
   border-left: 1px solid var(--sidebar-border);
 }
+
 .sidebar-submenu .submenu-item {
   margin-bottom: 0.12rem;
 }
+
 .sidebar-submenu-link {
   display: flex;
   align-items: center;
@@ -1280,15 +1483,18 @@ body.has-app-sidebar {
     background-color 0.15s ease,
     color 0.15s ease;
 }
+
 .sidebar-submenu-link:hover {
   color: var(--sidebar-text-hover);
   background: var(--sidebar-hover-bg);
 }
+
 .sidebar-submenu-link.active {
   color: var(--sidebar-active-color);
   background: var(--sidebar-active-bg);
   font-weight: 600;
 }
+
 .sidebar-submenu-link i {
   font-size: 0.78rem;
   margin-right: 0.55rem;
@@ -1296,6 +1502,7 @@ body.has-app-sidebar {
   text-align: center;
   color: #98a2b3;
 }
+
 .sidebar-submenu-link:hover i,
 .sidebar-submenu-link.active i {
   color: var(--sidebar-active-color);
@@ -1311,6 +1518,7 @@ body.has-app-sidebar {
   flex-direction: column;
   gap: 0.5rem;
 }
+
 .sidebar-footer-link {
   display: flex;
   align-items: center;
@@ -1324,10 +1532,12 @@ body.has-app-sidebar {
     background-color 0.15s ease,
     color 0.15s ease;
 }
+
 .sidebar-footer-link:hover {
   color: var(--sidebar-text-hover);
   background: var(--sidebar-hover-bg);
 }
+
 .sidebar-footer-link i {
   width: 1.25rem;
   text-align: center;
@@ -1335,6 +1545,7 @@ body.has-app-sidebar {
   font-size: 0.9rem;
   color: #667085;
 }
+
 .sidebar-user-card {
   display: flex;
   align-items: center;
@@ -1344,6 +1555,7 @@ body.has-app-sidebar {
   background: var(--sidebar-hover-bg);
   border: 1px solid var(--sidebar-border);
 }
+
 .sidebar-user-avatar {
   width: 32px;
   height: 32px;
@@ -1357,10 +1569,12 @@ body.has-app-sidebar {
   font-size: 0.82rem;
   flex-shrink: 0;
 }
+
 .sidebar-user-info {
   flex: 1 1 auto;
   min-width: 0;
 }
+
 .sidebar-user-name {
   font-size: 0.82rem;
   font-weight: 600;
@@ -1370,15 +1584,18 @@ body.has-app-sidebar {
   text-overflow: ellipsis;
   line-height: 1.2;
 }
+
 .sidebar-user-role {
   font-size: 0.65rem;
   color: var(--sidebar-muted);
   text-transform: capitalize;
 }
+
 .sidebar-user-actions {
   display: flex;
   gap: 0.2rem;
 }
+
 .sidebar-action-btn {
   width: 28px;
   height: 28px;
@@ -1393,10 +1610,12 @@ body.has-app-sidebar {
   font-size: 0.82rem;
   transition: all 0.15s ease;
 }
+
 .sidebar-action-btn:hover {
   color: var(--sidebar-text-hover);
   background: var(--sidebar-active-bg);
 }
+
 .sidebar-action-btn.btn-logout:hover {
   color: #d92d20;
   background: #fef3f2;
@@ -1412,6 +1631,7 @@ body.has-app-sidebar {
   z-index: 1030;
   box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
 }
+
 .mobile-topbar-btn,
 .mobile-topbar-btn:hover,
 .mobile-topbar-btn:focus,
@@ -1420,23 +1640,52 @@ body.has-app-sidebar {
   color: #667085;
   text-decoration: none;
 }
+
 .mobile-topbar-brand:hover,
 .mobile-topbar-btn:hover {
   color: var(--sidebar-text-hover);
 }
+
 .mobile-topbar .sidebar-brand-text-label {
   color: var(--sidebar-text-hover);
 }
+
 /* Jarak kiri bar. Tombol hamburger itu .btn.btn-sm, dan ".btn-sm" di bagian
    Modern Buttons memakai !important, jadi utilitas p-1/p-0 di markup tidak
-   pernah menang: ikonnya berjarak 8px (px pada bar) + 11px (padding tombol)
-   = ~20px dari tepi layar. Padding kiri tombol di bar ini dinolkan supaya
+   pernah menang: ikonnya berjarak 12px (padding bar) + 11px (padding tombol)
+   = ~23px dari tepi layar. Padding kiri tombol di bar ini dinolkan supaya
    ikonnya sejajar dengan isi halaman di bawahnya.
-   Hanya sisi KIRI yang dinolkan. Padding kanan avatar dibiarkan (.btn-sm =
-   11px) supaya lonceng dan avatar tetap mepet ke kanan tapi tidak menempel
-   di tepi layar: jaraknya jadi 8px (px-2 pada bar) + 11px = ~19px. */
+   Hanya sisi KIRI yang dinolkan di semua tombol. Padding kanan avatar dibiarkan
+   (.btn-sm = 11px) supaya lonceng dan avatar tetap mepet ke kanan tapi tidak
+   menempel di tepi layar: jaraknya jadi 8px (px-2 pada bar) + 11px = ~19px. */
 .mobile-topbar .btn.mobile-topbar-btn {
   padding-left: 0 !important;
+}
+
+/* Jarak kiri bar = jarak kiri isi halaman. Setelah padding tombol dinolkan,
+   hamburger duduk di 8px sementara judul dan kartu di bawahnya mulai dari 12px
+   (padding .container-xxl) — jadi ikonnya terlihat menempel di tepi layar.
+   Sisi kanan tidak ikut diubah: lonceng dan avatar memang sengaja mepet.
+   .px-2 di markup membawa !important dan tailwind.css dimuat setelah style.css,
+   maka aturan ini ditulis lebih spesifik (dua kelas) dan ikut !important. */
+.mobile-topbar.px-2 {
+  padding-left: 12px !important;
+}
+
+/* Renggang ☰ → lambang → "Djuragan POS". Kotak ☰ masih membawa padding kanan
+   .btn-sm (11px) yang tidak terlihat, dan PNG lambang sendiri punya margin bening
+   ± 19% di dalam kotaknya (24 dari 128 baris pixel-nya kosong) — jadi jarak
+   VISUAL-nya bukan 8px (gap-2) tapi ~25px. Padding kanan hamburger dinolkan,
+   merek ditarik 5px untuk membayar margin bening lambang, dan gap internal merek
+   dipangkas jadi 4px. Sisa jarak ☰ → lambang ≈ 9px, lambang → teks ≈ 8px.
+   Khusus bar ponsel; kepala sidebar desktop tidak disentuh. */
+.mobile-topbar #mobileSidebarToggle {
+  padding-right: 0 !important;
+}
+
+.mobile-topbar .mobile-topbar-brand {
+  margin-left: -5px;
+  gap: 0.25rem !important;
 }
 
 /* ==================================================================
@@ -1449,20 +1698,21 @@ body.has-app-sidebar {
   color: #344054 !important;
 }
 
-body.has-app-sidebar > .container-xxl,
-body.has-app-sidebar > .container,
-body.has-app-sidebar > .container-fluid,
-body.has-app-sidebar > div.container-xxl {
+body.has-app-sidebar>.container-xxl,
+body.has-app-sidebar>.container,
+body.has-app-sidebar>.container-fluid,
+body.has-app-sidebar>div.container-xxl {
   max-width: 100%;
   padding-top: 1.75rem !important;
   padding-bottom: 2.5rem !important;
 }
 
 @media (max-width: 991.98px) {
-  body.has-app-sidebar > .container-xxl,
-  body.has-app-sidebar > .container,
-  body.has-app-sidebar > .container-fluid,
-  body.has-app-sidebar > div.container-xxl {
+
+  body.has-app-sidebar>.container-xxl,
+  body.has-app-sidebar>.container,
+  body.has-app-sidebar>.container-fluid,
+  body.has-app-sidebar>div.container-xxl {
     padding-top: 1.25rem !important;
     padding-left: 0.75rem !important;
     padding-right: 0.75rem !important;
@@ -1502,6 +1752,7 @@ body.has-app-sidebar .h3.mt-5 {
 }
 
 @media (max-width: 575.98px) {
+
   body.has-app-sidebar h1.h3.mt-5,
   body.has-app-sidebar .h3.mt-5 {
     font-size: 1.25rem !important;
@@ -1529,6 +1780,7 @@ body.has-app-sidebar .h3.mt-3 {
   gap: 0.4rem;
   font-size: 0.8125rem !important;
 }
+
 .breadcrumb-item {
   display: inline-flex;
   align-items: center;
@@ -1536,10 +1788,12 @@ body.has-app-sidebar .h3.mt-3 {
   font-size: 0.8125rem !important;
   font-weight: 500 !important;
 }
-.breadcrumb-item + .breadcrumb-item {
+
+.breadcrumb-item+.breadcrumb-item {
   padding-left: 0.4rem !important;
 }
-.breadcrumb-item + .breadcrumb-item::before {
+
+.breadcrumb-item+.breadcrumb-item::before {
   content: "\f054" !important;
   font-family: "Font Awesome 6 Free" !important;
   font-weight: 900 !important;
@@ -1547,14 +1801,17 @@ body.has-app-sidebar .h3.mt-3 {
   color: #98a2b3 !important;
   padding-right: 0.4rem !important;
 }
+
 .breadcrumb-item a {
   color: #475467 !important;
   text-decoration: none !important;
   transition: color 0.15s ease;
 }
+
 .breadcrumb-item a:hover {
   color: #101828 !important;
 }
+
 .breadcrumb-item.active {
   color: #101828 !important;
   font-weight: 600 !important;
@@ -1573,6 +1830,7 @@ body.has-app-sidebar .h3.mt-3 {
     box-shadow 0.2s ease,
     border-color 0.2s ease;
 }
+
 .card-header {
   background: #ffffff !important;
   border-bottom: 1px solid #eaecf0 !important;
@@ -1582,9 +1840,11 @@ body.has-app-sidebar .h3.mt-3 {
   border-top-left-radius: 16px !important;
   border-top-right-radius: 16px !important;
 }
+
 .card-body {
   padding: 1.25rem !important;
 }
+
 .card-footer {
   background: #f9fafb !important;
   border-top: 1px solid #eaecf0 !important;
@@ -1606,12 +1866,14 @@ body.has-app-sidebar .h3.mt-3 {
   padding: 0.95rem 1.15rem !important;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
+
 a.border.border-ink-200.bg-white:hover,
 a.rounded-3.border.border-ink-200:hover {
   border-color: #d0d5dd !important;
   box-shadow: 0 6px 18px rgba(16, 24, 40, 0.08) !important;
   transform: translateY(-2px);
 }
+
 .border.border-ink-200 .text-muted.small.text-uppercase,
 .rounded-3.border.border-ink-200 .text-muted.small.text-uppercase {
   font-size: 0.68rem !important;
@@ -1623,6 +1885,7 @@ a.rounded-3.border.border-ink-200:hover {
   align-items: center;
   gap: 0.4rem;
 }
+
 .border.border-ink-200 .fs-4.fw-bold,
 .border.border-ink-200 .fs-5.fw-bold,
 .rounded-3.border.border-ink-200 .fs-4.fw-bold,
@@ -1632,6 +1895,7 @@ a.rounded-3.border.border-ink-200:hover {
   color: #101828 !important;
   line-height: 1.25 !important;
 }
+
 .border.border-ink-200 .small.text-ink-500,
 .rounded-3.border.border-ink-200 .small.text-ink-500 {
   font-size: 0.78rem !important;
@@ -1648,6 +1912,7 @@ a.rounded-3.border.border-ink-200:hover {
   border-color: #eaecf0 !important;
   margin-bottom: 0;
 }
+
 .table thead th {
   background: #f9fafb !important;
   color: #475467 !important;
@@ -1660,6 +1925,7 @@ a.rounded-3.border.border-ink-200:hover {
   padding: 0.75rem 1rem !important;
   white-space: nowrap;
 }
+
 .table tbody td {
   border-bottom: 1px solid #f2f4f7 !important;
   padding: 0.8rem 1rem !important;
@@ -1667,9 +1933,11 @@ a.rounded-3.border.border-ink-200:hover {
   color: #344054 !important;
   vertical-align: middle !important;
 }
+
 .table tbody tr:hover td {
   background-color: #f9fafb !important;
 }
+
 .table tfoot td {
   background: #f9fafb !important;
   font-weight: 600 !important;
@@ -1677,6 +1945,7 @@ a.rounded-3.border.border-ink-200:hover {
   border-top: 1px solid #eaecf0 !important;
   padding: 0.75rem 1rem !important;
 }
+
 .table-responsive {
   border-radius: 12px;
   border: 1px solid #eaecf0;
@@ -1687,20 +1956,25 @@ a.rounded-3.border.border-ink-200:hover {
   scrollbar-color: #cbd5e1 #f1f5f9;
   background: #ffffff;
 }
+
 .table-responsive::-webkit-scrollbar {
   height: 7px;
 }
+
 .table-responsive::-webkit-scrollbar-track {
   background: #f1f5f9;
   border-radius: 4px;
 }
+
 .table-responsive::-webkit-scrollbar-thumb {
   background: #cbd5e1;
   border-radius: 4px;
 }
+
 .table-responsive::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
+
 .card .table-responsive {
   border: none;
   border-radius: 0;
@@ -1719,12 +1993,14 @@ a.rounded-3.border.border-ink-200:hover {
     border-color 0.15s ease,
     box-shadow 0.15s ease;
 }
+
 .form-control:focus,
 .form-select:focus {
   border-color: #101828 !important;
   box-shadow: 0 0 0 3px rgba(16, 24, 40, 0.08) !important;
   outline: none !important;
 }
+
 /* Field nonaktif (mis. isian alamat saat COD aktif): tetap terlihat, tapi
    terbaca "mati". Aturan .form-control di atas memakai !important untuk
    background dan color, sehingga :disabled bawaan Bootstrap kalah — perlu
@@ -1739,10 +2015,12 @@ a.rounded-3.border.border-ink-200:hover {
   cursor: not-allowed;
   opacity: 1;
 }
+
 .form-control:disabled::placeholder,
 .form-control[readonly]::placeholder {
   color: #b0b7c3 !important;
 }
+
 /* Label ikut meredup agar blok disabled terbaca satu kesatuan. :has() sudah
    didukung Chrome 105+/Safari 15.4+/Firefox 121+ (baseline sejak Des 2023). */
 .form-label:has(+ .form-control:disabled),
@@ -1750,12 +2028,14 @@ a.rounded-3.border.border-ink-200:hover {
 .form-label:has(+ .form-control[readonly]) {
   color: #98a2b3 !important;
 }
+
 .form-control-sm,
 .form-select-sm {
   font-size: 0.8rem !important;
   padding: 0.35rem 0.65rem !important;
   border-radius: 8px !important;
 }
+
 /* Panah select digambar Bootstrap lewat background-image di calc(100% - 12px)
    dengan lebar 16px, dan aturan .form-select-sm di atas ikut menimpa padding
    kanan bawaannya (2,25rem -> 0,65rem) karena sama-sama !important. Akibatnya
@@ -1764,12 +2044,14 @@ a.rounded-3.border.border-ink-200:hover {
 .form-select-sm {
   padding-right: 1.75rem !important;
 }
+
 .form-label {
   font-size: 0.76rem !important;
   font-weight: 600 !important;
   color: #344054 !important;
   margin-bottom: 0.3rem !important;
 }
+
 .input-group-text {
   background-color: #f9fafb !important;
   border: 1px solid #d0d5dd !important;
@@ -1777,15 +2059,18 @@ a.rounded-3.border.border-ink-200:hover {
   font-size: 0.85rem !important;
   border-radius: 9px !important;
 }
+
 /* Kotak cari satu kolom saja. .input-group di sini terlihat jadi dua kotak
    terpisah karena .form-control dan .input-group-text sama-sama dapat border +
    radius sendiri, jadi ikonnya dipindah ke dalam field sebagai tombol submit. */
 .cari-merged {
   position: relative;
 }
+
 .cari-merged .form-control {
   padding-left: 2.1rem !important;
 }
+
 .cari-merged .cari-kirim {
   position: absolute;
   top: 50%;
@@ -1798,9 +2083,11 @@ a.rounded-3.border.border-ink-200:hover {
   cursor: pointer;
   color: #667085;
 }
+
 .cari-merged .cari-kirim:hover {
   color: #101828;
 }
+
 /* Versi tanpa tombol: kotaknya dicari lewat JS, jadi ikonnya hanya hiasan di
    dalam field dan tidak boleh menangkap klik (pointer-events: none). */
 .cari-merged .cari-ikon {
@@ -1812,6 +2099,7 @@ a.rounded-3.border.border-ink-200:hover {
   color: #667085;
   pointer-events: none;
 }
+
 /* Kolom cari pelanggan di form orderan. Sama seperti .cari-merged, .input-group
    di sini terbaca jadi dua kotak karena field dan tombolnya punya border sendiri,
    jadi tombol "+ Tambah" dipindah ke dalam field di sisi kanan. Dia ikut ditarik
@@ -1820,9 +2108,11 @@ a.rounded-3.border.border-ink-200:hover {
 .tambah-dalam {
   position: relative;
 }
+
 .tambah-dalam .form-control {
   padding-right: 6.4rem !important;
 }
+
 .tambah-dalam .btn {
   position: absolute;
   top: 1px;
@@ -1833,6 +2123,78 @@ a.rounded-3.border.border-ink-200:hover {
   padding: 0 0.7rem !important;
   border-radius: 0 8px 8px 0 !important;
 }
+
+/* ✕ bawaan peramban pada kolom cari pelanggan duduk di tepi kanan AREA TEKS
+   (padding-right 6.4rem dipakai untuk memberi tempat tombol "+ Tambah"), dan
+   posisinya tidak bisa digeser dengan andal: margin pada widget aslinya
+   diabaikan Chrome. Jadi widget-nya disembunyikan dan diganti tombol sendiri
+   (.kosongkan-cari, dibuat cari-pelanggan.js) yang bisa ditaruh persis di
+   kiri tombol "+ Tambah". Selektornya sengaja tidak ikut .tambah-dalam: kalau
+   ada kolom cari di luar pola itu pun, ✕ bawaannya tidak boleh muncul
+   sendirian di pojok. */
+input[type="search"].cari_pelanggan::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 0;
+  height: 0;
+  margin: 0;
+}
+
+input[type="search"].cari_pelanggan::-moz-clear-button {
+  display: none;
+}
+
+.kosongkan-cari {
+  position: absolute;
+  top: 50%;
+  right: 6.4rem;
+  transform: translateY(-50%);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #64748b;
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+/* Munculnya murni mengikuti nilai inputnya, bukan kelas yang dipasang skrip:
+   .val('') dari skrip (mis. setelah pelanggan dipilih lalu dihapus) tidak
+   memicu event input, jadi versi kelas pernah meninggalkan ✕ di kolom kosong. */
+.tambah-dalam .cari_pelanggan:not(:placeholder-shown)~.kosongkan-cari {
+  display: inline-flex;
+}
+
+/* Sedang mengetik: "+ Tambah" menyingkir dan ✕ mengambil alih pojok kanan.
+   Dua kontrol tidak berdempetan lagi, dan yang dibutuhkan saat mengetik cuma
+   menghapus ketikan — "+ Tambah" sudah bisa dipakai lagi begitu kolom ditinggalkan. */
+.tambah-dalam .cari_pelanggan:focus:not(:placeholder-shown)~.btn {
+  visibility: hidden;
+}
+
+.tambah-dalam .cari_pelanggan:focus:not(:placeholder-shown)~.kosongkan-cari {
+  right: 0.6rem;
+}
+
+.kosongkan-cari:hover {
+  background: #f2f4f7;
+  color: #101828;
+}
+
+/* Bootstrap 5.2 menaikkan anak .input-group yang sedang fokus ke z-index 3
+   (`.input-group > :focus`), sementara tombol yang duduk di dalam kolom ini cuma
+   sampai 2 — jadi begitu kolom carinya diketik, field-nya sendiri menutupi
+   "+ Tambah" dan tombol ✕: keduanya hilang dari layar persis saat dibutuhkan. */
+.tambah-dalam>.btn,
+.kosongkan-cari {
+  z-index: 4;
+}
+
 /* Panel ukuran (dibangun ukuran-form.js): "cm" bukan kotak kedua di sebelah
    angkanya, tapi bagian dari kotak yang sama. Kelas border-start-0 / bg-white
    dari JS tidak pernah menang karena .input-group-text dan .form-control di atas
@@ -1847,20 +2209,24 @@ a.rounded-3.border.border-ink-200:hover {
   box-shadow: inset 0 0 0 1px #d0d5dd;
   transition: box-shadow 0.15s ease;
 }
-.ukuran-panel .input-group > .form-control,
-.ukuran-panel .input-group > .input-group-text {
+
+.ukuran-panel .input-group>.form-control,
+.ukuran-panel .input-group>.input-group-text {
   border: 0 !important;
   border-radius: 0 !important;
   background-color: transparent !important;
   box-shadow: none !important;
 }
-.ukuran-panel .input-group > .form-control {
+
+.ukuran-panel .input-group>.form-control {
   padding-right: 0.25rem !important;
 }
-.ukuran-panel .input-group > .input-group-text {
+
+.ukuran-panel .input-group>.input-group-text {
   padding-left: 0.25rem !important;
   padding-right: 0.6rem !important;
 }
+
 /* fokus dipindah dari kotak angka ke wadah yang sekarang jadi kotak */
 .ukuran-panel .input-group:focus-within {
   box-shadow:
@@ -1882,9 +2248,11 @@ a.rounded-3.border.border-ink-200:hover {
   gap: 0.4rem;
   line-height: 1.4;
 }
+
 .btn:focus {
   box-shadow: 0 0 0 3px rgba(16, 24, 40, 0.12) !important;
 }
+
 /* Tombol bermerek (bg-brand-500 di Tambah Pencatatan COD dan dua tombol invoice)
    memakai utilitas warna Tailwind yang kalah spesifisitas dari .btn:focus
    bawaan Bootstrap. Aturan itu mengisi background-color dan color dari
@@ -1900,11 +2268,13 @@ a.rounded-3.border.border-ink-200:hover {
   border-color: #da251d !important;
   color: #ffffff !important;
 }
+
 .btn.bg-brand-500:hover {
   background-color: #b81c16 !important;
   border-color: #b81c16 !important;
   color: #ffffff !important;
 }
+
 .btn-dark,
 .btn-primary {
   background-color: #101828 !important;
@@ -1912,6 +2282,7 @@ a.rounded-3.border.border-ink-200:hover {
   color: #ffffff !important;
   box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
 }
+
 .btn-dark:hover,
 .btn-dark:focus,
 .btn-primary:hover,
@@ -1920,6 +2291,7 @@ a.rounded-3.border.border-ink-200:hover {
   border-color: #1e293b !important;
   color: #ffffff !important;
 }
+
 .btn-outline-dark,
 .btn-outline-secondary {
   background-color: #ffffff !important;
@@ -1927,65 +2299,77 @@ a.rounded-3.border.border-ink-200:hover {
   color: #344054 !important;
   box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
 }
+
 .btn-outline-dark:hover,
 .btn-outline-secondary:hover {
   background-color: #f9fafb !important;
   border-color: #98a2b3 !important;
   color: #101828 !important;
 }
+
 /* Pil juragan di Pengaturan > Pengguna. Bootstrap memberi warna pil lewat
    .btn-check:checked + .btn, tapi .btn-outline-secondary di atas dipaksa
    !important sehingga pil yang sudah dicentang terlihat sama persis dengan yang
    belum: penderitanya merasa hanya boleh memilih satu. Ditimpa balik dengan
    aturan sama kerasnya, hanya di dalam wadah pilihan. */
-.gulir-pilihan .btn-check:checked + .btn {
+.gulir-pilihan .btn-check:checked+.btn {
   background-color: #101828 !important;
   border-color: #101828 !important;
   color: #ffffff !important;
 }
-.gulir-pilihan .btn-check:checked + .btn:hover {
+
+.gulir-pilihan .btn-check:checked+.btn:hover {
   background-color: #1e293b !important;
   border-color: #1e293b !important;
   color: #ffffff !important;
 }
+
 .btn-sm {
   padding: 0.32rem 0.7rem !important;
   font-size: 0.78rem !important;
   border-radius: 8px !important;
 }
+
 .btn-success {
   background-color: #059669 !important;
   border-color: #059669 !important;
   color: #ffffff !important;
 }
+
 .btn-success:hover {
   background-color: #047857 !important;
   border-color: #047857 !important;
 }
+
 .btn-danger {
   background-color: #e11d48 !important;
   border-color: #e11d48 !important;
   color: #ffffff !important;
 }
+
 .btn-danger:hover {
   background-color: #be123c !important;
   border-color: #be123c !important;
 }
+
 .btn-outline-success {
   border-color: #a7f3d0 !important;
   color: #047857 !important;
   background-color: #ffffff !important;
 }
+
 .btn-outline-success:hover {
   background-color: #ecfdf5 !important;
   border-color: #6ee7b7 !important;
   color: #065f46 !important;
 }
+
 .btn-outline-danger {
   border-color: #fecdd3 !important;
   color: #be123c !important;
   background-color: #ffffff !important;
 }
+
 .btn-outline-danger:hover {
   background-color: #fff1f2 !important;
   border-color: #fda4af !important;
@@ -2000,46 +2384,55 @@ a.rounded-3.border.border-ink-200:hover {
   letter-spacing: 0.02em !important;
   border-radius: 6px !important;
 }
+
 .badge.rounded-pill {
   border-radius: 9999px !important;
 }
+
 .badge.bg-success {
   background-color: #ecfdf5 !important;
   color: #027a48 !important;
   border: 1px solid #a6f4c5 !important;
 }
+
 .badge.bg-danger {
   background-color: #fef3f2 !important;
   color: #b42318 !important;
   border: 1px solid #fecdca !important;
 }
+
 .badge.bg-warning {
   background-color: #fffaeb !important;
   color: #b54708 !important;
   border: 1px solid #fedf89 !important;
 }
+
 .badge.bg-primary {
   background-color: #eff8ff !important;
   color: #175cd3 !important;
   border: 1px solid #b2ddff !important;
 }
+
 .badge.bg-info {
   background-color: #f0f9ff !important;
   color: #026aa2 !important;
   border: 1px solid #b9e6fe !important;
 }
+
 .badge.bg-secondary,
 .badge.bg-dark {
   background-color: #f2f4f7 !important;
   color: #344054 !important;
   border: 1px solid #eaecf0 !important;
 }
+
 .badge.counter,
 .mobile-topbar .counter {
   background-color: #ef4444 !important;
   color: #ffffff !important;
   border: none !important;
 }
+
 /* Titik merah di topbar layar kecil: titik 6px berkedip di ujung kanan-atas
    lonceng, angkanya tidak ditampilkan lagi. Kelas Bootstrap di markup-nya
    (top-0 / start-100 / translate-middle / .badge) semuanya !important, jadi
@@ -2058,17 +2451,21 @@ a.rounded-3.border.border-ink-200:hover {
   transform: none !important;
   animation: notif-kedip 1.2s ease-in-out infinite;
 }
+
 /* Loncengnya duduk 1px lebih tinggi dari hamburger, logo, dan avatar (kotak
    <a>-nya pakai p-2 sedangkan tombol lain p-1/p-0), jadi geser 1px ke bawah
    supaya sebaris. Titik merangnya ikut karena posisinya di dalam <a> ini. */
 .mobile-topbar a[data-notif-toggle="1"] {
   top: 1px;
 }
+
 @keyframes notif-kedip {
+
   0%,
   100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.2;
   }
@@ -2078,6 +2475,7 @@ a.rounded-3.border.border-ink-200:hover {
 .nav-pills {
   gap: 0.35rem;
 }
+
 .nav-pills .nav-link {
   font-size: 0.8125rem !important;
   font-weight: 500 !important;
@@ -2089,11 +2487,13 @@ a.rounded-3.border.border-ink-200:hover {
   transition: all 0.15s ease !important;
   box-shadow: 0 1px 2px rgba(16, 24, 40, 0.03);
 }
+
 .nav-pills .nav-link:hover {
   color: #101828 !important;
   background: #f9fafb !important;
   border-color: #d0d5dd !important;
 }
+
 .nav-pills .nav-link.active {
   background: #101828 !important;
   border-color: #101828 !important;
@@ -2111,25 +2511,30 @@ a.rounded-3.border.border-ink-200:hover {
   border-width: 1px !important;
   box-shadow: 0 1px 3px rgba(16, 24, 40, 0.05);
 }
+
 .alert-dismissible {
   position: relative !important;
   padding-right: 3.25rem !important;
 }
+
 .alert.d-flex {
   gap: 0.75rem !important;
 }
-.alert > i,
-.alert > svg,
-.alert > .svg-inline--fa {
+
+.alert>i,
+.alert>svg,
+.alert>.svg-inline--fa {
   flex-shrink: 0 !important;
   font-size: 1.15rem !important;
 }
-.alert:not(.d-flex) > i,
-.alert:not(.d-flex) > svg,
-.alert:not(.d-flex) > .svg-inline--fa {
+
+.alert:not(.d-flex)>i,
+.alert:not(.d-flex)>svg,
+.alert:not(.d-flex)>.svg-inline--fa {
   margin-right: 0.75rem !important;
   vertical-align: -0.125em !important;
 }
+
 .alert-dismissible .btn-close {
   position: absolute !important;
   top: 50% !important;
@@ -2149,44 +2554,54 @@ a.rounded-3.border.border-ink-200:hover {
   box-shadow: none !important;
   outline: none !important;
 }
+
 .alert-dismissible .btn-close:hover {
   opacity: 1 !important;
   background-color: rgba(0, 0, 0, 0.05) !important;
 }
+
 .alert-dismissible .btn-close:focus {
   opacity: 1 !important;
   box-shadow: none !important;
   outline: none !important;
 }
+
 .alert-success {
   background-color: #ecfdf5 !important;
   border-color: #a6f4c5 !important;
   color: #027a48 !important;
 }
+
 .alert-success .btn-close:hover {
   background-color: rgba(2, 122, 72, 0.1) !important;
 }
+
 .alert-danger {
   background-color: #fef3f2 !important;
   border-color: #fecdca !important;
   color: #b42318 !important;
 }
+
 .alert-danger .btn-close:hover {
   background-color: rgba(180, 35, 24, 0.1) !important;
 }
+
 .alert-warning {
   background-color: #fffaeb !important;
   border-color: #fedf89 !important;
   color: #b54708 !important;
 }
+
 .alert-warning .btn-close:hover {
   background-color: rgba(181, 71, 8, 0.1) !important;
 }
+
 .alert-info {
   background-color: #eff8ff !important;
   border-color: #b2ddff !important;
   color: #175cd3 !important;
 }
+
 .alert-info .btn-close:hover {
   background-color: rgba(23, 92, 211, 0.1) !important;
 }
@@ -2198,6 +2613,7 @@ a.rounded-3.border.border-ink-200:hover {
   align-items: center;
   gap: 0.4rem 0.5rem;
 }
+
 .toolbar-transaksi__tab {
   display: flex;
   align-items: center;
@@ -2205,6 +2621,7 @@ a.rounded-3.border.border-ink-200:hover {
   flex: 1 1 auto;
   min-width: 0;
 }
+
 .toolbar-transaksi__aksi {
   display: flex;
   align-items: center;
@@ -2212,12 +2629,14 @@ a.rounded-3.border.border-ink-200:hover {
   flex: 0 1 auto;
   margin-left: auto;
 }
+
 .toolbar-transaksi .btn {
   padding: 0.42rem 0.75rem;
   gap: 0.35rem;
   white-space: nowrap;
   font-size: 0.85rem;
 }
+
 .toolbar-transaksi .badge {
   padding: 0.2rem 0.5rem !important;
 }
@@ -2229,12 +2648,15 @@ a.rounded-3.border.border-ink-200:hover {
     scrollbar-width: none;
     padding-bottom: 0.25rem;
   }
+
   .toolbar-transaksi__tab::-webkit-scrollbar {
     display: none;
   }
+
   .toolbar-transaksi__tab .btn {
     flex: 0 0 auto;
   }
+
   .toolbar-transaksi__aksi {
     flex: 1 1 100%;
     margin-left: 0;
@@ -2242,11 +2664,13 @@ a.rounded-3.border.border-ink-200:hover {
     align-items: center;
     gap: 0.35rem;
   }
-  .toolbar-transaksi__aksi > .dropdown {
+
+  .toolbar-transaksi__aksi>.dropdown {
     flex: 1 1 auto;
     min-width: 0;
   }
-  .toolbar-transaksi__aksi > .dropdown .btn {
+
+  .toolbar-transaksi__aksi>.dropdown .btn {
     width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -2264,21 +2688,25 @@ a.rounded-3.border.border-ink-200:hover {
     0 8px 10px -6px rgba(16, 24, 40, 0.05) !important;
   overflow: hidden;
 }
+
 .modal-header {
   border-bottom: 1px solid #eaecf0 !important;
   padding: 1.15rem 1.25rem !important;
   background: #ffffff !important;
 }
+
 .modal-title {
   font-weight: 700 !important;
   font-size: 1.05rem !important;
   color: #101828 !important;
 }
+
 .modal-footer {
   border-top: 1px solid #eaecf0 !important;
   background: #f9fafb !important;
   padding: 0.85rem 1.25rem !important;
 }
+
 /* ---------------------------------------------------------------------------
    Modal "Info Pembayaran". Dulu isinya list-group polos dengan satu strip kuning
    lebar; sekarang tiap pembayaran jadi kartu: ikon sumber dana, nominal, tanggal,
@@ -2290,6 +2718,7 @@ a.rounded-3.border.border-ink-200:hover {
   flex-direction: column;
   gap: 0.6rem;
 }
+
 .bayar-kartu {
   border: 1px solid #eaecf0;
   border-radius: 14px;
@@ -2300,11 +2729,13 @@ a.rounded-3.border.border-ink-200:hover {
     box-shadow 0.15s ease,
     background-color 0.15s ease;
 }
+
 .bayar-kartu:hover {
   border-color: #d0d5dd;
   background: #fcfcfd;
   box-shadow: 0 1px 3px rgba(16, 24, 40, 0.06);
 }
+
 .bayar-ikon {
   display: inline-flex;
   align-items: center;
@@ -2318,11 +2749,13 @@ a.rounded-3.border.border-ink-200:hover {
   border: 1px solid #b2ddff;
   color: #175cd3;
 }
+
 .bayar-ikon.tunai {
   background: #f9f2ff;
   border-color: #e9d7fe;
   color: #9810fa;
 }
+
 .bayar-sumber {
   font-size: 0.68rem;
   font-weight: 700;
@@ -2331,17 +2764,20 @@ a.rounded-3.border.border-ink-200:hover {
   color: #98a2b3;
   overflow-wrap: anywhere;
 }
+
 .bayar-nominal {
   font-size: 0.95rem;
   font-weight: 700;
   color: #101828;
   white-space: nowrap;
 }
+
 .bayar-waktu {
   font-size: 0.78rem;
   color: #667085;
   white-space: nowrap;
 }
+
 .bayar-status {
   display: inline-flex;
   align-items: center;
@@ -2356,16 +2792,19 @@ a.rounded-3.border.border-ink-200:hover {
   background: #f2f4f7;
   color: #475467;
 }
+
 .bayar-status.ada {
   border-color: #a6f4c5;
   background: #ecfdf5;
   color: #027a48;
 }
+
 .bayar-status.tidak {
   border-color: #fecdca;
   background: #fef3f2;
   color: #b42318;
 }
+
 /* catatan lembut pengganti strip kuning yang menonjol */
 .bayar-catatan {
   display: flex;
@@ -2379,17 +2818,20 @@ a.rounded-3.border.border-ink-200:hover {
   font-size: 0.78rem;
   line-height: 1.45;
 }
-.bayar-catatan > i {
+
+.bayar-catatan>i {
   color: #98a2b3;
   flex-shrink: 0;
   margin-top: 0.05rem;
 }
+
 /* imbuhan "Rp" di dalam kolom jumlah dana. input-group sengaja tidak dipakai:
    .form-control di atas memaksa border-radius sendiri sehingga sambungannya pecah */
 .bayar-rp {
   position: relative;
 }
-.bayar-rp > .mata {
+
+.bayar-rp>.mata {
   position: absolute;
   top: 50%;
   left: 0.75rem;
@@ -2399,14 +2841,17 @@ a.rounded-3.border.border-ink-200:hover {
   color: #98a2b3;
   pointer-events: none;
 }
-.bayar-rp > .form-control {
+
+.bayar-rp>.form-control {
   padding-left: 2.15rem;
   font-variant-numeric: tabular-nums;
 }
+
 /* angka ribuan yang sedang diketik, biar jelas tidak ada minus atau desimal */
 .bayar-pratinjau {
   font-variant-numeric: tabular-nums;
 }
+
 /* ruang aksi hanya ada kalau akun ini boleh menilai pembayaran */
 .bayar-aksi {
   display: flex;
@@ -2415,6 +2860,7 @@ a.rounded-3.border.border-ink-200:hover {
   padding-top: 0.7rem;
   border-top: 1px solid #f2f4f7;
 }
+
 .bayar-aksi .btn {
   flex: 1 1 0;
   min-width: 0;
@@ -2423,28 +2869,33 @@ a.rounded-3.border.border-ink-200:hover {
   border-radius: 10px;
   padding: 0.4rem 0.5rem;
 }
+
 .bayar-ya {
   border: 1px solid #a6f4c5;
   background: #ecfdf5;
   color: #027a48;
 }
+
 .bayar-ya:hover,
 .bayar-ya:focus {
   border-color: #12b76a;
   background: #d1fadf;
   color: #027a48;
 }
+
 .bayar-tidak {
   border: 1px solid #fecdca;
   background: #fef3f2;
   color: #b42318;
 }
+
 .bayar-tidak:hover,
 .bayar-tidak:focus {
   border-color: #f04438;
   background: #fee4e2;
   color: #b42318;
 }
+
 /* varian hijau untuk konfirmasi aksi yang menguntungkan ("dana ada");
    .konfirmasi-tanda/.konfirmasi-judul/.konfirmasi-objek/.konfirmasi-batal/.konfirmasi-ya
    sudah ada untuk konfirmasi berbahaya, ini padanannya saja */
@@ -2452,30 +2903,37 @@ a.rounded-3.border.border-ink-200:hover {
   background: #ecfdf5;
   color: #027a48;
 }
+
 .konfirmasi-ya.sukses {
   border-color: #12b76a;
   background: #12b76a;
 }
+
 .konfirmasi-ya.sukses:hover,
 .konfirmasi-ya.sukses:focus {
   border-color: #027a48;
   background: #027a48;
 }
+
 /* konfirmasi nilai dana: satu lingkaran tanda, ikonnya ditukar lewat kelas .tidak
    pada pembungkusnya (hijau = diterima, merah = tidak ditemukan) */
 #cekTanda .cek-ikon-tidak {
   display: none;
 }
+
 #cekTanda.tidak {
   background: #fef3f2;
   color: #b42318;
 }
+
 #cekTanda.tidak .cek-ikon-ada {
   display: none;
 }
+
 #cekTanda.tidak .cek-ikon-tidak {
   display: inline-block;
 }
+
 .dropdown-menu {
   border-radius: 12px !important;
   border: 1px solid #eaecf0 !important;
@@ -2484,6 +2942,7 @@ a.rounded-3.border.border-ink-200:hover {
     0 4px 6px -2px rgba(16, 24, 40, 0.03) !important;
   padding: 0.35rem !important;
 }
+
 .dropdown-item {
   border-radius: 8px !important;
   font-size: 0.835rem !important;
@@ -2492,6 +2951,7 @@ a.rounded-3.border.border-ink-200:hover {
   padding: 0.45rem 0.75rem !important;
   transition: all 0.15s ease;
 }
+
 .dropdown-item:hover {
   background-color: #f2f4f7 !important;
   color: #101828 !important;
@@ -2502,16 +2962,19 @@ a.rounded-3.border.border-ink-200:hover {
   z-index: 1020;
   pointer-events: none;
 }
-.fixed-bottom > div {
+
+.fixed-bottom>div {
   pointer-events: none;
 }
+
 /* Div dalamnya selebar layar penuh (container-fluid + justify-content-end), jadi
    kalau pointer-events-nya auto seluruh strip bawah layar ikut menelan klik —
    pager di bagian bawah halaman apa pun jadi tidak bisa diklik. Yang boleh
    menangkap klik hanya tombolnya. */
-.fixed-bottom > div > * {
+.fixed-bottom>div>* {
   pointer-events: auto;
 }
+
 /* Tombol masukan cuma ikon headset (tanpa tulisan) dan duduk di pojok kanan
    bawah layar, bukan di tepi container-xxl yang ikut terpusat di layar lebar.
    Jadi kotak tombolnya dibuat bulat sempurna dengan lebar = tinggi. */
@@ -2529,16 +2992,19 @@ a.rounded-3.border.border-ink-200:hover {
   box-shadow: 0 4px 12px rgba(16, 24, 40, 0.15) !important;
   transition: all 0.2s ease !important;
 }
+
 .fixed-bottom button[data-bs-target="#feedbackModal"]:hover {
   background: #1e293b !important;
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(16, 24, 40, 0.2) !important;
 }
+
 /* Tombol Live Chat ikut mengambang, ditumpuk tepat di atas tombol kirim masukan
    (lingkaran 2.6rem + margin-bottom 1rem milik tombol itu, lalu jarak 0.7rem). */
 .wa-melayang {
   bottom: 4.3rem;
 }
+
 .wa-melayang .btn {
   border: 0;
   border-radius: 9999px !important;
@@ -2558,23 +3024,29 @@ a.rounded-3.border.border-ink-200:hover {
     0 8px 24px -4px rgba(16, 24, 40, 0.06) !important;
   overflow: hidden !important;
 }
+
 .chat-sidebar {
   border-right: 1px solid #eaecf0 !important;
 }
+
 .chat-header {
   border-bottom: 1px solid #eaecf0 !important;
   background: #ffffff !important;
 }
+
 .chat-footer {
   border-top: 1px solid #eaecf0 !important;
   background: #ffffff !important;
 }
+
 .chat-conv-item {
   border-bottom: 1px solid #f2f4f7 !important;
 }
+
 .chat-conv-item:hover {
   background: #f9fafb !important;
 }
+
 .chat-conv-item.active {
   background: #f2f4f7 !important;
   border-left: 3px solid #101828 !important;
@@ -2588,15 +3060,18 @@ a.rounded-3.border.border-ink-200:hover {
     box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1),
     border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
 .produk-kartu:hover {
   border-color: #d0d5dd !important;
   box-shadow: 0 6px 18px rgba(16, 24, 40, 0.08) !important;
   transform: translateY(-2px);
 }
+
 .produk-kartu:focus-visible {
   outline: 2px solid #da251d;
   outline-offset: 2px;
 }
+
 /* 4:3, tidak selebar 16:9; aspect-ratio cuma pelapis, tinggi tetap ada
    untuk peramban yang tidak mengenalinya */
 .produk-sampul {
@@ -2605,15 +3080,18 @@ a.rounded-3.border.border-ink-200:hover {
   overflow: hidden;
   background: linear-gradient(160deg, #f9fafb, #f2f4f7);
 }
+
 @supports (aspect-ratio: 4 / 3) {
   .produk-sampul {
     height: auto;
   }
 }
+
 /* sampul menempel lurus ke badan kartu; hanya sudut atas yang ikut membulat */
-.produk-kartu > .rounded-kartu {
+.produk-kartu>.rounded-kartu {
   border-radius: var(--radius-kartu) var(--radius-kartu) 0 0;
 }
+
 /* chip nama toko di sampul: tipis atas-bawah supaya tidak menutupi foto.
    Kelasnya (bg-white border border-ink-200) menabrak aturan kartu KPI
    ".border.border-ink-200.bg-white" yang memasang padding 0.95rem !important,
@@ -2622,6 +3100,7 @@ a.rounded-3.border.border-ink-200:hover {
   padding-top: 4px !important;
   padding-bottom: 4px !important;
 }
+
 .produk-sampul img {
   display: block;
   width: 100%;
@@ -2629,9 +3108,11 @@ a.rounded-3.border.border-ink-200:hover {
   object-fit: cover;
   transition: transform 0.25s ease;
 }
+
 .produk-kartu:hover .produk-sampul img {
   transform: scale(1.04);
 }
+
 .produk-inisial {
   font-size: 1.9rem;
   font-weight: 700;
@@ -2639,6 +3120,7 @@ a.rounded-3.border.border-ink-200:hover {
   text-transform: uppercase;
   color: #d0d5dd;
 }
+
 /* tombol kamera di pojok sampul: satu-satunya jalan mengelola foto kartu */
 .produk-foto-btn {
   width: 1.85rem;
@@ -2655,11 +3137,13 @@ a.rounded-3.border.border-ink-200:hover {
     color 0.12s ease,
     border-color 0.12s ease;
 }
+
 .produk-foto-btn:hover {
   color: #da251d;
   border-color: #d0d5dd;
   background: #ffffff;
 }
+
 /* nama barang lebih besar dari harganya: nama yang dicari, harga hanya pelengkap */
 .produk-nama {
   font-size: 1.1rem;
@@ -2668,22 +3152,26 @@ a.rounded-3.border.border-ink-200:hover {
   letter-spacing: -0.01em;
   color: #101828;
 }
+
 .produk-harga {
   font-size: 0.9rem;
   font-weight: 500;
   color: #344054;
 }
+
 .produk-harga-mulai {
   font-size: 0.75rem;
   font-weight: 400;
   color: #98a2b3;
 }
+
 /* daftar varian: pil yang mengalir; tiap chip = titik keadaan + "ukuran (stok)" */
 .varian-daftar {
   display: flex;
   flex-wrap: wrap;
   gap: 0.3rem;
 }
+
 .varian-chip {
   display: flex;
   align-items: center;
@@ -2704,20 +3192,24 @@ a.rounded-3.border.border-ink-200:hover {
     border-color 0.12s ease,
     background 0.12s ease;
 }
+
 .varian-chip:hover {
   border-color: #d0d5dd;
   background: #f9fafb;
 }
+
 /* varian yang sedang dibuka di modal sunting */
 .varian-chip.aktif {
   border-color: #da251d;
   background: #fef4f4;
   color: #101828;
 }
+
 /* baris tabel detail yang baru dituju lewat klik chip ukuran */
 tr.varian-sorot td {
   background: #fef4f4;
 }
+
 /* modal konfirmasi hapus: mengikuti kartu putih tema, bukan dialog browser */
 .konfirmasi-tanda {
   width: 2.9rem;
@@ -2727,18 +3219,21 @@ tr.varian-sorot td {
   color: #e11d48;
   font-size: 1.05rem;
 }
+
 .konfirmasi-judul {
   font-size: 1rem;
   font-weight: 700;
   letter-spacing: -0.01em;
   color: #101828;
 }
+
 .konfirmasi-objek {
   font-size: 0.92rem;
   font-weight: 600;
   color: #344054;
   overflow-wrap: anywhere;
 }
+
 .konfirmasi-ya {
   border: 1px solid #da251d;
   border-radius: 8px;
@@ -2747,12 +3242,14 @@ tr.varian-sorot td {
   font-size: 0.78rem;
   font-weight: 600;
 }
+
 .konfirmasi-ya:hover,
 .konfirmasi-ya:focus {
   border-color: #b81f18;
   background: #b81f18;
   color: #ffffff;
 }
+
 .varian-dot {
   flex-shrink: 0;
   width: 0.42rem;
@@ -2760,16 +3257,20 @@ tr.varian-sorot td {
   border-radius: 999px;
   background: #12b76a;
 }
+
 .varian-dot.warning {
   background: #f79009;
 }
+
 .varian-dot.danger {
   background: #f04438;
 }
+
 /* ringkasan mini di bawah varian: garis rambut saja, tanpa pembatas berpetak */
 .produk-stat {
   border-top: 1px solid #f2f4f7;
 }
+
 .produk-stat-label {
   font-size: 0.65rem;
   font-weight: 600;
@@ -2777,17 +3278,20 @@ tr.varian-sorot td {
   text-transform: uppercase;
   color: #98a2b3;
 }
+
 .produk-stat-angka {
   font-size: 1.05rem;
   font-weight: 700;
   color: #101828;
   line-height: 1.4;
 }
+
 /* baris aksi: tiga tombol berlabel sama lebar — Varian, Edit, Hapus */
 .produk-aksi {
   gap: 0.4rem;
   flex-shrink: 0;
 }
+
 .produk-aksi-tombol,
 .konfirmasi-batal {
   flex: 1 1 0;
@@ -2805,25 +3309,30 @@ tr.varian-sorot td {
     background 0.12s ease,
     color 0.12s ease;
 }
+
 .produk-aksi-tombol:hover,
 .konfirmasi-batal:hover {
   border-color: #d0d5dd;
   background: #f2f4f7;
   color: #101828;
 }
+
 .produk-aksi-tombol .fal {
   margin-right: 0.25rem;
 }
+
 .produk-aksi-tombol:last-child:hover {
   border-color: #fda4af;
   background: #fff1f3;
   color: #e11d48;
 }
+
 .produk-aksi-ikon {
   width: 2rem;
   padding: 0.32rem 0 !important;
   flex: 0 0 auto;
 }
+
 /* tombol "Detail" baru muncul saat sampul di-hover; kartu utuh memang bisa diklik */
 .produk-detail-btn {
   width: 1.85rem;
@@ -2841,20 +3350,24 @@ tr.varian-sorot td {
     color 0.12s ease,
     border-color 0.12s ease;
 }
+
 .produk-kartu:hover .produk-detail-btn,
 .produk-detail-btn:focus-visible {
   opacity: 1;
 }
+
 .produk-detail-btn:hover {
   color: #da251d;
   border-color: #d0d5dd;
   background: #ffffff;
 }
+
 /* isi modal detail: dipindah dari cetakan tersembunyi di tiap kartu.
    .card > * memberi flex-grow pada anak kartu, jadi d-none harus dipaksa */
-.card > .produk-rincian.d-none {
+.card>.produk-rincian.d-none {
   display: none !important;
 }
+
 /* catatan varian di tabel detail: tiga baris lalu digulir sendiri supaya satu
    varian yang catatannya panjang tidak melebarkan baris lainnya */
 .varian-ket {
@@ -2863,6 +3376,7 @@ tr.varian-sorot td {
   white-space: pre-line;
   overflow-wrap: anywhere;
 }
+
 .foto-utama {
   display: block;
   aspect-ratio: 4 / 3;
@@ -2870,20 +3384,24 @@ tr.varian-sorot td {
   cursor: zoom-in;
   padding: 0;
 }
+
 .foto-utama img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
+
 .produk-inisial-kotak {
   aspect-ratio: 4 / 3;
   background: linear-gradient(160deg, #f9fafb, #f2f4f7);
 }
+
 .foto-galeri {
   display: flex;
   flex-wrap: wrap;
   gap: 0.4rem;
 }
+
 .foto-thumbs {
   width: 3.2rem;
   height: 3.2rem;
@@ -2898,18 +3416,22 @@ tr.varian-sorot td {
     opacity 0.12s ease,
     border-color 0.12s ease;
 }
+
 .foto-thumbs img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
+
 .foto-thumbs:hover {
   opacity: 1;
 }
+
 .foto-thumbs.aktif {
   opacity: 1;
   border-color: #da251d;
 }
+
 /* lapisan foto ukuran penuh di atas modal detail */
 .lightbox-produk {
   position: fixed;
@@ -2922,9 +3444,11 @@ tr.varian-sorot td {
   background: rgba(15, 23, 42, 0.85);
   cursor: zoom-out;
 }
+
 .lightbox-produk.tampil {
   display: flex;
 }
+
 .lightbox-produk img {
   max-width: 100%;
   max-height: 100%;
@@ -2941,14 +3465,17 @@ tr.varian-sorot td {
   border: 1px solid #eaecf0;
   border-radius: 0.6rem;
 }
+
 .saran-stok .list-group-item {
   border: 0;
   border-bottom: 1px solid #f2f4f7;
   cursor: pointer;
 }
+
 .saran-stok .list-group-item:last-child {
   border-bottom: 0;
 }
+
 .saran-stok .list-group-item:hover {
   background: #f9fafb;
 }
@@ -2971,9 +3498,11 @@ tr.varian-sorot td {
   box-shadow: 0 12px 32px rgba(16, 24, 40, 0.16);
   overflow: hidden;
 }
+
 .notif-panel.tampil {
   display: flex;
 }
+
 .notif-panel__kepala {
   display: flex;
   align-items: center;
@@ -2983,20 +3512,25 @@ tr.varian-sorot td {
   background: #101828;
   color: #ffffff;
 }
+
 .notif-panel__kepala .btn {
   color: #d0d5dd !important;
 }
+
 .notif-panel__kepala .btn:hover {
   color: #ffffff !important;
 }
+
 .notif-panel__isi {
   max-height: 60vh;
   overflow-y: auto;
 }
+
 .notif-panel__isi .list-group-item {
   padding: 0.6rem 0.9rem;
   border-color: #f2f4f7;
 }
+
 .notif-kosong {
   display: flex;
   align-items: center;
@@ -3005,6 +3539,7 @@ tr.varian-sorot td {
   padding: 2.4rem 1rem;
   color: #98a2b3;
 }
+
 .notif-panel__buntut {
   display: block;
   padding: 0.6rem;
@@ -3016,6 +3551,7 @@ tr.varian-sorot td {
   background: #f9fafb;
   border-top: 1px solid #eaecf0;
 }
+
 .notif-panel__buntut:hover {
   color: #101828;
   background: #f2f4f7;
@@ -3041,9 +3577,11 @@ tr.varian-sorot td {
   box-shadow: 0 4px 12px rgba(16, 24, 40, 0.15);
   text-decoration: none;
 }
+
 .notif-melayang:hover {
   color: #101828;
 }
+
 .notif-melayang__angka {
   position: absolute;
   top: -3px;
@@ -3064,6 +3602,7 @@ tr.varian-sorot td {
   .notif-melayang {
     display: inline-flex;
   }
+
   .notif-panel {
     top: 4rem;
     right: 1rem;
@@ -3084,7 +3623,7 @@ tr.varian-sorot td {
     gap: 0.75rem;
   }
 
-  .crm-pager > .small {
+  .crm-pager>.small {
     text-align: center;
     width: 100%;
   }
@@ -3101,4 +3640,33 @@ tr.varian-sorot td {
     padding: 0.32rem 0.6rem;
     font-size: 0.8125rem;
   }
+}
+
+/* ---------- lambang merek ----------
+   Satu berkas mark saja: hitam, latar bening (yang tergambar hanya bentuknya,
+   tanpa kotak dasar), jadi chip sidebar/topbar tidak perlu latar atau cincin.
+   Hanya panel pahlawan halaman masuk yang gelap karena foto latar — di sana
+   chip-nya yang diputihkan supaya mark hitam tidak tenggelam. */
+.sidebar-brand-icon {
+  background: transparent;
+  box-shadow: none;
+}
+
+.sidebar-brand-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.auth-hero-brand {
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 0.4rem;
+  align-self: flex-start;
+}
+
+.auth-hero-brand .sidebar-brand-logo {
+  width: 2.75rem;
+  height: 2.75rem;
 }

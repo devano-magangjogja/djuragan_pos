@@ -234,6 +234,7 @@ $routes->group('admin', static function ($routes) {
     // jadi anak grup settings di bawah
     $routes->group('masukan', ['filter' => 'auth:superadmin'], static function ($routes) {
         $routes->get('/', 'Admin\Masukan::index', ['as' => 'hal.masukan']);
+        $routes->post('toggle/(:any)', 'Admin\Masukan::toggle/$1');
     });
 
     $routes->group('settings', ['filter' => 'auth:superadmin'], static function ($routes) {
@@ -283,6 +284,9 @@ $routes->group('admin', static function ($routes) {
 // user
 $routes->group('user', ['filter' => 'auth:user'], static function ($routes) {
     $routes->get('chart', 'User\Chart::index');
+    // akun CS yang belum punya juragan memakai ini untuk meminta penautan;
+    // hasilnya notifikasi prioritas ke inbox Superadmin
+    $routes->post('minta_juragan', 'User\Invoices::minta_juragan');
     $routes->group('invoices', static function ($routes) {
         $routes->get('/', 'User\Invoices::lihat', ['as' => 'hal.user']);
         $routes->get('tulis', 'User\Invoices::tulis');

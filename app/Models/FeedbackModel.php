@@ -21,7 +21,7 @@ class FeedbackModel extends Model
     protected $returnType       = 'object';
     protected $useSoftDeletes   = false;
     protected $protectFields    = false;
-    protected $allowedFields    = ['id', 'nama', 'isi'];
+    protected $allowedFields    = ['id', 'nama', 'isi', 'prioritas', 'selesai'];
 
     // Dates
     protected $useTimestamps = true;
@@ -34,21 +34,22 @@ class FeedbackModel extends Model
      *
      * `$cari` menembak nama pengirim atau isi pesannya; `$dari` dan `$sampai`
      * membatasi rentang tanggal (format Y-m-d, salah satunya boleh kosong).
+     * `$hanyaPrioritas` mempersempit ke baris bertanda prioritas.
      *
      * @return list<object>
      */
-    public function daftar(string $cari = '', string $dari = '', string $sampai = '', int $limit = 0, int $offset = 0): array
+    public function daftar(string $cari = '', string $dari = '', string $sampai = '', int $limit = 0, int $offset = 0, bool $hanyaPrioritas = false): array
     {
-        return $this->pedoman($cari, $dari, $sampai)
+        return $this->pedoman($cari, $dari, $sampai, $hanyaPrioritas)
             ->orderBy('created_at', 'DESC')
             ->orderBy('id', 'DESC')
             ->findAll($limit, $offset);
     }
 
     /** Jumlah masukan yang cocok dengan saringan yang sama. */
-    public function jumlah(string $cari = '', string $dari = '', string $sampai = ''): int
+    public function jumlah(string $cari = '', string $dari = '', string $sampai = '', bool $hanyaPrioritas = false): int
     {
-        return $this->pedoman($cari, $dari, $sampai)->countAllResults();
+        return $this->pedoman($cari, $dari, $sampai, $hanyaPrioritas)->countAllResults();
     }
 
     /**
@@ -56,7 +57,7 @@ class FeedbackModel extends Model
      * panggilan karena where yang menempel pada model ikut terbawa ke panggilan
      * berikutnya, dan sekali dipakai untuk menghitung jumlah ia sudah tercemar.
      */
-    private function pedoman(string $cari, string $dari, string $sampai): self
+    private function pedoman(string $cari, string $dari, string $sampai, bool $hanyaPrioritas = false): self
     {
         $model = new self();
 
@@ -70,6 +71,10 @@ class FeedbackModel extends Model
             $model = $model->where('created_at <=', $sampai . ' 23:59:59');
         }
 
+        if ($hanyaPrioritas) {
+            $model = $model->where('prioritas', 1);
+        }
+
         if ($cari !== '') {
             $model = $model->groupStart()
                 ->like('nama', $cari)
@@ -78,5 +83,46 @@ class FeedbackModel extends Model
         }
 
         return $model;
+    }
+
+    /**
+     * Catat satu masukan prioritas (mis. permintaan taut juragan dari halaman 404).
+     * Id 6 karakter dibuat dari waktu + seed supaya tidak bentrok, mengikuti pola
+     * Masukan::kirim(); kolom id bukan auto-increment.
+     */
+    public function catatPrioritas(string $nama, string $isi): string
+    {
+        do {
+            $id = substr(md5(microtime(true) . $nama . random_int(0, PHP_INT_MAX)), 0, 6);
+        } while ($this->find($id) !== null);
+
+        $this->save([
+            'id'        => $id,
+            'nama'      => $nama,
+            'isi'       => $isi,
+            'prioritas' => 1,
+            'selesai'   => 0,
+        ]);
+
+        return $id;
+    }
+
+    /**
+     * Berapa banyak prioritas yang masih menunggu (dipakai badge menu sidebar).
+     * Yang sudah ditandai selesai tidak dihitung lagi.
+     */
+    public function hitungPrioritas(): int
+    {
+        return (new self())->where('prioritas', 1)->where('selesai', 0)->countAllResults();
+    }
+
+    /** Tandai satu masukan selesai/buka-lagi; hanya baris prioritas yang berubah. */
+    public function tandaiSelesai(string $id, bool $selesai): int
+    {
+        return (int) (new self())
+            ->set(['selesai' => $selesai ? 1 : 0])
+            ->where('id', $id)
+            ->where('prioritas', 1)
+            ->update();
     }
 }
