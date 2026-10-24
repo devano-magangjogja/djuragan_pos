@@ -1429,14 +1429,37 @@ body.has-app-sidebar {
 }
 /* Jarak kiri bar. Tombol hamburger itu .btn.btn-sm, dan ".btn-sm" di bagian
    Modern Buttons memakai !important, jadi utilitas p-1/p-0 di markup tidak
-   pernah menang: ikonnya berjarak 8px (px pada bar) + 11px (padding tombol)
-   = ~20px dari tepi layar. Padding kiri tombol di bar ini dinolkan supaya
+   pernah menang: ikonnya berjarak 12px (padding bar) + 11px (padding tombol)
+   = ~23px dari tepi layar. Padding kiri tombol di bar ini dinolkan supaya
    ikonnya sejajar dengan isi halaman di bawahnya.
-   Hanya sisi KIRI yang dinolkan. Padding kanan avatar dibiarkan (.btn-sm =
-   11px) supaya lonceng dan avatar tetap mepet ke kanan tapi tidak menempel
-   di tepi layar: jaraknya jadi 8px (px-2 pada bar) + 11px = ~19px. */
+   Hanya sisi KIRI yang dinolkan di semua tombol. Padding kanan avatar dibiarkan
+   (.btn-sm = 11px) supaya lonceng dan avatar tetap mepet ke kanan tapi tidak
+   menempel di tepi layar: jaraknya jadi 8px (px-2 pada bar) + 11px = ~19px. */
 .mobile-topbar .btn.mobile-topbar-btn {
   padding-left: 0 !important;
+}
+/* Jarak kiri bar = jarak kiri isi halaman. Setelah padding tombol dinolkan,
+   hamburger duduk di 8px sementara judul dan kartu di bawahnya mulai dari 12px
+   (padding .container-xxl) — jadi ikonnya terlihat menempel di tepi layar.
+   Sisi kanan tidak ikut diubah: lonceng dan avatar memang sengaja mepet.
+   .px-2 di markup membawa !important dan tailwind.css dimuat setelah style.css,
+   maka aturan ini ditulis lebih spesifik (dua kelas) dan ikut !important. */
+.mobile-topbar.px-2 {
+  padding-left: 12px !important;
+}
+/* Renggang ☰ → lambang → "Djuragan POS". Kotak ☰ masih membawa padding kanan
+   .btn-sm (11px) yang tidak terlihat, dan PNG lambang sendiri punya margin bening
+   ± 19% di dalam kotaknya (24 dari 128 baris pixel-nya kosong) — jadi jarak
+   VISUAL-nya bukan 8px (gap-2) tapi ~25px. Padding kanan hamburger dinolkan,
+   merek ditarik 5px untuk membayar margin bening lambang, dan gap internal merek
+   dipangkas jadi 4px. Sisa jarak ☰ → lambang ≈ 9px, lambang → teks ≈ 8px.
+   Khusus bar ponsel; kepala sidebar desktop tidak disentuh. */
+.mobile-topbar #mobileSidebarToggle {
+  padding-right: 0 !important;
+}
+.mobile-topbar .mobile-topbar-brand {
+  margin-left: -5px;
+  gap: 0.25rem !important;
 }
 
 /* ==================================================================
@@ -1832,6 +1855,69 @@ a.rounded-3.border.border-ink-200:hover {
   border: 0;
   padding: 0 0.7rem !important;
   border-radius: 0 8px 8px 0 !important;
+}
+/* ✕ bawaan peramban pada kolom cari pelanggan duduk di tepi kanan AREA TEKS
+   (padding-right 6.4rem dipakai untuk memberi tempat tombol "+ Tambah"), dan
+   posisinya tidak bisa digeser dengan andal: margin pada widget aslinya
+   diabaikan Chrome. Jadi widget-nya disembunyikan dan diganti tombol sendiri
+   (.kosongkan-cari, dibuat cari-pelanggan.js) yang bisa ditaruh persis di
+   kiri tombol "+ Tambah". Selektornya sengaja tidak ikut .tambah-dalam: kalau
+   ada kolom cari di luar pola itu pun, ✕ bawaannya tidak boleh muncul
+   sendirian di pojok. */
+input[type="search"].cari_pelanggan::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 0;
+  height: 0;
+  margin: 0;
+}
+input[type="search"].cari_pelanggan::-moz-clear-button {
+  display: none;
+}
+.kosongkan-cari {
+  position: absolute;
+  top: 50%;
+  right: 6.4rem;
+  transform: translateY(-50%);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #64748b;
+  font-size: 0.95rem;
+  line-height: 1;
+}
+/* Munculnya murni mengikuti nilai inputnya, bukan kelas yang dipasang skrip:
+   .val('') dari skrip (mis. setelah pelanggan dipilih lalu dihapus) tidak
+   memicu event input, jadi versi kelas pernah meninggalkan ✕ di kolom kosong. */
+.tambah-dalam .cari_pelanggan:not(:placeholder-shown) ~ .kosongkan-cari {
+  display: inline-flex;
+}
+/* Sedang mengetik: "+ Tambah" menyingkir dan ✕ mengambil alih pojok kanan.
+   Dua kontrol tidak berdempetan lagi, dan yang dibutuhkan saat mengetik cuma
+   menghapus ketikan — "+ Tambah" sudah bisa dipakai lagi begitu kolom ditinggalkan. */
+.tambah-dalam .cari_pelanggan:focus:not(:placeholder-shown) ~ .btn {
+  visibility: hidden;
+}
+.tambah-dalam .cari_pelanggan:focus:not(:placeholder-shown) ~ .kosongkan-cari {
+  right: 0.6rem;
+}
+.kosongkan-cari:hover {
+  background: #f2f4f7;
+  color: #101828;
+}
+/* Bootstrap 5.2 menaikkan anak .input-group yang sedang fokus ke z-index 3
+   (`.input-group > :focus`), sementara tombol yang duduk di dalam kolom ini cuma
+   sampai 2 — jadi begitu kolom carinya diketik, field-nya sendiri menutupi
+   "+ Tambah" dan tombol ✕: keduanya hilang dari layar persis saat dibutuhkan. */
+.tambah-dalam > .btn,
+.kosongkan-cari {
+  z-index: 4;
 }
 /* Panel ukuran (dibangun ukuran-form.js): "cm" bukan kotak kedua di sebelah
    angkanya, tapi bagian dari kotak yang sama. Kelas border-start-0 / bg-white
@@ -3102,3 +3188,24 @@ tr.varian-sorot td {
     font-size: 0.8125rem;
   }
 }
+
+/* ---------- lambang merek ----------
+   Dua berkas mark, keduanya transparan penuh (yang tergambar hanya bentuknya,
+   tanpa kotak dasar) jadi chip tidak perlu latar atau cincin. Mark hitam dipakai
+   di sidebar/topbar; halaman masuk memakai mark PUTIH karena panel pahlawannya
+   memang selalu gelap. Mode gelap situs ini pernah ada dan sudah dicabut
+   2026-10-24, jadi tidak ada lagi penukaran warna per tema. */
+.sidebar-brand-icon {
+  background: transparent;
+  box-shadow: none;
+}
+.sidebar-brand-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: none;
+}
+.sidebar-brand-logo.merek-terang { display: block; }
+.auth-hero-brand .merek-terang { display: none !important; }
+.auth-hero-brand .merek-gelap { display: block !important; }
+.auth-hero-brand .sidebar-brand-logo { width: 2.75rem; height: 2.75rem; }
