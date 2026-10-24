@@ -123,6 +123,11 @@ $tersaring = ($cari !== '' || $dari !== '' || $sampai !== '');
     min-width: 0;
 }
 @media (max-width: 767.98px) {
+    /* ikonnya dibuang di layar sempit: judul sudah dimulai dari tepi dan badge
+       "N total" ikut di barisnya, ikon cuma memakan tempat di depan teks */
+    .masukan-ikon {
+        display: none;
+    }
     /* di layar sempit kotak cari mengambil barisnya sendiri, lalu KEDUA tanggal
        berbagi satu baris berikutnya (nowrap + menyusut) dan merapat ke tepi kanan */
     .masukan-cari {
@@ -147,7 +152,7 @@ $tersaring = ($cari !== '' || $dari !== '' || $sampai !== '');
 <!-- judul + catatan memakai pola baku halaman admin (h1.h3.mt-5), supaya
      ukuran dan jaraknya sama dengan Produk, Laporan, dan Pencatatan COD;
      penormalnya di style.css:1514 hanya mengenali kelas itu -->
-<h1 class="h3 mt-5"><i class="fal fa-headset text-primary me-1"></i>Kotak Masukan
+<h1 class="h3 mt-5"><i class="masukan-ikon fal fa-headset text-primary me-1"></i>Kotak Masukan
     <span class="masukan-hitung badge rounded-pill bg-light text-dark border"><?= esc((string) $semua) ?> total</span>
 </h1>
 
