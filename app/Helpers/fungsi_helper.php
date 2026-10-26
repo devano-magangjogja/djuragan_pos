@@ -2106,3 +2106,56 @@ if (! function_exists('wewenang_sunting_transaksi')) {
         return $sudah[$id];
     }
 }
+
+if (! function_exists('pengingat_penjahit_hari')) {
+    /**
+     * Berapa hari sebelum deadline sebuah orderan pembuatan/jual mulai muncul di
+     * Reminder Penjahit. Diatur Superadmin lewat satu kunci di crm_setting; belum
+     * pernah diisi = bawaan 3 hari.
+     */
+    function pengingat_penjahit_hari(): int
+    {
+        $tersimpan = (new \App\Models\PengaturanModel())
+            ->banyak(['reminder_penjahit_hari'])['reminder_penjahit_hari'] ?? null;
+
+        if ($tersimpan === null || $tersimpan === '') {
+            return 3;
+        }
+
+        return max(0, (int) $tersimpan);
+    }
+}
+
+if (! function_exists('juragan_dipakai_sesi')) {
+    /**
+     * Daftar id juragan yang boleh dibaca akun pada sesi ini. Superadmin memegang
+     * semuanya; admin/CS hanya toko yang tertaut padanya. Dipakai navbar (view) yang
+     * tidak punya akses ke helper controller, jadi logikanya ditaruh di sini.
+     *
+     * @return list<int>
+     */
+    function juragan_dipakai_sesi(): array
+    {
+        if ((string) session()->get('level') === 'superadmin') {
+            $semua = (new \App\Models\JuraganModel())->select('id_juragan')->findAll();
+
+            return array_map('intval', array_column($semua, 'id_juragan'));
+        }
+
+        $uid      = (int) session()->get('id');
+        $juragans = \App\Controllers\Juragan::by_user($uid)[$uid]['juragan'] ?? [];
+
+        return array_map('intval', array_column($juragans, 'id'));
+    }
+}
+
+if (! function_exists('pengingat_penjahit_jumlah')) {
+    /**
+     * Jumlah orderan yang sedang menjadi reminder — untuk badge di menu sidebar.
+     */
+    function pengingat_penjahit_jumlah(): int
+    {
+        return (new \App\Models\InvoiceModel())
+            ->hitungPengingatPenjahit(juragan_dipakai_sesi(), pengingat_penjahit_hari());
+    }
+}

@@ -313,6 +313,19 @@ $kueriTab = array_filter([
                         <?php } ?>
                     </div>
 
+                    <?php /* chip "sedang disewa" ditaruh di ATAS daftar supaya langsung
+                       terlihat: angkanya = unit yang diikat nota sewa dan belum kembali
+                       (sama dengan pengurang kolom Tersedia); klik membuka tab Masih
+                       Disewa yang kini memuat semua nota sewa aktif itu. */ ?>
+                    <?php if ($disewa > 0) { ?>
+                        <a class="pil-disewa mb-3" href="<?= esc($tautan_disewa) ?>"
+                            title="Unit yang sudah diikat nota sewa dan belum dicatat kembali — inilah pengurang kolom Tersedia. Klik untuk membuka daftar nota sewa aktif di tab Masih Disewa.">
+                            <span class="pil-disewa__titik" aria-hidden="true"></span>
+                            <?= formatRibuan($disewa) ?> unit terikat nota sewa
+                            <i class="fal fa-arrow-alt-right text-ink-400" aria-hidden="true"></i>
+                        </a>
+                    <?php } ?>
+
                     <?php if ($katalog === []) { ?>
                         <div class="text-center py-5 text-muted">
                             <i class="fal fa-box-open fa-3x mb-2 d-block"></i>
@@ -565,17 +578,6 @@ $kueriTab = array_filter([
                                 <?= $pager->makeLinks($page, $limit, $total, 'front_full') ?>
                             </div>
                         <?php } ?>
-                    <?php } ?>
-
-                    <?php /* pil tampil juga saat katalog kosong: penyewaan aktif
-                       tidak bergantung pada tab kolam yang sedang dibuka */ ?>
-                    <?php if ($disewa > 0) { ?>
-                        <a class="pil-disewa mt-3" href="<?= esc($tautan_disewa) ?>"
-                            title="Unit yang sudah diikat nota sewa dan belum dicatat kembali — inilah pengurang kolom Tersedia. Tab Masih Disewa hanya memuat yang sudah diserahkan dan lunas.">
-                            <span class="pil-disewa__titik" aria-hidden="true"></span>
-                            <?= formatRibuan($disewa) ?> unit terikat nota sewa
-                            <i class="fal fa-arrow-alt-right text-ink-400" aria-hidden="true"></i>
-                        </a>
                     <?php } ?>
                 </div>
             </div>

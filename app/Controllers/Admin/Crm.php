@@ -1515,6 +1515,70 @@ class Crm extends BaseController
     }
 
     /**
+     * API: Jumlah pesan belum dibaca untuk badge angka di tombol menu
+     * "Live Chat WA" (navbar admin & CS). Dipanggil polling dari halaman chat
+     * supaya badge ikut naik/turun tanpa muat ulang halaman.
+     */
+    public function chat_belum_dibaca()
+    {
+        $jumlah = (new CrmModel())->hitungChatBelumDibaca();
+
+        return $this->response->setJSON(['status' => 'success', 'count' => $jumlah]);
+    }
+
+    /**
+     * API: Tandai belum dibaca satu percakapan.
+     *
+     * Pointer baca (last_read_id) digeser mundur ke pesan tepat sebelum bubble
+     * 'masuk' terakhir, sehingga chat itu berbadge "1" lagi dan pemisah unread
+     * di thread jatuh tepat di atas pesan terakhir customer. Chat yang isinya
+     * hanya pesan keluar tidak punya apa pun untuk ditandai — balasan kita
+     * sendiri jelas sudah dibaca.
+     */
+    public function chat_belum_dibaca_tandai()
+    {
+        $idPercakapan = (int) $this->request->getPost('id_percakapan');
+        if ($idPercakapan <= 0) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Pilih chat yang mau ditandai.']);
+        }
+
+        $db   = Database::connect();
+        $conv = $db->table('crm_chat_percakapan')->select('id_percakapan')
+            ->where('id_percakapan', $idPercakapan)->get()->getRowArray();
+        if (! $conv) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Chat tidak ditemukan.']);
+        }
+
+        $masuk = $db->table('crm_chat_pesan')
+            ->select('id_pesan')
+            ->where('percakapan_id', $idPercakapan)
+            ->where('arah', 'masuk')
+            ->orderBy('id_pesan', 'DESC')
+            ->get(1)->getRowArray();
+        if (! $masuk) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Chat ini tidak punya pesan masuk untuk ditandai.']);
+        }
+
+        $idMasuk = (int) $masuk['id_pesan'];
+        $sebelum = $db->table('crm_chat_pesan')
+            ->select('MAX(id_pesan) AS pointer')
+            ->where('percakapan_id', $idPercakapan)
+            ->where('id_pesan <', $idMasuk)
+            ->get()->getRowArray();
+
+        // tanpa pesan sebelumnya, pointer 0 = seluruh isi chat unread lagi
+        $db->table('crm_chat_percakapan')->where('id_percakapan', $idPercakapan)
+            ->update(['last_read_id' => (int) ($sebelum['pointer'] ?? 0)]);
+
+        // badge unread percakapan ini sudah pasti ≥ 1 setelah pointer mundur;
+        // penanda "ada yang baru" lama di-bersihkan supaya tidak dobel
+        $db->table('crm_chat_percakapan')->where('id_percakapan', $idPercakapan)
+            ->update(['unread_admin' => 0]);
+
+        return $this->response->setJSON(['status' => 'success']);
+    }
+
+    /**
      * API: Ambil status pengiriman beberapa pesan sekaligus (untuk update centang real-time)
      * GET admin/crm/chat/status_pesan?ids=1,2,3,4
      */

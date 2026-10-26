@@ -7,6 +7,7 @@ $namaInisial = strtoupper(mb_substr($namaSesi, 0, 1));
 
 // Deteksi menu induk aktif
 $isDasborAktif   = url_is('admin/dasbor*') || $di_halaman === 'admin';
+$isReminderAktif = url_is('admin/reminder*');
 $isTrxAktif      = url_is('admin/invoices*') || url_is('admin/cod*');
 $isProdukAktif   = url_is('admin/produk*') || url_is('admin/poin*');
 $isCrmAktif      = url_is('admin/crm*');
@@ -25,6 +26,12 @@ if ($levelSesi === 'superadmin') {
 
 // badge merah Live Chat WA: berapa pesan yang belum dibaca (belum dibuka)
 $chatBelumDibaca = (new \App\Models\CrmModel())->hitungChatBelumDibaca();
+
+// badge Reminder Penjahit: orderan pembuatan/jual yang deadline-nya sudah dekat.
+// Helper fungsi tidak autoload, jadi dimuat dulu; perhitungannya memakai sesi
+// toko yang sedang login, jadi angkanya cocok dengan daftar yang akan dibuka.
+helper('fungsi');
+$reminderCount = pengingat_penjahit_jumlah();
 
 // Submenu Transaksi
 // 'invoices' tetap satu halaman dengan 'cod': yang pertama dipakai untuk orderan
@@ -176,6 +183,15 @@ if ($levelSesi === 'superadmin') {
         <div class="sidebar-heading">Menu Utama</div>
         <ul class="sidebar-nav">
             <li class="nav-item">
+                <a class="sidebar-link <?= $isReminderAktif ? 'active' : '' ?>" href="<?= site_url('admin/reminder') ?>">
+                    <i class="sidebar-link-icon fal fa-alarm-clock"></i>
+                    <span>Reminder Penjahit</span>
+                    <?php if ($reminderCount > 0) : ?>
+                        <span class="badge rounded-pill bg-danger ms-auto" title="<?= (int) $reminderCount ?> orderan mendekati/lewat deadline"><?= (int) $reminderCount ?></span>
+                    <?php endif; ?>
+                </a>
+            </li>
+            <li class="nav-item">
                 <a class="sidebar-link <?= $isDasborAktif ? 'active' : '' ?>" href="<?= site_url('admin/dasbor') ?>">
                     <i class="sidebar-link-icon fal fa-home"></i>
                     <span>Dasbor</span>
@@ -226,20 +242,31 @@ if ($levelSesi === 'superadmin') {
             <ul class="sidebar-nav">
                 <!-- Submenu CRM -->
                 <li class="nav-item">
-                    <a class="sidebar-link <?= $isCrmAktif ? 'active' : '' ?>" data-bs-toggle="collapse" href="#submenuCrm" role="button" aria-expanded="<?= $isCrmAktif ? 'true' : 'false' ?>" aria-controls="submenuCrm">
+                    <a class="sidebar-link <?= $isCrmAktif ? 'active' : '' ?>" data-bs-toggle="collapse" href="#submenuCrm" role="button" aria-expanded="<?= $isCrmAktif ? 'true' : 'false' ?>" aria-controls="submenuCrm" data-chat-parent="1">
                         <i class="sidebar-link-icon fal fa-comments-alt"></i>
                         <span>CRM</span>
+                        <?php if ($chatBelumDibaca > 0) : ?>
+                            <!-- badge induk: submenu CRM sedang tertutup, angka tetap
+                                 terlihat di baris CRM (kelas sama → ikut di-update JS) -->
+                            <span class="badge rounded-pill bg-danger badge-chat-unread" title="<?= (int) $chatBelumDibaca ?> pesan belum dibaca"><?= (int) $chatBelumDibaca ?></span>
+                        <?php endif; ?>
                         <i class="fal fa-chevron-down sidebar-chevron"></i>
                     </a>
                     <div class="collapse <?= $isCrmAktif ? 'show' : '' ?>" id="submenuCrm">
                         <ul class="sidebar-submenu">
                             <?php foreach ($crmSubmenu as [$url, $label, $ikon, $aktif]) : ?>
                                 <li class="submenu-item">
-                                    <a class="sidebar-submenu-link <?= $aktif ? 'active' : '' ?>" href="<?= site_url($url) ?>">
+                                    <!-- data-chat-menu: penanda tetap menu "Live Chat WA"
+                                         di SEMUA halaman (href-nya tidak lagi selalu sama
+                                         dengan alamat halaman), dipakai poller badge di bawah -->
+                                    <a class="sidebar-submenu-link <?= $aktif ? 'active' : '' ?>" href="<?= site_url($url) ?>"<?= $url === 'admin/crm/chat' ? ' data-chat-menu="1"' : '' ?>>
                                         <i class="fal <?= $ikon ?>"></i>
                                         <span><?= esc($label) ?></span>
                                         <?php if ($url === 'admin/crm/chat' && $chatBelumDibaca > 0) : ?>
-                                            <span class="badge rounded-pill bg-danger ms-auto" title="<?= (int) $chatBelumDibaca ?> pesan belum dibaca"><?= (int) $chatBelumDibaca ?></span>
+                                            <!-- badge-chat-unread: kelasnya dipakai JS halaman
+                                                 Live Chat untuk menaikkan/menurunkan angka ini
+                                                 secara real-time tanpa muat ulang halaman -->
+                                            <span class="badge rounded-pill bg-danger ms-auto badge-chat-unread" title="<?= (int) $chatBelumDibaca ?> pesan belum dibaca"><?= (int) $chatBelumDibaca ?></span>
                                         <?php endif; ?>
                                     </a>
                                 </li>
@@ -403,5 +430,75 @@ if ($levelSesi === 'superadmin') {
                     document.body.classList.contains('sidebar-collapsed') ? '1' : '0');
             });
         }
+    })();
+</script>
+
+<script>
+    // Badge angka "Live Chat WA" ikut hidup di SEMUA halaman navbar ini dipakai,
+    // bukan cuma di halaman chat: polling tiap 5 detik supaya angkanya naik/turun
+    // tanpa refresh. Fungsi render-nya dibuka lewat window.refreshChatBadgeMenu
+    // agar halaman chat bisa memicunya segera setelah buka/tandai chat.
+    (function() {
+        if (window._badgeChatNotif) return;
+        window._badgeChatNotif = true;
+
+        var url = '<?= site_url('admin/crm/chat/belum_dibaca') ?>';
+
+        // Pasang/copot/tampilkan satu badge di dalam $anchor. Opsi `sebelum`
+        // menyisipkan badge tepat sebelum elemen itu (baris CRM induk: badge
+        // duduk sebelum panah dropdown), bukan menaruhnya di ujung.
+        function setBadge(anchor, jumlah, sebelum) {
+            if (!anchor) return;
+            var badge = anchor.querySelector('.badge-chat-unread');
+
+            if (jumlah === 0) {
+                if (badge) badge.remove();
+                return;
+            }
+
+            if (!badge) {
+                badge = document.createElement('span');
+                badge.className = 'badge rounded-pill bg-danger badge-chat-unread'
+                    + (sebelum ? '' : ' ms-auto');
+                if (sebelum) {
+                    anchor.insertBefore(badge, sebelum);
+                } else {
+                    anchor.appendChild(badge);
+                }
+            }
+
+            badge.textContent = jumlah > 99 ? '99+' : String(jumlah);
+            badge.title = jumlah + ' pesan belum dibaca';
+        }
+
+        function renderBadge(jumlah) {
+            // submenu "Live Chat WA" (selalu ada di DOM meski CRM tertutup)
+            var submenu = document.querySelector('[data-chat-menu="1"]')
+                || document.querySelector(
+                    '.sidebar-submenu-link[href="' + window.location.pathname + '"]');
+            setBadge(submenu, jumlah, null);
+
+            // baris induk CRM: badge terlihat walau submenu sedang tertutup
+            var induk = document.querySelector('[data-chat-parent="1"]');
+            if (induk) {
+                var chevron = induk.querySelector('.sidebar-chevron');
+                setBadge(induk, jumlah, chevron);
+            }
+        }
+
+        function pollBadge() {
+            fetch(url, { credentials: 'same-origin' })
+                .then(function(r) { return r.json(); })
+                .then(function(res) {
+                    if (res && res.status === 'success') renderBadge(Number(res.count || 0));
+                })
+                .catch(function() { /* jaringan sesaat: biarkan angka terakhir */ });
+        }
+
+        // Dibuka untuk halaman chat: setelah buka/tandai chat ia memanggil ini
+        // supaya angka langsung berubah, tanpa menunggu tick 5 detik berikutnya.
+        window.refreshChatBadgeMenu = pollBadge;
+
+        setInterval(pollBadge, 5000);
     })();
 </script>
