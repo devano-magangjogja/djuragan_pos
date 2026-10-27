@@ -318,11 +318,30 @@
         },
 
         /**
+         * Kolam varian yang sedang terpakai ('jual' / 'sewa'), '' kalau ditulis
+         * manual. Dipakai halaman orderan menandai barisnya: baris kolam sewa harus
+         * hilang saat tipe diubah ke Pembuatan/Jual, dan sebaliknya.
+         */
+        kolam: function () {
+            return dipilih ? (dipilih.kolam || '') : '';
+        },
+
+        /**
+         * Segarkan daftar foto bawaan dari baris yang masih ada. Dipanggil setelah
+         * baris dibuang programatik (ganti tipe layanan) supaya foto produk baris
+         * itu tidak tertinggal di panel "Foto Orderan".
+         */
+        sinkronFoto: function () {
+            bawaanSinkron();
+        },
+
+        /**
          * Isi ulang panel untuk baris yang sedang disunting (0 = manual).
          * Dipanggil sesudah halaman pengisi kolom, jadi keadaan form sekarang
-         * yang jadi patokan kalau-kalau pengguna mengubah barisnya.
+         * yang jadi patokan kalau-kalau pengguna mengubah barisnya. `kolam`
+         * dibawa lagi supaya tanda kolam baris tidak hilang saat disimpan ulang.
          */
-        tata: function (id) {
+        tata: function (id, kolam) {
             if (! id) {
                 kosongkan();
 
@@ -334,7 +353,8 @@
             dipilih = {
                 id_stok: Number(id),
                 kode: $.trim($('#kode_produk').val() || ''),
-                ukuran: String($('#ukuran').val() || '')
+                ukuran: String($('#ukuran').val() || ''),
+                kolam: kolam || ''
             };
 
             $id.val(id);

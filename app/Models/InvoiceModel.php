@@ -351,16 +351,19 @@ class InvoiceModel extends Model
     }
 
     /**
-     * Klausul "masih disewa": barang sewaan sudah diserahkan ke penyewa,
-     * pembayarannya sudah lunas, dan pengembaliannya belum dicatat. Tab ini
-     * menandai fase pekerjaan — unit di tangan orang lain yang tinggal ditagih
-     * kepulangannya — sehingga nota yang barangnya masih di rak atau dananya baru
-     * DP tidak ikut menyempakkan daftar.
+     * Klausul tab "Masih Disewa": semua nota sewa yang belum dicatat kembali dan
+     * belum selesai, berapa pun status pengiriman maupun pembayarannya. Sengaja
+     * seluas pengikat stok kolam sewa (StokModel::sedangDisewa) supaya chip
+     * "unit terikat nota sewa" di halaman Produk tidak pernah menunjuk tab yang
+     * kosong — nota sewa yang baru ditulis (belum diserahkan / belum lunas) pun
+     * tetap terlihat di daftar ini.
      *
-     * Ini kunci yang sama dengan syarat tombol "Sudah kembali" boleh ditekan
-     * (masihDisewa()), jadi isi tab dan apa yang hidup di kartu nota tidak bisa
-     * berbeda pendapat. Stok kolam sewa sengaja mengikat lebih awal: unitnya sudah
-     * terpakai sejak notasnya ditulis, supaya tidak ada stok gaib.
+     * Yang boleh MENekan tombol "Sudah kembali" tetap lebih ketat dan TIDAK ikut
+     * klausul ini: masihDisewa() mensyaratkan barang sudah diserahkan dan lunas,
+     * jadi nota yang baru diikat muncul di tab dengan tombol dinonaktifkan berikut
+     * alasannya. Memisahkan isi tab dari gerbang tombol adalah pilihan sadar —
+     * tab menjawab "sewa mana yang belum pulang", tombol menjawab "boleh dicatat
+     * pulang sekarang tidak".
      *
      * $tabel adalah nama tabel invoice lengkap dengan prefix-nya, karena
      * klausul ini dipakai pada where mentah yang tidak di-escape builder.
@@ -368,9 +371,7 @@ class InvoiceModel extends Model
     private static function klausulMasihDisewa(string $tabel): string
     {
         return self::klausulSewaMenunggu($tabel)
-            . " AND {$tabel}.status_pengiriman = '3'"
-            . " AND {$tabel}.status_pesanan <> '3'"
-            . ' AND ' . self::klausulLunas($tabel);
+            . " AND {$tabel}.status_pesanan <> '3'";
     }
 
     /** Status pembayaran yang dihitung lunas; satu daftar untuk SQL dan PHP. */
@@ -434,11 +435,12 @@ class InvoiceModel extends Model
     }
 
     /**
-     * Pasangan PHP dari klausulMasihDisewa(): barangnya sudah diserahkan,
-     * pembayarannya sudah lunas, dan pengembaliannya belum dicatat. Inilah satu-
-     * satunya keadaan yang boleh menekan tombol "Sudah kembali", jadi layar dan
-     * query tidak bisa berbeda pendapat. Stok tidak ikut syarat ini — unit sewa
-     * sudah diikat notasnya sejak orderan ditulis, supaya tidak ada stok gaib.
+     * Gerbang tombol "Sudah kembali": barang sudah diserahkan (status_pengiriman
+     * '3'), pembayaran lunas, dan pengembalian belum dicatat. Lebih ketat dari
+     * isi tab Masih Disewa (klausulMasihDisewa) — nota yang baru diikat boleh
+     * muncul di tab, tapi tombol ini baru hidup setelah barangnya benar-benar
+     * keluar dan lunas. Stok tidak ikut syarat ini; unit sewa sudah diikat
+     * notasnya sejak orderan ditulis, supaya tidak ada stok gaib.
      */
     public static function masihDisewa(object $nota): bool
     {
@@ -1006,5 +1008,74 @@ class InvoiceModel extends Model
         $counter->groupBy('j.id_juragan');
 
         return $counter->get();
+    }
+
+    /**
+     * Klausul orderan yang berhak jadi "Reminder Penjahit": bertipe pembuatan/jual
+     * (bukan sewa), punya deadline, dan masih hidup — belum selesai (belum dikirim)
+     * dan belum dibatalkan. Deadline yang sudah lewat tetap ikut, supaya nota yang
+     * terlewat tidak diam-diam hilang dari daftar.
+     *
+     * $tabel nama tabel invoice lengkap dengan prefix (dipakai pada where mentah).
+     */
+    private static function klausulPengingatPenjahit(string $tabel): string
+    {
+        return "COALESCE(JSON_UNQUOTE(JSON_EXTRACT({$tabel}.rincian, '$.tipe')), '') <> 'sewa'"
+            . " AND {$tabel}.deadline IS NOT NULL"
+            . " AND {$tabel}.status_pengiriman <> '3'"
+            . " AND {$tabel}.status_pesanan <> '3'";
+    }
+
+    /**
+     * Daftar orderan yang deadline-nya jatuh dalam H hari ke depan (termasuk yang
+     * sudah lewat). Urut dari deadline paling mepet.
+     *
+     * @param list<int> $hanya id juragan yang boleh dibaca akun ini
+     * @return array<int, array<string, mixed>>
+     */
+    public function pengingatPenjahit(array $hanya, int $hari, int $limit = 0, int $offset = 0): array
+    {
+        $tabel = $this->db->prefixTable('invoice');
+        $batas = date('Y-m-d', strtotime('today +' . max(0, $hari) . ' days'));
+
+        $builder = $this->db->table('invoice')
+            ->select('invoice.id_invoice, invoice.seri, invoice.deadline, invoice.status_pesanan,'
+                . ' invoice.status_pembayaran, invoice.pemesan_id, invoice.juragan_id, invoice.user_id,'
+                . ' invoice.keterangan, j.nama_juragan, pl.nama_pelanggan')
+            ->join('juragan j', 'j.id_juragan = invoice.juragan_id', 'left')
+            ->join('pelanggan pl', 'pl.id_pelanggan = invoice.pemesan_id', 'left')
+            ->where('invoice.deleted_at', null)
+            ->where(self::klausulPengingatPenjahit($tabel), null, false)
+            ->where('invoice.deadline <=', $batas)
+            ->orderBy('invoice.deadline', 'ASC')
+            ->orderBy('invoice.id_invoice', 'ASC');
+
+        $this->batasiToko($builder, $hanya);
+
+        if ($limit > 0) {
+            $builder->limit($limit, $offset);
+        }
+
+        return $builder->get()->getResultArray();
+    }
+
+    /**
+     * Jumlah reminder aktif — untuk badge di menu sidebar.
+     *
+     * @param list<int> $hanya
+     */
+    public function hitungPengingatPenjahit(array $hanya, int $hari): int
+    {
+        $tabel = $this->db->prefixTable('invoice');
+        $batas = date('Y-m-d', strtotime('today +' . max(0, $hari) . ' days'));
+
+        $builder = $this->db->table('invoice')
+            ->where('invoice.deleted_at', null)
+            ->where(self::klausulPengingatPenjahit($tabel), null, false)
+            ->where('invoice.deadline <=', $batas);
+
+        $this->batasiToko($builder, $hanya);
+
+        return (int) $builder->countAllResults();
     }
 }

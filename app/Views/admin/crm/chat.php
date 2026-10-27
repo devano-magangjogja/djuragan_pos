@@ -829,13 +829,51 @@ $(function() {
     var isAtBottom      = true;  // Lacak apakah user scroll ke bawah
     var muatPenuhSeq    = 0;     // Penanda permintaan terakhir; respons telat dibuang
     var muatPenuhJalan  = false; // Polling dilarang selagi muat penuh berjalan
+    var urlBadgeMenu    = '<?= site_url('admin/crm/chat/belum_dibaca') ?>';
+
+    // ── Badge angka di tombol menu "Live Chat WA" (navbar) ──────────────────
+    // Perenderannya tinggal di navbar (polling global tiap 5 detik di SEMUA
+    // halaman). Di sini halaman chat hanya memicunya lewat window
+    // .refreshChatBadgeMenu supaya begitu chat dibuka/ditandai angkanya langsung
+    // berubah, tidak menunggu tick berikutnya. Fallback fetch sendiri kalau
+    // navbar belum menyediakan fungsinya.
+    function perbaruiBadgeMenu() {
+        if (typeof window.refreshChatBadgeMenu === 'function') {
+            window.refreshChatBadgeMenu();
+            return;
+        }
+        $.getJSON(urlBadgeMenu, function(res) {
+            if (!res || res.status !== 'success') return;
+            var jumlah = Number(res.count || 0);
+            var $badge = $('.badge-chat-unread');
+
+            if (jumlah === 0) {
+                $badge.remove();
+                return;
+            }
+
+            if ($badge.length === 0) {
+                var $menuChat = $('[data-chat-menu="1"]').first();
+                if ($menuChat.length === 0) return;
+                $badge = $('<span class="badge rounded-pill bg-danger ms-auto badge-chat-unread"></span>');
+                $menuChat.append($badge);
+            }
+
+            $badge.text(jumlah > 99 ? '99+' : jumlah)
+                  .attr('title', jumlah + ' pesan belum dibaca');
+        });
+    }
 
     // ── Muat daftar percakapan ──────────────────────────────────────────────
-    function loadConversations(keepActive) {
+    // $setelah opsional dijalankan begitu daftar selesai di-render; dipakai di
+    // loadMessagesFull agar badge menu baru dihitung setelah server menandai
+    // chat dibaca — kalau paralel, angkanya bisa basi.
+    function loadConversations(keepActive, setelah) {
         keepActive = (keepActive === undefined) ? true : keepActive;
         $.getJSON('<?= site_url('admin/crm/chat/percakapan') ?>', { arsip: saringArsip }, function(res) {
             if (res.status === 'success') {
                 renderConversations(res.data, keepActive);
+                if (typeof setelah === 'function') setelah();
             }
         });
     }
@@ -906,6 +944,12 @@ $(function() {
                              + '      <button type="button" class="dropdown-item btn-ganti-nama d-flex align-items-center" data-id="' + item.id_percakapan + '" data-nama="' + escapeAttr(item.nama_kontak) + '">'
                              + '        <i class="fal fa-pen wa-dropdown-icon"></i>'
                              + '        <span>Ganti nama chat</span>'
+                             + '      </button>'
+                             + '    </li>'
+                             + '    <li>'
+                             + '      <button type="button" class="dropdown-item btn-tandai-unread d-flex align-items-center" data-id="' + item.id_percakapan + '">'
+                             + '        <i class="fal fa-eye-slash wa-dropdown-icon"></i>'
+                             + '        <span>Tandai Belum Dibaca</span>'
                              + '      </button>'
                              + '    </li>'
                              + menuArsip
@@ -1052,8 +1096,9 @@ $(function() {
                 if (res.messages.length > 0) {
                     lastMsgId = res.messages[res.messages.length - 1].id_pesan;
                 }
-                // Refresh sidebar
-                loadConversations(true);
+                // Refresh sidebar + badge angka menu: percakapan ini baru saja
+                // ditandai dibaca di server, jadi angkanya langsung turun
+                loadConversations(true, perbaruiBadgeMenu);
             }
         }).fail(function() {
             if (seq === muatPenuhSeq) muatPenuhJalan = false;
@@ -1561,6 +1606,37 @@ $(function() {
         });
     });
 
+    // ── Tandai belum dibaca satu chat ───────────────────────────────────────
+    // Pointer baca digeser mundur ke sebelum pesan masuk terakhir lewat server
+    // (POST chat/belum_dibaca), jadi badge daftar DAN badge angka menu langsung
+    // naik tanpa muat ulang halaman. Chat yang sedang dibuka dimuat ulang
+    // supaya pemisah "pesan belum dibaca" tampil lagi; poll 3 detik akan
+    // membacanya kembali seperti perilaku WhatsApp (diklik = dibaca), itu
+    // memang tujuannya saat chat sedang dilihat.
+    $(document).on('click', '.btn-tandai-unread', function(e) {
+        e.stopPropagation();
+        var $btn  = $(this);
+        var $item = $btn.closest('.chat-conv-item');
+        var id    = Number($btn.data('id') || $item.data('id'));
+
+        $.post(urlBadgeMenu, { id_percakapan: id }, function(res) {
+            if (res.status !== 'success') {
+                alert(res.message || 'Gagal menandai belum dibaca.');
+                return;
+            }
+            if (currentConvId === id) {
+                // loadMessagesFull akan meruntuhkan perbaruiBadgeMenu setelah
+                // server menandai dibaca lagi — cukup muat ulang thread
+                lastMsgId = 0;
+                loadMessagesFull(id);
+            } else {
+                loadConversations(true, perbaruiBadgeMenu);
+            }
+        }, 'json').fail(function() {
+            alert('Gagal menghubungi server.');
+        });
+    });
+
     // ── Ganti nama chat (label percakapan saja) ─────────────────────────────
     $(document).on('click', '.btn-ganti-nama', function(e) {
         e.stopPropagation();
@@ -1681,10 +1757,13 @@ $(function() {
     });
 
     // ── Start ────────────────────────────────────────────────────────────────
-    // Muat daftar percakapan awal
+    // Muat daftar percakapan awal + sinkronkan badge angka menu sekali di awal
     loadConversations(false);
+    perbaruiBadgeMenu();
 
-    // Polling daftar percakapan (sidebar) tiap 5 detik
+    // Polling daftar percakapan (sidebar) tiap 5 detik. Badge angka menu tidak
+    // perlu ikut di sini — poller global navbar sudah menyinkronkannya tiap 5
+    // detik di semua halaman, termasuk halaman ini.
     setInterval(function() {
         loadConversations(true);
     }, 5000);
