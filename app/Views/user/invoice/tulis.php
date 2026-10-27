@@ -693,6 +693,9 @@ $link_cari_pelanggan = site_url('pelanggan/cari');
 $link_invoice        = site_url('user/invoices/lihat/');
 $link_post_pelanggan = site_url('pelanggan/baru');
 $link_data_pelanggan = rtrim(site_url('pelanggan/data'), '/') . '/';
+// nama field token CSRF: tidak boleh ikut disimpan/dipulihkan draf, sebab tiap
+// muat halaman token-nya berganti dan menimpa yang baru bikin simpan ditolak.
+$nama_csrf           = csrf_token();
 
 ?>
 <script>
@@ -784,6 +787,8 @@ $js = <<< JS
     		$.each(b[{$current_user_id}].juragan,function(c,b){
     			$('<option />',{value:b.id,text:b.nama}).appendTo($('select[name="juragan"]'));
     		});
+    		// opsi tiba: pasang pilihan dari draf yang tadi ditahan
+    		if (window.drafTundaJuragan) { window.drafTundaJuragan(); }
     	});
 
 
@@ -1149,8 +1154,41 @@ $js = <<< JS
 
     	tampilJadwal(false);
 
+    	// Tipe layanan menentukan kolam stok yang valid: unit sewa tidak terdaftar
+    	// di kolam jual, dan sebaliknya. Baris orderan yang ditandai data-kolam dari
+    	// kolam lain ikut dibuang begitu tipe dipindah supaya tidak tertinggal barang
+    	// yang stoknya memang tak ada di kolam baru. Baris tulisan manual (data-kolam
+    	// kosong) tidak disentuh.
+    	function buangBarisKolamLain(tipe) {
+    		if (tipe === '') {
+    			return;
+    		}
+
+    		var kolam = tipe === 'sewa' ? 'sewa' : 'jual',
+    			tb = $('.list-orderan'),
+    			buang = 0;
+
+    		tb.children('tr[data-kolam]').each(function() {
+    			if ($(this).attr('data-kolam') === kolam) {
+    				return;
+    			}
+    			$(this).remove();
+    			buang++;
+    		});
+
+    		if (buang) {
+    			tb.data('length', tb.children('tr[data-kunci]').length + 1);
+    			listOrder();
+    			subtotal();
+    			if (window.STOK && STOK.sinkronFoto) {
+    				STOK.sinkronFoto();
+    			}
+    		}
+    	}
+
     	$('#tipe_pesanan').on('change', function() {
     		tampilJadwal(true);
+    		buangBarisKolamLain($(this).val());
     	});
 
     	// tipe orderan: rombongan membuka tabel Anggota Rombongan, satuan menutupnya
@@ -1241,8 +1279,10 @@ $js = <<< JS
 
     	// satu baris orderan; dipakai lagi waktu edit supaya kuncinya (k) tetap sama.
     	// `s` id_stok yang sedang terpakai di modal: ikut terkirim supaya nota bisa
-    	// mengambil foto produknya, dan tetap tidak ada kalau barangnya ditulis manual
-    	function bikinBaris(k, d, a, e, b, rincian, jenis, nilai, s) {
+    	// mengambil foto produknya, dan tetap tidak ada kalau barangnya ditulis manual.
+    	// `kolam` ('jual'/'sewa') menandai baris diambil dari kolam stok mana; disimpan
+    	// di data-kolam supaya barisnya bisa dibuang saat tipe layanan dipindah.
+    	function bikinBaris(k, d, a, e, b, rincian, jenis, nilai, s, kolam) {
     		var label = d + ' ( ' + String(e).toUpperCase() + ' )',
     			bd = $('<button type="button" class="bg-transparent border-0 detail_row px-1" title="Detail"><i class="fal fa-eye h6 text-secondary"></i></button>'),
     			be = $('<button type="button" class="bg-transparent border-0 edit_row px-1" title="Ubah"><i class="fal fa-pen h6 text-primary"></i></button>'),
@@ -1260,7 +1300,7 @@ $js = <<< JS
     				.append($('<input/>', {'type':'hidden','name':'produk['+k+'][ukuran]','value':e}))
     				.append($('<input/>', {'type':'hidden','name':'produk['+k+'][qty]','value':b}))
     				.append(s ? $('<input/>', {'type':'hidden','name':'produk['+k+'][stok_id]','value':s}) : $()),
-    			tr = $('<tr/>', {'data-kunci': k})
+    			tr = $('<tr/>', {'data-kunci': k, 'data-kolam': kolam || ''})
     				.append($('<td/>').append(t))
     				.append($('<td/>').append(f))
     				.append($('<td/>').append(b))
@@ -1306,6 +1346,7 @@ $js = <<< JS
     			e=fpro.find('[name="ukuran"]').val(),
     			b=fpro.find('[name="QTY"]').val(),
     			s=window.STOK ? String(STOK.ambil() || '') : '',
+    			kolam=window.STOK && STOK.kolam ? String(STOK.kolam() || '') : '',
     			rincian={},
     			nilai={},
     			jenis=$('#ukuranModal .uk-jenis').val() || '',
@@ -1326,7 +1367,7 @@ $js = <<< JS
     			}
     		});
 
-    		var tr = bikinBaris(k, d, a, e, b, rincian, jenis, nilai, s);
+    		var tr = bikinBaris(k, d, a, e, b, rincian, jenis, nilai, s, kolam);
 
     		if (rowEdit) {
     			rowEdit.replaceWith(tr);
@@ -1403,7 +1444,7 @@ $js = <<< JS
     		// baris yang dulu diambil dari stok produk tetap tersambung ke stoknya,
     		// jadi fotonya tidak hilang waktu orderannya disunting
     		if (window.STOK) {
-    			STOK.tata(d.stok_id || 0);
+    			STOK.tata(d.stok_id || 0, tr.attr('data-kolam') || '');
     		}
 
     		rowEdit = tr;
@@ -1609,6 +1650,9 @@ $js = <<< JS
 
     		// Callback handler that will be called on success
     		request.done(function (response, textStatus, jqXHR){
+    			// orderan tersimpan: draf tidak relevan lagi
+    			try { sessionStorage.removeItem('draf_tulis_transaksi'); } catch (e) {}
+
     			// foto sengaja ditahan peramban sampai orderan ini punya id
     			var id = parseInt(response.id || 0, 10);
 
@@ -1675,6 +1719,139 @@ $js = <<< JS
     	function uniqId() {
     		return Math.round(new Date().getTime() + (Math.random() * 100));
     	}
+
+    	// ── Draf isian ─────────────────────────────────────────────────────────
+    	// Semua yang diketik/dipilih ditabung ke sessionStorage, jadi menekan F5
+    	// (atau tak sengaja menutup lalu membuka lagi di tab yang sama) tidak
+    	// menghapus pekerjaan. Yang disimpan: nilai tiap field (statis maupun baris
+    	// orderan/biaya/anggota yang punya nama unik), struktur baris dinamis, dan
+    	// kartu pemesan/penerima. Foto (file) memang tidak bisa dipulihkan peramban.
+    	var DRAF_KUNCI = 'draf_tulis_transaksi';
+    	var DRAF_NAMA_CSRF = '{$nama_csrf}';   // field token CSRF: jangan ikut draf
+    	var DRAF_umur  = 12 * 60 * 60 * 1000;   // kedaluwarsa 12 jam
+    	var drafSiap   = false;                 // tabung hanya setelah pemulihan selesai
+    	var drafTimer  = null;
+    	// juragan diisi lewat AJAX; pilihannya ditahan di sini sampai opsinya tiba
+    	var drafTunda  = { juragan: '' };
+
+    	function bacaDraf() {
+    		try {
+    			var d = JSON.parse(sessionStorage.getItem(DRAF_KUNCI) || 'null');
+    			if (d && d.ts && (Date.now() - d.ts) < DRAF_umur) {
+    				return d;
+    			}
+    		} catch (e) { /* draf rusak: anggap tidak ada */ }
+    		return null;
+    	}
+
+    	function simpanDraf() {
+    		if (!drafSiap) {
+    			return;
+    		}
+
+    		var v = {};
+    		$('#iForm').find('input,select,textarea').each(function () {
+    			if (!this.name || this.type === 'file' || this.disabled || this.name === DRAF_NAMA_CSRF) {
+    				return;
+    			}
+    			if (this.type === 'checkbox' || this.type === 'radio') {
+    				v[this.name] = this.checked ? '1' : '';
+    				return;
+    			}
+    			v[this.name] = $(this).val();
+    		});
+
+    		var draf = {
+    			v: v,
+    			orderan: $('.list-orderan').html() || '',
+    			length: $('.list-orderan').data('length') || 1,
+    			biaya: $('.listBiaya').html() || '',
+    			anggota: $('.anggota-daftar').html() || '',
+    			pemesanHtml: $('#alamat_pemesan').html() || '',
+    			kirimKeHtml: $('#alamat_kirimKe').html() || '',
+    			pemesanShown: $('.info-data-pemesan').is(':visible'),
+    			kirimKeShown: $('.info-data-kirimKe').is(':visible'),
+    			ts: Date.now()
+    		};
+
+    		try { sessionStorage.setItem(DRAF_KUNCI, JSON.stringify(draf)); } catch (e) { /* kuota penuh: abaikan */ }
+    	}
+
+    	function jadwalkanDraf() {
+    		clearTimeout(drafTimer);
+    		drafTimer = setTimeout(simpanDraf, 250);
+    	}
+
+    	function pulihkanDraf() {
+    		var d = bacaDraf();
+    		if (!d || !d.v) {
+    			return;
+    		}
+
+    		// struktur baris dinamis dulu, supaya nilainya punya tempat untuk dipasang
+    		if (d.orderan) { $('.list-orderan').html(d.orderan); }
+    		$('.list-orderan').data('length', d.length || 1);
+    		if (d.biaya) { $('.listBiaya').html(d.biaya); }
+    		if (d.anggota) { $('.anggota-daftar').html(d.anggota); }
+
+    		// kartu pemesan / penerima
+    		if (d.pemesanHtml) { $('#alamat_pemesan').html(d.pemesanHtml); }
+    		if (d.kirimKeHtml) { $('#alamat_kirimKe').html(d.kirimKeHtml); }
+    		$('.info-data-pemesan').toggle(!!d.pemesanShown);
+    		$('.form_pemesan').toggle(!d.pemesanShown);
+    		$('.info-data-kirimKe').toggle(!!d.kirimKeShown);
+    		$('.form_kirimKe').toggle(!d.kirimKeShown);
+
+    		// pasang nilai tiap field (termasuk uk-field & hidden baris yang baru dirender)
+    		$('#iForm').find('input,select,textarea').each(function () {
+    			if (!this.name || this.type === 'file' || this.name === DRAF_NAMA_CSRF) {
+    				return;
+    			}
+    			if (!Object.prototype.hasOwnProperty.call(d.v, this.name)) {
+    				return;
+    			}
+    			var val = d.v[this.name];
+    			if (this.type === 'checkbox' || this.type === 'radio') {
+    				this.checked = val === '1';
+    			} else {
+    				$(this).val(val);
+    			}
+    		});
+
+    		// juragan opsinya masih dimuat lewat AJAX → tahan dulu untuk .done loader-nya
+    		drafTunda.juragan = d.v.juragan || '';
+
+    		// tipe layanan & kategori menentukan panel yang tampil
+    		tampilJadwal(false);
+    		var ord = $('#tipe_orderan').val();
+    		if (ord === 'rombongan') { tampilAnggota(true); }
+    		tampilKategori(ord);
+
+    		$('.list-orderan tr[data-kunci]').each(function () { ringkasRow($(this)); });
+
+    		var adaIsi = ($('.list-orderan tr[data-kunci]').length > 0) || ($('.listBiaya [data-biaya]').length > 0);
+    		listOrder();
+    		if (adaIsi) { subtotal(); totalbiaya(); }
+    		sinkronSalin();
+    	}
+
+    	// dipasang oleh loader AJAX begitu opsinya tiba (lihat .done juragan)
+    	window.drafTundaJuragan = function () { if (drafTunda.juragan) { $('select[name="juragan"]').val(drafTunda.juragan); } };
+
+    	// tiap ketikan/pilihan & perubahan struktur (baris, kartu, opsi) ditabung
+    	$('#iForm').on('input change', jadwalkanDraf);
+    	if (window.MutationObserver) {
+    		new MutationObserver(jadwalkanDraf).observe(
+    			document.getElementById('iForm'),
+    			{ childList: true, subtree: true, characterData: true }
+    		);
+    	}
+
+    	pulihkanDraf();
+    	drafSiap = true;
+
+    	// flush terakhir saat tab ditutup/di-refresh, jangan sampai ketinggal debounce
+    	$(window).on('beforeunload', simpanDraf);
 
     });
 

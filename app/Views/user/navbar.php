@@ -11,8 +11,12 @@ $isChartAktif = url_is('user/chart*');
 $isProdukAktif = url_is('admin/produk*');
 // live chat WA: CS membuka & membalas chat dari halaman admin yang sama (baca/kirim saja)
 $isChatAktif   = url_is('admin/crm/chat*');
+$isReminderAktif = url_is('admin/reminder*');
 // badge merah: berapa pesan WA yang belum dibaca (belum dibuka)
 $chatBelumDibaca = (new \App\Models\CrmModel())->hitungChatBelumDibaca();
+// badge Reminder Penjahit (helper fungsi tidak autoload): orderan dekat/lewat deadline
+helper('fungsi');
+$reminderCount = pengingat_penjahit_jumlah();
 ?>
 
 <!-- Topbar khusus layar kecil; di desktop lonceng notifikasi melayang sendiri
@@ -101,11 +105,22 @@ $chatBelumDibaca = (new \App\Models\CrmModel())->hitungChatBelumDibaca();
                 </a>
             </li>
             <li class="nav-item">
-                <a class="sidebar-link <?= $isChatAktif ? 'active' : '' ?>" href="<?= site_url('admin/crm/chat') ?>">
+                <a class="sidebar-link <?= $isReminderAktif ? 'active' : '' ?>" href="<?= site_url('admin/reminder') ?>" data-reminder-menu="1">
+                    <i class="sidebar-link-icon fal fa-cut"></i>
+                    <span>Reminder Penjahit</span>
+                    <?php if ($reminderCount > 0) : ?>
+                        <span class="badge rounded-pill bg-danger ms-auto badge-reminder" title="<?= (int) $reminderCount ?> orderan mendekati/lewat deadline"><?= (int) $reminderCount ?></span>
+                    <?php endif; ?>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="sidebar-link <?= $isChatAktif ? 'active' : '' ?>" href="<?= site_url('admin/crm/chat') ?>" data-chat-menu="1">
                     <i class="sidebar-link-icon fal fa-comments"></i>
                     <span>Live Chat WA</span>
                     <?php if ($chatBelumDibaca > 0) : ?>
-                        <span class="badge rounded-pill bg-danger ms-auto" title="<?= (int) $chatBelumDibaca ?> pesan belum dibaca"><?= (int) $chatBelumDibaca ?></span>
+                        <!-- badge-chat-unread: disinkronkan polling global navbar
+                             (lihat script di bawah) di semua halaman, bukan cuma chat -->
+                        <span class="badge rounded-pill bg-danger ms-auto badge-chat-unread" title="<?= (int) $chatBelumDibaca ?> pesan belum dibaca"><?= (int) $chatBelumDibaca ?></span>
                     <?php endif; ?>
                 </a>
             </li>
@@ -176,5 +191,52 @@ $chatBelumDibaca = (new \App\Models\CrmModel())->hitungChatBelumDibaca();
                     document.body.classList.contains('sidebar-collapsed') ? '1' : '0');
             });
         }
+    })();
+</script>
+
+<script>
+    // Sinkron badge angka "Live Chat WA" di SEMUA halaman CS, bukan cuma di
+    // halaman chat: polling tiap 5 detik supaya naik/turun tanpa refresh.
+    // window.refreshChatBadgeMenu dibuka agar halaman chat bisa memicunya
+    // langsung setelah buka/tandai chat.
+    (function() {
+        if (window._badgeChatNotif) return;
+        window._badgeChatNotif = true;
+
+        var url = '<?= site_url('admin/crm/chat/belum_dibaca') ?>';
+
+        function renderBadge(jumlah) {
+            var anchor = document.querySelector('[data-chat-menu="1"]')
+                || document.querySelector('.sidebar-link[href="' + window.location.pathname + '"]');
+            if (!anchor) return;
+            var badge = anchor.querySelector('.badge-chat-unread');
+
+            if (jumlah === 0) {
+                if (badge) badge.remove();
+                return;
+            }
+
+            if (!badge) {
+                badge = document.createElement('span');
+                badge.className = 'badge rounded-pill bg-danger ms-auto badge-chat-unread';
+                anchor.appendChild(badge);
+            }
+
+            badge.textContent = jumlah > 99 ? '99+' : String(jumlah);
+            badge.title = jumlah + ' pesan belum dibaca';
+        }
+
+        function pollBadge() {
+            fetch(url, { credentials: 'same-origin' })
+                .then(function(r) { return r.json(); })
+                .then(function(res) {
+                    if (res && res.status === 'success') renderBadge(Number(res.count || 0));
+                })
+                .catch(function() { /* jaringan sesaat: biarkan angka terakhir */ });
+        }
+
+        window.refreshChatBadgeMenu = pollBadge;
+
+        setInterval(pollBadge, 5000);
     })();
 </script>

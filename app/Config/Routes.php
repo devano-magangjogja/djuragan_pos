@@ -182,6 +182,10 @@ $routes->group('admin', static function ($routes) {
         $routes->post('chat/buat_customer', 'Admin\Crm::buat_customer_wa');
         $routes->post('chat/hapus', 'Admin\Crm::chat_hapus');
         $routes->post('chat/nama', 'Admin\Crm::chat_ganti_nama');
+        // badge angka menu + "Tandai Belum Dibaca" per chat: dipakai CS juga,
+        // jadi rutenya tetap di grup luar bersama jalur baca/kirim lainnya
+        $routes->get('chat/belum_dibaca', 'Admin\Crm::chat_belum_dibaca');
+        $routes->post('chat/belum_dibaca', 'Admin\Crm::chat_belum_dibaca_tandai');
 
         // selain itu: khusus admin & superadmin
         $routes->group('', ['filter' => 'auth:admin,superadmin'], static function ($routes) {
@@ -217,6 +221,18 @@ $routes->group('admin', static function ($routes) {
             $routes->post('tes_koneksi', 'Admin\Crm::tes_koneksi');
             $routes->match(['GET', 'POST'], 'cek_status_fonnte', 'Admin\Crm::cek_status_fonnte');
             $routes->match(['GET', 'POST'], 'ambil_qr_fonnte', 'Admin\Crm::ambil_qr_fonnte');
+        });
+    });
+
+    // reminder penjahit: orderan pembuatan/jual yang deadline-nya sudah dekat.
+    // Terpisah dari lonceng notifikasi dan jadi menu prioritas. Admin & CS melihat
+    // daftarnya; hanya Superadmin yang boleh mengubah ambang harinya.
+    $routes->group('reminder', ['filter' => 'auth:admin,superadmin,cs'], static function ($routes) {
+        $routes->get('/', 'Reminder::index');
+        $routes->get('jumlah', 'Reminder::jumlah');
+
+        $routes->group('', ['filter' => 'auth:superadmin'], static function ($routes) {
+            $routes->post('pengaturan', 'Reminder::simpan');
         });
     });
 

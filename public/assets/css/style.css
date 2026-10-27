@@ -451,7 +451,7 @@
   }
 }
 
-.timeliner>li {
+.timeliner > li {
   /* 0 0 auto: lebar li = lebar labelnya, tidak pernah menyusut lagi */
   flex: 0 0 auto;
   padding-top: 0.25rem;
@@ -460,13 +460,13 @@
 /* SETELAH aturan .timeliner > li di atas: spesifisitasnya sama, jadi yang terakhir
    yang menang — langkahnya boleh menyusut/memuai bareng pembagian lebar kartu. */
 @media (max-width: 1023.98px) {
-  .timeliner>li {
+  .timeliner > li {
     flex: 1 1 0;
   }
 }
 
 /* garis penghubung: dari ikon langkah ini ke ikon langkah berikutnya */
-.timeliner>li::after {
+.timeliner > li::after {
   content: "";
   position: absolute;
   top: 1.25rem;
@@ -478,15 +478,15 @@
   z-index: 0;
 }
 
-.timeliner>li.full::after {
+.timeliner > li.full::after {
   background: #198754;
 }
 
-.timeliner>li.half::after {
+.timeliner > li.half::after {
   background: linear-gradient(90deg, #198754 50%, #dee2e6 50%);
 }
 
-.timeliner>li.end::after {
+.timeliner > li.end::after {
   display: none;
 }
 
@@ -506,12 +506,12 @@
   color: #adb5bd;
 }
 
-.timeliner>li.full .icon {
+.timeliner > li.full .icon {
   border-color: #198754;
   color: #198754;
 }
 
-.timeliner>li.half .icon {
+.timeliner > li.half .icon {
   border-color: #ffc107;
   color: #b88600;
 }
@@ -600,13 +600,15 @@
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(160deg,
-      rgba(6, 10, 24, 0.82) 0%,
-      rgba(6, 10, 24, 0.45) 45%,
-      rgba(6, 10, 24, 0.88) 100%);
+  background: linear-gradient(
+    160deg,
+    rgba(6, 10, 24, 0.82) 0%,
+    rgba(6, 10, 24, 0.45) 45%,
+    rgba(6, 10, 24, 0.88) 100%
+  );
 }
 
-.auth-hero>* {
+.auth-hero > * {
   position: relative;
   z-index: 1;
 }
@@ -1088,7 +1090,7 @@
    tidak makan beberapa layar di HP. !important-nya wajib: utilitas spasi
    Bootstrap (py-4, mt-4, my-1) juga pakai !important dan dimuat lebih dulu. */
 @media (max-width: 575.98px) {
-  .kartu-invoice>div>.mt-4 {
+  .kartu-invoice > div > .mt-4 {
     margin-top: 0.55rem !important;
   }
 
@@ -1100,11 +1102,11 @@
     padding: 0 !important;
   }
 
-  .kartu-invoice .blok-lipat>h6>button {
+  .kartu-invoice .blok-lipat > h6 > button {
     padding: 0.8rem 0.95rem !important;
   }
 
-  .kartu-invoice .blok-lipat .collapse>div {
+  .kartu-invoice .blok-lipat .collapse > div {
     padding: 0.6rem 0.95rem 0.85rem !important;
   }
 
@@ -1239,32 +1241,65 @@ body.has-app-sidebar {
     box-shadow: 0 12px 32px rgba(16, 24, 40, 0.16);
   }
 
-  body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-brand-text,
-  body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-heading,
-  body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-link>span,
-  body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-chevron,
-  body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-submenu,
-  body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-user-info,
-  body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-user-actions,
-  body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-footer-link>span,
-  body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-footer-link>.counter,
-  body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-collapse-btn {
+  body.sidebar-collapsed
+    .app-sidebar:not(:hover):not(:focus-within)
+    .sidebar-brand-text,
+  body.sidebar-collapsed
+    .app-sidebar:not(:hover):not(:focus-within)
+    .sidebar-heading,
+  body.sidebar-collapsed
+    .app-sidebar:not(:hover):not(:focus-within)
+    .sidebar-link
+    > span,
+  body.sidebar-collapsed
+    .app-sidebar:not(:hover):not(:focus-within)
+    .sidebar-chevron,
+  body.sidebar-collapsed
+    .app-sidebar:not(:hover):not(:focus-within)
+    .sidebar-submenu,
+  body.sidebar-collapsed
+    .app-sidebar:not(:hover):not(:focus-within)
+    .sidebar-user-info,
+  body.sidebar-collapsed
+    .app-sidebar:not(:hover):not(:focus-within)
+    .sidebar-user-actions,
+  body.sidebar-collapsed
+    .app-sidebar:not(:hover):not(:focus-within)
+    .sidebar-footer-link
+    > span,
+  body.sidebar-collapsed
+    .app-sidebar:not(:hover):not(:focus-within)
+    .sidebar-footer-link
+    > .counter,
+  body.sidebar-collapsed
+    .app-sidebar:not(:hover):not(:focus-within)
+    .sidebar-collapse-btn {
     display: none;
   }
 
-  body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-header,
-  body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-brand {
+  body.sidebar-collapsed
+    .app-sidebar:not(:hover):not(:focus-within)
+    .sidebar-header,
+  body.sidebar-collapsed
+    .app-sidebar:not(:hover):not(:focus-within)
+    .sidebar-brand {
     justify-content: center;
   }
 
-  body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-link,
-  body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-footer-link {
+  body.sidebar-collapsed
+    .app-sidebar:not(:hover):not(:focus-within)
+    .sidebar-link,
+  body.sidebar-collapsed
+    .app-sidebar:not(:hover):not(:focus-within)
+    .sidebar-footer-link {
     justify-content: center;
     padding-left: 0;
     padding-right: 0;
   }
 
-  body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-link-icon {
+  body.sidebar-collapsed
+    .app-sidebar:not(:hover):not(:focus-within)
+    .sidebar-link-icon {
     margin-right: 0;
     font-size: 1.02rem;
   }
@@ -1273,11 +1308,16 @@ body.has-app-sidebar {
        margin-right 0.7rem dari .sidebar-footer-link i. Di rail ikon margin itu
        membuat lonceng bergeser ~11px ke kiri sehingga tidak sejajar dengan
        kolom ikon di atasnya. */
-  body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-footer-link i {
+  body.sidebar-collapsed
+    .app-sidebar:not(:hover):not(:focus-within)
+    .sidebar-footer-link
+    i {
     margin-right: 0;
   }
 
-  body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-user-card {
+  body.sidebar-collapsed
+    .app-sidebar:not(:hover):not(:focus-within)
+    .sidebar-user-card {
     justify-content: center;
     padding: 0.4rem 0;
     /* Kotak kartunya hanya dipakai di sidebar yang terbuka. Di rail ikon
@@ -1287,7 +1327,9 @@ body.has-app-sidebar {
     border-color: transparent;
   }
 
-  body.sidebar-collapsed .app-sidebar:not(:hover):not(:focus-within) .sidebar-menu {
+  body.sidebar-collapsed
+    .app-sidebar:not(:hover):not(:focus-within)
+    .sidebar-menu {
     padding-left: 0.5rem;
     padding-right: 0.5rem;
   }
@@ -1743,21 +1785,20 @@ body.has-app-sidebar {
   color: #344054 !important;
 }
 
-body.has-app-sidebar>.container-xxl,
-body.has-app-sidebar>.container,
-body.has-app-sidebar>.container-fluid,
-body.has-app-sidebar>div.container-xxl {
+body.has-app-sidebar > .container-xxl,
+body.has-app-sidebar > .container,
+body.has-app-sidebar > .container-fluid,
+body.has-app-sidebar > div.container-xxl {
   max-width: 100%;
   padding-top: 1.75rem !important;
   padding-bottom: 2.5rem !important;
 }
 
 @media (max-width: 991.98px) {
-
-  body.has-app-sidebar>.container-xxl,
-  body.has-app-sidebar>.container,
-  body.has-app-sidebar>.container-fluid,
-  body.has-app-sidebar>div.container-xxl {
+  body.has-app-sidebar > .container-xxl,
+  body.has-app-sidebar > .container,
+  body.has-app-sidebar > .container-fluid,
+  body.has-app-sidebar > div.container-xxl {
     padding-top: 1.25rem !important;
     padding-left: 0.75rem !important;
     padding-right: 0.75rem !important;
@@ -1797,7 +1838,6 @@ body.has-app-sidebar .h3.mt-5 {
 }
 
 @media (max-width: 575.98px) {
-
   body.has-app-sidebar h1.h3.mt-5,
   body.has-app-sidebar .h3.mt-5 {
     font-size: 1.25rem !important;
@@ -1885,11 +1925,11 @@ body.has-app-sidebar .h3.mt-3 {
   font-weight: 500 !important;
 }
 
-.breadcrumb-item+.breadcrumb-item {
+.breadcrumb-item + .breadcrumb-item {
   padding-left: 0.4rem !important;
 }
 
-.breadcrumb-item+.breadcrumb-item::before {
+.breadcrumb-item + .breadcrumb-item::before {
   content: "\f054" !important;
   font-family: "Font Awesome 6 Free" !important;
   font-weight: 900 !important;
@@ -2262,18 +2302,18 @@ input[type="search"].cari_pelanggan::-moz-clear-button {
 /* Munculnya murni mengikuti nilai inputnya, bukan kelas yang dipasang skrip:
    .val('') dari skrip (mis. setelah pelanggan dipilih lalu dihapus) tidak
    memicu event input, jadi versi kelas pernah meninggalkan ✕ di kolom kosong. */
-.tambah-dalam .cari_pelanggan:not(:placeholder-shown)~.kosongkan-cari {
+.tambah-dalam .cari_pelanggan:not(:placeholder-shown) ~ .kosongkan-cari {
   display: inline-flex;
 }
 
 /* Sedang mengetik: "+ Tambah" menyingkir dan ✕ mengambil alih pojok kanan.
    Dua kontrol tidak berdempetan lagi, dan yang dibutuhkan saat mengetik cuma
    menghapus ketikan — "+ Tambah" sudah bisa dipakai lagi begitu kolom ditinggalkan. */
-.tambah-dalam .cari_pelanggan:focus:not(:placeholder-shown)~.btn {
+.tambah-dalam .cari_pelanggan:focus:not(:placeholder-shown) ~ .btn {
   visibility: hidden;
 }
 
-.tambah-dalam .cari_pelanggan:focus:not(:placeholder-shown)~.kosongkan-cari {
+.tambah-dalam .cari_pelanggan:focus:not(:placeholder-shown) ~ .kosongkan-cari {
   right: 0.6rem;
 }
 
@@ -2286,7 +2326,7 @@ input[type="search"].cari_pelanggan::-moz-clear-button {
    (`.input-group > :focus`), sementara tombol yang duduk di dalam kolom ini cuma
    sampai 2 — jadi begitu kolom carinya diketik, field-nya sendiri menutupi
    "+ Tambah" dan tombol ✕: keduanya hilang dari layar persis saat dibutuhkan. */
-.tambah-dalam>.btn,
+.tambah-dalam > .btn,
 .kosongkan-cari {
   z-index: 4;
 }
@@ -2306,19 +2346,19 @@ input[type="search"].cari_pelanggan::-moz-clear-button {
   transition: box-shadow 0.15s ease;
 }
 
-.ukuran-panel .input-group>.form-control,
-.ukuran-panel .input-group>.input-group-text {
+.ukuran-panel .input-group > .form-control,
+.ukuran-panel .input-group > .input-group-text {
   border: 0 !important;
   border-radius: 0 !important;
   background-color: transparent !important;
   box-shadow: none !important;
 }
 
-.ukuran-panel .input-group>.form-control {
+.ukuran-panel .input-group > .form-control {
   padding-right: 0.25rem !important;
 }
 
-.ukuran-panel .input-group>.input-group-text {
+.ukuran-panel .input-group > .input-group-text {
   padding-left: 0.25rem !important;
   padding-right: 0.6rem !important;
 }
@@ -2408,13 +2448,13 @@ input[type="search"].cari_pelanggan::-moz-clear-button {
    !important sehingga pil yang sudah dicentang terlihat sama persis dengan yang
    belum: penderitanya merasa hanya boleh memilih satu. Ditimpa balik dengan
    aturan sama kerasnya, hanya di dalam wadah pilihan. */
-.gulir-pilihan .btn-check:checked+.btn {
+.gulir-pilihan .btn-check:checked + .btn {
   background-color: #101828 !important;
   border-color: #101828 !important;
   color: #ffffff !important;
 }
 
-.gulir-pilihan .btn-check:checked+.btn:hover {
+.gulir-pilihan .btn-check:checked + .btn:hover {
   background-color: #1e293b !important;
   border-color: #1e293b !important;
   color: #ffffff !important;
@@ -2556,7 +2596,6 @@ input[type="search"].cari_pelanggan::-moz-clear-button {
 }
 
 @keyframes notif-kedip {
-
   0%,
   100% {
     opacity: 1;
@@ -2617,16 +2656,16 @@ input[type="search"].cari_pelanggan::-moz-clear-button {
   gap: 0.75rem !important;
 }
 
-.alert>i,
-.alert>svg,
-.alert>.svg-inline--fa {
+.alert > i,
+.alert > svg,
+.alert > .svg-inline--fa {
   flex-shrink: 0 !important;
   font-size: 1.15rem !important;
 }
 
-.alert:not(.d-flex)>i,
-.alert:not(.d-flex)>svg,
-.alert:not(.d-flex)>.svg-inline--fa {
+.alert:not(.d-flex) > i,
+.alert:not(.d-flex) > svg,
+.alert:not(.d-flex) > .svg-inline--fa {
   margin-right: 0.75rem !important;
   vertical-align: -0.125em !important;
 }
@@ -2761,12 +2800,12 @@ input[type="search"].cari_pelanggan::-moz-clear-button {
     gap: 0.35rem;
   }
 
-  .toolbar-transaksi__aksi>.dropdown {
+  .toolbar-transaksi__aksi > .dropdown {
     flex: 1 1 auto;
     min-width: 0;
   }
 
-  .toolbar-transaksi__aksi>.dropdown .btn {
+  .toolbar-transaksi__aksi > .dropdown .btn {
     width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -2915,7 +2954,7 @@ input[type="search"].cari_pelanggan::-moz-clear-button {
   line-height: 1.45;
 }
 
-.bayar-catatan>i {
+.bayar-catatan > i {
   color: #98a2b3;
   flex-shrink: 0;
   margin-top: 0.05rem;
@@ -2927,7 +2966,7 @@ input[type="search"].cari_pelanggan::-moz-clear-button {
   position: relative;
 }
 
-.bayar-rp>.mata {
+.bayar-rp > .mata {
   position: absolute;
   top: 50%;
   left: 0.75rem;
@@ -2938,7 +2977,7 @@ input[type="search"].cari_pelanggan::-moz-clear-button {
   pointer-events: none;
 }
 
-.bayar-rp>.form-control {
+.bayar-rp > .form-control {
   padding-left: 2.15rem;
   font-variant-numeric: tabular-nums;
 }
@@ -3059,7 +3098,7 @@ input[type="search"].cari_pelanggan::-moz-clear-button {
   pointer-events: none;
 }
 
-.fixed-bottom>div {
+.fixed-bottom > div {
   pointer-events: none;
 }
 
@@ -3067,7 +3106,7 @@ input[type="search"].cari_pelanggan::-moz-clear-button {
    kalau pointer-events-nya auto seluruh strip bawah layar ikut menelan klik —
    pager di bagian bawah halaman apa pun jadi tidak bisa diklik. Yang boleh
    menangkap klik hanya tombolnya. */
-.fixed-bottom>div>* {
+.fixed-bottom > div > * {
   pointer-events: auto;
 }
 
@@ -3184,7 +3223,7 @@ input[type="search"].cari_pelanggan::-moz-clear-button {
 }
 
 /* sampul menempel lurus ke badan kartu; hanya sudut atas yang ikut membulat */
-.produk-kartu>.rounded-kartu {
+.produk-kartu > .rounded-kartu {
   border-radius: var(--radius-kartu) var(--radius-kartu) 0 0;
 }
 
@@ -3460,7 +3499,7 @@ tr.varian-sorot td {
 
 /* isi modal detail: dipindah dari cetakan tersembunyi di tiap kartu.
    .card > * memberi flex-grow pada anak kartu, jadi d-none harus dipaksa */
-.card>.produk-rincian.d-none {
+.card > .produk-rincian.d-none {
   display: none !important;
 }
 
@@ -3719,7 +3758,7 @@ tr.varian-sorot td {
     gap: 0.75rem;
   }
 
-  .crm-pager>.small {
+  .crm-pager > .small {
     text-align: center;
     width: 100%;
   }
@@ -3754,4 +3793,16 @@ tr.varian-sorot td {
   height: 100%;
   object-fit: contain;
   display: block;
+}
+
+.auth-hero-brand {
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 0.4rem;
+  align-self: flex-start;
+}
+
+.auth-hero-brand .sidebar-brand-logo {
+  width: 2.75rem;
+  height: 2.75rem;
 }

@@ -447,13 +447,19 @@ $rincian_pesanan = baca_rincian($orderan->rincian);
                             <?php
                             $subtotal = 0;
 
+                            // Kolam baris warisan: nota dibuat dengan satu tipe, jadi
+                            // semua stok_id-nya diambil dari kolam tipe itu (sewa -> unit
+                            // sewa, selainnya -> unit jual). Baris manual (tanpa stok_id)
+                            // tidak diberi tanda, sehingga tetap aman saat tipe diganti.
+                            $kolam_lama = (($rincian_pesanan['tipe'] ?? '') === 'sewa') ? 'sewa' : 'jual';
+
                             foreach ($dibeli as $produk) {
                                 $produk_total = $produk->harga * $produk->qty;
                                 $n_nilai  = $ukuran_item[$produk->id] ?? [];
                                 $n_ukuran = count($n_nilai);
                                 $j_ukuran = $jenis_item[$produk->id] ?? null;
                                 $subtotal += $produk_total; ?>
-                                <tr data-kunci="<?= $produk->id; ?>">
+                                <tr data-kunci="<?= $produk->id; ?>"<?= ! empty($produk->stok_id) ? ' data-kolam="' . $kolam_lama . '"' : ''; ?>>
                                     <td>
                                         <div class="d-flex align-items-start">
                                             <div class="flex-grow-1">
@@ -1322,8 +1328,41 @@ $js = <<< JS
 
     	tampilJadwal(false);
 
+    	// Tipe layanan menentukan kolam stok yang valid: unit sewa tidak terdaftar
+    	// di kolam jual, dan sebaliknya. Baris orderan yang ditandai data-kolam dari
+    	// kolam lain ikut dibuang begitu tipe dipindah supaya tidak tertinggal barang
+    	// yang stoknya memang tak ada di kolam baru. Baris tulisan manual (data-kolam
+    	// kosong) tidak disentuh.
+    	function buangBarisKolamLain(tipe) {
+    		if (tipe === '') {
+    			return;
+    		}
+
+    		var kolam = tipe === 'sewa' ? 'sewa' : 'jual',
+    			tb = $('.list-orderan'),
+    			buang = 0;
+
+    		tb.children('tr[data-kolam]').each(function() {
+    			if ($(this).attr('data-kolam') === kolam) {
+    				return;
+    			}
+    			$(this).remove();
+    			buang++;
+    		});
+
+    		if (buang) {
+    			tb.data('length', tb.children('tr[data-kunci]').length + 1);
+    			listOrder();
+    			subtotal();
+    			if (window.STOK && STOK.sinkronFoto) {
+    				STOK.sinkronFoto();
+    			}
+    		}
+    	}
+
     	$('#tipe_pesanan').on('change', function() {
     		tampilJadwal(true);
+    		buangBarisKolamLain($(this).val());
     	});
 
     	// tipe orderan: rombongan membuka tabel Anggota Rombongan, satuan menutupnya.
@@ -1419,8 +1458,10 @@ $js = <<< JS
 
     	// satu baris orderan; dipakai lagi waktu edit supaya kuncinya (k) tetap sama.
     	// `s` id_stok yang sedang terpakai di modal: ikut terkirim supaya nota bisa
-    	// mengambil foto produknya, dan tetap tidak ada kalau barangnya ditulis manual
-    	function bikinBaris(k, d, a, e, b, rincian, jenis, nilai, s) {
+    	// mengambil foto produknya, dan tetap tidak ada kalau barangnya ditulis manual.
+    	// `kolam` ('jual'/'sewa') menandai baris diambil dari kolam stok mana; disimpan
+    	// di data-kolam supaya barisnya bisa dibuang saat tipe layanan dipindah.
+    	function bikinBaris(k, d, a, e, b, rincian, jenis, nilai, s, kolam) {
     		var label = d + ' ( ' + String(e).toUpperCase() + ' )',
     			bd = $('<button type="button" class="bg-transparent border-0 detail_row px-1" title="Detail"><i class="fal fa-eye h6 text-secondary"></i></button>'),
     			be = $('<button type="button" class="bg-transparent border-0 edit_row px-1" title="Ubah"><i class="fal fa-pen h6 text-primary"></i></button>'),
@@ -1438,7 +1479,7 @@ $js = <<< JS
     				.append($('<input/>', {'type':'hidden','name':'produk['+k+'][ukuran]','value':e}))
     				.append($('<input/>', {'type':'hidden','name':'produk['+k+'][qty]','value':b}))
     				.append(s ? $('<input/>', {'type':'hidden','name':'produk['+k+'][stok_id]','value':s}) : $()),
-    			tr = $('<tr/>', {'data-kunci': k})
+    			tr = $('<tr/>', {'data-kunci': k, 'data-kolam': kolam || ''})
     				.append($('<td/>').append(t))
     				.append($('<td/>').append(f))
     				.append($('<td/>').append(b))
@@ -1489,6 +1530,7 @@ $js = <<< JS
     			e=fpro.find('[name="ukuran"]').val(),
     			b=fpro.find('[name="QTY"]').val(),
     			s=window.STOK ? String(STOK.ambil() || '') : '',
+    			kolam=window.STOK && STOK.kolam ? String(STOK.kolam() || '') : '',
     			rincian={},
     			nilai={},
     			jenis=$('#ukuranModal .uk-jenis').val() || '',
@@ -1509,7 +1551,7 @@ $js = <<< JS
     			}
     		});
 
-    		var tr = bikinBaris(k, d, a, e, b, rincian, jenis, nilai, s);
+    		var tr = bikinBaris(k, d, a, e, b, rincian, jenis, nilai, s, kolam);
 
     		if (rowEdit) {
     			rowEdit.replaceWith(tr);
@@ -1586,7 +1628,7 @@ $js = <<< JS
     		// baris yang dulu diambil dari stok produk tetap tersambung ke stoknya,
     		// jadi fotonya tidak hilang waktu orderannya disunting
     		if (window.STOK) {
-    			STOK.tata(d.stok_id || 0);
+    			STOK.tata(d.stok_id || 0, tr.attr('data-kolam') || '');
     		}
 
     		rowEdit = tr;
