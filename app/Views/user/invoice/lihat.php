@@ -98,66 +98,115 @@ $kelolaTransaksi = wewenang_sunting_transaksi();
     }
 }
 
-/* Di layar lebar kedua pembungkus ini tidak boleh mengubah apa pun: display:contents
-   menghapus kotaknya dari pohon layout sehingga pil tetap anak langsung dari baris
-   menu — persis seperti sebelum ada panah. Tombol panahnya sendiri hanya hidup di
-   layar sempit. */
-.tab-transaksi,
+/* Strip pil selalu sebuah kotak yang bisa digeser — dulu hanya di layar sempit,
+   sekarang di semua lebar: enam pil + kelompok tombol aksi juga tidak selalu muat
+   satu baris di laptop 1280-1440px, dan membiarkannya membungkus membuat tepi atas
+   pil dan tombol tidak lagi sejajar. Yang menyusut adalah strip pilnya, panahnya
+   hanya muncul kalau isinya benar-benar tidak muat (dipasang dari JS). */
+.tab-transaksi {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    flex: 1 1 auto;
+    min-width: 0;
+}
 .tab-transaksi__gulung {
-    display: contents;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-x: auto;
+    /* gulir tetap bisa, tapi tanpa bilah gulir: yang menunjukkan arah adalah
+       panahnya, bukan strip tipis yang nyaris tak kelihatan di layar sentuh */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    overscroll-behavior-x: contain;
+    padding: 2px 0;
+}
+.tab-transaksi__gulung::-webkit-scrollbar {
+    display: none;
+}
+.tab-transaksi__gulung > .btn {
+    flex: 0 0 auto;
 }
 .tab-transaksi__panah {
     display: none;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    /* 2rem: bulat kecil tapi masih seukuran sasaran sentuh yang layak —
+       28px terasa miss di layar 360px */
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border: 1px solid #eaecf0;
+    border-radius: 50%;
+    background: #fff;
+    color: #64748b;
+    font-size: 0.8rem;
+}
+.tab-transaksi__panah.lagi {
+    display: inline-flex;
 }
 
-/* Menu tab transaksi di layar sempit: enam pil membungkus jadi 2-3 baris sehingga
-   separuh layar habis sebelum kartu pertama kelihatan. Sekarang satu baris saja dan
-   isinya digeser; tombol panahnya hanya muncul kalau pilnya benar-benar tidak muat,
-   jadi di tablet yang masih lega tidak ada tombol yang menganggur. */
+/* Layar lebar: pil dan tombol aksi satu baris rata. Yang menyusut adalah strip
+   pilnya (panahnya sudah ada), kelompok aksi tidak boleh terimpit. */
+@media (min-width: 1280px) {
+    /* utility flex-wrap dari tailwind.css dipasang dengan !important, jadi
+       tanpa !important di sini barisnya tetap membungkus */
+    .baris-toolbar {
+        flex-wrap: nowrap !important;
+    }
+    .aksi-toko {
+        flex: 0 0 auto;
+    }
+}
+
+/* Tinggi semua tombol di baris ini disamakan: pil tab 34px sedangkan tombol
+   aksi (Bootstrap murni, plus "Tulis Orderan" tanpa garis tepi) 30-32px, jadi
+   meski pusatnya rata, tepinya terlihat naik-turun. */
+.baris-toolbar .btn {
+    min-height: 2.125rem;
+}
+
+/* 1280-1500px: satu langkah lebih ramping, angkanya dari pengukuran lebar baris. */
+@media (min-width: 1280px) and (max-width: 1499.98px) {
+
+    .baris-toolbar {
+        gap: 0.35rem 0.35rem;
+    }
+
+    .tab-transaksi__gulung {
+        gap: 0.2rem;
+    }
+
+    .tab-transaksi__gulung > .btn {
+        min-height: 2rem;
+        padding: 0.3rem 0.38rem;
+        gap: 0.25rem;
+        font-size: 0.76rem;
+    }
+
+    .tab-transaksi__gulung .badge {
+        padding: 0.1rem 0.3rem;
+        font-size: 0.66rem;
+    }
+
+    .aksi-toko {
+        gap: 0.2rem;
+    }
+
+    .aksi-toko .btn {
+        min-height: 2rem;
+        padding: 0.3rem 0.45rem;
+        font-size: 0.76rem;
+    }
+}
+
 @media (max-width: 767.98px) {
     .tab-transaksi {
-        display: flex;
-        align-items: center;
-        gap: 0.25rem;
         width: 100%;
-        min-width: 0;
-    }
-    .tab-transaksi__gulung {
-        display: flex;
-        align-items: center;
-        gap: 0.25rem;
-        flex: 1 1 auto;
-        min-width: 0;
-        overflow-x: auto;
-        /* gulir tetap bisa, tapi tanpa bilah gulir: yang menunjukkan arah adalah
-           panahnya, bukan strip tipis yang nyaris tak kelihatan di layar sentuh */
-        scrollbar-width: none;
-        -ms-overflow-style: none;
-        padding: 2px 0;
-    }
-    .tab-transaksi__gulung::-webkit-scrollbar {
-        display: none;
-    }
-    .tab-transaksi__gulung > .btn {
-        flex: 0 0 auto;
-    }
-    .tab-transaksi__panah {
-        align-items: center;
-        justify-content: center;
-        flex: 0 0 auto;
-        /* 2rem: bulat kecil tapi masih seukuran sasaran sentuh yang layak —
-           28px terasa miss di layar 360px */
-        width: 2rem;
-        height: 2rem;
-        padding: 0;
-        border: 1px solid #eaecf0;
-        border-radius: 50%;
-        background: #fff;
-        color: #64748b;
-        font-size: 0.8rem;
-    }
-    .tab-transaksi__panah.lagi {
-        display: inline-flex;
     }
 }
 </style>
@@ -181,7 +230,7 @@ $kelolaTransaksi = wewenang_sunting_transaksi();
         ['masih-disewa', 'Masih Disewa', 'counterMasihDisewa', 'Nota sewa yang pengembaliannya belum dicatat — termasuk yang baru diikat, belum diserahkan, atau belum lunas'],
     ];
     ?>
-    <div class="mb-4 flex flex-wrap items-center gap-x-1 gap-y-2">
+    <div class="baris-toolbar mb-4 flex flex-wrap items-center gap-x-1 gap-y-2">
         <div class="tab-transaksi">
             <button type="button" class="tab-transaksi__panah kiri" data-arah="-1" aria-label="Menu sebelumnya" title="Menu sebelumnya">
                 <i class="fal fa-chevron-left"></i>
@@ -289,10 +338,6 @@ $kelolaTransaksi = wewenang_sunting_transaksi();
     <?php endif; ?>
 
     <?php
-    // untuk tab pembayaran 'perlu-cek': status invoice -> slug kategorinya, dipakai sebagai judul kelompok
-    $kelompok_perlu_cek = [2 => 'menunggu', 3 => 'dp'];
-    $grup_sebelumnya    = null;
-
     // satu kartu di layar = orderan dibuka sendiri. Aturan "kalau kosong tampilkan
     // -" hanya berlaku di mode itu, supaya daftar panjang tidak ikut penuh baris kosong
     $satu_orderan = count($orderan['data']) === 1;
@@ -308,22 +353,6 @@ $kelolaTransaksi = wewenang_sunting_transaksi();
         ];
         $kelas_status = status_pembayaran($pesanan->pembayaran, $pesanan->status_pembayaran, 'l_class');
         ?>
-        <?php if ($hal === 'pembayaran' && $kategori === 'perlu-cek') : ?>
-            <?php
-            $slug_kelompok = $kelompok_perlu_cek[(int) $pesanan->status_pembayaran] ?? null;
-
-            if ($slug_kelompok !== null && $slug_kelompok !== $grup_sebelumnya) :
-                $grup_sebelumnya = $slug_kelompok;
-                $kelompok        = $kategori_pembayaran[$slug_kelompok];
-                ?>
-                <div class="mb-3 flex flex-wrap items-baseline gap-2 border-b border-ink-200 pb-1">
-                    <span class="text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-700">
-                        <i class="fal <?= $kelompok['ikon'] ?> me-1 text-ink-500"></i> <?= esc($kelompok['label']) ?>
-                    </span>
-                    <span class="text-xs text-ink-500">total <?= formatRibuan($jumlah_kategori[$slug_kelompok] ?? 0) ?> orderan, yang paling lama menunggu lebih dulu</span>
-                </div>
-            <?php endif; ?>
-        <?php endif; ?>
         <?php
         $count_barang = 0;
         $harga_barang = 0;
@@ -376,9 +405,13 @@ $kelolaTransaksi = wewenang_sunting_transaksi();
                                 <?php endif; ?>
 
                             <div class="aksi-kepala flex items-center gap-1">
-                                <a class="inline-flex cursor-pointer items-center gap-1 rounded-[0.7rem] border border-ink-200 bg-ink-50 px-2.5 py-1 text-sm text-ink-700 transition hover:bg-ink-100 hover:text-ink-900" href="<?= site_url('download/penjahit/' . $pesanan->seri) ?>" target="_blank" rel="noopener" title="Cetak lembar kerja penjahit (tanpa harga)">
-                                    <i class="fal fa-cut text-ink-500"></i> <span class="hidden md:inline">Penjahit</span>
-                                </a>
+                                <?php /* lembar kerja penjahit tidak berlaku untuk barang sewaan:
+                                       tidak ada yang dijahit, jadi tombolnya tidak dirender */ ?>
+                                <?php if (! $adalah_sewa) { ?>
+                                    <a class="inline-flex cursor-pointer items-center gap-1 rounded-[0.7rem] border border-ink-200 bg-ink-50 px-2.5 py-1 text-sm text-ink-700 transition hover:bg-ink-100 hover:text-ink-900" href="<?= site_url('download/penjahit/' . $pesanan->seri) ?>" target="_blank" rel="noopener" title="Cetak lembar kerja penjahit (tanpa harga)">
+                                        <i class="fal fa-cut text-ink-500"></i> <span class="hidden md:inline">Penjahit</span>
+                                    </a>
+                                <?php } ?>
                                 <a class="inline-flex cursor-pointer items-center gap-1 rounded-[0.7rem] border border-ink-200 bg-ink-50 px-2.5 py-1 text-sm text-ink-700 transition hover:bg-ink-100 hover:text-ink-900" href="<?= site_url('download/invoice/' . $pesanan->seri) ?>" target="_blank" rel="noopener" title="Cetak invoice untuk pelanggan">
                                     <i class="fal fa-print text-ink-500"></i> <span class="hidden md:inline">Invoice</span>
                                 </a>
@@ -783,6 +816,37 @@ $kelolaTransaksi = wewenang_sunting_transaksi();
                     </div>
                 <?php } ?>
 
+                <?php if ($adalah_sewa) {
+                    /* Nota sewa: jadwal pinjam diringkas di blok sendiri, isinya sama
+                       dengan kotak "Jadwal" di lembar kerja penjahit — tenggat, tanggal
+                       ambil & kembali, jaminan, tahap terakhir. Tanggal di sini tetap
+                       cuma jadual; barang dinyatakan pulang lewat "Sudah kembali"
+                       (sewa_kembali_at), bukan lewat kolom ini. */
+                    $j_tenggat  = label_deadline(($pesanan->deadline ?? '') ?: deadline_iso($pesanan->rincian ?? null));
+                    $j_rincian  = baca_rincian($pesanan->rincian ?? null);
+                    $j_terakhir = tahap_terakhir($pesanan->status ?? []);
+                    $jadwal     = [
+                        ['fa-clock', 'Tenggat selesai', $j_tenggat['teks'] === '-' ? null : $j_tenggat['teks']],
+                        ['fa-arrow-down', 'Diambil', isset($j_rincian['ambil']) ? tanggal_rincian((string) $j_rincian['ambil']) : null],
+                        ['fa-arrow-up', 'Kembali', isset($j_rincian['kembali']) ? tanggal_rincian((string) $j_rincian['kembali']) : null],
+                        ['fa-shield-halved', 'Jaminan', $j_rincian['jaminan'] ?? null],
+                        ['fa-flag-checkered', 'Tahap terakhir', $j_terakhir === null ? null : $j_terakhir['nama'] . ' (' . $j_terakhir['tanggal'] . ', ' . ($j_terakhir['selesai'] ? 'selesai' : 'berjalan') . ')'],
+                    ];
+                } ?>
+                <?php if ($adalah_sewa) { ?>
+                    <div class="blok rounded-2xl border border-ink-200 border-l-[3px] border-l-proses bg-[#fcfdfe] p-3.5 sm:p-4 mt-4">
+                        <h6 class="mb-2.5 flex items-center gap-1.5 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500 [&_.fal]:text-[0.95rem] [&_.fal]:text-ink-400"><i class="fal fa-calendar-days"></i> Jadwal</h6>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5 sm:gap-3">
+                            <?php foreach ($jadwal as [$ikon, $label, $nilai]) { ?>
+                                <div class="min-w-0 rounded-xl bg-ink-50/70 p-2 sm:p-2.5 border border-ink-100">
+                                    <span class="block text-[0.68rem] font-bold uppercase tracking-[0.08em] text-ink-500 truncate"><i class="fal <?= $ikon ?> me-1 text-ink-400"></i> <?= esc($label) ?></span>
+                                    <span class="mt-0.5 block break-words text-xs sm:text-sm font-semibold leading-snug <?= $nilai === null ? 'text-ink-400' : 'text-ink-900' ?>"><?= $nilai === null ? '-' : esc($nilai) ?></span>
+                                </div>
+                            <?php } ?>
+                        </div>
+                    </div>
+                <?php } ?>
+
                 <?php if ($isi_keterangan !== '' || $satu_orderan) { ?>
                     <div class="blok rounded-2xl border border-ink-200 border-l-[3px] border-l-brand-500 bg-[#fcfdfe] px-[1.15rem] py-4 mt-4">
                         <h6 class="mb-2 flex items-center gap-1.5 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500 [&_.fal]:text-[0.95rem] [&_.fal]:text-ink-400"><i class="fal fa-clipboard-list"></i> Keterangan</h6>
@@ -953,7 +1017,7 @@ $kelolaTransaksi = wewenang_sunting_transaksi();
                 <?= form_input(['name' => 'keterangan', 'id' => 'keterangan', 'class' => 'form-control', 'placeholder' => 'opsional']) ?>
             </div>
 
-            <div class="bg-warning p-2 border rounded">
+            <div class="alert alert-warning py-2 mb-0 small">
                 Perlu diingat, penambahan "status proses orderan" ini tidak bisa diubah.
             </div>
         </div>
@@ -1578,10 +1642,6 @@ $js = <<< JS
     // ikut ditengahkan saat halaman dibuka supaya tidak terlihat "tab terakhir".
     var tabGulung = document.getElementById('tabTransaksi');
 
-    function sempit() {
-        return window.matchMedia('(max-width: 767.98px)').matches;
-    }
-
     function aturPanahTab() {
         if (! tabGulung) {
             return;
@@ -1590,7 +1650,7 @@ $js = <<< JS
         var sisa   = tabGulung.scrollWidth - tabGulung.clientWidth,
             kiri   = document.querySelector('.tab-transaksi__panah.kiri'),
             kanan = document.querySelector('.tab-transaksi__panah.kanan'),
-            boleh  = sempit() && sisa > 2;
+            boleh  = sisa > 2;
 
         kiri.classList.toggle('lagi', boleh && tabGulung.scrollLeft > 2);
         kanan.classList.toggle('lagi', boleh && tabGulung.scrollLeft < sisa - 2);
@@ -1609,7 +1669,7 @@ $js = <<< JS
 
         var tabAktif = tabGulung.querySelector('.btn-primary');
 
-        if (tabAktif && sempit()) {
+        if (tabAktif) {
             tabGulung.scrollLeft = tabAktif.offsetLeft
                 - (tabGulung.clientWidth - tabAktif.offsetWidth) / 2;
         }

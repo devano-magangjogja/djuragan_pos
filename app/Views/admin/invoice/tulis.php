@@ -84,7 +84,14 @@ $session  = \Config\Services::session();
 
 <div class="container-xxl">
 
-    <h1 class="h3 mt-5">Tulis Orderan</h1>
+    <div class="judul-sunting">
+        <?= anchor('admin/invoices/lihat/semua/semua', '<i class="fal fa-arrow-left"></i>', [
+            'class'      => 'tombol-kembali',
+            'title'      => 'Kembali ke daftar transaksi',
+            'aria-label' => 'Kembali',
+        ]) ?>
+        <h1 class="h3 mt-5">Tulis Orderan</h1>
+    </div>
 
     <?= form_open('admin/invoices/save', ['class' => 'row mb-5', 'id' => 'iForm']); ?>
 
