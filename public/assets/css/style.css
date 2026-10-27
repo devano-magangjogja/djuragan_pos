@@ -567,19 +567,21 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1.5rem 1rem;
+  /* tanpa bingkai: halaman masuk mengisi layar penuh */
+  padding: 0;
   background: #eef1f5;
 }
 
 .auth-card {
   width: 100%;
-  max-width: 62rem;
+  max-width: none;
+  min-height: 100vh;
   display: grid;
   grid-template-columns: 1.05fr 1fr;
   background: #fff;
-  border-radius: 1.5rem;
+  border-radius: 0;
   overflow: hidden;
-  box-shadow: 0 1.75rem 3.5rem rgba(11, 17, 32, 0.22);
+  box-shadow: none;
 }
 
 /* Panel kiri */
@@ -625,7 +627,10 @@
 }
 
 .auth-hero-brand .seven-logo {
-  width: 2.75rem;
+  /* clamp: 6rem (96px) di layar lebar — sekitar dua kali tinggi huruf judul
+     panel itu sendiri; lantai 3,5rem (56px) di ponsel tempat panel foto jadi
+     pita tipis di atas formulir */
+  width: clamp(3.5rem, 8vw, 6rem);
   height: auto;
   flex: none;
 }
@@ -721,32 +726,72 @@
 .auth-hint a {
   color: #0f172a;
   font-weight: 600;
+  /* tidak miring, tidak bergaris bawah: di 13,6px tebal + garis bawah membuat
+     hurufnya terlihat seperti italic meski font-style-nya normal */
+  font-style: normal;
+  text-decoration: none;
 }
 
 .auth-hint a:hover {
   text-decoration: underline;
 }
 
-.auth-hint-sep {
-  margin: 0 0.4rem;
-  color: #cbd5e1;
+/* "Lupa sandi?" di bawah kolom kata sandi: cukup satu langkah di bawah
+   isian, tidak boleh terlihat seperti pesan kesalahan. Ukurannya sengaja di
+   bawah label kolom (1rem) dan di bawah teks bantuan (0,85rem) supaya ia
+   terbaca sebagai keterangan tambahan, bukan teks isian. */
+.auth-lupa {
+  margin-top: 0.3rem;
+  font-size: 0.78rem;
 }
 
-/* Responsif: panel foto menyusut di atas formulir */
+.auth-lupa a {
+  color: #0f172a;
+  font-weight: 600;
+  font-style: normal;
+  text-decoration: none;
+}
+
+.auth-lupa a:hover {
+  text-decoration: underline;
+}
+
+/* Responsif: panel foto menyusut jadi kepala, formulir mengisi sisanya */
 @media (max-width: 767.98px) {
   .auth-page {
-    padding: 1rem 0.75rem;
+    padding: 0;
   }
 
   .auth-card {
     grid-template-columns: 1fr;
-    max-width: 30rem;
+    grid-template-rows: auto 1fr;
+    max-width: none;
   }
 
   .auth-hero {
-    min-height: 15rem;
-    padding: 1.75rem;
+    /* pita kepala saja: tingginya ikut isinya (judul + lambang + isian),
+       tidak dipaksa 15rem supaya seluruh halaman muat tanpa digulir */
+    min-height: 0;
+    padding: 1.5rem 1.75rem;
     gap: 1.25rem;
+  }
+
+  /* Lambang Seven Inc. pindah ke pojok kanan atas. Dikeluarkan dari alur flex
+       (butuh selector lebih spesifik dari `.auth-hero > *` yang memasang
+       position:relative di semua anak), jadi pita kepala cuma setinggi judul. */
+  .auth-hero>.auth-hero-brand {
+    position: absolute;
+    top: 1.1rem;
+    right: 1.1rem;
+  }
+
+  .auth-hero-brand .seven-logo {
+    width: 2.6rem;
+  }
+
+  /* baris pertama judul tidak boleh menyelonong ke bawah lambang */
+  .auth-hero-title {
+    padding-right: 3.4rem;
   }
 
   .auth-panel {
@@ -1768,6 +1813,57 @@ body.has-app-sidebar .h3.mt-3 {
   margin-top: 0 !important;
   margin-bottom: 0.45rem !important;
   font-size: 1.5rem !important;
+}
+
+/* Tombol kembali bulat di samping judul halaman (Tulis Orderan & Sunting Orderan).
+   Lingkaran satu baris flex dengan h1-nya; tingginya dibuat sama persis dengan
+   garis pertama judul — yang dinormalkan di atas jadi line-height 1.25, yaitu
+   30px di desktop dan 25px di HP — supaya rata dengan tulisan tanpa membuat
+   blok judul bertambah tinggi (margin bawah h1 tetap bawaan). */
+.judul-sunting {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+}
+
+.judul-sunting h1 {
+  min-width: 0;
+}
+
+.tombol-kembali {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid #e2e8f0;
+  border-radius: 50%;
+  background: #fff;
+  color: #364152;
+  font-size: 0.82rem;
+  line-height: 1;
+  text-decoration: none !important;
+}
+
+.tombol-kembali:hover,
+.tombol-kembali:focus {
+  background: #f5f7f9;
+  border-color: #cbd5e1;
+  color: #101828;
+}
+
+@media (max-width: 575.98px) {
+
+  .judul-sunting {
+    gap: 0.45rem;
+  }
+
+  .tombol-kembali {
+    width: 25px;
+    height: 25px;
+    font-size: 0.72rem;
+  }
 }
 
 /* 3. Modern Breadcrumb */
@@ -3643,10 +3739,11 @@ tr.varian-sorot td {
 }
 
 /* ---------- lambang merek ----------
-   Satu berkas mark saja: hitam, latar bening (yang tergambar hanya bentuknya,
-   tanpa kotak dasar), jadi chip sidebar/topbar tidak perlu latar atau cincin.
-   Hanya panel pahlawan halaman masuk yang gelap karena foto latar — di sana
-   chip-nya yang diputihkan supaya mark hitam tidak tenggelam. */
+   Satu berkas mark hitam berlatar bening untuk sidebar dan topbar — yang
+   tergambar hanya bentuknya, tanpa kotak dasar, jadi chip-nya tidak perlu
+   latar atau cincin. Panel pahlawan halaman masuk TIDAK memakai mark ini:
+   di sana lambang "Seven Inc." (template/logo.php) yang dipakai, karena
+   latar foto di panel itu gelap dan mark hitam butuh chip putih. */
 .sidebar-brand-icon {
   background: transparent;
   box-shadow: none;
@@ -3657,16 +3754,4 @@ tr.varian-sorot td {
   height: 100%;
   object-fit: contain;
   display: block;
-}
-
-.auth-hero-brand {
-  background: #ffffff;
-  border-radius: 10px;
-  padding: 0.4rem;
-  align-self: flex-start;
-}
-
-.auth-hero-brand .sidebar-brand-logo {
-  width: 2.75rem;
-  height: 2.75rem;
 }

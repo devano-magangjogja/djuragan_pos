@@ -50,11 +50,9 @@ $js = <<< JS
     					</div>`);
     				}),
     				$(a.join('')).appendTo('#notifDisini');
-    				var next = '';
-
-    				if (b.next) {
-    					$('<button type="button" class="list-group-item list-group-item-action text-center lanjutNotif" data-page="'+ (b.page+1) +'">lanjut ...</button>').appendTo('#notifDisini');
-    				}
+    				/* tidak ada tombol "lanjut ..." lagi: panel lonceng memang hanya
+    					rambu, halaman penuh notifikasi sudah menunggu di tautan
+    					"Lihat semua notifikasi" di kaki panel */
     			}
     			else {
     				$('.btnSettingNotif').hide();
@@ -63,15 +61,6 @@ $js = <<< JS
     			}
     		});
     	}
-
-    	$(document).on('click', '.lanjutNotif',function(){
-    		getNotif($(this).data('page'));
-    		$(this).attr('disabled', true).html(`<div class="text-center">
-    			<div class="spinner-border" role="status">
-    				<span class="visually-hidden">Loading...</span>
-    			</div>
-    		</div>`).remove();
-    	});
 
     	var notifikasi = document.getElementById('notifikasi');
         if (! notifikasi) {

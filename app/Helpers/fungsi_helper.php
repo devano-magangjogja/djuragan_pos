@@ -399,6 +399,26 @@ if (! function_exists('kategori_pembayaran')) {
     }
 }
 
+if (! function_exists('kategori_untuk_status_bayar')) {
+    /**
+     * Chip tab Pembayaran yang memuat nota dengan status_pembayaran ini.
+     *
+     * Dipakai setelah pembayaran dicatat: arahnya harus mengikuti status hasil
+     * hitungan, karena pembayaran terakhir membuat nota jadi lunas dan tidak lagi
+     * ikut chip "Perlu Dicek" — mendarat di chip yang salah berarti daftar kosong.
+     */
+    function kategori_untuk_status_bayar(string $status): string
+    {
+        foreach (kategori_pembayaran() as $slug => $kategori) {
+            if (in_array($status, $kategori['status'], true)) {
+                return $slug;
+            }
+        }
+
+        return 'perlu-cek';
+    }
+}
+
 if (! function_exists('saring_transaksi')) {
     /**
      * Saringan orderan untuk dasbor.

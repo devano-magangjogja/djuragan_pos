@@ -72,7 +72,17 @@ class Invoices extends BaseController
         $tunggal = $this->tokoTunggal();
 
         if ($juragan === 'semua' && $tunggal !== null) {
-            return redirect()->to(site_url('admin/invoices/lihat/' . $tunggal['slug'] . '/' . $hal . '/' . $kategori));
+            $terus = site_url('admin/invoices/lihat/' . $tunggal['slug'] . '/' . $hal . '/' . $kategori);
+
+            // kata yang sedang dicari ikut dipindah, kalau tidak lompatan ini
+            // membuang nota yang baru saja disimpan orang ke daftar penuh
+            $cari = $this->request->getGet('cari');
+
+            if (! empty($cari)) {
+                $terus .= '?' . http_build_query(['cari' => (array) $cari]);
+            }
+
+            return redirect()->to($terus);
         }
 
         if ($juragan !== 'semua') {
@@ -702,10 +712,12 @@ class Invoices extends BaseController
             simpan_notif(4, $nota->juragan_id, $invoice_id);
 
             // update status pembayaran (invoice)
-            $invModel->perbaruiStatusPembayaran($invoice_id);
+            $status_baru = $invModel->perbaruiStatusPembayaran($invoice_id);
 
+            // habis mencatat uang, orang bekerja di antrean uang: mendarat di tab
+            // Pembayaran, bukan di daftar Semua
             return $this->response->setJSON([
-                'url' => site_url('admin/invoices/lihat/semua/semua?cari[kolom]=id&cari[q]=' . $invoice_id),
+                'url' => site_url('admin/invoices/lihat/semua/pembayaran/' . kategori_untuk_status_bayar($status_baru) . '?cari[kolom]=id&cari[q]=' . $invoice_id),
             ]);
         }
     }

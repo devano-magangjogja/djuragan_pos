@@ -36,6 +36,15 @@ $biaya    = $orderan->biaya;
 // pembuat nota sekarang; 0 kalau akunnya sudah tidak ada di tabel pengguna
 $id_pengguna = (int) ($pengguna->id ?? 0);
 
+// Alamat tujuan tombol kembali di judul: daftar transaksi toko nota ini,
+// layarnya ikut layar yang membuka formulir (admin atau daftar punya CS).
+if ($layarAdmin) {
+    $alamat_kembali = 'admin/invoices/lihat/' . ($juragan->slug ?? 'semua') . '/semua';
+} else {
+    // tanpa slug, daftar CS menyelesaikan tokonya sendiri lalu diarahkan ke tab semua
+    $alamat_kembali = 'user/invoices';
+}
+
 // CS tidak memilih Admin/CS: penanggung jawab nota sudah sepaket dengan toko yang
 // ia pegang, jadi pembuatnya dipertahankan lewat isian tersembunyi. Tanpa isian ini
 // update() akan mengosongkan user_id nota begitu saja.
@@ -126,7 +135,14 @@ $rincian_pesanan = baca_rincian($orderan->rincian);
 
 <div class="container-xxl">
 
-    <h1 class="h3 mt-5"><?= esc($title) ?></h1>
+    <div class="judul-sunting">
+        <?= anchor($alamat_kembali, '<i class="fal fa-arrow-left"></i>', [
+            'class'      => 'tombol-kembali',
+            'title'      => 'Kembali ke daftar transaksi',
+            'aria-label' => 'Kembali',
+        ]) ?>
+        <h1 class="h3 mt-5"><?= esc($title) ?></h1>
+    </div>
 
     <?= form_open('admin/invoices/update', ['class' => 'row mb-5', 'id' => 'iForm'], $isian_tersembunyi); ?>
     <div class="col-12 col-lg-6 mb-3">

@@ -112,6 +112,62 @@ $cekBayar = ((string) $session->get('level')) === 'superadmin';
     padding: 0.2rem 0.45rem !important;
 }
 
+/* Layar lebar: tab dan tombol aksi SATU baris. Sebelumnya baris ini boleh
+   membungkus, jadi di bawah ±1500px kelompok aksi jatuh ke baris kedua sementara
+   strip tab melebar sampai penuh — tepi atas keduanya tidak lagi sejajar.
+   Yang menyusut adalah strip tab (panahnya sudah ada untuk itu); kelompok tombol
+   aksi tidak boleh terimpit karena isinya nama toko + empat aksi utama. */
+@media (min-width: 1280px) {
+    .toolbar-transaksi {
+        flex-wrap: nowrap;
+    }
+    .toolbar-transaksi__aksi {
+        flex: 0 0 auto;
+    }
+}
+
+/* 1280-1500px: satu langkah lebih ramping. Angkanya dari pengukuran, bukan kira-
+   kira: dengan bentuk asli baris ini butuh 1153px sedangkan tempatnya cuma 962
+   (1280px) - 1048 (1366px), jadi tanpa pemadatan ini tetap dua baris. */
+@media (min-width: 1280px) and (max-width: 1499.98px) {
+
+    .toolbar-transaksi {
+        gap: 0.35rem;
+    }
+
+    .toolbar-transaksi__tab {
+        gap: 0.2rem;
+    }
+
+    .toolbar-transaksi__tab .btn {
+        min-height: 2rem;
+        padding: 0.3rem 0.38rem;
+        gap: 0.25rem;
+        font-size: 0.76rem;
+    }
+
+    .toolbar-transaksi__tab .badge {
+        padding: 0.1rem 0.3rem !important;
+        font-size: 0.66rem;
+    }
+
+    .toolbar-transaksi__aksi {
+        gap: 0.2rem;
+    }
+
+    .toolbar-transaksi__aksi .btn {
+        min-height: 2rem;
+        padding: 0.3rem 0.45rem;
+        font-size: 0.76rem;
+    }
+}
+
+/* Tinggi semua tombol di baris ini disamakan: "Tulis Orderan" memakai latar
+   merek tanpa garis tepi, jadi 2px lebih pendek dari pil dan tombol lain. */
+.toolbar-transaksi .btn {
+    min-height: 2.125rem;
+}
+
 @media (max-width: 767.98px) {
     /* tab digulir mendatar supaya tetap satu baris dan sejajar, tombol aksi
        turun ke barisnya sendiri dengan nama toko mengisi sisa lebar. Yang turun
@@ -371,10 +427,6 @@ $cekBayar = ((string) $session->get('level')) === 'superadmin';
     <?php endif; ?>
 
     <?php
-    // untuk tab pembayaran 'perlu-cek': status invoice -> slug kategorinya, dipakai sebagai judul kelompok
-    $kelompok_perlu_cek = [2 => 'menunggu', 3 => 'dp'];
-    $grup_sebelumnya    = null;
-
     // satu kartu di layar = orderan dibuka sendiri. Aturan "kalau kosong tampilkan
     // -" hanya berlaku di mode itu, supaya daftar panjang tidak ikut penuh baris kosong
     $satu_orderan = count($orderan['data']) === 1;
@@ -390,22 +442,6 @@ $cekBayar = ((string) $session->get('level')) === 'superadmin';
         ];
         $kelas_status = status_pembayaran($pesanan->pembayaran, $pesanan->status_pembayaran, 'l_class');
         ?>
-        <?php if ($hal === 'pembayaran' && $kategori === 'perlu-cek') : ?>
-            <?php
-            $slug_kelompok = $kelompok_perlu_cek[(int) $pesanan->status_pembayaran] ?? null;
-
-            if ($slug_kelompok !== null && $slug_kelompok !== $grup_sebelumnya) :
-                $grup_sebelumnya = $slug_kelompok;
-                $kelompok        = $kategori_pembayaran[$slug_kelompok];
-                ?>
-                <div class="mb-3 flex flex-wrap items-baseline gap-2 border-b border-ink-200 pb-1">
-                    <span class="text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-700">
-                        <i class="fal <?= $kelompok['ikon'] ?> me-1 text-ink-500"></i> <?= esc($kelompok['label']) ?>
-                    </span>
-                    <span class="text-xs text-ink-500">total <?= formatRibuan($jumlah_kategori[$slug_kelompok] ?? 0) ?> orderan, yang paling lama menunggu lebih dulu</span>
-                </div>
-            <?php endif; ?>
-        <?php endif; ?>
         <?php
         $count_barang = 0;
         $harga_barang = 0;
@@ -465,9 +501,13 @@ $cekBayar = ((string) $session->get('level')) === 'superadmin';
                                 <?php endif; ?>
 
                             <div class="aksi-kepala flex items-center gap-1">
-                                <a class="inline-flex cursor-pointer items-center gap-1 rounded-[0.7rem] border border-ink-200 bg-ink-50 px-2.5 py-1 text-sm text-ink-700 transition hover:bg-ink-100 hover:text-ink-900" href="<?= site_url('download/penjahit/' . $pesanan->seri) ?>" target="_blank" rel="noopener" title="Cetak lembar kerja penjahit (tanpa harga)">
-                                    <i class="fal fa-cut text-ink-500"></i> <span class="hidden md:inline">Penjahit</span>
-                                </a>
+                                <?php /* lembar kerja penjahit tidak berlaku untuk barang sewaan:
+                                       tidak ada yang dijahit, jadi tombolnya tidak dirender */ ?>
+                                <?php if (! $adalah_sewa) { ?>
+                                    <a class="inline-flex cursor-pointer items-center gap-1 rounded-[0.7rem] border border-ink-200 bg-ink-50 px-2.5 py-1 text-sm text-ink-700 transition hover:bg-ink-100 hover:text-ink-900" href="<?= site_url('download/penjahit/' . $pesanan->seri) ?>" target="_blank" rel="noopener" title="Cetak lembar kerja penjahit (tanpa harga)">
+                                        <i class="fal fa-cut text-ink-500"></i> <span class="hidden md:inline">Penjahit</span>
+                                    </a>
+                                <?php } ?>
                                 <a class="inline-flex cursor-pointer items-center gap-1 rounded-[0.7rem] border border-ink-200 bg-ink-50 px-2.5 py-1 text-sm text-ink-700 transition hover:bg-ink-100 hover:text-ink-900" href="<?= site_url('download/invoice/' . $pesanan->seri) ?>" target="_blank" rel="noopener" title="Cetak invoice untuk pelanggan">
                                     <i class="fal fa-print text-ink-500"></i> <span class="hidden md:inline">Invoice</span>
                                 </a>
@@ -872,6 +912,37 @@ $cekBayar = ((string) $session->get('level')) === 'superadmin';
                     </div>
                 <?php } ?>
 
+                <?php if ($adalah_sewa) {
+                    /* Nota sewa: jadwal pinjam diringkas di blok sendiri, isinya sama
+                       dengan kotak "Jadwal" di lembar kerja penjahit — tenggat, tanggal
+                       ambil & kembali, jaminan, tahap terakhir. Tanggal di sini tetap
+                       cuma jadual; barang dinyatakan pulang lewat "Sudah kembali"
+                       (sewa_kembali_at), bukan lewat kolom ini. */
+                    $j_tenggat  = label_deadline(($pesanan->deadline ?? '') ?: deadline_iso($pesanan->rincian ?? null));
+                    $j_rincian  = baca_rincian($pesanan->rincian ?? null);
+                    $j_terakhir = tahap_terakhir($pesanan->status ?? []);
+                    $jadwal     = [
+                        ['fa-clock', 'Tenggat selesai', $j_tenggat['teks'] === '-' ? null : $j_tenggat['teks']],
+                        ['fa-arrow-down', 'Diambil', isset($j_rincian['ambil']) ? tanggal_rincian((string) $j_rincian['ambil']) : null],
+                        ['fa-arrow-up', 'Kembali', isset($j_rincian['kembali']) ? tanggal_rincian((string) $j_rincian['kembali']) : null],
+                        ['fa-shield-halved', 'Jaminan', $j_rincian['jaminan'] ?? null],
+                        ['fa-flag-checkered', 'Tahap terakhir', $j_terakhir === null ? null : $j_terakhir['nama'] . ' (' . $j_terakhir['tanggal'] . ', ' . ($j_terakhir['selesai'] ? 'selesai' : 'berjalan') . ')'],
+                    ];
+                } ?>
+                <?php if ($adalah_sewa) { ?>
+                    <div class="blok rounded-2xl border border-ink-200 border-l-[3px] border-l-proses bg-[#fcfdfe] p-3.5 sm:p-4 mt-4">
+                        <h6 class="mb-2.5 flex items-center gap-1.5 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500 [&_.fal]:text-[0.95rem] [&_.fal]:text-ink-400"><i class="fal fa-calendar-days"></i> Jadwal</h6>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5 sm:gap-3">
+                            <?php foreach ($jadwal as [$ikon, $label, $nilai]) { ?>
+                                <div class="min-w-0 rounded-xl bg-ink-50/70 p-2 sm:p-2.5 border border-ink-100">
+                                    <span class="block text-[0.68rem] font-bold uppercase tracking-[0.08em] text-ink-500 truncate"><i class="fal <?= $ikon ?> me-1 text-ink-400"></i> <?= esc($label) ?></span>
+                                    <span class="mt-0.5 block break-words text-xs sm:text-sm font-semibold leading-snug <?= $nilai === null ? 'text-ink-400' : 'text-ink-900' ?>"><?= $nilai === null ? '-' : esc($nilai) ?></span>
+                                </div>
+                            <?php } ?>
+                        </div>
+                    </div>
+                <?php } ?>
+
                 <?php if ($isi_keterangan !== '' || $satu_orderan) { ?>
                     <div class="blok rounded-2xl border border-ink-200 border-l-[3px] border-l-brand-500 bg-[#fcfdfe] px-[1.15rem] py-4 mt-4">
                         <h6 class="mb-2 flex items-center gap-1.5 text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500 [&_.fal]:text-[0.95rem] [&_.fal]:text-ink-400"><i class="fal fa-clipboard-list"></i> Keterangan</h6>
@@ -1062,7 +1133,7 @@ $cekBayar = ((string) $session->get('level')) === 'superadmin';
                 <?= form_input(['name' => 'keterangan', 'id' => 'keterangan', 'class' => 'form-control', 'placeholder' => 'opsional']) ?>
             </div>
 
-            <div class="bg-warning p-2 border rounded">
+            <div class="alert alert-warning py-2 mb-0 small">
                 Perlu diingat, penambahan "status proses orderan" ini tidak bisa diubah.
             </div>
         </div>

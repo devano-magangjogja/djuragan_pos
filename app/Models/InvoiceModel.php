@@ -79,15 +79,8 @@ class InvoiceModel extends Model
         $this->batasiToko($builder, $hanya);
 
         if ($hal === 'pembayaran' || $hal === 'cek-bayar') {
-            if ($kategori === 'perlu-cek') {
-                // digabung dua status, jadi dikelompokkan dulu supaya judul kelompoknya tidak terpotong
-                $builder->orderBy('status_pembayaran ASC, tanggal_pesan ASC, update_at ASC');
-            } elseif (in_array($kategori, ['dicicil', 'lunas'], true)) {
-                $builder->orderBy('tanggal_pesan DESC, update_at DESC');
-            } else {
-                // yang paling lama menunggu diprioritaskan
-                $builder->orderBy('tanggal_pesan ASC, update_at ASC');
-            }
+            // satu daftar lurus: nota terbaru lebih dulu, tanpa dikelompokkan per status
+            $builder->orderBy('tanggal_pesan DESC, update_at DESC');
         } else {
             $builder->orderBy('status_pesanan ASC, tanggal_pesan DESC, update_at DESC');
         }
