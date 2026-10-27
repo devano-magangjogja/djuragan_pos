@@ -3794,15 +3794,3 @@ tr.varian-sorot td {
   object-fit: contain;
   display: block;
 }
-
-.auth-hero-brand {
-  background: #ffffff;
-  border-radius: 10px;
-  padding: 0.4rem;
-  align-self: flex-start;
-}
-
-.auth-hero-brand .sidebar-brand-logo {
-  width: 2.75rem;
-  height: 2.75rem;
-}

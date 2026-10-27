@@ -1,8 +1,8 @@
 <?php
 
-/* Lambang merek: satu mark hitam dengan latar bening (hasil potongan dari
-   gambar kiriman, bukan kotak putih). Dipakai di kepala sidebar, topbar ponsel,
-   dan panel pahlawan halaman masuk. Di panel masuk yang gelap, chip-nya diberi
-   latar putih lewat .auth-hero-brand supaya mark hitam tidak tenggelam. */
+/* Lambang merek: satu mark terang dengan latar bening (hasil potongan dari
+   gambar kiriman, bukan kotak putih). Dipakai di kepala sidebar dan topbar
+   ponsel. Panel masuk memakai lambang SVG putih sendiri (template/logo), jadi
+   tidak boleh diberi chip putih — mark-nya ikut putih dan hilang di atasnya. */
 ?>
 <img class="sidebar-brand-logo" src="<?= base_url('assets/img/logo-terang.png') ?>" width="32" height="32" alt="Djuragan POS">
