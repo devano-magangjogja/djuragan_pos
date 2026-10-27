@@ -122,7 +122,7 @@ $sukses       = session()->getFlashdata('sukses');
 
     <div class="reminder-head">
         <div>
-            <h1><i class="fal fa-alarm-clock me-1 text-brand-500"></i> <?= esc($title) ?></h1>
+            <h1><i class="fal fa-cut me-1 text-brand-500"></i> <?= esc($title) ?></h1>
             <p>Orderan pembuatan/jual yang tenggatnya sudah dekat — hubungi penjahit sebelum lewat.</p>
         </div>
         <span class="reminder-periode">

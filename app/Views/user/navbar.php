@@ -87,15 +87,6 @@ $reminderCount = pengingat_penjahit_jumlah();
         <div class="sidebar-heading">Menu Utama</div>
         <ul class="sidebar-nav">
             <li class="nav-item">
-                <a class="sidebar-link <?= $isReminderAktif ? 'active' : '' ?>" href="<?= site_url('admin/reminder') ?>">
-                    <i class="sidebar-link-icon fal fa-alarm-clock"></i>
-                    <span>Reminder Penjahit</span>
-                    <?php if ($reminderCount > 0) : ?>
-                        <span class="badge rounded-pill bg-danger ms-auto" title="<?= (int) $reminderCount ?> orderan mendekati/lewat deadline"><?= (int) $reminderCount ?></span>
-                    <?php endif; ?>
-                </a>
-            </li>
-            <li class="nav-item">
                 <a class="sidebar-link <?= $isTrxAktif ? 'active' : '' ?>" href="<?= site_url('user/invoices') ?>">
                     <i class="sidebar-link-icon fal fa-receipt"></i>
                     <span>Transaksi</span>
@@ -111,6 +102,15 @@ $reminderCount = pengingat_penjahit_jumlah();
                 <a class="sidebar-link <?= $isProdukAktif ? 'active' : '' ?>" href="<?= site_url('admin/produk') ?>">
                     <i class="sidebar-link-icon fal fa-box-alt"></i>
                     <span>Katalog Produk</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="sidebar-link <?= $isReminderAktif ? 'active' : '' ?>" href="<?= site_url('admin/reminder') ?>" data-reminder-menu="1">
+                    <i class="sidebar-link-icon fal fa-cut"></i>
+                    <span>Reminder Penjahit</span>
+                    <?php if ($reminderCount > 0) : ?>
+                        <span class="badge rounded-pill bg-danger ms-auto badge-reminder" title="<?= (int) $reminderCount ?> orderan mendekati/lewat deadline"><?= (int) $reminderCount ?></span>
+                    <?php endif; ?>
                 </a>
             </li>
             <li class="nav-item">
