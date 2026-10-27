@@ -31,6 +31,16 @@ class Reminder extends BaseController
         return view('reminder/index', $data);
     }
 
+    public function jumlah()
+    {
+        helper('fungsi');
+
+        return $this->response->setJSON([
+            'status' => 'success',
+            'count'  => pengingat_penjahit_jumlah(),
+        ]);
+    }
+
     /**
      * Simpan ambang hari reminder. Rutenya dipagari auth:superadmin, jadi hanya
      * Superadmin yang bisa sampai ke sini.

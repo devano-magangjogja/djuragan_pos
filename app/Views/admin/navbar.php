@@ -183,15 +183,6 @@ if ($levelSesi === 'superadmin') {
         <div class="sidebar-heading">Menu Utama</div>
         <ul class="sidebar-nav">
             <li class="nav-item">
-                <a class="sidebar-link <?= $isReminderAktif ? 'active' : '' ?>" href="<?= site_url('admin/reminder') ?>">
-                    <i class="sidebar-link-icon fal fa-alarm-clock"></i>
-                    <span>Reminder Penjahit</span>
-                    <?php if ($reminderCount > 0) : ?>
-                        <span class="badge rounded-pill bg-danger ms-auto" title="<?= (int) $reminderCount ?> orderan mendekati/lewat deadline"><?= (int) $reminderCount ?></span>
-                    <?php endif; ?>
-                </a>
-            </li>
-            <li class="nav-item">
                 <a class="sidebar-link <?= $isDasborAktif ? 'active' : '' ?>" href="<?= site_url('admin/dasbor') ?>">
                     <i class="sidebar-link-icon fal fa-home"></i>
                     <span>Dasbor</span>
@@ -234,6 +225,15 @@ if ($levelSesi === 'superadmin') {
                         <?php endforeach; ?>
                     </ul>
                 </div>
+            </li>
+            <li class="nav-item">
+                <a class="sidebar-link <?= $isReminderAktif ? 'active' : '' ?>" href="<?= site_url('admin/reminder') ?>" data-reminder-menu="1">
+                    <i class="sidebar-link-icon fal fa-cut"></i>
+                    <span>Reminder Penjahit</span>
+                    <?php if ($reminderCount > 0) : ?>
+                        <span class="badge rounded-pill bg-danger ms-auto badge-reminder" title="<?= (int) $reminderCount ?> orderan mendekati/lewat deadline"><?= (int) $reminderCount ?></span>
+                    <?php endif; ?>
+                </a>
             </li>
         </ul>
 

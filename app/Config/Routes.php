@@ -229,6 +229,7 @@ $routes->group('admin', static function ($routes) {
     // daftarnya; hanya Superadmin yang boleh mengubah ambang harinya.
     $routes->group('reminder', ['filter' => 'auth:admin,superadmin,cs'], static function ($routes) {
         $routes->get('/', 'Reminder::index');
+        $routes->get('jumlah', 'Reminder::jumlah');
 
         $routes->group('', ['filter' => 'auth:superadmin'], static function ($routes) {
             $routes->post('pengaturan', 'Reminder::simpan');
