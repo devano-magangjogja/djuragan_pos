@@ -71,6 +71,12 @@ Hanya akun valid yang bisa mengakses halaman ini.
             <?= $validation->getError('password') ?>
         </div>
     <?php } ?>
+
+    <?php /* "Lupa sandi?" dulu duduk di baris paling bawah berdampingan dengan
+              "daftar disini" — jauh dari kolom yang bersangkutan. */ ?>
+    <div class="auth-lupa">
+        <?= anchor('auth/lupa', 'Lupa sandi?', ['title' => 'Reset kata sandi']) ?>
+    </div>
 </div>
 <?= form_button([
     'class'    => 'btn auth-submit',
@@ -83,6 +89,4 @@ Hanya akun valid yang bisa mengakses halaman ini.
 
 <?= $this->section('authHint') ?>
 Belum punya akun? <?= anchor('auth/daftar', 'daftar disini', ['title' => 'Daftar sekarang']) ?>
-<span class="auth-hint-sep">·</span>
-<?= anchor('auth/lupa', 'Lupa sandi?', ['title' => 'Reset kata sandi']) ?>
 <?= $this->endSection() ?>

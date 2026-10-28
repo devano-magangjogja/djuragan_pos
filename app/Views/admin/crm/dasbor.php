@@ -41,22 +41,62 @@
         .kartu-pengingat > .text-end {
             padding: 0 0.75rem 0.6rem !important;
         }
+
+        /* Tombol aksi tiap baris pengingat dipindah ke pojok kanan BAWAH barisnya
+           — sama seperti kartu pintasan — supaya baris badge + tanggal punya lebar
+           penuh dan tanggalnya benar-benar mepet ke tepi kanan kartu. Judul dan
+           keterangan diberi ruang kanan sebesar kedua tombol agar tidak tertindih. */
+        .kartu-pengingat .list-group-item {
+            position: relative;
+        }
+
+        .kartu-pengingat .list-group-item > .text-end {
+            position: absolute;
+            right: 0.75rem;
+            bottom: 0.5rem;
+            margin-left: 0;
+        }
+
+        .kartu-pengingat .list-group-item h6,
+        .kartu-pengingat .list-group-item p {
+            padding-right: 6.5rem;
+        }
     }
 
-    /* Kartu KPI di layar sempit hanya kebagian setengah lebar (134px ruang
-       isinya), sementara angkanya ditulis penuh: "Rp 8.328.184.447" butuh
-       159px pada ukuran h4 bawaan sehingga jatuh ke baris kedua dan kartunya
-       jadi lebih tinggi dari tetangganya. Angkanya dikecilkan ke 1,05rem
-       (butuh 124px, sisa 10px) dan labelnya ke 0,72rem supaya "Follow-up
-       Tagihan" tidak belah dua. Desktop tidak disentuh. */
-    @media (max-width: 767.98px) {
-        .card h3.fw-bold,
+    /* Kartu KPI di layar sempit hanya kebagian setengah/tiga per baris, sementara
+       angkanya ditulis penuh: "Rp 8.332.584.447" butuh 134px pada 1,05rem dan
+       190px pada ukuran h4 bawaan, sedangkan ruang isinya cuma 119px (360px) atau
+       152px (800px) — "Rp" jatuh sendirian di baris atas. Angka finansial dikecilkan
+       ke 0,875rem dan ditahan satu baris; isian kartunya dikurangi sedikit untuk
+       membeli ruang kalau omset tumbuh. Batasnya 991,98px — sama seperti batas
+       sidebar jadi laci — karena di 800px kartu sudah empat-sebaris sempit.
+       Angka kartu baris pertama (h3) tidak dikecilkan: yang terpanjang ("15,056")
+       baru memakai 60px dari 151px. Desktop (>=992px) tidak disentuh. */
+    @media (max-width: 991.98px) {
         .card h4.fw-bold {
+            font-size: 0.875rem;
+            white-space: nowrap;
+        }
+
+        .kartu-kpi-sejajar {
+            padding: 0.85rem !important;
+        }
+    }
+
+    @media (max-width: 767.98px) {
+        .card h3.fw-bold {
             font-size: 1.05rem;
         }
 
         .card span.text-muted.small.fw-semibold {
             font-size: 0.72rem;
+        }
+
+        /* ikon di pojok kanan enam kartu baris pertama dibuang: ruang 25px-nya
+           lebih berguna untuk label yang panjangnya sudah terpotong ("Follow-up
+           Tagihan"), dan warna kiri kartu sudah menandai jenisnya */
+        .card-body > .d-flex.justify-content-between > i {
+            display: none;
         }
 
         /* grup kartu kedua tidak memakai h-100 seperti grup pertama; hanya di

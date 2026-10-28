@@ -303,12 +303,14 @@ class Invoices extends BaseController
             simpan_notif(4, $nota->juragan_id, $invoice_id);
 
             // update status pembayaran (invoice)
-            $invModel->perbaruiStatusPembayaran($invoice_id);
+            $status_baru = $invModel->perbaruiStatusPembayaran($invoice_id);
 
             $juragan = $juraganModel->byInvoiceId($invoice_id)->getResult()[0]->juragan;
 
+            // sama seperti layar admin: setelah mencatat uang, antrean berikutnya
+            // adalah pembayaran yang perlu dicek
             return $this->response->setJSON([
-                'url' => site_url('user/invoices/lihat/' . $juragan . '/semua?cari[kolom]=id&cari[q]=' . $invoice_id),
+                'url' => site_url('user/invoices/lihat/' . $juragan . '/pembayaran/' . kategori_untuk_status_bayar($status_baru) . '?cari[kolom]=id&cari[q]=' . $invoice_id),
             ]);
         }
     }

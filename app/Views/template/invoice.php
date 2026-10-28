@@ -202,6 +202,28 @@ $html_qr = Barcode::qrDataUri((string) $invoice->seri, 160);
     $dibayarkan  = status_pembayaran($invoice->pembayaran, $invoice->status_pembayaran, 'sudah_bayar');
     $tahap       = tahap_terakhir($invoice->status ?? []);
     $tenggat     = label_deadline(($invoice->deadline ?? '') ?: deadline_iso($invoice->rincian ?? null));
+
+    /* Nota sewa dicetak dengan baris "Jadwal Sewa" sendiri: pelanggan butuh
+       tenggat pengembalian dan nama jaminan yang dititip, dan kedua hal itu
+       tidak muncul di bagian mana pun pada lembar ini. Nilainya diambil dari
+       rincian yang sama dipakai form transaksi — tanggalnya baru dicetak kalau
+       memang diisi. */
+    $jadwal_sewa = [];
+
+    if (\App\Models\InvoiceModel::adalahSewa($invoice->rincian ?? null)) {
+        $rincian_sewa = baca_rincian($invoice->rincian ?? null);
+
+        foreach ([['Diambil', 'ambil'], ['Kembali', 'kembali'], ['Jaminan', 'jaminan']] as [$label, $key]) {
+            if (($rincian_sewa[$key] ?? '') !== '') {
+                $nilai = $key === 'jaminan' ? $rincian_sewa[$key] : tanggal_rincian((string) $rincian_sewa[$key]);
+                $jadwal_sewa[] = '<b>' . $label . '</b> ' . esc($nilai);
+            }
+        }
+
+        if ($tenggat['teks'] !== '-') {
+            $jadwal_sewa[] = '<b>Tenggat</b> ' . esc($tenggat['teks']);
+        }
+    }
     $ongkir      = new Ongkir();
     $pemesan     = $invoice->pelanggan;
     $kirimKe     = $invoice->kirimKe;
@@ -292,6 +314,21 @@ $html_qr = Barcode::qrDataUri((string) $invoice->seri, 160);
             </td>
         </tr>
     </table>
+
+    <?php if ($jadwal_sewa !== []) { ?>
+        <br>
+
+        <table>
+            <tr>
+                <td class="kotak">
+                    <div class="cap">Jadwal Sewa</div>
+                    <div class="isi">
+                        <?= implode(' &nbsp;·&nbsp; ', $jadwal_sewa) ?>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    <?php } ?>
 
     <br>
 

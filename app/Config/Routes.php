@@ -387,6 +387,8 @@ $routes->group('api', ['filter' => 'auth:admin,superadmin,user'], static functio
     // milik akun ini, sama seperti pencarian pelanggan
     $routes->group('stok', static function ($routes) {
         $routes->get('cari', 'Api\Stok::cari');
+        $routes->get('jumlah', 'Api\Stok::jumlah');
+        $routes->get('katalog', 'Api\Stok::katalog');
     });
 });
 

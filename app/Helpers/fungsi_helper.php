@@ -399,6 +399,26 @@ if (! function_exists('kategori_pembayaran')) {
     }
 }
 
+if (! function_exists('kategori_untuk_status_bayar')) {
+    /**
+     * Chip tab Pembayaran yang memuat nota dengan status_pembayaran ini.
+     *
+     * Dipakai setelah pembayaran dicatat: arahnya harus mengikuti status hasil
+     * hitungan, karena pembayaran terakhir membuat nota jadi lunas dan tidak lagi
+     * ikut chip "Perlu Dicek" — mendarat di chip yang salah berarti daftar kosong.
+     */
+    function kategori_untuk_status_bayar(string $status): string
+    {
+        foreach (kategori_pembayaran() as $slug => $kategori) {
+            if (in_array($status, $kategori['status'], true)) {
+                return $slug;
+            }
+        }
+
+        return 'perlu-cek';
+    }
+}
+
 if (! function_exists('saring_transaksi')) {
     /**
      * Saringan orderan untuk dasbor.
@@ -1394,6 +1414,18 @@ if (! function_exists('anggota_panel_form')) {
             . '<i class="fal fa-list-ol me-1"></i> Jadikan Baris Anggota'
             . '</button>'
             . '</div>'
+            . '</div>'
+            . '</div>'
+            . '<div class="col-12 mt-3">'
+            . '<div class="rounded-[0.95rem] border border-dashed border-[#dbe3ee] bg-ink-50/80 p-3">'
+            . '<div class="d-flex align-items-center justify-content-between mb-1.5">'
+            . '<span class="form-label text-xs fw-bold text-ink-600 mb-0"><i class="fal fa-file-excel text-success me-1"></i> Impor dari Excel / CSV</span>'
+            . '<button type="button" class="btn btn-link btn-sm p-0 text-xs fw-semibold unduh-template-anggota"><i class="fal fa-download me-1"></i> Unduh template</button>'
+            . '</div>'
+            . '<p class="text-[0.7rem] text-ink-400 mb-2">Kolom yang dibaca: <b>Nama</b>, <b>No./Tinggi</b>, <b>Catatan</b>. Baris pertama boleh judul kolom; tiap baris jadi satu anggota.</p>'
+            . '<input type="file" id="anggota_file" class="anggota-file d-none" accept=".xlsx,.xls,.csv">'
+            . '<label for="anggota_file" class="btn btn-sm btn-outline-primary w-100 text-xs fw-semibold mb-0"><i class="fal fa-upload me-1"></i> Pilih file Excel / CSV</label>'
+            . '<div class="anggota-import-info small mt-2 d-none"></div>'
             . '</div>'
             . '</div>'
             . '</div>'
