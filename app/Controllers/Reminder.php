@@ -19,13 +19,14 @@ class Reminder extends BaseController
     {
         helper('fungsi');
 
-        $hari = pengingat_penjahit_hari();
+        $hari  = pengingat_penjahit_hari();
+        $level = (string) session()->get('level');
 
         $data = [
             'title'      => 'Reminder Penjahit',
             'hari'       => $hari,
             'reminder'   => (new InvoiceModel())->pengingatPenjahit($this->tokoBoleh(), $hari),
-            'superadmin' => (string) session()->get('level') === 'superadmin',
+            'superadmin' => $level === 'superadmin',
         ];
 
         return view('reminder/index', $data);

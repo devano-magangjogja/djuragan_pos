@@ -3,6 +3,7 @@
 namespace App\Controllers\Api;
 
 use App\Controllers\BaseController;
+use App\Models\ProdukFotoModel;
 use App\Models\StokModel;
 
 /**
@@ -55,5 +56,63 @@ class Stok extends BaseController
         }
 
         return $this->response->setJSON(['query' => $cari, 'results' => $hasil]);
+    }
+
+    /**
+     * GET api/stok/jumlah
+     *
+     * Jumlah produk tiap toko milik akun ini, untuk angka indikator di dropdown
+     * juragan pada form tulis orderan. Bentuknya peta id => jumlah supaya JS cukup
+     * sekali ambil untuk mengisi semua opsi sekaligus.
+     */
+    public function jumlah()
+    {
+        $data = (new StokModel())->jumlahPerJuragan($this->juraganIds());
+
+        return $this->response->setJSON(['status' => 'success', 'data' => (object) $data]);
+    }
+
+    /**
+     * GET api/stok/katalog?juragan_id=<id>
+     *
+     * Daftar ringkas produk satu toko (kode, stok tersedia, harga awal, satu foto,
+     * dan jenis layanan) untuk strip katalog yang bisa digulir mendatar di bawah
+     * pemilih juragan. Sengaja TIDAK disaring per tipe: semua kolam (jual & sewa)
+     * ditampilkan sekaligus, tiap kartu diberi label jenisnya supaya pengguna tahu
+     * produk itu tipe Pembuatan atau Sewa.
+     */
+    public function katalog()
+    {
+        $juragan = (int) $this->request->getGet('juragan_id');
+        $ids     = $this->juraganIds();
+
+        if ($juragan < 1 || ! in_array($juragan, $ids, true)) {
+            return $this->response->setJSON(['status' => 'success', 'data' => []]);
+        }
+
+        $model = new StokModel();
+        $fotoM = new ProdukFotoModel();
+        $data  = [];
+
+        // dua kolam dibaca terpisah: kode yang sama boleh ada di jual dan sewa,
+        // masing-masing jadi satu kartu dengan jenisnya sendiri
+        foreach (['jual', 'sewa'] as $kolam) {
+            $kartu  = $model->katalog($ids, $juragan, '', '', 40, 0, $kolam);
+            $varian = array_map(static fn (array $k): array => array_column($k['varian'], 'id_stok'), $kartu);
+            $foto   = $fotoM->perKartu($varian);
+
+            foreach ($kartu as $i => $k) {
+                $pertama = $foto[$i][0] ?? null;
+                $data[]  = [
+                    'kode'  => (string) $k['kode'],
+                    'stok'  => (int) $k['total_stok'],
+                    'harga' => (int) $k['harga_mulai'],
+                    'jenis' => $kolam === 'sewa' ? 'Sewa' : 'Pembuatan',
+                    'foto'  => $pertama !== null ? ProdukFotoModel::alamat((int) $pertama['id_foto'], 240) : null,
+                ];
+            }
+        }
+
+        return $this->response->setJSON(['status' => 'success', 'data' => $data]);
     }
 }

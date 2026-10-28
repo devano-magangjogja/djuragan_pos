@@ -98,6 +98,7 @@ $js = <<< JS
             pollReminderBadge();
             setInterval(pollReminderBadge, 5000);
         }
+
     	var notifikasi = document.getElementById('notifikasi');
         if (! notifikasi) {
             return; // halaman ini tidak punya lonceng, tidak ada yang perlu diikat

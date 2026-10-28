@@ -875,6 +875,7 @@ $semua_toko              = $layarAdmin ? 'true' : 'false';
     window.CARI_PELANGGAN = '<?= $link_cari_pelanggan ?>';
 </script>
 <script defer src="<?= base_url('assets/js/ukuran-form.js') ?>?v=<?= (int) @filemtime(FCPATH . 'assets/js/ukuran-form.js') ?>"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script defer src="<?= base_url('assets/js/anggota-form.js') ?>?v=<?= (int) @filemtime(FCPATH . 'assets/js/anggota-form.js') ?>"></script>
 <script defer src="<?= base_url('assets/js/cari-pelanggan.js') ?>?v=<?= (int) @filemtime(FCPATH . 'assets/js/cari-pelanggan.js') ?>"></script>
 <script defer src="<?= base_url('assets/js/foto-form.js') ?>?v=<?= (int) @filemtime(FCPATH . 'assets/js/foto-form.js') ?>"></script>

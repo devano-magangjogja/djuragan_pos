@@ -76,6 +76,67 @@ $session  = \Config\Services::session();
             max-height: 85dvh;
         }
     }
+
+    /* Strip katalog produk toko, muncul di bawah pemilih juragan: kartu kecil
+       (gambar + nama + stok) yang bisa digulir mendatar. */
+    .katalog-juragan { margin-top: .15rem; }
+    .katalog-juragan-scroll {
+        display: flex;
+        gap: .6rem;
+        overflow-x: auto;
+        padding: .35rem .15rem .6rem;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+    }
+    .katalog-kartu {
+        flex: 0 0 auto;
+        width: 6.5rem;
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: .8rem;
+        padding: .4rem;
+        text-align: center;
+    }
+    .katalog-kartu img,
+    .katalog-kartu .kk-inisial {
+        width: 100%;
+        height: 5rem;
+        object-fit: cover;
+        border-radius: .55rem;
+        display: block;
+    }
+    .katalog-kartu .kk-inisial {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f1f5f9;
+        color: #64748b;
+        font-weight: 700;
+        font-size: 1.4rem;
+    }
+    .katalog-kartu .kk-nama {
+        margin-top: .35rem;
+        font-size: .78rem;
+        font-weight: 600;
+        color: #334155;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .katalog-kartu .kk-jenis {
+        font-size: .7rem;
+        font-weight: 600;
+        color: #475569;
+    }
+    .katalog-kartu .kk-stok {
+        font-size: .72rem;
+        color: #64748b;
+    }
+    .katalog-juragan-info {
+        font-size: .78rem;
+        color: #94a3b8;
+        padding: .2rem .15rem;
+    }
 </style>
 <?= $this->endSection() ?>
 
@@ -113,6 +174,8 @@ $session  = \Config\Services::session();
                             <?= form_dropdown('pengguna', ['' => 'Pilih Admin/CS'], '', ['class' => 'form-select', 'id' => 'pengguna', 'required' => '']); ?>
                         </div>
                     </div>
+
+                    <?= '<div id="katalogJuragan" class="katalog-juragan d-none" aria-live="polite"></div>' ?>
                     <div class="row gx-2">
                         <div class="col">
                             <?php
@@ -698,6 +761,8 @@ $link_cari_pelanggan = site_url('pelanggan/cari');
 $link_invoice        = site_url('admin/invoices/lihat/');
 $link_post_pelanggan = site_url('pelanggan/baru');
 $link_data_pelanggan = rtrim(site_url('pelanggan/data'), '/') . '/';
+$link_stok_jumlah    = site_url('api/stok/jumlah');
+$link_stok_katalog   = site_url('api/stok/katalog');
 // nama field token CSRF: tidak boleh ikut disimpan/dipulihkan draf, sebab tiap
 // muat halaman token-nya berganti dan menimpa yang baru bikin simpan ditolak.
 $nama_csrf           = csrf_token();
@@ -708,6 +773,7 @@ $nama_csrf           = csrf_token();
     window.CARI_PELANGGAN = '<?= $link_cari_pelanggan ?>';
 </script>
 <script defer src="<?= base_url('assets/js/ukuran-form.js') ?>?v=<?= (int) @filemtime(FCPATH . 'assets/js/ukuran-form.js') ?>"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script defer src="<?= base_url('assets/js/anggota-form.js') ?>?v=<?= (int) @filemtime(FCPATH . 'assets/js/anggota-form.js') ?>"></script>
 <script defer src="<?= base_url('assets/js/cari-pelanggan.js') ?>?v=<?= (int) @filemtime(FCPATH . 'assets/js/cari-pelanggan.js') ?>"></script>
 <script defer src="<?= base_url('assets/js/foto-form.js') ?>?v=<?= (int) @filemtime(FCPATH . 'assets/js/foto-form.js') ?>"></script>
@@ -789,12 +855,80 @@ $js = <<< JS
     	// load juragan
     	// embed langsung ke form select - dropdown
     	$.getJSON('{$link_api_juragan}', { id: {$current_user_id} }, function(b){
-    		$.each(b[{$current_user_id}].juragan,function(c,b){
-    			$('<option />',{value:b.id,text:b.nama}).appendTo($('select[name="juragan"]'));
+    		$.each(b[{$current_user_id}].juragan,function(c,x){
+    			$('<option />',{value:x.id,text:x.nama}).data('nama', x.nama).appendTo($('select[name="juragan"]'));
     		});
+    		isiJumlahProduk();
     		// opsi tiba: pasang pilihan dari draf yang tadi ditahan
     		if (window.drafTundaJuragan) { window.drafTundaJuragan(); }
     	});
+
+    	// angka indikator jumlah produk di tiap opsi dropdown juragan
+    	function isiJumlahProduk() {
+    		$.getJSON('{$link_stok_jumlah}', function(res) {
+    			var peta = (res && res.data) || {};
+    			$('select[name="juragan"] option').each(function() {
+    				if (this.value === '') {
+    					return;
+    				}
+    				var nama = $(this).data('nama') || this.text;
+    				var n = peta[this.value];
+    				$(this).text(nama + ' (' + (n ? n : 0) + ')');
+    			});
+    		});
+    	}
+
+    	// strip katalog produk toko terpilih, digulir mendatar; ikut disegarkan
+    	// saat tipe layanan ganti karena kolam (jual/sewa) menentukan stoknya
+    	function muatKatalogJuragan() {
+    		var el = $('#katalogJuragan');
+    		if (el.length === 0) {
+    			return;
+    		}
+    		var j = parseInt($('select[name="juragan"]').val(), 10) || 0;
+    		if (j < 1) {
+    			el.addClass('d-none').empty();
+    			return;
+    		}
+    		el.removeClass('d-none').html('<div class="katalog-juragan-info">Memuat katalog...</div>');
+    		$.getJSON('{$link_stok_katalog}', { juragan_id: j }, function(res) {
+    			var data = (res && res.data) || [];
+    			if (data.length === 0) {
+    				el.html('<div class="katalog-juragan-info">Toko ini belum punya produk tercatat.</div>');
+    				return;
+    			}
+    			var html = '<div class="katalog-juragan-scroll">';
+    			$.each(data, function(i, p) {
+    				var gambar = p.foto
+    					? '<img src="' + kkEsc(p.foto) + '" alt="" loading="lazy">'
+    					: '<span class="kk-inisial">' + kkInisial(p.kode) + '</span>';
+    				html += '<div class="katalog-kartu">' + gambar
+    					+ '<div class="kk-nama" title="' + kkEsc(p.kode) + '">' + kkEsc(p.kode) + '</div>'
+    					+ '<div class="kk-jenis">Jenis: ' + kkEsc(p.jenis || '-') + '</div>'
+    					+ '<div class="kk-stok">Stok ' + (p.stok || 0) + '</div>'
+    					+ '</div>';
+    			});
+    			html += '</div>';
+    			el.html(html);
+    		}).fail(function() {
+    			el.html('<div class="katalog-juragan-info">Gagal memuat katalog.</div>');
+    		});
+    	}
+
+    	function kkEsc(s) {
+    		return String(s === null || s === undefined ? '' : s).replace(/[&<>"']/g, function(m) {
+    			return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
+    		});
+    	}
+
+    	function kkInisial(kode) {
+    		kode = String(kode || '?').trim();
+    		return kkEsc((kode.slice(0, 2).toUpperCase()) || '?');
+    	}
+
+    	$('select[name="juragan"]').on('change', muatKatalogJuragan);
+
+    	// strip katalog tidak lagi ikut tipe: semua produk tampil sekaligus
 
 
     	// load admin/cs
