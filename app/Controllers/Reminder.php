@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\InvoiceModel;
+use App\Models\JuraganModel;
 use App\Models\PengaturanModel;
 
 /**
@@ -22,10 +23,29 @@ class Reminder extends BaseController
         $hari  = pengingat_penjahit_hari();
         $level = (string) session()->get('level');
 
+        $reminder = (new InvoiceModel())->pengingatPenjahit($this->tokoBoleh(), $hari);
+
+        // tiap kartu mengarah ke layar transaksi yang sudah tersaring ke satu
+        // nomor nota (cari[kolom]=faktur) lewat helper yang sama dengan lonceng
+        // notifikasi, jadi mengklik reminder benar-benar berfokus ke invoice itu
+        // saja — bukan daftar transaksi yang belum tersaring
+        $slug_toko = [];
+
+        foreach ((new JuraganModel())->select('id_juragan, juragan')->findAll() as $toko) {
+            $slug_toko[(int) $toko->id_juragan] = (string) $toko->juragan;
+        }
+
+        foreach (array_keys($reminder) as $i) {
+            $reminder[$i]['tautan'] = tautan_invoice_notif(
+                (string) $reminder[$i]['seri'],
+                $slug_toko[(int) $reminder[$i]['juragan_id']] ?? ''
+            );
+        }
+
         $data = [
-            'title'      => 'Reminder Penjahit',
+            'title'      => 'Reminder Pesanan',
             'hari'       => $hari,
-            'reminder'   => (new InvoiceModel())->pengingatPenjahit($this->tokoBoleh(), $hari),
+            'reminder'   => $reminder,
             'superadmin' => $level === 'superadmin',
         ];
 

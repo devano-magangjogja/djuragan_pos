@@ -107,7 +107,7 @@ $reminderCount = pengingat_penjahit_jumlah();
             <li class="nav-item">
                 <a class="sidebar-link <?= $isReminderAktif ? 'active' : '' ?>" href="<?= site_url('admin/reminder') ?>" data-reminder-menu="1">
                     <i class="sidebar-link-icon fal fa-cut"></i>
-                    <span>Reminder Penjahit</span>
+                    <span>Reminder Pesanan</span>
                     <?php if ($reminderCount > 0) : ?>
                         <span class="badge rounded-pill bg-danger ms-auto badge-reminder" title="<?= (int) $reminderCount ?> orderan mendekati/lewat deadline"><?= (int) $reminderCount ?></span>
                     <?php endif; ?>

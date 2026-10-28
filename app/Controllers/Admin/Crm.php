@@ -1515,15 +1515,21 @@ class Crm extends BaseController
     }
 
     /**
-     * API: Jumlah pesan belum dibaca untuk badge angka di tombol menu
-     * "Live Chat WA" (navbar admin & CS). Dipanggil polling dari halaman chat
-     * supaya badge ikut naik/turun tanpa muat ulang halaman.
+     * API: Jumlah pesan belum dibaca. `count` untuk badge angka di tombol menu
+     * "Live Chat WA" (navbar admin & CS, hanya chat aktif); `arsip` untuk badge di
+     * tab "Arsip" halaman chat (chat terarsip, tidak dihitung navbar). Satu endpoint
+     * supaya halaman chat bisa menyegarkan kedua angka sekaligus; navbar mengabaikan
+     * field tambahan ini. Dipanggil polling agar badge naik/turun tanpa muat ulang.
      */
     public function chat_belum_dibaca()
     {
-        $jumlah = (new CrmModel())->hitungChatBelumDibaca();
+        $crm = new CrmModel();
 
-        return $this->response->setJSON(['status' => 'success', 'count' => $jumlah]);
+        return $this->response->setJSON([
+            'status' => 'success',
+            'count'  => $crm->hitungChatBelumDibaca(),
+            'arsip'  => $crm->hitungChatBelumDibaca(1),
+        ]);
     }
 
     /**

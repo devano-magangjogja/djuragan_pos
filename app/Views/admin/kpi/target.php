@@ -26,7 +26,7 @@ $sederhana = [
     'first_response_time'   => 'Berapa lama pelanggan menunggu balasan pertama.',
     'konversi_lead'         => 'Berapa persen chat baru yang jadi order.',
     'resolution_time'       => 'Berapa lama komplain sampai benar-benar selesai.',
-    'gmv_cs'                => 'Total uang masuk dari nota yang dipegang orang ini.',
+    'gmv_cs'                => 'Total uang masuk dari nota yang dipegang orang ini. Punya dua target: per CS (satu orang) dan Tim CS (total seluruh tim).',
 ];
 
 $isi = static function ($nilai, string $satuan): string {
@@ -104,6 +104,9 @@ $isi = static function ($nilai, string $satuan): string {
                                 </td>
                                 <?php if ($boleh) { ?>
                                     <td>
+                                        <?php if ($t['indikator'] === 'gmv_cs') : ?>
+                                            <div class="small text-muted mb-1">Per CS</div>
+                                        <?php endif; ?>
                                         <?= form_input([
                                             'class'       => 'form-control form-control-sm',
                                             'type'        => 'number',
@@ -112,6 +115,17 @@ $isi = static function ($nilai, string $satuan): string {
                                             'placeholder' => $t['satuan'],
                                             'value'       => $t['target'],
                                         ]) ?>
+                                        <?php if ($t['indikator'] === 'gmv_cs') : ?>
+                                            <div class="small text-muted mt-2 mb-1">Tim CS (total)</div>
+                                            <?= form_input([
+                                                'class'       => 'form-control form-control-sm',
+                                                'type'        => 'number',
+                                                'step'        => '0.01',
+                                                'name'        => 'target_tim[' . $t['indikator'] . ']',
+                                                'placeholder' => $t['satuan'],
+                                                'value'       => $t['target_tim'] ?? '',
+                                            ]) ?>
+                                        <?php endif; ?>
                                     </td>
                                     <td>
                                         <?= form_input([
@@ -133,7 +147,14 @@ $isi = static function ($nilai, string $satuan): string {
                                         ]) ?>
                                     </td>
                                 <?php } else { ?>
-                                    <td class="text-end"><?= $isi($t['target'], $t['satuan']) ?></td>
+                                    <td class="text-end">
+                                        <?= $isi($t['target'], $t['satuan']) ?>
+                                        <?php if ($t['indikator'] === 'gmv_cs') : ?>
+                                            <div class="small text-muted">
+                                                tim: <?= $isi($t['target_tim'] ?? null, $t['satuan']) ?>
+                                            </div>
+                                        <?php endif; ?>
+                                    </td>
                                     <td class="text-end"><?= esc((string) $t['bobot']) ?></td>
                                 <?php } ?>
                             </tr>
