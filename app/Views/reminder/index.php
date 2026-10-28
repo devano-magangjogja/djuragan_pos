@@ -23,19 +23,26 @@ $sukses       = session()->getFlashdata('sukses');
 <style>
     .reminder-halaman { max-width: 940px; }
     .reminder-head {
+        margin-bottom: 1.25rem;
+    }
+    /* Pil "muncul mulai H-…" duduk di SAMPING judul, bukan di ujung kanan:
+       di kanan atas ia tertutup lonceng notifikasi yang melayang. Baris ini
+       boleh membungkus, jadi di layar sempit pilnya turun sendiri di bawah
+       judul tanpa menutupi apa pun. */
+    .reminder-judul {
         display: flex;
         flex-wrap: wrap;
-        align-items: flex-end;
-        justify-content: space-between;
-        gap: .75rem;
-        margin: 1.75rem 0 1.25rem;
+        align-items: center;
+        gap: .6rem;
     }
-    .reminder-head h1 {
-        margin: 0;
-        font-size: 1.6rem;
-        font-weight: 800;
-        letter-spacing: -.01em;
-        color: #0f172a;
+    /* Judul tidak lagi diberi ukuran sendiri: kelas h3 mt-5 membuatnya ikut
+       normalisasi style.css (body.has-app-sidebar h1.h3.mt-5) persis seperti
+       judul halaman lain — 1,5rem, margin atas 0. Yang dilucuti cuma margin
+       bawahnya, supaya baris "Orderan pembuatan/jual ..." tetap nempel di
+       bawah judul, bukan terpisah 1,35rem. Selector harus menyalip bobot aturan
+       global itu (4 kelas + 3 elemen), karena dua !importantadu spesifik. */
+    body.has-app-sidebar .reminder-halaman .reminder-head h1.h3.mt-5 {
+        margin-bottom: 0 !important;
     }
     .reminder-head p { margin: .3rem 0 0; font-size: .9rem; color: #64748b; }
     .reminder-periode {
@@ -45,7 +52,7 @@ $sukses       = session()->getFlashdata('sukses');
         background: #fff;
         border: 1px solid #e2e8f0;
         border-radius: 999px;
-        padding: .45rem .85rem;
+        padding: .26rem .85rem;
         font-size: .78rem;
         font-weight: 600;
         color: #475569;
@@ -76,6 +83,106 @@ $sukses       = session()->getFlashdata('sukses');
     .reminder-setelan-baris { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; }
     .reminder-setelan-baris .input-group { max-width: 220px; }
     .reminder-setelan-baris input { text-align: center; }
+
+    /* Angka dan satuannya SATU kotak, di semua lebar. .input-group-text dan
+       .form-control sama-sama mengunci border + radius sendiri di style.css,
+       jadi yang dijadikan kotak adalah wadahnya (box-shadow dalam, bukan border,
+       supaya tingginya tidak bertambah 2px) dan garis kedua isinya dilucuti —
+       resep yang sama dengan kolom bersatuan di panel ukuran. */
+    .reminder-setelan-baris .input-group {
+        display: flex;
+        align-items: stretch;
+        flex: 0 1 auto;
+        max-width: 268px;
+        min-width: 0;
+        border-radius: 9px;
+        background-color: #ffffff;
+        box-shadow: inset 0 0 0 1px #d0d5dd;
+        transition: box-shadow .15s ease;
+    }
+
+    .reminder-setelan-baris .input-group > .form-control,
+    .reminder-setelan-baris .input-group > .input-group-text {
+        border: 0 !important;
+        border-radius: 0 !important;
+        background-color: transparent !important;
+        box-shadow: none !important;
+    }
+
+    .reminder-setelan-baris .input-group > .form-control {
+        flex: 0 0 3.5rem;
+        padding: .42rem .5rem !important;
+        font-size: .85rem !important;
+    }
+
+    .reminder-setelan-baris .input-group > .input-group-text {
+        display: flex;
+        align-items: center;
+        flex: 1 1 auto;
+        min-width: 0;
+        padding: .42rem .7rem .42rem .55rem !important;
+        font-size: .85rem !important;
+        color: #667085 !important;
+        /* pemisah tipis tanpa menambah tinggi: garis dalam, bukan border */
+        box-shadow: inset 1px 0 0 #eaecf0 !important;
+    }
+
+    .reminder-setelan-baris .input-group:focus-within {
+        box-shadow: inset 0 0 0 1px #101828, 0 0 0 3px rgba(16, 24, 40, .08);
+    }
+
+    /* Tombol Simpan tetap di sebelah kolom, bukan melompat ke baris baru. */
+    .reminder-setelan-baris > button {
+        flex: 0 0 auto;
+    }
+
+    /* Layar sempit: ikon gunting dibuang, pil H- dirampingkan supaya masih
+       sejajar di samping judul, dan kolom + Simpan dipaksa muat satu baris. */
+    @media (max-width: 767.98px) {
+
+        .reminder-ikon {
+            display: none;
+        }
+
+        .reminder-judul {
+            gap: .2rem;
+        }
+
+        .reminder-periode {
+            gap: .25rem;
+            padding: .2rem .42rem;
+            font-size: .62rem;
+        }
+
+        .reminder-setelan {
+            padding: 1rem;
+        }
+
+        .reminder-setelan-baris {
+            flex-wrap: nowrap;
+            gap: .5rem;
+        }
+
+        .reminder-setelan-baris .input-group {
+            max-width: none;
+            flex: 1 1 auto;
+        }
+
+        .reminder-setelan-baris .input-group > .form-control {
+            flex: 0 0 2.9rem;
+            padding: .42rem .4rem !important;
+        }
+
+        .reminder-setelan-baris .input-group > .input-group-text {
+            padding: .42rem .5rem .42rem .45rem !important;
+            font-size: .78rem !important;
+        }
+
+        .reminder-setelan-baris > button {
+            padding: .42rem .7rem;
+            font-size: .78rem;
+        }
+    }
 
     .reminder-list { display: grid; gap: .8rem; }
     .reminder-item {
@@ -121,13 +228,13 @@ $sukses       = session()->getFlashdata('sukses');
 <div class="container-xxl reminder-halaman">
 
     <div class="reminder-head">
-        <div>
-            <h1><i class="fal fa-cut me-1 text-brand-500"></i> <?= esc($title) ?></h1>
-            <p>Orderan pembuatan/jual yang tenggatnya sudah dekat — hubungi penjahit sebelum lewat.</p>
+        <div class="reminder-judul">
+            <h1 class="h3 mt-5"><i class="fal fa-cut me-1 text-brand-500 reminder-ikon"></i> <?= esc($title) ?></h1>
+            <span class="reminder-periode">
+                <i class="fal fa-hourglass-half reminder-periode-ikon"></i> muncul mulai H-<?= (int) $hari ?> deadline
+            </span>
         </div>
-        <span class="reminder-periode">
-            <i class="fal fa-hourglass-half"></i> muncul mulai H-<?= (int) $hari ?> sebelum deadline
-        </span>
+        <p>Orderan pembuatan/jual yang tenggatnya sudah dekat — hubungi penjahit sebelum lewat.</p>
     </div>
 
     <?php if ($sukses !== null) : ?>

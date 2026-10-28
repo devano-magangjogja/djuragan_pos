@@ -33,13 +33,20 @@
             padding: 0 !important;
         }
 
-        .kartu-pengingat .card-header,
-        .kartu-pengingat .list-group-item {
+        .kartu-pengingat .card-header {
             padding: 0.5rem 0.75rem !important;
         }
 
+        /* Isian atas-bawah tiap baris pengingat dinaikkan dari 0,5rem: dengan
+           8px itu baris keterangan ("Target penyelesaian...") terasa nempel ke
+           baris berikutnya. Tombol di pojok kanan bawah ikut turun supaya
+           tetap sejajar dengan isian barisnya. */
+        .kartu-pengingat .list-group-item {
+            padding: 0.8rem 0.75rem !important;
+        }
+
         .kartu-pengingat > .text-end {
-            padding: 0 0.75rem 0.6rem !important;
+            padding: 0 0.75rem 0.7rem !important;
         }
 
         /* Tombol aksi tiap baris pengingat dipindah ke pojok kanan BAWAH barisnya
@@ -53,7 +60,7 @@
         .kartu-pengingat .list-group-item > .text-end {
             position: absolute;
             right: 0.75rem;
-            bottom: 0.5rem;
+            bottom: 0.8rem;
             margin-left: 0;
         }
 

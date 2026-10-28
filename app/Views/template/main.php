@@ -15,6 +15,9 @@
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Peramban HP menautkan deretan angka jadi tombol telepon sendiri, dan warna
+         tautan itu menimpa warna chip nomor HP di kartu transaksi. Dilarang. -->
+    <meta name="format-detection" content="telephone=no">
     <link rel="stylesheet" href="<?= vite('resources/scss/style.scss') ?>?v=<?= (int) @filemtime(FCPATH . 'assets/css/style.css') ?>">
     <link rel="stylesheet" href="<?= base_url('assets/css/tailwind.css') ?>?v=<?= (int) @filemtime(FCPATH . 'assets/css/tailwind.css') ?>">
 

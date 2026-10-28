@@ -1233,10 +1233,10 @@
 
 <!-- ================= MODAL TAMBAH TAG ================= -->
 <div class="modal fade" id="modalTambahTag" tabindex="-1">
-    <div class="modal-dialog modal-sm">
-        <form action="<?= site_url('admin/crm/pelanggan/tambah_tag/' . $pelanggan['id_pelanggan']) ?>" method="post">
-            <?= csrf_field() ?>
-            <div class="modal-content">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form action="<?= site_url('admin/crm/pelanggan/tambah_tag/' . $pelanggan['id_pelanggan']) ?>" method="post">
+                <?= csrf_field() ?>
                 <div class="modal-header">
                     <h6 class="modal-title fw-bold">Tambah Tag Customer</h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -1273,8 +1273,8 @@
                     <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">Batal</button>
                     <button type="submit" class="btn btn-primary btn-sm">Tambahkan</button>
                 </div>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
 </div>
 

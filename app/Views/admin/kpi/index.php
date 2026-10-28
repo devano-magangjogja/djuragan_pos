@@ -182,10 +182,18 @@ $tooltip = [
 
     <?= $this->include('admin/kpi/saring') ?>
 
+    <?php
+    /* Dua kartu CS ini dulu duduk sendirian di baris kedua: separuh kanan baris
+       menganggur. Sekarang mereka dibuka duluan dan masing-masing mengisi
+       setengah baris, sementara empat sisanya berempat sebaris di bawahnya
+       (col-xl-3), jadi kedua baris penuh di semua lebar layar. */
+    $kartu_utama = ['resolution_time', 'gmv_cs'];
+    $kartu_urut  = array_replace(array_flip($kartu_utama), $kartu);
+    ?>
     <div class="row gx-2 gy-3 mb-4">
-        <?php foreach ($kartu as $kunci => $k) { ?>
+        <?php foreach ($kartu_urut as $kunci => $k) { ?>
             <?php $st = $status($kunci, $k, $target); ?>
-            <div class="col-6 col-lg-4 col-xl-3">
+            <div class="<?= in_array($kunci, $kartu_utama, true) ? 'col-6' : 'col-6 col-xl-3' ?>">
                 <div class="h-100 rounded-3 border border-ink-200 bg-white px-3 py-2">
                     <div class="text-muted small text-uppercase" title="<?= esc($tooltip[$kunci] ?? 'Angka dihitung dari catatan yang tersimpan di database.') ?>">
                         <?= esc($k['label']) ?>

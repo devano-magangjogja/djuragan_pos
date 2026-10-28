@@ -162,6 +162,16 @@
     .fup-tabel td .btn {
         margin-right: 0.4rem;
     }
+    /* Kolom "Aksi Tagih" cuma berisi satu tombol, jadi ia ikut memanjang sebaris
+       penuh di mode kartu: kalau tidak, tombolnya duduk di kolom kiri saja dan
+       labelnya belah dua ("Kirim / Tagihan") seperti di layar 360px. */
+    .fup-tabel td[data-label="Aksi Tagih"] {
+        grid-column: 1 / -1;
+    }
+    .fup-tabel td[data-label="Aksi Tagih"] .btn {
+        width: 100%;
+        margin-right: 0;
+    }
     .reminder-nama {
         white-space: normal;
         overflow: visible;
