@@ -7,15 +7,19 @@
  * $pegawai, dan $juragans dipakai juga oleh admin/kpi/saring karena include
  * memakai scope yang sama.
  *
- * @var string $title     judul halaman
- * @var array  $s         nilai saringan aktif: ['awal', 'akhir', 'periode', 'peran', 'user_id', 'juragan_id', ...]
+ * @var string $title    judul halaman
+ * @var array  $s        nilai saringan aktif: ['awal', 'akhir', 'periode', 'peran', 'user_id', 'juragan_id', ...]
  * @var list   $peringkat baris peringkat per pegawai: ['user_id', 'pegawai', 'level', 'jumlah', 'poin', 'total', 'gmv', 'tercatat', 'peringkat']
- * @var list   $aturan    aturan poin per aktivitas: ['slug', 'nama', 'sumber', 'poin', 'satuan', 'tercatat', 'belum_ternilai']
- * @var array  $luar      sumber data yang tidak dinilai per orang: [sumber => pekerjaan]
- * @var array  $pegawai   pilihan pegawai untuk saringan: [user_id => 'nama (level)']
- * @var array  $juragans  pilihan toko milik akun ini: [juragan_id => nama]
- * @var array  $periode   pilihan periode saringan: [slug => label]
- * @var array  $peran     pilihan peran saringan: [slug => label]
+ * @var list   $baris    halaman peringkat yang sedang ditampilkan (irisan $peringkat)
+ * @var int    $jumlah   total orang yang dinilai (sebelum diiris halaman)
+ * @var int    $batas    jumlah baris per halaman
+ * @var int    $halaman  indeks halaman aktif, dimulai dari 0
+ * @var list   $aturan   aturan poin per aktivitas: ['slug', 'nama', 'sumber', 'poin', 'satuan', 'tercatat', 'belum_ternilai']
+ * @var array  $luar     sumber data yang tidak dinilai per orang: [sumber => pekerjaan]
+ * @var array  $pegawai  pilihan pegawai untuk saringan: [user_id => 'nama (level)']
+ * @var array  $juragans pilihan toko milik akun ini: [juragan_id => nama]
+ * @var array  $periode  pilihan periode saringan: [slug => label]
+ * @var array  $peran    pilihan peran saringan: [slug => label]
  */
 
 /*

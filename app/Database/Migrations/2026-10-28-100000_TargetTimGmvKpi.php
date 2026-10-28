@@ -2,6 +2,7 @@
 
 namespace App\Database\Migrations;
 
+use CodeIgniter\Database\BaseConnection;
 use CodeIgniter\Database\Migration;
 
 /**
@@ -38,7 +39,9 @@ class TargetTimGmvKpi extends Migration
 
     private function t(string $nama): string
     {
-        return $this->db->prefixTable($nama);
+        $db = $this->db;
+
+        return $db instanceof BaseConnection ? $db->prefixTable($nama) : $nama;
     }
 
     private function punyaKolom(string $kolom): bool
