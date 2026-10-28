@@ -117,6 +117,53 @@ class StokModel extends Model
     }
 
     /**
+     * Jumlah produk yang BENAR-BENAR ADA stoknya untuk tiap toko — dihitung sebagai
+     * kartu katalog (kode unik) yang total unit tersedia-nya lebih dari nol, bukan
+     * sekadar jumlah kode. Produk yang seluruh unitnya sedang diikat nota (mis. lagi
+     * disewa, atau stoknya sudah 0) tidak ikut dihitung, jadi angka indikator di
+     * dropdown juragan berarti "barang yang masih bisa diambil".
+     *
+     * Sekali query; tiap baris stok dinilai pada kolam-nya sendiri (jual/sewa) lewat
+     * klausaTersedia(), persis sama seperti angka "Tersedia" di halaman Produk.
+     *
+     * @param list<int> $juragan_ids
+     *
+     * @return array<int, int> juragan_id => jumlah produk tersedia
+     */
+    public function jumlahPerJuragan(array $juragan_ids): array
+    {
+        $ids = array_values(array_filter(array_map('intval', $juragan_ids)));
+
+        if ($ids === []) {
+            return [];
+        }
+
+        $stok     = $this->db->prefixTable('stok');
+        $tersedia = "CASE WHEN `" . $stok . "`.kolam = 'sewa' THEN " . $this->klausaTersedia('sewa')
+            . ' ELSE ' . $this->klausaTersedia('jual') . ' END';
+
+        // satu kartu = (juragan, kode); hanya kartu yang total tersedia-nya > 0 dihitung
+        $sql = 'SELECT t.juragan_id, COUNT(*) AS n FROM ('
+            . ' SELECT `' . $stok . '`.juragan_id, `' . $stok . '`.kode'
+            . ' FROM `' . $stok . '`'
+            . ' WHERE `' . $stok . '`.deleted_at IS NULL'
+            . ' AND `' . $stok . '`.juragan_id IN (' . implode(',', $ids) . ')'
+            . ' GROUP BY `' . $stok . '`.juragan_id, `' . $stok . '`.kode'
+            . ' HAVING SUM(' . $tersedia . ') > 0'
+            . ') AS t GROUP BY t.juragan_id';
+
+        $baris = $this->db->query($sql)->getResultArray();
+
+        $hasil = [];
+
+        foreach ($baris as $b) {
+            $hasil[(int) $b['juragan_id']] = (int) $b['n'];
+        }
+
+        return $hasil;
+    }
+
+    /**
      * Angka KEDUA kolam untuk sekelompok barang (juragan + nama barang), sekali
      * query. Katalog hanya menampilkan kolam yang dibuka, tapi pihak luar (API)
      * perlu melihat bahwa unit jual dan unit sewa itu dua tumpukan yang berbeda:

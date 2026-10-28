@@ -781,7 +781,7 @@
   /* Lambang Seven Inc. pindah ke pojok kanan atas. Dikeluarkan dari alur flex
        (butuh selector lebih spesifik dari `.auth-hero > *` yang memasang
        position:relative di semua anak), jadi pita kepala cuma setinggi judul. */
-  .auth-hero>.auth-hero-brand {
+  .auth-hero > .auth-hero-brand {
     position: absolute;
     top: 1.1rem;
     right: 1.1rem;
@@ -1894,7 +1894,6 @@ body.has-app-sidebar .h3.mt-3 {
 }
 
 @media (max-width: 575.98px) {
-
   .judul-sunting {
     gap: 0.45rem;
   }
@@ -3793,16 +3792,4 @@ tr.varian-sorot td {
   height: 100%;
   object-fit: contain;
   display: block;
-}
-
-.auth-hero-brand {
-  background: #ffffff;
-  border-radius: 10px;
-  padding: 0.4rem;
-  align-self: flex-start;
-}
-
-.auth-hero-brand .sidebar-brand-logo {
-  width: 2.75rem;
-  height: 2.75rem;
 }

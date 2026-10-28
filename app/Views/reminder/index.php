@@ -11,11 +11,15 @@
  * @var bool   $superadmin  boleh mengubah ambang hari?
  */
 
-$level        = (string) session()->get('level');
-$base_lihat   = $level === 'cs' ? site_url('user/invoices/lihat') : site_url('admin/invoices/lihat/semua');
-$hari_ini     = date('Y-m-d');
-$lunas        = ['5', '6'];
-$sukses       = session()->getFlashdata('sukses');
+// Tiap reminder mengarah ke daftar transaksi yang disaring ke nomor nota itu,
+// jadi isi invoice tampil penuh tanpa membuka form sunting. CS memakai daftar
+// miliknya (user/invoices); admin & superadmin memakai daftar admin.
+$base_lihat = (string) session()->get('level') === 'cs'
+    ? site_url('user/invoices')
+    : site_url('admin/invoices/lihat/semua');
+$hari_ini = date('Y-m-d');
+$lunas    = ['5', '6'];
+$sukses   = session()->getFlashdata('sukses');
 ?>
 <?= $this->extend('template/main') ?>
 
@@ -116,7 +120,7 @@ $sukses       = session()->getFlashdata('sukses');
 <?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
-<?= $this->include($level === 'cs' ? 'user/navbar' : 'admin/navbar') ?>
+<?= $this->include((string) session()->get('level') === 'cs' ? 'user/navbar' : 'admin/navbar') ?>
 
 <div class="container-xxl reminder-halaman">
 
