@@ -41,22 +41,52 @@ class Kpi extends BaseController
         $batas   = $this->batas((string) $this->request->getGet('batas'));
         $banding = $this->indikator((string) $this->request->getGet('banding'));
 
+        // Target GMV mentah (sebelum disesuaikan cakupan): `target` = per-CS,
+        // `target_tim` = total tim. Keduanya dibutuhkan blok Ringkasan Tim dan
+        // kolom status per-baris di tabel rekap.
+        $targetRaw = $this->petaTarget($model);
+        $g         = $targetRaw['gmv_cs'] ?? [];
+        $percs     = $g['target'] ?? null;
+        $tim       = $g['target_tim'] ?? null;
+
+        // Kartu indikator mengikuti saringan: tanpa pegawai = melihat tim (pakai
+        // target_tim), satu pegawai terpilih = per-CS (pakai target).
+        $target  = $targetRaw;
+        $gmv_tim = $s['user_id'] === null;
+        if (isset($target['gmv_cs'])) {
+            $target['gmv_cs'] = $this->cakupanTargetGmv($target['gmv_cs'], $gmv_tim);
+        }
+
+        // Ringkasan Tim dan tabel rekap SELALU memakai cakupan seluruh CS: saringan
+        // pegawai hanya menyorot baris yang bersangkutan, tidak menyembunyikan yang
+        // lain, jadi angka tim dan angka per orang tetap tampil berdampingan.
+        $sTim  = array_merge($s, ['user_id' => null]);
+        $rekap = $model->rekap($sTim, $batas, $this->halaman() * $batas);
+
         return view('admin/kpi/index', [
-            'title'     => 'KPI Karyawan',
-            's'         => $s,
-            'kartu'     => $model->kartu($s),
-            'target'    => $this->petaTarget($model),
-            'tren'      => $model->tren($s),
-            'pegawai'   => $model->pegawaiPilihan($s['peran']),
-            'juragans'  => $this->juraganPilihan(),
-            'periode'   => self::PERIODE,
-            'peran'     => self::PERAN,
-            'indikator' => KpiModel::INDIKATOR,
-            'rekap'     => $model->rekap($s, $batas, $this->halaman() * $batas),
-            'batas'     => $batas,
-            'halaman'   => $this->halaman(),
-            'banding'   => $banding,
-            'pembanding' => $model->pembanding($s, $banding),
+            'title'       => 'KPI Karyawan',
+            's'           => $s,
+            'kartu'       => $model->kartu($s),
+            'target'      => $target,
+            'gmv_tim'     => $gmv_tim,
+            'gmv_ringkas' => [
+                'tim_nilai'      => $model->kartu($sTim)['gmv_cs']['nilai'],
+                'tim_target'     => $tim,
+                'percs_target'   => $percs,
+                'arah'           => $g['arah'] ?? 'lebih_tinggi',
+                'jumlah_pegawai' => (int) $rekap['jumlah'],
+            ],
+            'tren'        => $model->tren($s),
+            'pegawai'     => $model->pegawaiPilihan($s['peran']),
+            'juragans'    => $this->juraganPilihan(),
+            'periode'     => self::PERIODE,
+            'peran'       => self::PERAN,
+            'indikator'   => KpiModel::INDIKATOR,
+            'rekap'       => $rekap,
+            'batas'       => $batas,
+            'halaman'     => $this->halaman(),
+            'banding'     => $banding,
+            'pembanding'  => $model->pembanding($s, $banding),
         ]);
     }
 
@@ -116,11 +146,19 @@ class Kpi extends BaseController
         $halaman = $this->halaman();
         $jumlah  = $model->detailJumlah($s, $indikator);
 
+        $aturan = $model->targetSatu($indikator);
+
+        // GMV: target yang tampil di halaman ini harus sama dengan kartu Ringkasan
+        // (Tim CS saat melihat semua orang, per-CS saat satu pegawai dipilih)
+        if ($indikator === 'gmv_cs') {
+            $aturan = $this->cakupanTargetGmv($aturan, $s['user_id'] === null);
+        }
+
         return view('admin/kpi/detail', [
             'title'     => 'Detail ' . $indikator,
             's'         => $s,
             'indikator' => $indikator,
-            'aturan'    => $model->targetSatu($indikator),
+            'aturan'    => $aturan,
             'jumlah'    => $jumlah,
             'baris'     => $model->detail($s, $indikator, $batas, $halaman * $batas),
             'batas'     => $batas,
@@ -179,6 +217,7 @@ class Kpi extends BaseController
         $target  = (array) $this->request->getPost('target');
         $bobot   = (array) $this->request->getPost('bobot');
         $aktif   = (array) $this->request->getPost('aktif');
+        $tim     = (array) $this->request->getPost('target_tim');
         $known   = array_column($model->targetSemua(), 'indikator');
 
         $diubah = 0;
@@ -200,11 +239,19 @@ class Kpi extends BaseController
                 continue;
             }
 
-            $model->simpanTarget((string) $indikator, [
+            $data = [
                 'target'  => $angka,
                 'bobot'   => $bobot_angka ?? 0,
                 'aktif'   => isset($aktif[$indikator]) ? 1 : 0,
-            ], pengguna_sesi());
+            ];
+
+            // target_tim hanya punya isian di form untuk gmv_cs; indikator lain tidak
+            // mengirimnya, jadi kolomnya dibiarkan apa adanya (tidak ditimpa jadi NULL)
+            if (array_key_exists($indikator, $tim)) {
+                $data['target_tim'] = $this->angka($tim[$indikator]);
+            }
+
+            $model->simpanTarget((string) $indikator, $data, pengguna_sesi());
 
             $diubah++;
         }
@@ -283,6 +330,32 @@ class Kpi extends BaseController
         }
 
         return $peta;
+    }
+
+    /**
+     * GMV punya dua target: total Tim CS (target_tim) vs kontribusi satu orang
+     * (target). Sesuaikan kolom `target` baris ini dengan cakupan yang sedang
+     * dilihat supaya kartu Ringkasan dan halaman Detail memakai angka yang sama.
+     * Penanda `scope` ikut dipasang agar view bisa memberi label yang jelas.
+     *
+     * @param array<string, mixed>|null $aturan baris kpi_target indikator ini
+     * @param bool                      $tim    true = melihat seluruh Tim CS
+     *
+     * @return array<string, mixed>|null
+     */
+    private function cakupanTargetGmv(?array $aturan, bool $tim): ?array
+    {
+        if ($aturan === null) {
+            return null;
+        }
+
+        if ($tim) {
+            $aturan['target'] = $aturan['target_tim'] ?? null;
+        }
+
+        $aturan['scope'] = $tim ? 'tim' : 'per_cs';
+
+        return $aturan;
     }
 
     /** Indikator yang sedang dipilih untuk grafik perbandingan. */

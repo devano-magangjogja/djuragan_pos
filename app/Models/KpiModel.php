@@ -429,18 +429,26 @@ class KpiModel extends Model
      *
      * Hanya kolom konfigurasi yang ditulis; nama, definisi, dan aturan perhitungan
      * sengaja tidak bisa diubah dari halaman ini supaya rumusnya tidak berubah diam-diam.
+     * target_tim ikut ditulis hanya bila pemanggil menyertakannya (khusus gmv_cs,
+     * pemisah target Tim CS vs per-CS); indikator lain tidak punya kolom nilai itu.
      */
     public function simpanTarget(string $indikator, array $data, ?int $user): bool
     {
+        $ubah = [
+            'target'     => $data['target'],
+            'bobot'      => $data['bobot'],
+            'aktif'      => $data['aktif'],
+            'updated_at' => time(),
+            'updated_by' => $user,
+        ];
+
+        if (array_key_exists('target_tim', $data)) {
+            $ubah['target_tim'] = $data['target_tim'];
+        }
+
         return $this->db->table('kpi_target')
             ->where('indikator', $indikator)
-            ->update([
-                'target'     => $data['target'],
-                'bobot'      => $data['bobot'],
-                'aktif'      => $data['aktif'],
-                'updated_at' => time(),
-                'updated_by' => $user,
-            ]);
+            ->update($ubah);
     }
 
     // ------------------------------------------------------------------

@@ -96,6 +96,14 @@ $cekBayar = ((string) $session->get('level')) === 'superadmin';
     opacity: 0.35;
     box-shadow: none;
 }
+/* Panah geser hanya untuk layar sempit (mobile/tablet < 992px). Di desktop strip
+   tab sudah dipadatkan supaya semua tab tampil, jadi panah tidak diperlukan lagi —
+   !important menjamin ia tetap mati walau JS sempat memasang .bisa-geser. */
+@media (min-width: 992px) {
+    .toolbar-transaksi__geser.bisa-geser .geser-tab {
+        display: none !important;
+    }
+}
 .toolbar-transaksi__aksi {
     display: flex;
     align-items: center;
@@ -126,10 +134,12 @@ $cekBayar = ((string) $session->get('level')) === 'superadmin';
     }
 }
 
-/* 1280-1500px: satu langkah lebih ramping. Angkanya dari pengukuran, bukan kira-
-   kira: dengan bentuk asli baris ini butuh 1153px sedangkan tempatnya cuma 962
-   (1280px) - 1048 (1366px), jadi tanpa pemadatan ini tetap dua baris. */
-@media (min-width: 1280px) and (max-width: 1499.98px) {
+/* Desktop (≥992px): tab dan tombol aksi dipadatkan supaya semua tab muat satu
+   baris tanpa panah. Angkanya dari pengukuran: dengan bentuk asli baris ini butuh
+   ±1153px sedangkan tempatnya cuma 962 (1280px) - 1048 (1366px), jadi tanpa
+   pemadatan ini tetap tidak muat. Dulu hanya 1280-1500px; dilebarkan ke ≥992px
+   agar seragam di semua layar desktop dan panah benar-benar jadi milik mobile. */
+@media (min-width: 992px) {
 
     .toolbar-transaksi {
         gap: 0.35rem;
@@ -1975,19 +1985,14 @@ $cekBayar = ((string) $session->get('level')) === 'superadmin';
     }
 
     function cariDenganSeri(seri) {
-        var form  = document.querySelector('#modalCari form');
-        var kolom = form.querySelector('[name="cari[kolom]"]');
-        var isi   = form.querySelector('[name="cari[q]"]');
+        // Hasil scan selalu diarahkan ke tab "Semua" (bebas filter status) yang
+        // disaring ke satu nomor nota. Dulu scan mengirim form Cari yang menempel di
+        // tab aktif, jadi nota yang tidak sedang berada di tab itu (mis. lembar
+        // penjahit masih Dalam Proses tapi layar sedang di tab Pembayaran) ikut
+        // tersaring keluar dan scanner tampak gagal — padahal isi QR-nya benar.
+        var kueri = '?cari%5Bkolom%5D=faktur&cari%5Bq%5D=' + encodeURIComponent(seri);
 
-        if (kolom) {
-            kolom.value = 'faktur';
-        }
-
-        if (isi) {
-            isi.value = seri;
-        }
-
-        form.submit();
+        window.location.href = '<?= site_url('admin/invoices/lihat/semua/semua') ?>' + kueri;
     }
 
     byId('tombolScan').addEventListener('click', function () {

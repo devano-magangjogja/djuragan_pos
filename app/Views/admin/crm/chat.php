@@ -13,6 +13,11 @@ $templates ??= [];
 // gateway, dan halaman kelola pelanggan (Profil 360).
 $level_sesi    = (string) (session()->get('level') ?? '');
 $boleh_kelola = in_array($level_sesi, ['admin', 'superadmin'], true);
+
+// Jumlah awal chat terarsip yang masih punya pesan belum dibaca: mengisi badge
+// tab "Arsip" pada render pertama, sebelum polling JS menyegarkannya. Kolak ini
+// sengaja TIDAK dihitung di badge navbar (navbar hanya menampung chat aktif).
+$arsip_belum_dibaca = (new \App\Models\CrmModel())->hitungChatBelumDibaca(1);
 ?>
 
 <?= $this->section('css') ?>
@@ -67,6 +72,9 @@ $boleh_kelola = in_array($level_sesi, ['admin', 'superadmin'], true);
     gap: 0.4rem;
 }
 .conv-saring .conv-saring-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     flex: 1 1 0;
     min-width: 0;
     height: 2rem;
@@ -82,6 +90,16 @@ $boleh_kelola = in_array($level_sesi, ['admin', 'superadmin'], true);
     overflow: hidden;
     text-overflow: ellipsis;
     transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+/* Badge jumlah chat terarsip yang belum dibaca; merah seperti penanda perhatian,
+   kecil supaya tidak mendesak label "Arsip". d-none dipasang saat nol. */
+.badge-arsip {
+    margin-left: 0.35rem;
+    font-size: 0.62rem;
+    font-weight: 700;
+    line-height: 1;
+    padding: 0.18rem 0.4rem;
+    flex: 0 0 auto;
 }
 .conv-saring .conv-saring-btn:hover {
     background: #f9fafb;
@@ -595,6 +613,7 @@ $boleh_kelola = in_array($level_sesi, ['admin', 'superadmin'], true);
                     </button>
                     <button type="button" class="btn conv-saring-btn" data-arsip="1" title="Percakapan yang sudah diarsipkan">
                         <i class="fal fa-archive me-1"></i> Arsip
+                        <span class="badge rounded-pill bg-danger badge-arsip<?= $arsip_belum_dibaca > 0 ? '' : ' d-none' ?>" id="badgeArsip"><?= $arsip_belum_dibaca > 99 ? '99+' : (int) $arsip_belum_dibaca ?></span>
                     </button>
                 </div>
             </div>
@@ -861,6 +880,30 @@ $(function() {
 
             $badge.text(jumlah > 99 ? '99+' : jumlah)
                   .attr('title', jumlah + ' pesan belum dibaca');
+        });
+    }
+
+    // ── Badge jumlah chat terarsip yang belum dibaca (tab "Arsip") ───────────
+    // Kolak terpisah dari badge navbar: menandai chat baru yang nyasar masuk
+    // arsip supaya tetap kelihatan. Angka awalnya sudah dirender PHP; fungsi ini
+    // hanya menyegarkannya memakai endpoint yang sama dengan badge menu.
+    function perbaruiBadgeArsip() {
+        $.getJSON(urlBadgeMenu, function(res) {
+            if (!res || res.status !== 'success') return;
+
+            var jumlah = Number(res.arsip || 0);
+            var $badge = $('#badgeArsip');
+
+            if ($badge.length === 0) return;
+
+            if (jumlah === 0) {
+                $badge.addClass('d-none').text('');
+                return;
+            }
+
+            $badge.removeClass('d-none')
+                  .text(jumlah > 99 ? '99+' : jumlah)
+                  .attr('title', jumlah + ' chat arsip belum dibaca');
         });
     }
 
@@ -1601,6 +1644,10 @@ $(function() {
                 renderCustomerBadge(pelangganAktif, nomorAktif);
             }
             loadConversations(true);
+            // memindah kolak mengubah dua hitung sekaligus: chat unread yang diarsip
+            // keluar dari badge navbar dan masuk badge Arsip (dan sebaliknya)
+            perbaruiBadgeMenu();
+            perbaruiBadgeArsip();
         }, 'json').fail(function() {
             alert('Gagal menghubungi server.');
         });
@@ -1760,12 +1807,15 @@ $(function() {
     // Muat daftar percakapan awal + sinkronkan badge angka menu sekali di awal
     loadConversations(false);
     perbaruiBadgeMenu();
+    perbaruiBadgeArsip();
 
     // Polling daftar percakapan (sidebar) tiap 5 detik. Badge angka menu tidak
     // perlu ikut di sini — poller global navbar sudah menyinkronkannya tiap 5
-    // detik di semua halaman, termasuk halaman ini.
+    // detik di semua halaman, termasuk halaman ini. Badge tab "Arsip" ikut di sini
+    // karena ia khusus halaman ini (bukan navbar).
     setInterval(function() {
         loadConversations(true);
+        perbaruiBadgeArsip();
     }, 5000);
 
     // Polling pesan aktif tiap 3 detik (incremental, hanya pesan baru)

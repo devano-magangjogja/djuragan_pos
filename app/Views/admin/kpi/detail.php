@@ -117,6 +117,9 @@ $kembali = site_url('admin/kpi') . '?' . http_build_query(array_filter([
             <div class="mt-1">
                 <strong>Target:</strong>
                 <?= esc(($aturan['arah'] === 'lebih_rendah' ? 'maks ' : 'min ') . $angka($aturan['target']) . ' ' . $aturan['satuan']) ?>
+                <?php if ($indikator === 'gmv_cs' && isset($aturan['scope'])) : ?>
+                    <span class="text-muted">(<?= $aturan['scope'] === 'tim' ? 'Tim CS, total seluruh karyawan' : 'per CS, satu karyawan' ?>)</span>
+                <?php endif; ?>
                 (bobot <?= esc((string) $aturan['bobot']) ?>)
             </div>
         <?php } ?>

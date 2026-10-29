@@ -7,16 +7,14 @@
  *
  * @var string $title
  * @var int    $hari        ambang H hari sebelum deadline (pengaturan Superadmin)
- * @var array  $reminder    daftar orderan dari InvoiceModel::pengingatPenjahit()
+ * @var array  $reminder    daftar orderan dari InvoiceModel::pengingatPenjahit(),
+ *                          tiap item sudah ditambah kunci 'tautan' ke satu invoice
  * @var bool   $superadmin  boleh mengubah ambang hari?
  */
 
-// Tiap reminder mengarah ke daftar transaksi yang disaring ke nomor nota itu,
-// jadi isi invoice tampil penuh tanpa membuka form sunting. CS memakai daftar
-// miliknya (user/invoices); admin & superadmin memakai daftar admin.
-$base_lihat = (string) session()->get('level') === 'cs'
-    ? site_url('user/invoices')
-    : site_url('admin/invoices/lihat/semua');
+// Tiap reminder sudah membawa 'tautan' dari controller: layar transaksi yang
+// tersaring ke satu nomor nota, jadi isi invoice tampil penuh tanpa membuka
+// form sunting dan tanpa daftar invoice lain.
 $hari_ini = date('Y-m-d');
 $lunas    = ['5', '6'];
 $sukses   = session()->getFlashdata('sukses');
@@ -290,7 +288,7 @@ $sukses   = session()->getFlashdata('sukses');
                 $sudah_lunas = in_array((string) ($r['status_pembayaran'] ?? ''), $lunas, true);
                 ?>
                 <a class="reminder-kartu-kecil reminder-item <?= $kelas ?>"
-                    href="<?= esc($base_lihat . '?cari=' . rawurlencode((string) $r['seri'])) ?>">
+                    href="<?= esc((string) ($r['tautan'] ?? '')) ?>">
                     <div class="reminder-kiri">
                         <div class="reminder-seri"><?= esc($r['seri']) ?></div>
                         <div class="reminder-meta">
