@@ -61,15 +61,6 @@ $rincian_pesanan = baca_rincian($orderan->rincian);
 
 <?= $this->section('css') ?>
 <style>
-    /* Blok tombol "Ongkir" dan "Biaya Lain" dulu menempel ke garis bawah tabel
-       biaya (celah terukur 0px di desktop) dan mulai tepat dari tepi kartu, 16px
-       di sebelah kiri teks kolom pertama tabelnya. Sekarang diberi isian rata
-       keempat sisinya 1rem — sama seperti isian sel tabel, jadi jarak ke tabel di
-       atas sama dengan jarak ke garis pemisah di bawahnya, dan tombolnya sejajar
-       kolom pertama. Aturan ini di luar @media: permintaannya desktop DAN responsif. */
-    .customBiaya.border-bottom {
-        padding: 1rem !important;
-    }
     /* Responsif modal Tambah/Edit Orderan saat ukuran Custom dipilih:
        Tampilannya dibuat setengah tinggi layar (50vh), posisi pas di tengah-tengah
        layar (centered), dan isinya bisa digulir sampai isian terakhir serta tombol simpan.

@@ -81,18 +81,15 @@ class KpiUji extends BaseCommand
      * @return list<array{int, string, string}>
      *
      * Nomor 1-5 dulu menguji SLA fulfillment, return error rate, dan error/void
-     * rate. Ketiga indikator itu sudah ditarik dari KPI karena mengukur kerja
-     * admin, jadi skenarionya ikut dihapus; penomorannya dibiarkan mengikuti nama
-     * method-nya supaya riwayat uji lamanya masih terbaca.
+     * rate. Ketiganya sudah ditarik dari KPI karena mengukur kerja admin. Nomor
+     * 6-10 menguji first response time dan atribusi lead; keduanya dihitung dari
+     * tabel Live Chat WA yang halaman beserta webhook-nya sudah dihapus.
+     * Penomorannya dibiarkan mengikuti nama method-nya supaya riwayat uji lamanya
+     * masih terbaca.
      */
     private function daftar(): array
     {
         return [
-            [6, 'CS menerima pesan lalu membalas', 's6'],
-            [7, 'pesan otomatis bukan respons manusia', 's7'],
-            [8, 'webhook sama diterima berulang kali', 's8'],
-            [9, 'pesan keluar gagal dikirim', 's9'],
-            [10, 'lead menjadi order sesuai jendela atribusi', 's10'],
             [11, 'tiket komplain belum selesai', 's11'],
             [12, 'tiket komplain diselesaikan', 's12'],
             [13, 'pesanan dibatalkan keluar dari GMV', 's13'],
@@ -106,91 +103,6 @@ class KpiUji extends BaseCommand
     // ------------------------------------------------------------------
     // skenario
     // ------------------------------------------------------------------
-
-    private function s6(): string
-    {
-        $sampel = $this->model->detail($this->s(), 'first_response_time', 10, 0);
-
-        if ($sampel === []) {
-            return 'LEWATI|belum ada percakapan yang dibalas staf';
-        }
-
-        foreach ($sampel as $b) {
-            $manual = round(((int) $b['waktu_balas'] - (int) $b['waktu_masuk']) / 60, 1);
-
-            if (! $this->sama($manual, (float) $b['frt_menit'])) {
-                return 'GAGAL|sesi ' . $b['percakapan_id'] . ': model ' . $b['frt_menit'] . ' vs waktu mentah ' . $manual;
-            }
-
-            $Balas = $this->db->query('SELECT COUNT(*) j FROM ' . $this->table('crm_chat_pesan')
-                . " WHERE percakapan_id = ? AND arah = 'keluar' AND user_id IS NOT NULL"
-                . " AND status <> 'gagal' AND created_at = ?",
-                [$b['percakapan_id'], $b['waktu_balas']])->getRowArray();
-
-            if ((int) $Balas['j'] === 0) {
-                return 'GAGAL|sesi ' . $b['percakapan_id'] . ': waktu balas tidak terbukti sebagai balasan manusia';
-            }
-
-            $lebihCepat = $this->db->query('SELECT COUNT(*) j FROM ' . $this->table('crm_chat_pesan')
-                . " WHERE percakapan_id = ? AND arah = 'keluar' AND user_id IS NOT NULL"
-                . " AND status <> 'gagal' AND created_at > ? AND created_at < ?",
-                [$b['percakapan_id'], $b['waktu_masuk'], $b['waktu_balas']])->getRowArray();
-
-            if ((int) $lebihCepat['j'] > 0) {
-                return 'GAGAL|sesi ' . $b['percakapan_id'] . ': masih ada balasan manusia sebelum yang dihitung';
-            }
-        }
-
-        return 'OK|' . count($sampel) . ' sesi terjawab: menit cocok dengan waktu mentah, balasan yang dihitung'
-            . ' memang balasan manusia pertama pada sesi itu';
-    }
-
-    private function s7(): string
-    {
-        return $this->ubahBalasan('user_id', null,
-            'balasan tanpa pegawai (keluar otomatis) bukan respons manusia');
-    }
-
-    private function s8(): string
-    {
-        return 'LEWATI|idempotensi webhook diuji pada jalur terima-kirim pesan, bukan pada model KPI';
-    }
-
-    private function s9(): string
-    {
-        return $this->ubahBalasan('status', 'gagal',
-            'balasan berstatus gagal tidak dihitung sebagai respons manusia');
-    }
-
-    private function s10(): string
-    {
-        $lead = $this->leadBelumOrder();
-
-        if ($lead === null) {
-            return 'LEWATI|tidak ada lead tanpa order untuk uji jendela atribusi';
-        }
-
-        if ((int) $this->terkonversi($lead) === 1) {
-            return 'LEWATI|lead ' . $lead['pelanggan_id'] . ' sudah terkonversi, tidak bisa dipakai uji jendela';
-        }
-
-        $this->db->transStart();
-
-        $this->sisipNota($lead, $lead['waktu_mulai'] + DAY);
-        $dalam = $this->terkonversi($lead);
-
-        $this->geserNota($lead, $lead['waktu_mulai'] + DAY, $lead['waktu_mulai'] + 30 * DAY);
-        $luar = $this->terkonversi($lead);
-
-        $this->db->transRollback();
-
-        if ($dalam !== 1 || $luar !== 0) {
-            return 'GAGAL|lead ' . $lead['pelanggan_id'] . ': order hari ke-1=' . $dalam
-                . ', order hari ke-30=' . $luar;
-        }
-
-        return 'OK|lead ' . $lead['pelanggan_id'] . ': order dalam 14 hari terhitung, order hari ke-30 tidak';
-    }
 
     private function s11(): string
     {
@@ -370,66 +282,6 @@ class KpiUji extends BaseCommand
     // pembantu skenario
     // ------------------------------------------------------------------
 
-    /** Sampel FRT diambil lalu salah satu syarat balasannya dilonggarkan. */
-    private function ubahBalasan(string $kolom, ?string $nilai, string $penjelasan): string
-    {
-        $s    = $this->s();
-        $sesi = $this->model->detail($s, 'first_response_time', 1, 0);
-
-        if ($sesi === []) {
-            return 'LEWATI|belum ada percakapan yang dibalas staf';
-        }
-
-        $sesi      = $sesi[0];
-        $awal      = (int) $this->model->kartu($s)['first_response_time']['contoh'];
-        $waktuLama = (int) $sesi['waktu_balas'];
-
-        $set   = $kolom . ($nilai === null ? ' = NULL' : " = '" . $nilai . "'");
-        $where = 'percakapan_id = ' . (int) $sesi['percakapan_id']
-            . " AND arah = 'keluar' AND created_at = " . $waktuLama;
-
-        $ini = 'percakapan ' . $sesi['percakapan_id'] . ' pada ' . date('j M H:i', $waktuLama);
-
-        $this->db->transStart();
-        $this->db->query('UPDATE ' . $this->table('crm_chat_pesan') . ' SET ' . $set . ' WHERE ' . $where);
-
-        $sesudah = (int) $this->model->kartu($s)['first_response_time']['contoh'];
-        // sesi yang sama sesudah perubahan: tetap ada bila masih ada balasan manusia
-        // berikutnya pada sesi itu, hilang bila balasan yang diubah satu-satunya
-        $baru = $this->cariSesi((int) $sesi['percakapan_id'], $s);
-
-        $this->db->transRollback();
-
-        if ($baru === null) {
-            return $sesudah === $awal - 1
-                ? 'OK|' . $penjelasan . ' (' . $ini . ' tidak lagi dianggap terjawab, sampel '
-                    . $awal . ' -> ' . $sesudah . ')'
-                : 'GAGAL|' . $penjelasan . ' (' . $ini . ' tidak lagi terjawab tapi sampel tetap '
-                    . $sesudah . ')';
-        }
-
-        if ((int) $baru['waktu_balas'] === $waktuLama) {
-            return 'GAGAL|' . $penjelasan . ' (' . $ini . ' masih dihitung sebagai respons manusia, sampel '
-                . $awal . ' -> ' . $sesudah . ')';
-        }
-
-        return 'OK|' . $penjelasan . ' (' . $ini . ' ditiadakan, respons bergeser ke balasan manusia '
-            . 'berikutnya ' . date('j M H:i', (int) $baru['waktu_balas']) . ', sampel '
-            . $awal . ' -> ' . $sesudah . ')';
-    }
-
-    /** Baris first_response_time satu percakapan, dibaca dari daftar detail. */
-    private function cariSesi(int $percakapan, array $s): ?array
-    {
-        foreach ($this->slice('first_response_time', $s) as $baris) {
-            if ((int) $baris['percakapan_id'] === $percakapan) {
-                return $baris;
-            }
-        }
-
-        return null;
-    }
-
     /** Sisip tiket uji, baca kartunya, lalu batalkan. */
     private function ujiTiket(string $status, ?int $jam, string $penjelasan): string
     {
@@ -555,58 +407,6 @@ class KpiUji extends BaseCommand
             . ' WHERE invoice_id = ?), 0) nilai', [$id, $id])->getRowArray();
 
         return (float) ($row['nilai'] ?? 0);
-    }
-
-    /** Sesi chat yang balasan manusianya pertama, beserta baris balasannya. */
-    private function leadBelumOrder(): ?array
-    {
-        $s = $this->s();
-
-        return $this->db->query('SELECT cp.pelanggan_id, MIN(m.created_at) waktu_mulai'
-            . ' FROM ' . $this->table('crm_chat_percakapan') . ' cp'
-            . ' JOIN ' . $this->table('crm_chat_pesan') . " m ON m.percakapan_id = cp.id_percakapan AND m.arah = 'masuk'"
-            . ' WHERE cp.pelanggan_id IS NOT NULL'
-            . ' AND NOT EXISTS (SELECT 1 FROM ' . $this->table('invoice') . ' o0'
-            . ' WHERE o0.pemesan_id = cp.pelanggan_id AND o0.deleted_at IS NULL AND o0.created_at < m.created_at)'
-            . ' GROUP BY cp.id_percakapan, cp.pelanggan_id'
-            . ' ORDER BY waktu_mulai DESC LIMIT 1 OFFSET 3')->getRowArray();
-    }
-
-    private function terkonversi(array $lead): int
-    {
-        $baris = array_values(array_filter(
-            $this->slice('konversi_lead', $this->s([
-                'awal'  => date('Y-m-d', $lead['waktu_mulai']),
-                'akhir' => date('Y-m-d', $lead['waktu_mulai']),
-            ])),
-            static fn ($b) => (int) $b['pelanggan_id'] === (int) $lead['pelanggan_id']
-                && (int) $b['waktu_mulai'] === (int) $lead['waktu_mulai']
-        ));
-
-        return $baris === [] ? 0 : (int) $baris[0]['terkonversi'];
-    }
-
-    /** Nota salinan untuk lead, dipakai menguji jendela atribusi. */
-    private function sisipNota(array $lead, int $waktu): void
-    {
-        $sumber = $this->db->query("SELECT * FROM " . $this->table('invoice')
-            . " WHERE deleted_at IS NULL AND status_pembayaran IN ('5','6') ORDER BY id_invoice DESC LIMIT 1")->getRowArray();
-
-        unset($sumber['id_invoice'], $sumber['deleted_at'], $sumber['deleted_by'], $sumber['alasan_batal']);
-
-        $sumber['pemesan_id']    = (int) $lead['pelanggan_id'];
-        $sumber['kirimKepada_id'] = (int) $lead['pelanggan_id'];
-        $sumber['created_at']    = $waktu;
-        $sumber['update_at']     = $waktu;
-
-        $this->db->query('INSERT INTO ' . $this->table('invoice') . ' (' . implode(', ', array_keys($sumber))
-            . ') VALUES (' . rtrim(str_repeat('?, ', count($sumber)), ', ') . ')', array_values($sumber));
-    }
-
-    private function geserNota(array $lead, int $dari, int $ke): void
-    {
-        $this->db->query('UPDATE ' . $this->table('invoice') . ' SET created_at = ?'
-            . ' WHERE pemesan_id = ? AND created_at = ?', [$ke, (int) $lead['pelanggan_id'], $dari]);
     }
 
     // ------------------------------------------------------------------

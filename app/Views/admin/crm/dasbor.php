@@ -158,15 +158,13 @@
         <div>
             <h4 class="mb-0 fw-bold judul-dasbor">
                 <i class="fal fa-chart-pie text-primary me-2 d-none d-lg-inline"></i>
-                <?php /* desktop persis seperti semula (ikon + judul penuh); di bawah
-                        breakpoint kolomnya (992px) ikon dan "& WhatsApp Center"
-                        dilepas supaya judulnya muat satu baris */ ?>
+                <?php /* ikonnya hanya tampil di layar lebar; di bawah breakpoint
+                        kolomnya (992px) ikon dilepas supaya judulnya muat satu baris */ ?>
                 <span class="d-lg-none">Dashboard CRM</span>
-                <span class="d-none d-lg-inline">Dashboard CRM &amp; WhatsApp Center</span>
+                <span class="d-none d-lg-inline">Dashboard CRM</span>
             </h4>
         </div>
         <div class="d-flex align-items-center gap-2 flex-nowrap">
-            <?= $this->include('admin/crm/tombol_wa') ?>
             <?php if (($provider ?? '') !== 'fonnte') : ?>
                 <?php if ($isSandbox) : ?>
                     <span class="btn btn-sm pe-none fw-semibold text-nowrap bg-warning text-dark border-warning" title="Mode sandbox Kapso aktif">
@@ -186,7 +184,7 @@
     <!-- 6 KPI Bercerita Utama -->
     <div class="row g-3 mb-4">
         <!-- Customer Aktif Bulan Ini -->
-        <div class="col-xl-2 col-md-4 col-6">
+        <div class="col-xl col-md-4 col-6">
             <a href="<?= site_url('admin/crm/pelanggan?status=aktif') ?>" class="text-decoration-none text-reset">
                 <div class="card border-0 shadow-sm h-100 border-start border-4 border-success">
                     <div class="card-body p-3">
@@ -202,7 +200,7 @@
         </div>
 
         <!-- Customer Baru Bulan Ini -->
-        <div class="col-xl-2 col-md-4 col-6">
+        <div class="col-xl col-md-4 col-6">
             <a href="<?= site_url('admin/crm/pelanggan?status=baru') ?>" class="text-decoration-none text-reset">
                 <div class="card border-0 shadow-sm h-100 border-start border-4 border-info">
                     <div class="card-body p-3">
@@ -218,7 +216,7 @@
         </div>
 
         <!-- Customer Repeat Order -->
-        <div class="col-xl-2 col-md-4 col-6">
+        <div class="col-xl col-md-4 col-6">
             <a href="<?= site_url('admin/crm/pelanggan?segmen=repeat') ?>" class="text-decoration-none text-reset">
                 <div class="card border-0 shadow-sm h-100 border-start border-4 border-primary">
                     <div class="card-body p-3">
@@ -234,7 +232,7 @@
         </div>
 
         <!-- Customer Tidak Aktif / Pasif -->
-        <div class="col-xl-2 col-md-4 col-6">
+        <div class="col-xl col-md-4 col-6">
             <a href="<?= site_url('admin/crm/pelanggan?status=tidak_aktif') ?>" class="text-decoration-none text-reset">
                 <div class="card border-0 shadow-sm h-100 border-start border-4 border-secondary">
                     <div class="card-body p-3">
@@ -249,24 +247,8 @@
             </a>
         </div>
 
-        <!-- Prospek Belum Closing -->
-        <div class="col-xl-2 col-md-4 col-6">
-            <a href="<?= site_url('admin/crm/pelanggan?status=prospek') ?>" class="text-decoration-none text-reset">
-                <div class="card border-0 shadow-sm h-100 border-start border-4 border-warning">
-                    <div class="card-body p-3">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span class="text-muted small fw-semibold">Belum Closing</span>
-                            <i class="fal fa-comments text-warning fs-5"></i>
-                        </div>
-                        <h3 class="fw-bold mb-0 text-warning mt-1"><?= number_format($ringkasan['prospek_belum_closing']) ?></h3>
-                        <div class="text-muted small mt-1" style="font-size: 11px;">prospek/tanya di WA</div>
-                    </div>
-                </div>
-            </a>
-        </div>
-
         <!-- Follow-up Tagihan -->
-        <div class="col-xl-2 col-md-4 col-6">
+        <div class="col-xl col-md-4 col-6">
             <a href="<?= site_url('admin/crm/followup?tab=tagihan') ?>" class="text-decoration-none text-reset">
                 <div class="card border-0 shadow-sm h-100 border-start border-4 border-danger">
                     <div class="card-body p-3">
@@ -353,14 +335,9 @@
                                         <p class="mb-0 text-muted small"><?= esc($r['deskripsi']) ?></p>
                                     </div>
                                     <div class="text-end flex-shrink-0 ms-3">
-                                        <a href="<?= site_url('admin/crm/pelanggan/' . $r['pelanggan_id']) ?>" class="btn btn-sm btn-outline-primary me-2" title="Profil 360">
+                                        <a href="<?= site_url('admin/crm/pelanggan/' . $r['pelanggan_id']) ?>" class="btn btn-sm btn-outline-primary" title="Profil 360">
                                             <i class="fal fa-id-card"></i>
                                         </a>
-                                        <?php if (!empty($r['nomor_wa'])): ?>
-                                            <a href="<?= site_url('admin/crm/chat?nomor=' . $r['nomor_wa']) ?>" class="btn btn-sm btn-outline-success" title="Chat WA">
-                                                <i class="fab fa-whatsapp"></i>
-                                            </a>
-                                        <?php endif; ?>
                                     </div>
                                 </div>
                             <?php endforeach; ?>
@@ -381,26 +358,6 @@
         <!-- Kolom Kanan: Shortcut Aksi Cepat CRM & Info Gateway -->
         <div class="col-lg-5">
             <div class="row g-3">
-                <!-- Shortcut Live Chat -->
-                <div class="col-12">
-                    <div class="card border-0 shadow-sm bg-white shortcut-crm">
-                        <div class="card-body p-3 d-flex align-items-center justify-content-between">
-                            <div class="d-flex align-items-center">
-                                <div class="avatar-circle bg-success bg-opacity-10 text-success rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px;">
-                                    <i class="fab fa-whatsapp fs-4"></i>
-                                </div>
-                                <div>
-                                    <h6 class="fw-bold mb-0">Live Chat WhatsApp</h6>
-                                    <small class="text-muted">Chat 2 arah langsung dengan customer</small>
-                                </div>
-                            </div>
-                            <a href="<?= site_url('admin/crm/chat') ?>" class="btn btn-success btn-sm fw-semibold">
-                                Buka Chat
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Shortcut Follow-up Customer -->
                 <div class="col-12">
                     <div class="card border-0 shadow-sm bg-white shortcut-crm">
@@ -416,26 +373,6 @@
                             </div>
                             <a href="<?= site_url('admin/crm/followup') ?>" class="btn btn-primary btn-sm fw-semibold">
                                 Buka Follow-up
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Shortcut Broadcast Promo -->
-                <div class="col-12">
-                    <div class="card border-0 shadow-sm bg-white shortcut-crm">
-                        <div class="card-body p-3 d-flex align-items-center justify-content-between">
-                            <div class="d-flex align-items-center">
-                                <div class="avatar-circle bg-info bg-opacity-10 text-info rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px;">
-                                    <i class="fal fa-bullhorn fs-4"></i>
-                                </div>
-                                <div>
-                                    <h6 class="fw-bold mb-0">Broadcast Promo Terarah</h6>
-                                    <small class="text-muted">Kirim promo khusus segmen yang opt-in</small>
-                                </div>
-                            </div>
-                            <a href="<?= site_url('admin/crm/broadcast') ?>" class="btn btn-info btn-sm fw-semibold text-white">
-                                Broadcast
                             </a>
                         </div>
                     </div>

@@ -3144,59 +3144,6 @@ input[type="search"].cari_pelanggan::-moz-clear-button {
   box-shadow: 0 8px 20px rgba(16, 24, 40, 0.2) !important;
 }
 
-/* Tombol Live Chat ikut mengambang, ditumpuk tepat di atas tombol kirim masukan
-   (lingkaran 2.6rem + margin-bottom 1rem milik tombol itu, lalu jarak 0.7rem). */
-.wa-melayang {
-  bottom: 4.3rem;
-}
-
-.wa-melayang .btn {
-  border: 0;
-  border-radius: 9999px !important;
-  padding: 0 !important;
-  width: 2.6rem;
-  height: 2.6rem;
-  box-shadow: 0 4px 12px rgba(16, 24, 40, 0.15) !important;
-}
-
-/* 14. Modern Live Chat WA Container Harmonization */
-.chat-container {
-  border: 1px solid #eaecf0 !important;
-  border-radius: 16px !important;
-  background: #ffffff !important;
-  box-shadow:
-    0 1px 3px rgba(16, 24, 40, 0.05),
-    0 8px 24px -4px rgba(16, 24, 40, 0.06) !important;
-  overflow: hidden !important;
-}
-
-.chat-sidebar {
-  border-right: 1px solid #eaecf0 !important;
-}
-
-.chat-header {
-  border-bottom: 1px solid #eaecf0 !important;
-  background: #ffffff !important;
-}
-
-.chat-footer {
-  border-top: 1px solid #eaecf0 !important;
-  background: #ffffff !important;
-}
-
-.chat-conv-item {
-  border-bottom: 1px solid #f2f4f7 !important;
-}
-
-.chat-conv-item:hover {
-  background: #f9fafb !important;
-}
-
-.chat-conv-item.active {
-  background: #f2f4f7 !important;
-  border-left: 3px solid #101828 !important;
-}
-
 /* 15. Katalog Produk & Stok (kartu produk) */
 .produk-kartu {
   cursor: pointer;
@@ -3892,11 +3839,10 @@ tr.varian-sorot td {
   }
 
   /* Cek Pembayaran/Input Resi (aksi-penuh) dan Proses Orderan/Sudah kembali
-     (aksi-setengah) dipakai bersama satu baris: basisnya selebar labelnya
-     sendiri, sisa ruang dibagi dua. Dulu yang pertama dipaksa 100% sehingga Cek
-     Pembayaran dan Sudah kembali bertumpuk padahal ruang di sampingnya masih ada.
-     Basis 50% juga tidak berhasil: basis itu membengkak ke lebar minimum teks,
-     jadi pasangan berlabel panjang tetap turun ke barisnya sendiri. */
+     (aksi-setengah) berbagi baris yang sama. Dulu .aksi-penuh dipaksa 100%
+     sehingga Cek Pembayaran dan Sudah kembali bertumpuk padahal ruang di
+     sampingnya masih ada; basis 50% juga tidak berhasil untuk tiga tombol
+     berlabel panjang karena basis itu membengkak ke lebar minimum teks. */
   .kartu-invoice .aksi-transaksi .aksi-penuh,
   .kartu-invoice .aksi-transaksi .aksi-setengah {
     /* Duanya dibelah rata 50% supaya sumbat baris ini sejajar dengan baris
@@ -3918,4 +3864,15 @@ tr.varian-sorot td {
   .kartu-invoice .aksi-transaksi .aksi-setengah {
     order: 3;
   }
+}
+
+/* 20. Blok tombol "Ongkir" dan "Biaya Lain" di bawah tabel orderan.
+   Dipakai tiga halaman — sunting, tulis admin, tulis CS — jadi aturannya di sini,
+   bukan disalin per halaman. Dulu blok itu nempel ke garis bawah tabel (celah
+   terukur 0px di desktop) dan mulai tepat dari tepi kartu, 16px di sebelah kiri
+   teks kolom pertama tabelnya. Sekarang isian rata keempat sisi 1rem: jarak ke
+   tabel di atas sama dengan jarak ke garis pemisah di bawah, dan tombolnya sejajar
+   kolom pertama. Sengaja di luar @media — dimintanya desktop maupun responsif. */
+.customBiaya.border-bottom {
+  padding: 1rem !important;
 }

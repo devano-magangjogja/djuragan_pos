@@ -48,24 +48,44 @@ class KpiModel extends Model
      * Indikator yang punya jalur angka dan bisa dibuka detailnya.
      *
      * Hanya yang mengukur kerja CS; sla_fulfillment dan error_void_rate ikut
-     * dikeluarkan karena keduanya indikator admin.
+     * dikeluarkan karena keduanya indikator admin. First response time dan
+     * konversi lead pernah ada di sini tetapi keduanya dihitung dari tabel
+     * Live Chat WA yang halamannya sudah dihapus.
      */
     public const INDIKATOR = [
         'gmv_cs',
         'order_diproses',
-        'first_response_time',
-        'konversi_lead',
         'resolution_time',
+    ];
+
+    /**
+     * Nama dan penjelasan indikator yang tidak punya baris di kpi_target.
+     *
+     * Hanya label: angkanya tetap dihitung query di atas. Tanpa ini, halaman
+     * Detail menulis kode indikator apa adanya ("resolution_time") dan pembaca
+     * tidak tahu indikator apa yang sedang ia audit.
+     *
+     * @var array<string, array<string, string>>
+     */
+    public const LABEL = [
+        'order_diproses' => [
+            'nama'     => 'Pesanan diproses',
+            'satuan'   => 'nota',
+            'arah'     => 'lebih_tinggi',
+            'definisi' => 'Semua nota yang dibuat orang ini pada periode terpilih, sudah lunas maupun belum.',
+            'aturan'   => 'Nota yang dihapus permanen tidak dihitung. Tidak ada target: yang dinilai jumlah nota per orang.',
+        ],
+        'resolution_time' => [
+            'nama'     => 'Waktu penyelesaian tindak lanjut',
+            'satuan'   => 'jam',
+            'arah'     => 'lebih_rendah',
+            'definisi' => 'Rata-rata durasi penyelesaian komplain atau tindak lanjut pelanggan sejak dibuat.',
+            'aturan'   => 'Tindak lanjut yang masih menunggu tidak dianggap selesai. Satu tiket dihitung satu kali.',
+        ],
     ];
 
     /** Penanda baris tanpa pelaku: history memang tidak pernah menyimpannya. */
     private const TANPA_PELAKU = 'belum tercatat';
-
-    /** Jam tidak aktif sebelum satu percakapan dihitung sebagai sesi baru. */
-    public const SESI_CHAT_JAM = 24;
-
-    /** Hari batas lead dianggap berubah menjadi order. */
-    public const ATRIBUSI_HARI = 14;
 
     protected $table         = 'invoice';
     protected $primaryKey    = 'id_invoice';
@@ -93,14 +113,10 @@ class KpiModel extends Model
     public function kartu(array $s): array
     {
         $nota   = $this->notePerPegawai($s);
-        $frt    = $this->frtRingkas($s);
-        $lead   = $this->konversiPerPegawai($s);
         $resolusi = $this->resolusiPerPegawai($s);
 
         $order   = (int) array_sum(array_column($nota, 'jumlah_order'));
         $gmv     = (float) array_sum(array_map(static fn ($n) => $n['gmv'], $nota));
-        $lead_i  = (int) array_sum(array_column($lead, 'lead'));
-        $lead_k  = (int) array_sum(array_column($lead, 'terkonversi'));
         $res_c   = (int) array_sum(array_column($resolusi, 'contoh'));
 
         return [
@@ -117,30 +133,6 @@ class KpiModel extends Model
                 'satuan'        => 'nota',
                 'contoh'        => count($nota),
                 'contoh_label'  => 'karyawan',
-            ],
-            'first_response_time' => [
-                'label'         => 'First response time CS',
-                'nilai'         => $this->bulat($frt['rata']),
-                'median'        => $this->bulat($frt['median']),
-                'satuan'        => 'menit',
-                'contoh'        => $frt['contoh'],
-                'contoh_label'  => 'percakapan',
-                'buang'         => $frt['belum'],
-                'tersedia'      => $frt['contoh'] > 0,
-                'alasan'        => $frt['contoh'] > 0 ? null
-                    : 'Belum ada pesan masuk yang dibalas staf pada periode ini.',
-            ],
-            'konversi_lead' => [
-                'label'    => 'Konversi lead ke order',
-                'nilai'    => $lead_i > 0 ? round($lead_k / $lead_i * 100, 1) : null,
-                'satuan'   => '%',
-                'contoh'   => $lead_i,
-                // lead yang belum jadi order bukan sampel buangan, jadi ditulis sebagai
-                // rincian: membilangnya 0 dari 2 berarti angkanya memang 0%, bukan kosong
-                'rincian'  => $lead_i . ' chat baru, ' . $lead_k . ' jadi order',
-                'tersedia' => $lead_i > 0,
-                'alasan'   => $lead_i > 0 ? null
-                    : 'Belum ada chat baru dari pelanggan yang belum pernah order.',
             ],
             'resolution_time' => [
                 'label'         => 'Waktu penyelesaian tindak lanjut',
@@ -178,25 +170,19 @@ class KpiModel extends Model
     public function rekap(array $s, int $limit, int $offset): array
     {
         $nota  = $this->notePerPegawai($s);
-        $frt   = $this->frtPerPegawai($s);
-        $lead  = $this->konversiPerPegawai($s);
         $resol = $this->resolusiPerPegawai($s);
 
         foreach ($nota as &$pegawai) {
             $id = (int) $pegawai['user_id'];
 
-            $pegawai['frt_menit']  = $this->bulat($frt[$id]['rata'] ?? null);
-            $pegawai['frt_contoh'] = $frt[$id]['contoh'] ?? 0;
-            $pegawai['lead']       = $lead[$id]['lead'] ?? 0;
-            $pegawai['lead_jadi']  = $lead[$id]['terkonversi'] ?? 0;
             $pegawai['resolusi']   = $this->bulat($resol[$id]['rata'] ?? null);
         }
         unset($pegawai);
 
-        // pegawai yang tidak menulis nota tapi pernah membalas chat atau menutup
-        // tindak lanjut tetap dinilai, jangan hilang dari daftar
+        // pegawai yang tidak menulis nota tapi pernah menutup tindak lanjut
+        // tetap dinilai, jangan hilang dari daftar
         $sudah = array_map('intval', array_column($nota, 'user_id'));
-        foreach (array_unique(array_merge(array_keys($frt), array_keys($resol))) as $id) {
+        foreach (array_keys($resol) as $id) {
             $id = (int) $id;
 
             if (in_array($id, $sudah, true)) {
@@ -206,9 +192,6 @@ class KpiModel extends Model
             $nota[] = [
                 'user_id' => $id, 'pegawai' => $this->namaPegawai($id), 'level' => 'cs',
                 'jumlah_order' => 0, 'pelanggan' => 0, 'gmv' => 0, 'dibayar' => 0, 'lunas' => 0,
-                'frt_menit' => $this->bulat($frt[$id]['rata'] ?? null),
-                'frt_contoh' => $frt[$id]['contoh'] ?? 0,
-                'lead' => $lead[$id]['lead'] ?? 0, 'lead_jadi' => $lead[$id]['terkonversi'] ?? 0,
                 'resolusi' => $this->bulat($resol[$id]['rata'] ?? null),
             ];
         }
@@ -221,7 +204,7 @@ class KpiModel extends Model
     /**
      * Deretan waktu untuk grafik tren.
      *
-     * @return list<array{baki: string, order: int, gmv: float, lunas: int, frt_menit: float|null}>
+     * @return list<array{baki: string, order: int, gmv: float, lunas: int}>
      */
     public function tren(array $s): array
     {
@@ -229,7 +212,6 @@ class KpiModel extends Model
         // dengan only_full_group_by menolak ekspresi tanggal yang tidak muncul di
         // GROUP BY walau aliasnya sudah dipakai
         $bakiNota  = $this->baki('o.tanggal_pesan', $s['periode']);
-        $bakiSesi  = $this->baki('FROM_UNIXTIME(f.waktu_masuk)', $s['periode']);
 
         $nota = [];
         foreach ($this->db->query('SELECT ' . $bakiNota . ' baki, COUNT(*) orderan,'
@@ -241,22 +223,13 @@ class KpiModel extends Model
             $nota[$baris['baki']] = $baris;
         }
 
-        $frt = [];
-        foreach ($this->db->query('SELECT ' . $bakiSesi . ' baki, AVG(f.frt_menit) rata'
-            . ' FROM (' . $this->frtDasar($s) . ') f'
-            . ' WHERE f.waktu_balas IS NOT NULL'
-            . ' GROUP BY ' . $bakiSesi, $this->paramsFrt($s))->getResultArray() as $baris) {
-            $frt[$baris['baki']] = $baris;
-        }
-
         $deretan = [];
-        foreach (array_unique(array_merge(array_keys($nota), array_keys($frt))) as $baki) {
+        foreach (array_keys($nota) as $baki) {
             $deretan[] = [
                 'baki'       => $baki,
                 'order'      => (int) ($nota[$baki]['orderan'] ?? 0),
                 'gmv'        => round((float) ($nota[$baki]['gmv'] ?? 0)),
                 'lunas'      => (int) ($nota[$baki]['lunas'] ?? 0),
-                'frt_menit'  => isset($frt[$baki]['rata']) ? round((float) $frt[$baki]['rata'], 1) : null,
             ];
         }
 
@@ -273,22 +246,17 @@ class KpiModel extends Model
     public function pembanding(array $s, string $indikator): array
     {
         $peta = match ($indikator) {
-            'first_response_time' => fn () => $this->frtPerPegawai($s),
-            'konversi_lead' => fn () => $this->konversiPerPegawai($s),
             'resolution_time' => fn () => $this->resolusiPerPegawai($s),
             default => fn () => $this->notePerPegawai($s),
         };
 
         $kolom = match ($indikator) {
-            'first_response_time' => 'rata',
             'resolution_time'     => 'rata',
-            'konversi_lead'       => 'terkonversi',
             'order_diproses'      => 'jumlah_order',
             default               => 'gmv',
         };
 
         $contoh = match ($indikator) {
-            'konversi_lead'   => 'lead',
             'gmv_cs', 'order_diproses' => 'jumlah_order',
             default           => 'contoh',
         };
@@ -343,23 +311,6 @@ class KpiModel extends Model
     private function sqlDetail(array $s, string $indikator): array
     {
         switch ($indikator) {
-            case 'first_response_time':
-                return ['SELECT f.percakapan_id, f.nomor, f.waktu_masuk, f.waktu_balas, f.frt_menit,'
-                    . ' COALESCE(u.name, ' . $this->kutip(self::TANPA_PELAKU) . ') AS pelaku'
-                    . ' FROM (' . $this->frtDasar($s) . ') f'
-                    . ' LEFT JOIN ' . $this->t('user') . ' u ON u.id = f.pelaku'
-                    . ' WHERE f.waktu_balas IS NOT NULL'
-                    . ' ORDER BY f.frt_menit DESC',
-                    $this->paramsFrt($s)];
-
-            case 'konversi_lead':
-                return ['SELECT l.pelanggan_id, l.waktu_mulai, l.terkonversi,'
-                    . ' COALESCE(u.name, ' . $this->kutip(self::TANPA_PELAKU) . ') AS pelaku'
-                    . ' FROM (' . $this->konversiDasar($s) . ') l'
-                    . ' LEFT JOIN ' . $this->t('user') . ' u ON u.id = l.pelaku'
-                    . ' ORDER BY l.waktu_mulai DESC',
-                    $this->params($s)];
-
             case 'resolution_time':
                 return ['SELECT f.id_followup, f.judul, f.kategori, f.created_at, f.selesai_at,'
                     . ' CAST(f.selesai_at - f.created_at AS SIGNED) / 3600 durasi_jam,'
@@ -387,7 +338,7 @@ class KpiModel extends Model
     }
 
     // ------------------------------------------------------------------
-    // target dan bobot
+    // target
     // ------------------------------------------------------------------
 
     /**
@@ -436,7 +387,6 @@ class KpiModel extends Model
     {
         $ubah = [
             'target'     => $data['target'],
-            'bobot'      => $data['bobot'],
             'aktif'      => $data['aktif'],
             'updated_at' => time(),
             'updated_by' => $user,
@@ -482,138 +432,6 @@ class KpiModel extends Model
             $baris['gmv']      = round((float) $baris['gmv']);
             $baris['dibayar']  = round((float) $baris['dibayar']);
             $hasil[$id]        = $baris;
-        }
-
-        return $hasil;
-    }
-
-    /**
-     * First response time per sesi percakapan.
-     *
-     * Sesi baru dimulai bila pesan masuk berikutnya berjarak lebih dari
-     * SESI_CHAT_JAM, jadi satu percakapan panjang tidak dihitung satu kali saja.
-     * Balasan otomatis (crm_pesan_log) dan pesan keluar yang gagal tidak dihitung
-     * sebagai respons manusia.
-     */
-    private function frtDasar(array $s): string
-    {
-        $gap    = self::SESI_CHAT_JAM * 3600;
-        $paling = '9999999999';
-
-        // waktu balas pertama oleh manusia dalam sesi yang sama; dipakai dua kali
-        // (untuk kolom waktu_balas dan untuk durasinya) sehingga ditulis sekali di sini
-        $balas = '(SELECT MIN(p.created_at) FROM ' . $this->t('crm_chat_pesan') . ' p'
-            . " WHERE p.percakapan_id = ses.percakapan_id AND p.arah = 'keluar'"
-            . ' AND p.user_id IS NOT NULL AND p.status <> \'gagal\''
-            . ' AND p.created_at >= ses.waktu_masuk'
-            . ' AND p.created_at < IFNULL(ses.sesi_berikutnya, ' . $paling . '))';
-
-        return 'SELECT ses.percakapan_id, ses.pelanggan_id, ses.waktu_masuk, ses.pelaku,'
-            . ' RIGHT(CONCAT(\'\', ses.nomor), 4) AS nomor,'
-            . ' ' . $balas . ' waktu_balas,'
-            . ' (CAST(' . $balas . ' AS SIGNED) - CAST(ses.waktu_masuk AS SIGNED)) / 60 frt_menit'
-            . ' FROM (SELECT y.percakapan_id, y.nomor_wa nomor, y.pelanggan_id, y.waktu_masuk, y.pelaku,'
-            . ' LEAD(y.waktu_masuk) OVER (PARTITION BY y.percakapan_id ORDER BY y.waktu_masuk) sesi_berikutnya'
-            . ' FROM (SELECT m.percakapan_id, cp.nomor_wa, cp.pelanggan_id, m.created_at waktu_masuk,'
-            . ' (SELECT p.user_id FROM ' . $this->t('crm_chat_pesan') . ' p'
-            . " WHERE p.percakapan_id = cp.id_percakapan AND p.arah = 'keluar'"
-            . ' AND p.user_id IS NOT NULL AND p.status <> \'gagal\''
-            . ' ORDER BY p.created_at LIMIT 1) pelaku,'
-            . ' LAG(m.created_at) OVER (PARTITION BY m.percakapan_id ORDER BY m.created_at) sebelumnya'
-            . ' FROM ' . $this->t('crm_chat_pesan') . ' m'
-            . ' JOIN ' . $this->t('crm_chat_percakapan') . ' cp ON cp.id_percakapan = m.percakapan_id'
-            . " WHERE m.arah = 'masuk'"
-            . ' AND DATE(FROM_UNIXTIME(m.created_at)) BETWEEN :awal: AND :akhir:'
-            . ') y WHERE (y.sebelumnya IS NULL'
-            . ' OR CAST(y.waktu_masuk AS SIGNED) - CAST(y.sebelumnya AS SIGNED) > ' . $gap . ')) ses'
-            . ' WHERE DATE(FROM_UNIXTIME(ses.waktu_masuk)) BETWEEN :awal: AND :akhir:'
-            . $this->klausulPelaku($s, 'ses.pelaku');
-    }
-
-    /** @return array{contoh: int, rata: float|null, median: float|null, belum: int} */
-    private function frtRingkas(array $s): array
-    {
-        $dasar = $this->frtDasar($s);
-
-        $ringkas = $this->db->query('SELECT COUNT(*) sesi, SUM(f.waktu_balas IS NOT NULL) dijawab,'
-            . ' AVG(f.frt_menit) rata, SUM(f.waktu_balas IS NULL) belum'
-            . ' FROM (' . $dasar . ') f', $this->paramsFrt($s))->getRowArray();
-
-        $median = $this->median('f.waktu_balas IS NOT NULL', $dasar, $this->paramsFrt($s), 'frt_menit', 'f');
-
-        return [
-            'contoh' => (int) $ringkas['dijawab'],
-            'rata'   => $ringkas['rata'],
-            'median' => $median,
-            'belum'  => (int) $ringkas['belum'],
-        ];
-    }
-
-    /** @return array<int, array{contoh: int, rata: float|null}> */
-    private function frtPerPegawai(array $s): array
-    {
-        return $this->indexPegawai($this->db->query('SELECT f.pelaku user_id, u.name pegawai,'
-            . ' COUNT(*) contoh, AVG(f.frt_menit) rata'
-            . ' FROM (' . $this->frtDasar($s) . ') f'
-            . ' JOIN ' . $this->t('user') . " u ON u.id = f.pelaku AND u.status = 'active' AND u.deleted_at IS NULL"
-            . ' WHERE f.waktu_balas IS NOT NULL'
-            . ' AND u.level IN (' . $this->daftarKutip($this->levelPeran($s['peran'])) . ')'
-            . ' GROUP BY f.pelaku, u.name', $this->paramsFrt($s))->getResultArray());
-    }
-
-    /**
-     * Lead = percakapan dengan pelanggan yang belum pernah order sebelumnya.
-     *
-     * Ditanggung jawabkan ke CS pertama yang membalas percakapan itu, dan satu
-     * pelanggan hanya dihitung satu lead dalam periode (dipisah per CS supaya
-     * dua orang yang ikut menangani tidak saling merebut perhitungan).
-     *
-     * Runtuhnya tiga tingkat: percakapan -> lead per pelanggan -> penanggung jawab.
-     * Batas waktu konversi tidak bisa ditulis sebagai MIN(m.created_at) di dalam
-     * EXISTS (MySQL menolak aggregate di WHERE), jadi waktu mulai lead dibawa dulu
-     * ke subquery tingkat tengah, lalu dibandingkan dengan nota di sana.
-     */
-    private function konversiDasar(array $s): string
-    {
-        $jendela = self::ATRIBUSI_HARI * 86400;
-
-        return 'SELECT l.pelanggan_id, MIN(l.waktu_mulai) waktu_mulai, MIN(l.pelaku) pelaku,'
-            . ' MAX(l.terkonversi) terkonversi'
-            . ' FROM (SELECT c.pelanggan_id, c.waktu_mulai, c.pelaku,'
-            . ' EXISTS(SELECT 1 FROM ' . $this->t('invoice') . ' o'
-            . ' WHERE o.pemesan_id = c.pelanggan_id AND o.deleted_at IS NULL'
-            . " AND o.status_pesanan <> '3' AND o.status_pembayaran IN ('5','6')"
-            . ' AND o.created_at BETWEEN c.waktu_mulai AND c.waktu_mulai + ' . $jendela . ') terkonversi'
-            . ' FROM (SELECT cp.pelanggan_id, MIN(m.created_at) waktu_mulai,'
-            . ' (SELECT p.user_id FROM ' . $this->t('crm_chat_pesan') . ' p'
-            . " WHERE p.percakapan_id = cp.id_percakapan AND p.arah = 'keluar'"
-            . ' AND p.user_id IS NOT NULL AND p.status <> \'gagal\''
-            . ' ORDER BY p.created_at LIMIT 1) pelaku'
-            . ' FROM ' . $this->t('crm_chat_percakapan') . ' cp'
-            . ' JOIN ' . $this->t('crm_chat_pesan') . " m ON m.percakapan_id = cp.id_percakapan AND m.arah = 'masuk'"
-            . ' WHERE cp.pelanggan_id IS NOT NULL'
-            . ' AND NOT EXISTS(SELECT 1 FROM ' . $this->t('invoice') . ' o0'
-            . ' WHERE o0.pemesan_id = cp.pelanggan_id AND o0.deleted_at IS NULL'
-            . ' AND o0.created_at < m.created_at)'
-            . ' GROUP BY cp.id_percakapan, cp.pelanggan_id'
-            . ' HAVING DATE(FROM_UNIXTIME(waktu_mulai)) BETWEEN :awal: AND :akhir:'
-            . ') c WHERE 1 = 1' . $this->klausulPelaku($s, 'c.pelaku')
-            . ') l GROUP BY l.pelanggan_id';
-    }
-
-    /** @return array<int, array{lead: int, terkonversi: int}> indexed by user_id (0 = belum ada penanggung jawab) */
-    private function konversiPerPegawai(array $s): array
-    {
-        $hasil = [];
-        // "lead" kata kunci di MySQL 8 (window function), jadi aliasnya jumlah_lead
-        foreach ($this->db->query('SELECT l.pelaku user_id, COUNT(*) jumlah_lead, SUM(l.terkonversi) terkonversi'
-            . ' FROM (' . $this->konversiDasar($s) . ') l GROUP BY l.pelaku', $this->params($s))->getResultArray() as $baris) {
-            $id                = (int) ($baris['user_id'] ?? 0);
-            $hasil[$id]        = [
-                'pegawai'      => $id === 0 ? 'belum ada penanggung jawab' : $this->namaPegawai($id),
-                'lead'         => (int) $baris['jumlah_lead'],
-                'terkonversi'  => (int) $baris['terkonversi'],
-            ];
         }
 
         return $hasil;
@@ -702,13 +520,9 @@ class KpiModel extends Model
         'nilai_lunas'           => ['nama' => 'Nilai nota lunas', 'sumber' => 'order_dibeli + order_biaya nota lunas', 'satuan' => 'per Rp 1 juta', 'poin' => 1],
         'tahap_produksi'        => ['nama' => 'Tahap produksi dikerjakan', 'sumber' => 'order_invoice_status.user_id', 'satuan' => 'catatan tahap', 'poin' => 1, 'catatan' => 'kolom pelaksana baru ada sejak 9 Oktober 2026 dan belum pernah terisi'],
         'foto_progres'          => ['nama' => 'Foto progres diunggah', 'sumber' => 'order_invoice_foto.user_id', 'satuan' => 'foto', 'poin' => 2, 'catatan' => 'foto yang notanya sudah dihapus permanen tidak bisa dipastikan tokonya, jadi tidak ikut dinilai'],
-        'balasan_chat'          => ['nama' => 'Pesan WhatsApp dibalas', 'sumber' => 'order_crm_chat_pesan arah keluar, bukan gagal', 'satuan' => 'pesan', 'poin' => 3],
-        'sesi_dijawab'          => ['nama' => 'Sesi chat dijawab pertama', 'sumber' => 'sesi first_response_time', 'satuan' => 'sesi', 'poin' => 5],
-        'lead_jadi_order'       => ['nama' => 'Lead menjadi order', 'sumber' => 'konversi lead dalam 14 hari', 'satuan' => 'pelanggan', 'poin' => 10],
         'tindak_lanjut_selesai' => ['nama' => 'Tindak lanjut diselesaikan', 'sumber' => 'order_crm_followup.selesai_oleh', 'satuan' => 'tiket', 'poin' => 6],
         'aktivitas_crm'         => ['nama' => 'Aktivitas pelanggan dicatat', 'sumber' => 'order_crm_aktivitas.user_id', 'satuan' => 'catatan', 'poin' => 1, 'catatan' => 'catatan CRM tidak terikat satu toko'],
         'pesan_manual'          => ['nama' => 'Pesan manual terkirim', 'sumber' => 'order_crm_pesan_log manual, status terkirim', 'satuan' => 'pesan', 'poin' => 1],
-        'broadcast_dibuat'      => ['nama' => 'Broadcast dibuat', 'sumber' => 'order_crm_broadcast.created_by', 'satuan' => 'broadcast', 'poin' => 5, 'catatan' => 'tabel broadcast masih kosong'],
         'void_salah'            => ['nama' => 'Nota dibatalkan karena kesalahan', 'sumber' => 'order_invoice.deleted_by + alasan_batal', 'satuan' => 'nota', 'poin' => -5, 'catatan' => 'pembatalan beralasan sah dan data lama tanpa alasan tidak dikurangi poin'],
     ];
 
@@ -723,7 +537,6 @@ class KpiModel extends Model
         'order_pengiriman'           => 'mengirim barang',
         'order_produk'               => 'mengubah master data barang',
         'order_user'                 => 'membuat dan mengubah akun',
-        'order_crm_chat_pesan masuk' => 'menerima pesan dari pelanggan (datang dari webhook)',
     ];
 
     /**
@@ -799,21 +612,6 @@ class KpiModel extends Model
     {
         $catatan = $this->catatanAktivitas($s);
 
-        // ada jejak yang tidak bisa dipakai untuk menilai orang: balasan yang akun
-        // pelakunya sudah tidak ada, dan lead yang belum pernah dibalas siapa pun
-        $konv  = $this->konversiPerPegawai($s);
-        $pesan = (int) $this->db->query('SELECT COUNT(1) j FROM ' . $this->t('crm_chat_pesan')
-            . " WHERE arah = 'keluar' AND status <> 'gagal'"
-            . ' AND created_at BETWEEN :awal_unix: AND :akhir_unix:', $this->paramsUnix($s))->getRowArray()['j'];
-
-        $belum = [
-            'balasan_chat'      => max(0, $pesan
-                - array_sum(array_column($catatan, 'balasan_chat'))),
-            'sesi_dijawab'      => max(0, $this->frtRingkas($s)['contoh']
-                - array_sum(array_column($catatan, 'sesi_dijawab'))),
-            'lead_jadi_order'   => (int) ($konv[0]['terkonversi'] ?? 0),
-        ];
-
         $hasil = [];
         foreach (self::ATURAN_POIN as $slug => $aturan) {
             $tercatat = 0;
@@ -824,7 +622,6 @@ class KpiModel extends Model
             $hasil[] = $aturan + [
                 'slug'         => $slug,
                 'tercatat'     => $tercatat,
-                'belum_ternilai' => (int) ($belum[$slug] ?? 0),
             ];
         }
 
@@ -868,16 +665,12 @@ class KpiModel extends Model
         }
 
         $sumber = [
-            'sesi_dijawab'          => fn (array $b) => (int) $b['contoh'],
-            'lead_jadi_order'       => fn (array $b) => (int) $b['terkonversi'],
             'tindak_lanjut_selesai' => fn (array $b) => (int) $b['contoh'],
             'void_salah'            => fn (array $b) => (int) $b['salah'],
         ];
 
         foreach ($sumber as $slug => $ambil) {
             $peta = match ($slug) {
-                'sesi_dijawab'          => $this->frtPerPegawai($s),
-                'lead_jadi_order'       => $this->konversiPerPegawai($s),
                 'tindak_lanjut_selesai' => $this->resolusiPerPegawai($s),
                 default                 => $this->voidPerPegawai($s),
             };
@@ -900,12 +693,12 @@ class KpiModel extends Model
     }
 
     /**
-     * Aktivitas di luar nota: tahap produksi, foto, balasan chat, pesan manual,
-     * catatan CRM, dan broadcast. Semuanya dihitung dari kolom pelakunya sendiri.
+     * Aktivitas di luar nota: tahap produksi, foto, pesan manual dan catatan CRM.
+     * Semuanya dihitung dari kolom pelakunya sendiri.
      *
      * Tahap produksi dan foto ikut menilai nota yang kemudian dibatalkan:
-     * kerjanya memang terjadi. Catatan CRM dan broadcast tidak punya kaitan toko,
-     * jadi saringan toko tidak berlaku di sana dan itu ditulis di halaman ranking.
+     * kerjanya memang terjadi. Catatan CRM tidak punya kaitan toko, jadi
+     * saringan toko tidak berlaku di sana dan itu ditulis di halaman ranking.
      *
      * @return array<string, array<int, int>>
      */
@@ -926,12 +719,6 @@ class KpiModel extends Model
                 . ' WHERE f.created_at BETWEEN :awal_unix: AND :akhir_unix:' . $toko . $level
                 . $this->klausulPelaku($s, 'f.user_id') . ' GROUP BY f.user_id',
 
-            'balasan_chat' => 'SELECT p.user_id user_id, COUNT(1) jumlah FROM ' . $this->t('crm_chat_pesan') . ' p'
-                . $this->sambungkan('p')
-                . " WHERE p.arah = 'keluar' AND p.status <> 'gagal'"
-                . ' AND p.created_at BETWEEN :awal_unix: AND :akhir_unix:' . $level
-                . $this->klausulPelaku($s, 'p.user_id') . ' GROUP BY p.user_id',
-
             'pesan_manual' => 'SELECT g.user_id user_id, COUNT(1) jumlah FROM ' . $this->t('crm_pesan_log') . ' g'
                 . $this->sambungkan('g')
                 . " WHERE g.tipe_pesan = 'manual' AND g.status = 'terkirim'"
@@ -942,11 +729,6 @@ class KpiModel extends Model
                 . $this->sambungkan('a')
                 . ' WHERE a.created_at BETWEEN :awal_unix: AND :akhir_unix:' . $level
                 . $this->klausulPelaku($s, 'a.user_id') . ' GROUP BY a.user_id',
-
-            'broadcast_dibuat' => 'SELECT b.created_by user_id, COUNT(1) jumlah FROM ' . $this->t('crm_broadcast') . ' b'
-                . $this->sambungkan('b', 'created_by')
-                . ' WHERE b.created_at BETWEEN :awal_unix: AND :akhir_unix:' . $level
-                . $this->klausulPelaku($s, 'b.created_by') . ' GROUP BY b.created_by',
         ];
 
         $hasil = [];
@@ -1112,11 +894,6 @@ class KpiModel extends Model
             'awal_unix'  => strtotime($s['awal'] . ' 00:00:00'),
             'akhir_unix' => strtotime($s['akhir'] . ' 23:59:59'),
         ];
-    }
-
-    private function paramsFrt(array $s): array
-    {
-        return $this->params($s);
     }
 
     private function daftarId(array $ids): string

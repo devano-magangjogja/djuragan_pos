@@ -398,11 +398,6 @@
             </h4>
         </div>
         <div class="d-flex gap-2 tombol-360">
-            <?php if (!empty($pelanggan['nomor_utama'])): ?>
-                <a href="<?= site_url('admin/crm/chat') ?>?nomor=<?= esc($pelanggan['nomor_utama']) ?>" class="btn btn-outline-success btn-sm fw-semibold">
-                    <i class="fab fa-whatsapp me-1"></i> <span class="d-none d-lg-inline">Buka di </span>Live Chat
-                </a>
-            <?php endif; ?>
             <button class="btn btn-primary btn-sm fw-semibold" data-bs-toggle="modal" data-bs-target="#modalKirimWaDirect">
                 <i class="fal fa-paper-plane me-1"></i> <span class="d-none d-lg-inline">Kirim </span>WhatsApp
             </button>
@@ -1390,7 +1385,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const selTpl = document.getElementById('selectTemplateWaDirect');
     const txtPesan = document.getElementById('pesanWaDirect');
     if (selTpl && txtPesan) {
-        const urlTokenWa  = '<?= site_url('admin/crm/chat/token') ?>';
+        const urlTokenWa  = '<?= site_url('admin/crm/pesan_token') ?>';
         const idPelanggan = <?= (int) ($pelanggan['id_pelanggan'] ?? 0) ?>;
         let tokenWa = null;
 
