@@ -270,29 +270,6 @@ $cekBayar = ((string) $session->get('level')) === 'superadmin';
     .kartu-invoice .blok-lipat > h6 > button > i:last-child {
         margin-left: 0 !important;
     }
-    /* Kata "Tambah" dilepas agar Sunting + Pembayaran muat satu baris; modalnya
-       tetap berjudul lengkap. */
-    .kartu-invoice .aksi .tambahBayar .kata-depan {
-        display: none;
-    }
-    /* Semua tombol aksi tetap satu baris dengan label lengkap: jarak ikon-ke-teks
-       dalam tombol dan jarak antar tombol dirapatkan. .btn-sm mengunci padding-nya
-       dengan !important di style.css, jadi aturan ini ikut !important dan menyebut
-       .btn juga agar kelasnya menang. */
-    .kartu-invoice .aksi .btn.btn-sm {
-        padding: 0.32rem 0.5rem !important;
-        gap: 0.25rem;
-    }
-    .kartu-invoice .aksi,
-    .kartu-invoice .aksi > div {
-        gap: 0.3rem;
-    }
-    .kartu-invoice .aksi {
-        justify-content: space-between !important;
-    }
-    .kartu-invoice .aksi .aksi-hapus {
-        margin-left: auto !important;
-    }
 }
 
 /* Di desktop: tombol aksi berjajar rapi di kiri, tombol Hapus berdampingan dengan Tambah Pembayaran */
@@ -615,7 +592,7 @@ $cekBayar = ((string) $session->get('level')) === 'superadmin';
                                         if ($i === 1) {
                                             echo '<span class="sr-only">/</span>';
                                         }
-                                        echo '<span class="me-1 inline-block rounded-md bg-ink-500 px-1.5 py-0.5 text-[0.75em] font-normal text-white">' . esc($hp) . '</span>';
+                                        echo '<span class="chip-hp me-1 inline-block rounded-md bg-ink-500 px-1.5 py-0.5 text-[0.75em] font-normal text-white">' . esc($hp) . '</span>';
                                         $i++;
                                     }
                                     ?>
@@ -649,7 +626,7 @@ $cekBayar = ((string) $session->get('level')) === 'superadmin';
                                             if ($i === 1) {
                                                 echo '<span class="sr-only">/</span>';
                                             }
-                                            echo '<span class="me-1 inline-block rounded-md bg-ink-500 px-1.5 py-0.5 text-[0.75em] font-normal text-white">' . esc($hp) . '</span>';
+                                            echo '<span class="chip-hp me-1 inline-block rounded-md bg-ink-500 px-1.5 py-0.5 text-[0.75em] font-normal text-white">' . esc($hp) . '</span>';
                                             $i++;
                                         }
                                         ?>
@@ -995,13 +972,13 @@ $cekBayar = ((string) $session->get('level')) === 'superadmin';
 
                 <hr class="my-3 border-0 border-t border-ink-200 opacity-100" />
 
-                <div class="aksi flex flex-wrap items-center gap-2">
+                <div class="aksi aksi-transaksi flex flex-wrap items-center gap-2">
                     <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                        <?= anchor('admin/invoices/sunting/' . esc($pesanan->seri), '<i class="fal fa-pencil"></i> Sunting', ['class' => 'btn btn-sm rounded-lg btn-outline-secondary', 'role' => 'button']) ?>
+                        <?= anchor('admin/invoices/sunting/' . esc($pesanan->seri), '<i class="fal fa-pencil"></i> Sunting', ['class' => 'btn btn-sm rounded-lg btn-outline-secondary aksi-bagi', 'role' => 'button']) ?>
 
                         <?php if (! $sudah_lunas) : ?>
                             <?= form_button([
-                                'class'          => 'btn btn-sm rounded-lg btn-outline-secondary tambahBayar',
+                                'class'          => 'btn btn-sm rounded-lg btn-outline-secondary aksi-bagi tambahBayar',
                                 'content'        => '<i class="fal fa-plus-circle"></i> <span class="label-bayar"><span class="kata-depan">Tambah </span>Pembayaran</span>',
                                 'data-invoice'   => $pesanan->id_invoice,
                                 'data-juragan'   => $pesanan->juragan_id,
@@ -1015,7 +992,7 @@ $cekBayar = ((string) $session->get('level')) === 'superadmin';
                         <?php
                         if ((int) $pesanan->status_pembayaran > 2 && ! $dipacking) {
                             echo form_button([
-                                'class'          => 'btn btn-sm rounded-lg btn-dark pesanStatus',
+                                'class'          => 'btn btn-sm rounded-lg btn-dark aksi-setengah pesanStatus',
                                 'content'        => '<i class="fal fa-comment-alt-plus"></i> Proses Orderan',
                                 'data-invoice'   => $pesanan->id_invoice,
                                 'data-seri'      => $pesanan->seri,
@@ -1027,7 +1004,7 @@ $cekBayar = ((string) $session->get('level')) === 'superadmin';
                         // tombol cek pembayaran hanya tampil jika ada pembayaran yang perlu dicek
                         if ($pesanan->status_pembayaran === '2' || $pesanan->status_pembayaran === '3') {
                             echo form_button([
-                                'class'          => 'btn btn-sm rounded-lg btn-warning pesanBayar',
+                                'class'          => 'btn btn-sm rounded-lg btn-warning aksi-penuh pesanBayar',
                                 'content'        => '<i class="fal fa-wallet"></i> Cek Pembayaran',
                                 'data-invoice'   => $pesanan->id_invoice,
                                 'data-juragan'   => $pesanan->juragan_id,
@@ -1038,7 +1015,7 @@ $cekBayar = ((string) $session->get('level')) === 'superadmin';
 
                         if ($dipacking && (int) $pesanan->status_pengiriman < 3) {
                             echo form_button([
-                                'class'        => 'btn btn-sm rounded-lg btn-warning kirimResi',
+                                'class'        => 'btn btn-sm rounded-lg btn-warning aksi-penuh kirimResi',
                                 'content'      => '<i class="fal fa-paper-plane"></i> Input Resi',
                                 'data-count'   => $count_barang,
                                 'data-invoice' => $pesanan->id_invoice,
@@ -1050,16 +1027,16 @@ $cekBayar = ((string) $session->get('level')) === 'superadmin';
                             // dicatat kembali hanya masuk akal untuk barang yang
                             // memang benar-benar sedang dipinjam orang
                             $kembali = [
-                                'content'      => '<i class="fal fa-tshirt"></i> Sudah kembali',
+                                'content'      => '<i class="fal fa-tshirt"></i> <span class="kata-depan">Sudah </span>kembali',
                                 'data-invoice' => $pesanan->id_invoice,
                                 'data-seri'    => $pesanan->seri,
                             ];
 
                             if ($siap_kembali) {
-                                $kembali['class'] = 'btn btn-sm rounded-lg btn-success sewaKembali';
+                                $kembali['class'] = 'btn btn-sm rounded-lg btn-success aksi-setengah sewaKembali';
                                 $kembali['title'] = 'Barang sewaan sudah diterima kembali di toko';
                             } else {
-                                $kembali['class']    = 'btn btn-sm rounded-lg btn-success disabled';
+                                $kembali['class']    = 'btn btn-sm rounded-lg btn-success aksi-setengah disabled';
                                 $kembali['disabled'] = '';
                                 $kembali['title']    = (string) $alasan_kembali;
                             }
@@ -1069,11 +1046,11 @@ $cekBayar = ((string) $session->get('level')) === 'superadmin';
                             $waktu_kembali = Time::createFromTimestamp((int) $pesanan->sewa_kembali_at)
                                 ->setTimezone(config('App')->appTimezone)
                                 ->toLocalizedString('d MMM yyyy HH:mm'); ?>
-                            <span class="btn btn-sm rounded-lg btn-success disabled" title="Waktu pengembaliannya dicatat">
+                            <span class="btn btn-sm rounded-lg btn-success aksi-baris disabled" title="Waktu pengembaliannya dicatat">
                                 <i class="fal fa-undo-alt-left"></i> Kembali <?= esc($waktu_kembali) ?>
                             </span>
                             <?php echo form_button([
-                                'class'        => 'btn btn-sm rounded-lg btn-outline-secondary sewaBatalkan',
+                                'class'        => 'btn btn-sm rounded-lg btn-outline-secondary aksi-setengah sewaBatalkan',
                                 'content'      => '<i class="fal fa-undo"></i> Batalkan',
                                 'data-invoice' => $pesanan->id_invoice,
                                 'data-seri'    => $pesanan->seri,
@@ -1085,7 +1062,7 @@ $cekBayar = ((string) $session->get('level')) === 'superadmin';
 
                     <div class="aksi-hapus">
                         <?= form_button([
-                            'class'        => 'btn btn-sm rounded-lg btn-outline-danger hapusOrderan',
+                            'class'        => 'btn btn-sm rounded-lg btn-outline-danger aksi-bagi hapusOrderan',
                             'content'      => '<i class="fal fa-trash-alt"></i> Hapus',
                             'data-invoice' => $pesanan->id_invoice,
                             'data-seri'    => $pesanan->seri,

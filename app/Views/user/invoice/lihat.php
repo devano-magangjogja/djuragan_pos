@@ -525,7 +525,7 @@ $kelolaTransaksi = wewenang_sunting_transaksi();
                                         if ($i === 1) {
                                             echo '<span class="sr-only">/</span>';
                                         }
-                                        echo '<span class="me-1 inline-block rounded-md bg-ink-500 px-1.5 py-0.5 text-[0.75em] font-normal text-white">' . esc($hp) . '</span>';
+                                        echo '<span class="chip-hp me-1 inline-block rounded-md bg-ink-500 px-1.5 py-0.5 text-[0.75em] font-normal text-white">' . esc($hp) . '</span>';
                                         $i++;
                                     }
                                     ?>
@@ -559,7 +559,7 @@ $kelolaTransaksi = wewenang_sunting_transaksi();
                                             if ($i === 1) {
                                                 echo '<span class="sr-only">/</span>';
                                             }
-                                            echo '<span class="me-1 inline-block rounded-md bg-ink-500 px-1.5 py-0.5 text-[0.75em] font-normal text-white">' . esc($hp) . '</span>';
+                                            echo '<span class="chip-hp me-1 inline-block rounded-md bg-ink-500 px-1.5 py-0.5 text-[0.75em] font-normal text-white">' . esc($hp) . '</span>';
                                             $i++;
                                         }
                                         ?>
@@ -899,16 +899,16 @@ $kelolaTransaksi = wewenang_sunting_transaksi();
 
                 <hr class="my-3 border-0 border-t border-ink-200 opacity-100" />
 
-                <div class="aksi flex flex-wrap items-center gap-1.5 sm:gap-2">
+                <div class="aksi aksi-transaksi flex flex-wrap items-center gap-1.5 sm:gap-2">
                     <?php if ($kelolaTransaksi) : ?>
                         <?= anchor('admin/invoices/sunting/' . esc($pesanan->seri), '<i class="fal fa-pen-to-square"></i> Sunting', [
-                            'class' => 'btn btn-sm rounded-lg btn-outline-secondary',
+                            'class' => 'btn btn-sm rounded-lg btn-outline-secondary aksi-bagi',
                             'role'  => 'button',
                             'title' => 'Ubah isi nota, ukuran, harga, dan pelanggan',
                         ]) ?>
                         <?php if ((int) $pesanan->status_pembayaran > 2 && ! $dipacking) : ?>
                             <?= form_button([
-                                'class'          => 'btn btn-sm rounded-lg btn-dark pesanStatus',
+                                'class'          => 'btn btn-sm rounded-lg btn-dark aksi-setengah pesanStatus',
                                 'content'        => '<i class="fal fa-comment-alt-plus"></i> Proses Orderan',
                                 'data-invoice'   => $pesanan->id_invoice,
                                 'data-seri'      => $pesanan->seri,
@@ -919,8 +919,8 @@ $kelolaTransaksi = wewenang_sunting_transaksi();
                     <?php endif; ?>
                     <?php if (! $sudah_lunas) : ?>
                         <?= form_button([
-                            'class'          => 'btn btn-sm rounded-lg btn-outline-secondary tambahBayar',
-                            'content'        => '<i class="fal fa-plus-circle"></i> Tambah Pembayaran',
+                            'class'          => 'btn btn-sm rounded-lg btn-outline-secondary aksi-bagi tambahBayar',
+                            'content'        => '<i class="fal fa-plus-circle"></i> <span class="label-bayar"><span class="kata-depan">Tambah </span>Pembayaran</span>',
                             'data-invoice'   => $pesanan->id_invoice,
                             'data-juragan'   => $pesanan->juragan_id,
                             'data-kurang'    => max(0, $sisa),
@@ -934,7 +934,7 @@ $kelolaTransaksi = wewenang_sunting_transaksi();
                         // tombol cek pembayaran
                         // hanya tampil jika ada pembayaran yang perlu dicek
                         echo form_button([
-                            'class'          => 'btn btn-sm rounded-lg btn-warning pesanBayar',
+                            'class'          => 'btn btn-sm rounded-lg btn-warning aksi-penuh pesanBayar',
                             'content'        => '<i class="fal fa-wallet"></i> Cek Pembayaran',
                             'data-invoice'   => $pesanan->id_invoice,
                             'data-juragan'   => $pesanan->juragan_id,
@@ -948,16 +948,16 @@ $kelolaTransaksi = wewenang_sunting_transaksi();
                         // dicatat kembali hanya masuk akal untuk barang yang memang
                         // benar-benar sedang dipinjam orang
                         $kembali = [
-                            'content'      => '<i class="fal fa-tshirt"></i> Sudah kembali',
+                            'content'      => '<i class="fal fa-tshirt"></i> <span class="kata-depan">Sudah </span>kembali',
                             'data-invoice' => $pesanan->id_invoice,
                             'data-seri'    => $pesanan->seri,
                         ];
 
                         if ($siap_kembali) {
-                            $kembali['class'] = 'btn btn-sm rounded-lg btn-success sewaKembali';
+                            $kembali['class'] = 'btn btn-sm rounded-lg btn-success aksi-setengah sewaKembali';
                             $kembali['title'] = 'Barang sewaan sudah diterima kembali di toko';
                         } else {
-                            $kembali['class']    = 'btn btn-sm rounded-lg btn-success disabled';
+                            $kembali['class']    = 'btn btn-sm rounded-lg btn-success aksi-setengah disabled';
                             $kembali['disabled'] = '';
                             $kembali['title']    = (string) $alasan_kembali;
                         }
@@ -967,11 +967,11 @@ $kelolaTransaksi = wewenang_sunting_transaksi();
                         $waktu_kembali = Time::createFromTimestamp((int) $pesanan->sewa_kembali_at)
                             ->setTimezone(config('App')->appTimezone)
                             ->toLocalizedString('d MMM yyyy HH:mm'); ?>
-                        <span class="btn btn-sm rounded-lg btn-success disabled" title="Waktu pengembaliannya dicatat">
+                        <span class="btn btn-sm rounded-lg btn-success aksi-baris disabled" title="Waktu pengembaliannya dicatat">
                             <i class="fal fa-undo-alt-left"></i> Kembali <?= esc($waktu_kembali) ?>
                         </span>
                         <?php echo form_button([
-                            'class'        => 'btn btn-sm rounded-lg btn-outline-secondary sewaBatalkan',
+                            'class'        => 'btn btn-sm rounded-lg btn-outline-secondary aksi-setengah sewaBatalkan',
                             'content'      => '<i class="fal fa-undo"></i> Batalkan',
                             'data-invoice' => $pesanan->id_invoice,
                             'data-seri'    => $pesanan->seri,

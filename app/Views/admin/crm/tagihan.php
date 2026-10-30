@@ -32,9 +32,6 @@
         <div>
             <h1 class="h3 mb-1">Follow-up Tagihan Belum Lunas</h1>
         </div>
-        <div class="d-flex align-items-center gap-2">
-            <?= $this->include('admin/crm/tombol_wa') ?>
-        </div>
     </div>
 
 

@@ -331,6 +331,28 @@ $kotak_pilihan = static function (string $nama, string $id, array $daftar, strin
         cursor: pointer;
     }
 
+    /* Tombol Sunting dan Hapus di kartu COD: kanan-kiri mengisi lebar kartu di
+       layar HP, bukan bertumpuk. Hapus duduk di dalam <form> sendiri, jadi
+       wadah formnya dilucuti (display:contents) supaya tombolnya ikut jadi
+       anggota baris aksi — selektornya tetap harus menyebut di dalam form,
+       karena display:contents hanya menghapus kotaknya di layar, bukan tempat
+       tombolnya di DOM. Keterangan "dicatat oleh ..." turun ke barisnya sendiri
+       dan tidak perlu lagi didorong ke tepi kanan. */
+    @media (max-width: 575.98px) {
+        .kartu-invoice .aksi > form {
+            display: contents !important;
+        }
+
+        .kartu-invoice .aksi > .btn,
+        .kartu-invoice .aksi > form > .btn {
+            flex: 1 1 0;
+        }
+
+        .kartu-invoice .aksi > span {
+            margin-left: 0 !important;
+        }
+    }
+
     /* formnya dua kolom, jadi pop-upnya cukup sedang: lebih lapang dari modal
        standar tetapi tidak sebesar modal-lg yang membuat layar penuh */
     .modal-cod {

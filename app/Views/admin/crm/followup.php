@@ -162,6 +162,16 @@
     .fup-tabel td .btn {
         margin-right: 0.4rem;
     }
+    /* Kolom "Aksi Tagih" cuma berisi satu tombol, jadi ia ikut memanjang sebaris
+       penuh di mode kartu: kalau tidak, tombolnya duduk di kolom kiri saja dan
+       labelnya belah dua ("Kirim / Tagihan") seperti di layar 360px. */
+    .fup-tabel td[data-label="Aksi Tagih"] {
+        grid-column: 1 / -1;
+    }
+    .fup-tabel td[data-label="Aksi Tagih"] .btn {
+        width: 100%;
+        margin-right: 0;
+    }
     .reminder-nama {
         white-space: normal;
         overflow: visible;
@@ -208,16 +218,13 @@
         padding-right: 0.9rem;
         line-height: 1.45;
     }
-    /* Baris judul di HP disusun vertikal: judul + penjelasan duluan, tombol
-       Live Chat WA turun ke baris sendiri. Flex row bikin kotak teksnya
+    /* Baris judul di HP disusun vertikal: judul + penjelasan duluan, aksi di
+       kanan turun ke baris sendiri. Flex row bikin kotak teksnya
        melebar sampai sebaris penuh, jadi di sini dijadikan blok biasa. */
     .fup-judul-baris {
         /* !important karena baris ini membawa kelas BS d-flex (utility-nya
            !important, jadi tanpa !important aturan ini kalah) */
         display: block !important;
-    }
-    .fup-judul-aksi {
-        margin-top: 0.6rem;
     }
     /* Seluruh isi halaman dirapatkan ke tepi kiri-kanan layar HP (band 768px
        ke bawah, bukan hanya 576px) supaya bar tab dan teks punya ruang lebih. */
@@ -281,9 +288,6 @@
                 <i class="fal fa-tasks text-primary me-2 d-none d-lg-inline"></i> Pusat Follow-up & Reminder
             </h4>
             <p class="text-muted small mb-0 fup-teks">Kelola tindakan follow-up customer, penagihan invoice, dan pengingat jadwal pakaian penting.</p>
-        </div>
-        <div class="d-flex align-items-center gap-2 fup-judul-aksi">
-            <?= $this->include('admin/crm/tombol_wa') ?>
         </div>
     </div>
 
@@ -421,11 +425,6 @@
                                             <a href="<?= site_url('admin/crm/pelanggan/' . $f['pelanggan_id']) ?>" class="btn btn-sm btn-outline-primary me-2" title="Buka Profil 360">
                                                 <i class="fal fa-id-card"></i>
                                             </a>
-                                            <?php if (!empty($f['nomor_wa'])): ?>
-                                                <a href="<?= site_url('admin/crm/chat?nomor=' . $f['nomor_wa']) ?>" class="btn btn-sm btn-outline-success me-2" title="Chat WhatsApp">
-                                                    <i class="fab fa-whatsapp"></i>
-                                                </a>
-                                            <?php endif; ?>
                                             <?php if ($f['status'] === 'menunggu'): ?>
                                                 <form action="<?= site_url('admin/crm/followup/selesai/' . $f['id_followup']) ?>" method="post" class="d-inline" onsubmit="return confirm('Tandai follow-up ini telah selesai?');">
                                                     <?= csrf_field() ?>
@@ -642,11 +641,6 @@
                                                 <i class="fal fa-user me-1"></i><?= esc($rem['nama_pelanggan']) ?>
                                             </a>
                                             <div class="d-flex gap-1 ms-auto">
-                                                <?php if (!empty($rem['nomor_wa'])): ?>
-                                                    <a href="<?= site_url('admin/crm/chat?nomor=' . $rem['nomor_wa']) ?>" class="btn btn-xs btn-outline-success py-0 px-2" style="font-size: 11px;">
-                                                        <i class="fab fa-whatsapp"></i> Chat
-                                                    </a>
-                                                <?php endif; ?>
                                                 <a href="<?= site_url('admin/crm/pelanggan/' . $rem['pelanggan_id']) ?>" class="btn btn-xs btn-outline-primary py-0 px-2" style="font-size: 11px;">
                                                     Profil 360
                                                 </a>

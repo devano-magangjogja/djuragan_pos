@@ -1,11 +1,13 @@
 <?php
 /**
- * Target dan bobot KPI.
+ * Target KPI.
  *
- * Yang boleh diubah hanya angka target, bobot, dan aktif/tidaknya
- * indikator. Keterangan di sini dibuat satu kalimat biasa; definisi teknis dan
- * rumus hitungnya hanya muncul saat selnya ditahan (tooltip) dan di halaman
- * detail tiap indikator.
+ * Yang boleh diubah hanya angka target dan aktif/tidaknya indikator. Kolom
+ * "Bobot %" sudah dilepas bersama indikator chat/lead/resolution: satu-satunya
+ * target yang tersisa adalah GMV per CS (plus target Tim CS), jadi tidak ada lagi
+ * yang perlu ditimbang. Keterangan di sini dibuat satu kalimat biasa; definisi
+ * teknis dan rumus hitungnya hanya muncul saat selnya ditahan (tooltip) dan di
+ * halaman detail tiap indikator.
  *
  * Variabel di bawah disuntik runtime oleh Admin\Kpi::target() lewat
  * view('admin/kpi/target', $data). CI4 meng-extract array itu saat render,
@@ -13,7 +15,7 @@
  * menyangkanya tak terdefinisi. Blok @var ini hanya penanda tipe untuk
  * analyzer, bukan kode yang dijalankan.
  *
- * @var array  $target   daftar indikator: [['indikator','nama','peran','arah','satuan','target','bobot','aktif','definisi','aturan','updated_at','updated_by'], ...]
+ * @var array  $target   daftar indikator: [['indikator','nama','peran','arah','satuan','target','target_tim','aktif','definisi','aturan','updated_at','updated_by'], ...]
  * @var bool   $boleh    pengguna boleh mengubah target; khusus Superadmin (admin
  *                       sudah dibelokkan ke Ringkasan oleh Kpi::target(), jadi
  *                       mode baca di bawah ini cuma cadangan kalau rutenya berubah)
@@ -23,9 +25,6 @@
 
 /** Bahasa sehari-hari per indikator, tanpa istilah teknis. */
 $sederhana = [
-    'first_response_time'   => 'Berapa lama pelanggan menunggu balasan pertama.',
-    'konversi_lead'         => 'Berapa persen chat baru yang jadi order.',
-    'resolution_time'       => 'Berapa lama komplain sampai benar-benar selesai.',
     'gmv_cs'                => 'Jumlah pcs produk katalog dari nota yang sudah lunas, dihitung per CS. Punya dua target: per CS (satu orang) dan Tim CS (total seluruh tim).',
 ];
 
@@ -43,6 +42,15 @@ $isi = static function ($nilai, string $satuan): string {
     // desimal hanya ditampilkan kalau memang ada: 1250 pcs bukan 1.250,0 pcs
     return number_format($n, fmod($n, 1.0) === 0.0 ? 0 : 1, ',', '.') . ' ' . $satuan;
 };
+
+/** Nilai di dalam kotak angka: rupiah selalu bulat penuh, tanpa ".00" di ujung. */
+$kotak = static function ($nilai, string $satuan): string {
+    if ($nilai === null || $nilai === '') {
+        return '';
+    }
+
+    return $satuan === 'rupiah' ? (string) (int) $nilai : (string) (float) $nilai;
+};
 ?>
 <?= $this->extend('template/main') ?>
 
@@ -50,7 +58,7 @@ $isi = static function ($nilai, string $satuan): string {
 <?= $this->include('admin/navbar') ?>
 
 <div class="container-xxl">
-    <h1 class="h3 mt-5">Target dan Bobot KPI</h1>
+    <h1 class="h3 mt-5">Target KPI</h1>
 
     <?php if ($kabar !== '') { ?>
         <div class="alert alert-success py-2"><?= esc($kabar) ?></div>
@@ -73,11 +81,9 @@ $isi = static function ($nilai, string $satuan): string {
                             <th scope="col" class="text-center">Arah</th>
                             <?php if ($boleh) { ?>
                                 <th scope="col" style="width: 150px;">Target</th>
-                                <th scope="col" style="width: 100px;">Bobot %</th>
                                 <th scope="col" class="text-center">Aktif</th>
                             <?php } else { ?>
                                 <th scope="col" class="text-end">Target</th>
-                                <th scope="col" class="text-end">Bobot</th>
                             <?php } ?>
                         </tr>
                     </thead>
@@ -117,7 +123,7 @@ $isi = static function ($nilai, string $satuan): string {
                                             'min'         => '0',
                                             'name'        => 'target[' . $t['indikator'] . ']',
                                             'placeholder' => $t['satuan'],
-                                            'value'       => $t['target'],
+                                            'value'       => $kotak($t['target'], $t['satuan']),
                                         ]) ?>
                                         <?php if ($t['indikator'] === 'gmv_cs') : ?>
                                             <div class="small text-muted mt-2 mb-1">Tim CS (total <?= esc($t['satuan']) ?>)</div>
@@ -128,20 +134,9 @@ $isi = static function ($nilai, string $satuan): string {
                                                 'min'         => '0',
                                                 'name'        => 'target_tim[' . $t['indikator'] . ']',
                                                 'placeholder' => $t['satuan'],
-                                                'value'       => $t['target_tim'] ?? '',
+                                                'value'       => $kotak($t['target_tim'] ?? null, $t['satuan']),
                                             ]) ?>
                                         <?php endif; ?>
-                                    </td>
-                                    <td>
-                                        <?= form_input([
-                                            'class' => 'form-control form-control-sm',
-                                            'type'  => 'number',
-                                            'step'  => '1',
-                                            'min'   => '0',
-                                            'max'   => '100',
-                                            'name'  => 'bobot[' . $t['indikator'] . ']',
-                                            'value' => $t['bobot'],
-                                        ]) ?>
                                     </td>
                                     <td class="text-center">
                                         <?= form_checkbox([
@@ -160,7 +155,6 @@ $isi = static function ($nilai, string $satuan): string {
                                             </div>
                                         <?php endif; ?>
                                     </td>
-                                    <td class="text-end"><?= esc((string) $t['bobot']) ?></td>
                                 <?php } ?>
                             </tr>
                         <?php } ?>
@@ -178,12 +172,8 @@ $isi = static function ($nilai, string $satuan): string {
 
     <?php if (! $boleh) { ?>
         <p class="alert alert-light border small">
-            Hanya Superadmin yang boleh menentukan target dan bobot. Akun Anda hanya bisa membaca angka yang berlaku.
+            Hanya Superadmin yang boleh menentukan target. Akun Anda hanya bisa membaca angka yang berlaku.
         </p>
     <?php } ?>
-
-    <p class="text-muted small">
-        Bobot cuma dipakai untuk skor gabungan di halaman Ringkasan. Tidak harus berjumlah 100.
-    </p>
 </div>
 <?= $this->endSection() ?>

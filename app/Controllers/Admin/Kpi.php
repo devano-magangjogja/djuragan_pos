@@ -147,7 +147,9 @@ class Kpi extends BaseController
         $halaman = $this->halaman();
         $jumlah  = $model->detailJumlah($s, $indikator);
 
-        $aturan = $model->targetSatu($indikator);
+        // indikator tanpa baris target (order_diproses, resolution_time) tetap
+        // punya nama dan penjelasan: yang dibaca pembaca adalah rumus angkanya
+        $aturan = $model->targetSatu($indikator) ?? (KpiModel::LABEL[$indikator] ?? null);
 
         // GMV: target yang tampil di halaman ini harus sama dengan kartu Ringkasan
         // (Tim CS saat melihat semua orang, per-CS saat satu pegawai dipilih); dua-
@@ -157,7 +159,7 @@ class Kpi extends BaseController
         }
 
         return view('admin/kpi/detail', [
-            'title'     => 'Detail ' . $indikator,
+            'title'     => 'Detail ' . ($aturan['nama'] ?? $indikator),
             's'         => $s,
             'indikator' => $indikator,
             'aturan'    => $aturan,
@@ -173,7 +175,7 @@ class Kpi extends BaseController
     }
 
     /**
-     * Daftar target dan bobot, sekaligus tempat mengubahnya.
+     * Daftar target KPI, sekaligus tempat mengubahnya.
      *
      * Khusus Superadmin. Admin hanya menilai hasilnya (Ringkasan, Ranking, Detail),
      * karena angka target adalah keputusan manajemen, bukan kerja harian toko.
@@ -191,7 +193,7 @@ class Kpi extends BaseController
         $model = new KpiModel();
 
         return view('admin/kpi/target', [
-            'title'    => 'Target dan Bobot KPI',
+            'title'    => 'Target KPI',
             'target'   => $model->targetSemua(),
             'boleh'    => $this->bolehUbah(),
             'kabar'    => (string) session()->getFlashdata('kabar'),
@@ -217,40 +219,33 @@ class Kpi extends BaseController
 
         $model   = new KpiModel();
         $target  = (array) $this->request->getPost('target');
-        $bobot   = (array) $this->request->getPost('bobot');
         $aktif   = (array) $this->request->getPost('aktif');
         $tim     = (array) $this->request->getPost('target_tim');
-        $known   = array_column($model->targetSemua(), 'indikator');
+        $known   = array_column($model->targetSemua(), 'satuan', 'indikator');
 
         $diubah = 0;
         $lewat  = 0;
 
         foreach ($target as $indikator => $nilai) {
-            if (! in_array((string) $indikator, $known, true)) {
+            $satuan = $known[(string) $indikator] ?? null;
+
+            if ($satuan === null) {
                 $lewat++;
 
                 continue;
             }
 
-            $angka  = $this->angka($nilai);
-            $bobot_angka = $this->angka($bobot[$indikator] ?? null);
-
-            if ($bobot_angka !== null && ($bobot_angka < 0 || $bobot_angka > 100)) {
-                $lewat++;
-
-                continue;
-            }
+            $angka  = $this->angka($nilai, $satuan);
 
             $data = [
                 'target'  => $angka,
-                'bobot'   => $bobot_angka ?? 0,
                 'aktif'   => isset($aktif[$indikator]) ? 1 : 0,
             ];
 
             // target_tim hanya punya isian di form untuk gmv_cs; indikator lain tidak
             // mengirimnya, jadi kolomnya dibiarkan apa adanya (tidak ditimpa jadi NULL)
             if (array_key_exists($indikator, $tim)) {
-                $data['target_tim'] = $this->angka($tim[$indikator]);
+                $data['target_tim'] = $this->angka($tim[$indikator], $satuan);
             }
 
             $model->simpanTarget((string) $indikator, $data, pengguna_sesi());
@@ -378,7 +373,7 @@ class Kpi extends BaseController
     }
 
     /**
-     * Menentukan target dan bobot hanya boleh Superadmin. Rutenya sudah membatasi,
+     * Menentukan target hanya boleh Superadmin. Rutenya sudah membatasi,
      * ini pagar kedua: admin cukup melihat ringkasan dan ranking.
      */
     private function bolehUbah(): bool
@@ -395,8 +390,14 @@ class Kpi extends BaseController
         return checkdate((int) $m[2], (int) $m[3], (int) $m[1]) ? $nilai : '';
     }
 
-    /** Angka desimal dari input orang; selain itu dianggap kosong. */
-    private function angka(mixed $nilai): ?float
+    /**
+     * Angka desimal dari input orang; selain itu dianggap kosong.
+     *
+     * Rupiah dan pcs dibulatkan sampai unit: target GMV adalah angka utuh — baik
+     * nominal maupun jumlah barang katalog — tidak pernah memakai pecahan, dan
+     * kotak isinya tidak menerima desimal.
+     */
+    private function angka(mixed $nilai, ?string $satuan = null): ?float
     {
         $bersih = trim((string) $nilai);
 
@@ -404,6 +405,6 @@ class Kpi extends BaseController
             return null;
         }
 
-        return round((float) $bersih, 2);
+        return round((float) $bersih, in_array($satuan, ['rupiah', 'pcs'], true) ? 0 : 2);
     }
 }

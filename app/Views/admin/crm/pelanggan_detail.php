@@ -398,11 +398,6 @@
             </h4>
         </div>
         <div class="d-flex gap-2 tombol-360">
-            <?php if (!empty($pelanggan['nomor_utama'])): ?>
-                <a href="<?= site_url('admin/crm/chat') ?>?nomor=<?= esc($pelanggan['nomor_utama']) ?>" class="btn btn-outline-success btn-sm fw-semibold">
-                    <i class="fab fa-whatsapp me-1"></i> <span class="d-none d-lg-inline">Buka di </span>Live Chat
-                </a>
-            <?php endif; ?>
             <button class="btn btn-primary btn-sm fw-semibold" data-bs-toggle="modal" data-bs-target="#modalKirimWaDirect">
                 <i class="fal fa-paper-plane me-1"></i> <span class="d-none d-lg-inline">Kirim </span>WhatsApp
             </button>
@@ -1233,10 +1228,10 @@
 
 <!-- ================= MODAL TAMBAH TAG ================= -->
 <div class="modal fade" id="modalTambahTag" tabindex="-1">
-    <div class="modal-dialog modal-sm">
-        <form action="<?= site_url('admin/crm/pelanggan/tambah_tag/' . $pelanggan['id_pelanggan']) ?>" method="post">
-            <?= csrf_field() ?>
-            <div class="modal-content">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form action="<?= site_url('admin/crm/pelanggan/tambah_tag/' . $pelanggan['id_pelanggan']) ?>" method="post">
+                <?= csrf_field() ?>
                 <div class="modal-header">
                     <h6 class="modal-title fw-bold">Tambah Tag Customer</h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -1273,8 +1268,8 @@
                     <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">Batal</button>
                     <button type="submit" class="btn btn-primary btn-sm">Tambahkan</button>
                 </div>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
 </div>
 
@@ -1390,7 +1385,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const selTpl = document.getElementById('selectTemplateWaDirect');
     const txtPesan = document.getElementById('pesanWaDirect');
     if (selTpl && txtPesan) {
-        const urlTokenWa  = '<?= site_url('admin/crm/chat/token') ?>';
+        const urlTokenWa  = '<?= site_url('admin/crm/pesan_token') ?>';
         const idPelanggan = <?= (int) ($pelanggan['id_pelanggan'] ?? 0) ?>;
         let tokenWa = null;
 
