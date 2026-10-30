@@ -214,7 +214,7 @@ class KpiUji extends BaseCommand
 
         $s      = $this->sempit($nota);
         $awal   = (float) $this->model->kartu($s)['gmv_cs']['nilai'];
-        $nilai  = $this->nilaiNota((int) $nota['id_invoice']);
+        $pcs    = $this->pcsNota((int) $nota['id_invoice']);
 
         $this->db->transStart();
         $this->db->query('UPDATE ' . $this->table('invoice')
@@ -229,9 +229,9 @@ class KpiUji extends BaseCommand
             return 'GAGAL|nota ' . $nota['id_invoice'] . ' yang dibatalkan masih muncul di daftar GMV';
         }
 
-        return $this->sama($nilai, $awal - $sesudah)
-            ? 'OK|nota ' . $nota['id_invoice'] . ' dibatalkan: GMV turun ' . $this->rp($awal - $sesudah)
-            : 'GAGAL|GMV turun ' . $this->rp($awal - $sesudah) . ', nilai nota ' . $this->rp($nilai);
+        return $this->sama($pcs, $awal - $sesudah)
+            ? 'OK|nota ' . $nota['id_invoice'] . ' dibatalkan: GMV turun ' . $this->pcs($awal - $sesudah)
+            : 'GAGAL|GMV turun ' . $this->pcs($awal - $sesudah) . ', pcs katalog nota ' . $this->pcs($pcs);
     }
 
     private function s14(): string
@@ -245,8 +245,8 @@ class KpiUji extends BaseCommand
         $utuh   = (float) $this->model->kartu($this->s())['gmv_cs']['nilai'];
 
         if (! $this->sama($utuh, $kiri + $kanan)) {
-            return 'GAGAL|GMV dua rentang tanggal (' . $this->rp($kiri + $kanan)
-                . ') tidak sama dengan rentang utuh (' . $this->rp($utuh) . ')';
+            return 'GAGAL|GMV dua rentang tanggal (' . $this->pcs($kiri + $kanan)
+                . ') tidak sama dengan rentang utuh (' . $this->pcs($utuh) . ')';
         }
 
         $pil     = $this->model->pegawaiPilihan('semua');
@@ -260,8 +260,8 @@ class KpiUji extends BaseCommand
         $gmvOrang = (float) $this->model->kartu($seorang)['gmv_cs']['nilai'];
 
         if ($gmvOrang > $utuh + self::SUDAH) {
-            return 'GAGAL|GMV pegawai ' . $pil[$id] . ' (' . $this->rp($gmvOrang) . ') melebihi total ('
-                . $this->rp($utuh) . ')';
+            return 'GAGAL|GMV pegawai ' . $pil[$id] . ' (' . $this->pcs($gmvOrang) . ') melebihi total ('
+                . $this->pcs($utuh) . ')';
         }
 
         $asing = array_filter($this->model->detail($seorang, 'gmv_cs', 500, 0),
@@ -339,30 +339,31 @@ class KpiUji extends BaseCommand
         $in = $this->table('invoice');
         $un = $this->table('user');
 
+        // angka manual ditulis ulang dari kolom aslinya, tanpa memakai model:
+        // pcs katalog = order_dibeli.qty baris yang produk_id-nya terisi, nota 5/6
         $manual = $this->db->query('SELECT COUNT(*) nota,'
             . " COALESCE(SUM(CASE WHEN o.status_pembayaran IN ('5','6')"
-            . '   THEN COALESCE(b.barang, 0) + COALESCE(bc.biaya, 0) ELSE 0 END), 0) gmv'
+            . '   THEN COALESCE(bk.unit, 0) ELSE 0 END), 0) unit'
             . ' FROM ' . $in . ' o'
             . ' JOIN ' . $un . " u ON u.id = o.user_id AND u.status = 'active' AND u.deleted_at IS NULL"
             // sama seperti LEVEL_PERAN['semua']: yang dinilai hanya kerja CS
             . " AND u.level IN ('cs')"
-            . ' LEFT JOIN (SELECT invoice_id, SUM(qty * harga) barang FROM ' . $this->table('dibeli') . ' GROUP BY invoice_id) b'
-            . ' ON b.invoice_id = o.id_invoice'
-            . ' LEFT JOIN (SELECT invoice_id, SUM(nominal) biaya FROM ' . $this->table('biaya') . ' GROUP BY invoice_id) bc'
-            . ' ON bc.invoice_id = o.id_invoice'
+            . ' LEFT JOIN (SELECT invoice_id, SUM(qty) unit FROM ' . $this->table('dibeli')
+            . ' WHERE produk_id IS NOT NULL GROUP BY invoice_id) bk'
+            . ' ON bk.invoice_id = o.id_invoice'
             . " WHERE o.deleted_at IS NULL AND o.status_pesanan <> '3'"
             . " AND o.tanggal_pesan BETWEEN '" . $s['awal'] . "' AND '" . $s['akhir'] . "'")->getRowArray();
 
-        $selisihGmv = round((float) $manual['gmv'] - (float) $kartu['gmv_cs']['nilai'], 2);
+        $selisihGmv  = round((float) $manual['unit'] - (float) $kartu['gmv_cs']['nilai'], 2);
         $selisihNota = (int) $manual['nota'] - (int) $kartu['order_diproses']['nilai'];
 
         if ($selisihGmv !== 0.0 || $selisihNota !== 0) {
-            return 'GAGAL|GMV manual ' . $this->rp((float) $manual['gmv']) . ' vs model '
-                . $this->rp((float) $kartu['gmv_cs']['nilai']) . ' (selisih ' . $this->rp($selisihGmv)
+            return 'GAGAL|GMV manual ' . $this->pcs((float) $manual['unit']) . ' vs model '
+                . $this->pcs((float) $kartu['gmv_cs']['nilai']) . ' (selisih ' . $this->pcs($selisihGmv)
                 . '), nota ' . $manual['nota'] . ' vs ' . $kartu['order_diproses']['nilai'];
         }
 
-        return 'OK|GMV ' . $this->rp((float) $kartu['gmv_cs']['nilai']) . ' dan ' . $manual['nota']
+        return 'OK|GMV ' . $this->pcs((float) $kartu['gmv_cs']['nilai']) . ' dan ' . $manual['nota']
             . ' nota cocok dengan query manual';
     }
 
@@ -548,13 +549,13 @@ class KpiUji extends BaseCommand
             . ' ORDER BY o.id_invoice DESC LIMIT 1 OFFSET 15')->getRowArray();
     }
 
-    private function nilaiNota(int $id): float
+    /** Pcs produk katalog satu nota: baris item yang punya master produk. */
+    private function pcsNota(int $id): float
     {
-        $row = $this->db->query('SELECT COALESCE((SELECT SUM(qty * harga) FROM ' . $this->table('dibeli')
-            . ' WHERE invoice_id = ?), 0) + COALESCE((SELECT SUM(nominal) FROM ' . $this->table('biaya')
-            . ' WHERE invoice_id = ?), 0) nilai', [$id, $id])->getRowArray();
+        $row = $this->db->query('SELECT COALESCE(SUM(qty), 0) unit FROM ' . $this->table('dibeli')
+            . ' WHERE invoice_id = ? AND produk_id IS NOT NULL', [$id])->getRowArray();
 
-        return (float) ($row['nilai'] ?? 0);
+        return (float) ($row['unit'] ?? 0);
     }
 
     /** Sesi chat yang balasan manusianya pertama, beserta baris balasannya. */
@@ -634,8 +635,9 @@ class KpiUji extends BaseCommand
         return abs($a - $b) <= self::SUDAH;
     }
 
-    private function rp(float $n): string
+    /** GMV dibaca dalam pcs, jadi pesan ujinya ikut satuan yang dipakai halaman. */
+    private function pcs(float $n): string
     {
-        return 'Rp ' . number_format($n, 0, ',', '.');
+        return number_format($n, 0, ',', '.') . ' pcs';
     }
 }

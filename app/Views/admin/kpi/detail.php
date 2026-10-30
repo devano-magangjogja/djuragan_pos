@@ -58,6 +58,17 @@ $kolom = match ($indikator) {
         ['durasi_jam', 'Durasi', static fn ($v) => $durasi($v, 'jam')],
         ['pelaku', 'Ditutup oleh', $th],
     ],
+    'gmv_cs' => [
+        ['id_invoice', 'Nota', $th],
+        ['seri', 'Nomor seri', $th],
+        ['tanggal_pesan', 'Tanggal pesan', $th],
+        // 'unit' = pcs produk katalog (baris ber-produk_id); 'qty' semua baris item,
+        // termasuk ejaan kode yang tidak pernah masuk katalog
+        ['unit', 'GMV (pcs)', static fn ($v) => $angka($v)],
+        ['qty', 'Qty semua item', static fn ($v) => $angka($v)],
+        ['status_pembayaran', 'Status bayar', static fn ($v) => esc(status_pembayaran([], (int) $v, 'label'))],
+        ['pembuat', 'Pembuat nota', $th],
+    ],
     default => [
         ['id_invoice', 'Nota', $th],
         ['seri', 'Nomor seri', $th],

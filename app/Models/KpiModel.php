@@ -22,8 +22,11 @@ use CodeIgniter\Model;
  *   yang boleh dibuka akun yang login. Periode dibaca dari tanggal_pesan, bukan
  *   waktu terakhir diubah, supaya nota tidak pindah periode hanya karena disunting.
  * - Nilai transaksi = barang (order_dibeli) + biaya tambahan (order_biaya: ongkir
- *   positif, diskon/revisi negatif). Sama dengan rumus view kpi_* dan keputusan
- *   GMV "lunas + ongkir & diskon ikut".
+ *   positif, diskon/revisi negatif). Rumus ini tidak lagi dipakai indikator KPI:
+ *   sejak 29 Oktober 2026 gmv_cs dibaca dari pcs produk katalog (nilaiUnit()), dan
+ *   nilai rupiah hanya tersisa di poin 'nilai_lunas' halaman ranking.
+ * - Pcs dihitung dari order_dibeli.qty baris yang punya produk_id; ejaan kode bebas
+ *   yang tidak pernah masuk katalog tidak ikut dinilai.
  * - Pengurangan dua kolom INT UNSIGNED SELALU dibungkus CAST(... AS SIGNED); tanpa
  *   itu MySQL error "value is out of range".
  * - Durasi negatif dibuang dari rata-rata dan dilaporkan sebagai jumlah yang tidak
@@ -98,7 +101,9 @@ class KpiModel extends Model
         $resolusi = $this->resolusiPerPegawai($s);
 
         $order   = (int) array_sum(array_column($nota, 'jumlah_order'));
-        $gmv     = (float) array_sum(array_map(static fn ($n) => $n['gmv'], $nota));
+        $lunas   = (int) array_sum(array_map(static fn ($n) => (int) $n['lunas'], $nota));
+        // indikator GMV = pcs produk katalog dari nota lunas, bukan nominal rupiah
+        $unit    = (int) array_sum(array_map(static fn ($n) => (int) $n['unit'], $nota));
         $lead_i  = (int) array_sum(array_column($lead, 'lead'));
         $lead_k  = (int) array_sum(array_column($lead, 'terkonversi'));
         $res_c   = (int) array_sum(array_column($resolusi, 'contoh'));
@@ -154,11 +159,11 @@ class KpiModel extends Model
                     : 'Belum ada komplain atau tindak lanjut yang selesai pada periode ini.',
             ],
             'gmv_cs' => [
-                'label'         => 'GMV yang diatribusikan ke CS',
-                'nilai'         => $gmv,
-                'satuan'        => 'rupiah',
-                'contoh'        => $order,
-                'contoh_label'  => 'nota',
+                'label'         => 'GMV produk katalog yang diatribusikan ke CS',
+                'nilai'         => $unit,
+                'satuan'        => 'pcs',
+                'contoh'        => $lunas,
+                'contoh_label'  => 'nota lunas',
             ],
         ];
     }
@@ -205,7 +210,7 @@ class KpiModel extends Model
 
             $nota[] = [
                 'user_id' => $id, 'pegawai' => $this->namaPegawai($id), 'level' => 'cs',
-                'jumlah_order' => 0, 'pelanggan' => 0, 'gmv' => 0, 'dibayar' => 0, 'lunas' => 0,
+                'jumlah_order' => 0, 'pelanggan' => 0, 'gmv' => 0, 'unit' => 0, 'dibayar' => 0, 'lunas' => 0,
                 'frt_menit' => $this->bulat($frt[$id]['rata'] ?? null),
                 'frt_contoh' => $frt[$id]['contoh'] ?? 0,
                 'lead' => $lead[$id]['lead'] ?? 0, 'lead_jadi' => $lead[$id]['terkonversi'] ?? 0,
@@ -213,7 +218,7 @@ class KpiModel extends Model
             ];
         }
 
-        usort($nota, static fn ($a, $b) => (float) $b['gmv'] <=> (float) $a['gmv']);
+        usort($nota, static fn ($a, $b) => (int) $b['unit'] <=> (int) $a['unit']);
 
         return ['baris' => array_slice($nota, $offset, $limit), 'jumlah' => count($nota)];
     }
@@ -221,7 +226,7 @@ class KpiModel extends Model
     /**
      * Deretan waktu untuk grafik tren.
      *
-     * @return list<array{baki: string, order: int, gmv: float, lunas: int, frt_menit: float|null}>
+     * @return list<array{baki: string, order: int, unit: int, lunas: int, frt_menit: float|null}>
      */
     public function tren(array $s): array
     {
@@ -233,7 +238,7 @@ class KpiModel extends Model
 
         $nota = [];
         foreach ($this->db->query('SELECT ' . $bakiNota . ' baki, COUNT(*) orderan,'
-            . $this->nilaiGmv() . ','
+            . $this->nilaiUnit() . ','
             . " SUM(o.status_pembayaran IN ('5','6')) lunas"
             . ' FROM ' . $this->t('invoice') . ' o'
             . $this->joinUser() . $this->joinNilai() . $this->whereNota($s)
@@ -254,7 +259,7 @@ class KpiModel extends Model
             $deretan[] = [
                 'baki'       => $baki,
                 'order'      => (int) ($nota[$baki]['orderan'] ?? 0),
-                'gmv'        => round((float) ($nota[$baki]['gmv'] ?? 0)),
+                'unit'       => (int) ($nota[$baki]['unit'] ?? 0),
                 'lunas'      => (int) ($nota[$baki]['lunas'] ?? 0),
                 'frt_menit'  => isset($frt[$baki]['rata']) ? round((float) $frt[$baki]['rata'], 1) : null,
             ];
@@ -284,12 +289,13 @@ class KpiModel extends Model
             'resolution_time'     => 'rata',
             'konversi_lead'       => 'terkonversi',
             'order_diproses'      => 'jumlah_order',
-            default               => 'gmv',
+            default               => 'unit',
         };
 
         $contoh = match ($indikator) {
             'konversi_lead'   => 'lead',
-            'gmv_cs', 'order_diproses' => 'jumlah_order',
+            'gmv_cs'          => 'lunas',
+            'order_diproses'  => 'jumlah_order',
             default           => 'contoh',
         };
 
@@ -375,13 +381,14 @@ class KpiModel extends Model
             default: // gmv_cs dan order_diproses memakai daftar nota yang sama
                 return ['SELECT o.id_invoice, o.seri, o.tanggal_pesan, o.status_pesanan, o.status_pembayaran,'
                     . ' COALESCE(b.qty, 0) qty,'
+                    . ' COALESCE(bk.unit, 0) unit,'
                     . ' COALESCE(b.barang, 0) + COALESCE(bc.biaya, 0) gmv,'
                     . ' COALESCE(pm.dibayar, 0) dibayar, u.name AS pembuat'
                     . ' FROM ' . $this->t('invoice') . ' o'
                     . $this->joinUser() . $this->joinNilai() . $this->whereNota($s)
-                    // GMV hanya dihitung dari nota lunas, jadi daftarnya juga begitu
+                    // GMV dihitung dari pcs nota lunas, jadi daftarnya juga begitu
                     . ($indikator === 'gmv_cs' ? " AND o.status_pembayaran IN ('5','6')" : '')
-                    . ($indikator === 'gmv_cs' ? ' ORDER BY gmv DESC' : ' ORDER BY o.tanggal_pesan DESC'),
+                    . ($indikator === 'gmv_cs' ? ' ORDER BY unit DESC' : ' ORDER BY o.tanggal_pesan DESC'),
                     $this->params($s)];
         }
     }
@@ -468,7 +475,9 @@ class KpiModel extends Model
             . ' COUNT(*) jumlah_order, COUNT(DISTINCT o.pemesan_id) pelanggan,'
             . ' COALESCE(SUM(b.qty), 0) qty,'
             . ' COALESCE(SUM(b.barang), 0) nilai_barang, COALESCE(SUM(bc.biaya), 0) biaya_tambahan,'
-            // GMV = nota lunas saja; jumlah_order dan dibayar tetap semua nota valid
+            . $this->nilaiUnit() . ','
+            // GMV = indikator pcs nota lunas; nilaiGmv() rupiah untuk poin ranking,
+            // jumlah_order dan dibayar tetap semua nota valid
             . $this->nilaiGmv() . ','
             . ' COALESCE(SUM(pm.dibayar), 0) dibayar,'
             . " SUM(o.status_pembayaran IN ('5','6')) lunas"
@@ -480,6 +489,7 @@ class KpiModel extends Model
         foreach ($valid as $baris) {
             $id                = (int) $baris['user_id'];
             $baris['gmv']      = round((float) $baris['gmv']);
+            $baris['unit']     = (int) $baris['unit'];
             $baris['dibayar']  = round((float) $baris['dibayar']);
             $hasil[$id]        = $baris;
         }
@@ -764,6 +774,7 @@ class KpiModel extends Model
                 'poin'     => $poin,
                 'total'    => round($total, 1),
                 'gmv'      => (float) ($catatan[$id]['gmv'] ?? 0),
+                'unit'     => (int) ($catatan[$id]['unit'] ?? 0),
                 'tercatat' => array_sum(array_map(
                     static fn ($slug) => (int) ($jumlah[$slug] ?? 0),
                     array_keys(self::ATURAN_POIN)
@@ -864,6 +875,7 @@ class KpiModel extends Model
                 // poin nilai diberikan per Rp 1 juta penuh, recehannya tidak dihitung
                 'nilai_lunas' => (int) floor(max(0.0, (float) $b['gmv']) / 1000000),
                 'gmv'         => (float) $b['gmv'],
+                'unit'        => (int) $b['unit'],
             ];
         }
 
@@ -1048,11 +1060,15 @@ class KpiModel extends Model
         return ' JOIN ' . $this->t('user') . " u ON u.id = o.user_id AND u.status = 'active' AND u.deleted_at IS NULL";
     }
 
-    /** Turunan nilai satu nota: barang, biaya tambahan (ongkir + potongan), pembayaran. */
+    /** Turunan nilai satu nota: pcs katalog (bk), barang, biaya tambahan, pembayaran. */
     private function joinNilai(): string
     {
         return ' LEFT JOIN (SELECT invoice_id, SUM(qty * harga) AS barang, SUM(qty) AS qty'
             . ' FROM ' . $this->t('dibeli') . ' GROUP BY invoice_id) b ON b.invoice_id = o.id_invoice'
+            // pcs katalog: hanya baris yang ejaan kodenya pernah ditautkan ke master produk
+            . ' LEFT JOIN (SELECT invoice_id, SUM(qty) AS unit'
+            . ' FROM ' . $this->t('dibeli') . ' WHERE produk_id IS NOT NULL GROUP BY invoice_id) bk'
+            . ' ON bk.invoice_id = o.id_invoice'
             . ' LEFT JOIN (SELECT invoice_id, SUM(nominal) AS biaya'
             . ' FROM ' . $this->t('biaya') . ' GROUP BY invoice_id) bc ON bc.invoice_id = o.id_invoice'
             . ' LEFT JOIN (SELECT invoice_id, SUM(total_pembayaran) AS dibayar'
@@ -1069,6 +1085,21 @@ class KpiModel extends Model
     {
         return "COALESCE(SUM(CASE WHEN o.status_pembayaran IN ('5','6')"
             . ' THEN COALESCE(b.barang, 0) + COALESCE(bc.biaya, 0) ELSE 0 END), 0) gmv';
+    }
+
+    /**
+     * GMV dalam satu agregat nota: jumlah pcs produk katalog dari nota lunas.
+     *
+     * Indikator ini dulu dibaca sebagai nilai rupiah nota lunas; sejak manajemen
+     * menilai CS dari unit yang ditutup, pembilangnya order_dibeli.qty per baris
+     * yang produk_id-nya terisi. Kolam jual dan sewa dihitung sama: satu unit
+     * tetap satu pcs. Nota yang masih berjalan ikut terlihat di jumlah_order dan
+     * dibayar, bukan di GMV.
+     */
+    private function nilaiUnit(): string
+    {
+        return "COALESCE(SUM(CASE WHEN o.status_pembayaran IN ('5','6')"
+            . ' THEN COALESCE(bk.unit, 0) ELSE 0 END), 0) unit';
     }
 
     private function whereNota(array $s): string

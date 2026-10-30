@@ -26,7 +26,7 @@ $sederhana = [
     'first_response_time'   => 'Berapa lama pelanggan menunggu balasan pertama.',
     'konversi_lead'         => 'Berapa persen chat baru yang jadi order.',
     'resolution_time'       => 'Berapa lama komplain sampai benar-benar selesai.',
-    'gmv_cs'                => 'Total uang masuk dari nota yang dipegang orang ini. Punya dua target: per CS (satu orang) dan Tim CS (total seluruh tim).',
+    'gmv_cs'                => 'Jumlah pcs produk katalog dari nota yang sudah lunas, dihitung per CS. Punya dua target: per CS (satu orang) dan Tim CS (total seluruh tim).',
 ];
 
 $isi = static function ($nilai, string $satuan): string {
@@ -40,7 +40,8 @@ $isi = static function ($nilai, string $satuan): string {
         return 'Rp ' . number_format($n, 0, ',', '.');
     }
 
-    return number_format($n, 1, ',', '.') . ' ' . $satuan;
+    // desimal hanya ditampilkan kalau memang ada: 1250 pcs bukan 1.250,0 pcs
+    return number_format($n, fmod($n, 1.0) === 0.0 ? 0 : 1, ',', '.') . ' ' . $satuan;
 };
 ?>
 <?= $this->extend('template/main') ?>
@@ -105,22 +106,26 @@ $isi = static function ($nilai, string $satuan): string {
                                 <?php if ($boleh) { ?>
                                     <td>
                                         <?php if ($t['indikator'] === 'gmv_cs') : ?>
-                                            <div class="small text-muted mb-1">Per CS</div>
+                                            <div class="small text-muted mb-1">Per CS (<?= esc($t['satuan']) ?>)</div>
                                         <?php endif; ?>
                                         <?= form_input([
                                             'class'       => 'form-control form-control-sm',
                                             'type'        => 'number',
-                                            'step'        => '0.01',
+                                            // pcs tidak mengenal setengah unit; rupiah dan
+                                            // persen boleh desimal
+                                            'step'        => $t['satuan'] === 'pcs' ? '1' : '0.01',
+                                            'min'         => '0',
                                             'name'        => 'target[' . $t['indikator'] . ']',
                                             'placeholder' => $t['satuan'],
                                             'value'       => $t['target'],
                                         ]) ?>
                                         <?php if ($t['indikator'] === 'gmv_cs') : ?>
-                                            <div class="small text-muted mt-2 mb-1">Tim CS (total)</div>
+                                            <div class="small text-muted mt-2 mb-1">Tim CS (total <?= esc($t['satuan']) ?>)</div>
                                             <?= form_input([
                                                 'class'       => 'form-control form-control-sm',
                                                 'type'        => 'number',
-                                                'step'        => '0.01',
+                                                'step'        => $t['satuan'] === 'pcs' ? '1' : '0.01',
+                                                'min'         => '0',
                                                 'name'        => 'target_tim[' . $t['indikator'] . ']',
                                                 'placeholder' => $t['satuan'],
                                                 'value'       => $t['target_tim'] ?? '',

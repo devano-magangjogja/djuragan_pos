@@ -41,8 +41,8 @@ class Kpi extends BaseController
         $batas   = $this->batas((string) $this->request->getGet('batas'));
         $banding = $this->indikator((string) $this->request->getGet('banding'));
 
-        // Target GMV mentah (sebelum disesuaikan cakupan): `target` = per-CS,
-        // `target_tim` = total tim. Keduanya dibutuhkan blok Ringkasan Tim dan
+        // Target GMV mentah (sebelum disesuaikan cakupan): `target` = pcs per-CS,
+        // `target_tim` = pcs total tim. Keduanya dibutuhkan blok Ringkasan Tim dan
         // kolom status per-baris di tabel rekap.
         $targetRaw = $this->petaTarget($model);
         $g         = $targetRaw['gmv_cs'] ?? [];
@@ -69,6 +69,7 @@ class Kpi extends BaseController
             'kartu'       => $model->kartu($s),
             'target'      => $target,
             'gmv_tim'     => $gmv_tim,
+            // isi blok ini pcs produk katalog dari nota lunas, bukan nominal rupiah
             'gmv_ringkas' => [
                 'tim_nilai'      => $model->kartu($sTim)['gmv_cs']['nilai'],
                 'tim_target'     => $tim,
@@ -149,7 +150,8 @@ class Kpi extends BaseController
         $aturan = $model->targetSatu($indikator);
 
         // GMV: target yang tampil di halaman ini harus sama dengan kartu Ringkasan
-        // (Tim CS saat melihat semua orang, per-CS saat satu pegawai dipilih)
+        // (Tim CS saat melihat semua orang, per-CS saat satu pegawai dipilih); dua-
+        // duanya sama-sama dalam pcs, bukan rupiah
         if ($indikator === 'gmv_cs') {
             $aturan = $this->cakupanTargetGmv($aturan, $s['user_id'] === null);
         }
@@ -333,8 +335,8 @@ class Kpi extends BaseController
     }
 
     /**
-     * GMV punya dua target: total Tim CS (target_tim) vs kontribusi satu orang
-     * (target). Sesuaikan kolom `target` baris ini dengan cakupan yang sedang
+     * GMV punya dua target dalam pcs: total Tim CS (target_tim) vs kontribusi satu
+     * orang (target). Sesuaikan kolom `target` baris ini dengan cakupan yang sedang
      * dilihat supaya kartu Ringkasan dan halaman Detail memakai angka yang sama.
      * Penanda `scope` ikut dipasang agar view bisa memberi label yang jelas.
      *

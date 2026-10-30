@@ -9,7 +9,7 @@
  *
  * @var string $title    judul halaman
  * @var array  $s        nilai saringan aktif: ['awal', 'akhir', 'periode', 'peran', 'user_id', 'juragan_id', ...]
- * @var list   $peringkat baris peringkat per pegawai: ['user_id', 'pegawai', 'level', 'jumlah', 'poin', 'total', 'gmv', 'tercatat', 'peringkat']
+ * @var list   $peringkat baris peringkat per pegawai: ['user_id', 'pegawai', 'level', 'jumlah', 'poin', 'total', 'gmv', 'unit', 'tercatat', 'peringkat']
  * @var list   $baris    halaman peringkat yang sedang ditampilkan (irisan $peringkat)
  * @var int    $jumlah   total orang yang dinilai (sebelum diiris halaman)
  * @var int    $batas    jumlah baris per halaman
@@ -31,7 +31,6 @@
  * hanya berisi angkanya.
  */
 
-$rp    = static fn ($n): string => 'Rp ' . number_format((float) $n, 0, ',', '.');
 $angka = static fn ($n): string => number_format((float) $n, fmod((float) $n, 1.0) === 0.0 ? 0 : 1, ',', '.');
 $poin  = static fn ($n): string => ($n <=> 0) > 0 ? '+' . $angka($n) : $angka($n);
 $sel   = static fn (int $n): string => $n === 0 ? '&mdash;' : $angka($n);
@@ -265,10 +264,11 @@ $kosong    = count($peringkat) - count($bernilai);
                             <td class="text-end small text-muted">
                                 <?php if ($b['tercatat'] === 0) { ?>
                                     tidak ada aktivitas tercatat
-                                <?php } elseif ((float) $b['gmv'] > 0) { ?>
-                                    nota lunas <?= $rp($b['gmv']) ?>
+                                <?php } elseif ((int) $b['unit'] > 0) { ?>
+                                    <!-- pcs katalog nota lunas, sama dengan indikator GMV -->
+                                    <?= $angka($b['unit']) ?> pcs lunas
                                 <?php } else { ?>
-                                    belum ada nota lunas
+                                    belum ada pcs katalog lunas
                                 <?php } ?>
                             </td>
                         </tr>
