@@ -67,7 +67,7 @@ class Filters extends BaseConfig
     public $globals = [
         'before' => [
             // 'honeypot',
-            'csrf' => ['except' => ['webhook', 'webhook/*']],
+            'csrf',
             // 'invalidchars',
         ],
         'after' => [

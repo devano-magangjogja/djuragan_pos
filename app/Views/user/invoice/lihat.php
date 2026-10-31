@@ -149,6 +149,14 @@ $kelolaTransaksi = wewenang_sunting_transaksi();
 .tab-transaksi__panah.lagi {
     display: inline-flex;
 }
+/* Panah geser hanya untuk layar sempit (mobile/tablet < 992px). Di desktop strip
+   pil sudah dipadatkan supaya semua tab tampil, jadi panah tidak diperlukan —
+   !important menjamin ia tetap mati walau JS sempat memasang kelas .lagi. */
+@media (min-width: 992px) {
+    .tab-transaksi__panah.lagi {
+        display: none !important;
+    }
+}
 
 /* Layar lebar: pil dan tombol aksi satu baris rata. Yang menyusut adalah strip
    pilnya (panahnya sudah ada), kelompok aksi tidak boleh terimpit. */
@@ -170,8 +178,10 @@ $kelolaTransaksi = wewenang_sunting_transaksi();
     min-height: 2.125rem;
 }
 
-/* 1280-1500px: satu langkah lebih ramping, angkanya dari pengukuran lebar baris. */
-@media (min-width: 1280px) and (max-width: 1499.98px) {
+/* Desktop (≥992px): satu langkah lebih ramping supaya semua pil + tombol aksi
+   muat satu baris tanpa panah. Dulu hanya 1280-1500px; dilebarkan ke ≥992px agar
+   seragam di semua layar desktop dan panah benar-benar jadi milik mobile. */
+@media (min-width: 992px) {
 
     .baris-toolbar {
         gap: 0.35rem 0.35rem;
@@ -281,6 +291,12 @@ $kelolaTransaksi = wewenang_sunting_transaksi();
                 'title'          => 'Cari transaksi',
                 'data-bs-target' => '#modalCari',
                 'data-bs-toggle' => 'modal',
+            ]) ?>
+            <?= form_button([
+                'class'          => 'btn rounded-pill btn-outline-secondary',
+                'content'        => '<i class="fal fa-qrcode"></i> <span class="hidden sm:inline">Scan</span>',
+                'title'          => 'Scan QR nota dari invoice / lembar penjahit untuk mencari transaksi',
+                'id'             => 'tombolScan',
             ]) ?>
             <?= anchor('user/invoices/tulis', '<i class="fal fa-pen-nib"></i> <span class="hidden sm:inline">Tulis Orderan</span>', [
                 'class' => 'btn rounded-pill border-0 bg-brand-500 font-semibold text-white hover:bg-brand-600 shrink-0',
@@ -509,7 +525,7 @@ $kelolaTransaksi = wewenang_sunting_transaksi();
                                         if ($i === 1) {
                                             echo '<span class="sr-only">/</span>';
                                         }
-                                        echo '<span class="me-1 inline-block rounded-md bg-ink-500 px-1.5 py-0.5 text-[0.75em] font-normal text-white">' . esc($hp) . '</span>';
+                                        echo '<span class="chip-hp me-1 inline-block rounded-md bg-ink-500 px-1.5 py-0.5 text-[0.75em] font-normal text-white">' . esc($hp) . '</span>';
                                         $i++;
                                     }
                                     ?>
@@ -543,7 +559,7 @@ $kelolaTransaksi = wewenang_sunting_transaksi();
                                             if ($i === 1) {
                                                 echo '<span class="sr-only">/</span>';
                                             }
-                                            echo '<span class="me-1 inline-block rounded-md bg-ink-500 px-1.5 py-0.5 text-[0.75em] font-normal text-white">' . esc($hp) . '</span>';
+                                            echo '<span class="chip-hp me-1 inline-block rounded-md bg-ink-500 px-1.5 py-0.5 text-[0.75em] font-normal text-white">' . esc($hp) . '</span>';
                                             $i++;
                                         }
                                         ?>
@@ -883,16 +899,16 @@ $kelolaTransaksi = wewenang_sunting_transaksi();
 
                 <hr class="my-3 border-0 border-t border-ink-200 opacity-100" />
 
-                <div class="aksi flex flex-wrap items-center gap-1.5 sm:gap-2">
+                <div class="aksi aksi-transaksi flex flex-wrap items-center gap-1.5 sm:gap-2">
                     <?php if ($kelolaTransaksi) : ?>
                         <?= anchor('admin/invoices/sunting/' . esc($pesanan->seri), '<i class="fal fa-pen-to-square"></i> Sunting', [
-                            'class' => 'btn btn-sm rounded-lg btn-outline-secondary',
+                            'class' => 'btn btn-sm rounded-lg btn-outline-secondary aksi-bagi',
                             'role'  => 'button',
                             'title' => 'Ubah isi nota, ukuran, harga, dan pelanggan',
                         ]) ?>
                         <?php if ((int) $pesanan->status_pembayaran > 2 && ! $dipacking) : ?>
                             <?= form_button([
-                                'class'          => 'btn btn-sm rounded-lg btn-dark pesanStatus',
+                                'class'          => 'btn btn-sm rounded-lg btn-dark aksi-setengah pesanStatus',
                                 'content'        => '<i class="fal fa-comment-alt-plus"></i> Proses Orderan',
                                 'data-invoice'   => $pesanan->id_invoice,
                                 'data-seri'      => $pesanan->seri,
@@ -903,8 +919,8 @@ $kelolaTransaksi = wewenang_sunting_transaksi();
                     <?php endif; ?>
                     <?php if (! $sudah_lunas) : ?>
                         <?= form_button([
-                            'class'          => 'btn btn-sm rounded-lg btn-outline-secondary tambahBayar',
-                            'content'        => '<i class="fal fa-plus-circle"></i> Tambah Pembayaran',
+                            'class'          => 'btn btn-sm rounded-lg btn-outline-secondary aksi-bagi tambahBayar',
+                            'content'        => '<i class="fal fa-plus-circle"></i> <span class="label-bayar"><span class="kata-depan">Tambah </span>Pembayaran</span>',
                             'data-invoice'   => $pesanan->id_invoice,
                             'data-juragan'   => $pesanan->juragan_id,
                             'data-kurang'    => max(0, $sisa),
@@ -918,7 +934,7 @@ $kelolaTransaksi = wewenang_sunting_transaksi();
                         // tombol cek pembayaran
                         // hanya tampil jika ada pembayaran yang perlu dicek
                         echo form_button([
-                            'class'          => 'btn btn-sm rounded-lg btn-warning pesanBayar',
+                            'class'          => 'btn btn-sm rounded-lg btn-warning aksi-penuh pesanBayar',
                             'content'        => '<i class="fal fa-wallet"></i> Cek Pembayaran',
                             'data-invoice'   => $pesanan->id_invoice,
                             'data-juragan'   => $pesanan->juragan_id,
@@ -932,16 +948,16 @@ $kelolaTransaksi = wewenang_sunting_transaksi();
                         // dicatat kembali hanya masuk akal untuk barang yang memang
                         // benar-benar sedang dipinjam orang
                         $kembali = [
-                            'content'      => '<i class="fal fa-tshirt"></i> Sudah kembali',
+                            'content'      => '<i class="fal fa-tshirt"></i> <span class="kata-depan">Sudah </span>kembali',
                             'data-invoice' => $pesanan->id_invoice,
                             'data-seri'    => $pesanan->seri,
                         ];
 
                         if ($siap_kembali) {
-                            $kembali['class'] = 'btn btn-sm rounded-lg btn-success sewaKembali';
+                            $kembali['class'] = 'btn btn-sm rounded-lg btn-success aksi-setengah sewaKembali';
                             $kembali['title'] = 'Barang sewaan sudah diterima kembali di toko';
                         } else {
-                            $kembali['class']    = 'btn btn-sm rounded-lg btn-success disabled';
+                            $kembali['class']    = 'btn btn-sm rounded-lg btn-success aksi-setengah disabled';
                             $kembali['disabled'] = '';
                             $kembali['title']    = (string) $alasan_kembali;
                         }
@@ -951,11 +967,11 @@ $kelolaTransaksi = wewenang_sunting_transaksi();
                         $waktu_kembali = Time::createFromTimestamp((int) $pesanan->sewa_kembali_at)
                             ->setTimezone(config('App')->appTimezone)
                             ->toLocalizedString('d MMM yyyy HH:mm'); ?>
-                        <span class="btn btn-sm rounded-lg btn-success disabled" title="Waktu pengembaliannya dicatat">
+                        <span class="btn btn-sm rounded-lg btn-success aksi-baris disabled" title="Waktu pengembaliannya dicatat">
                             <i class="fal fa-undo-alt-left"></i> Kembali <?= esc($waktu_kembali) ?>
                         </span>
                         <?php echo form_button([
-                            'class'        => 'btn btn-sm rounded-lg btn-outline-secondary sewaBatalkan',
+                            'class'        => 'btn btn-sm rounded-lg btn-outline-secondary aksi-setengah sewaBatalkan',
                             'content'      => '<i class="fal fa-undo"></i> Batalkan',
                             'data-invoice' => $pesanan->id_invoice,
                             'data-seri'    => $pesanan->seri,
@@ -1199,10 +1215,581 @@ $kelolaTransaksi = wewenang_sunting_transaksi();
     </div>
 </div>
 
+<!-- Modal scan QR nota: hasil scan mengisi kolom cari (kode invoice) lalu dikirim -->
+<div class="modal fade" id="modalScan" tabindex="-1" aria-labelledby="modalScanLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 30rem;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalScanLabel"><i class="fal fa-qrcode me-1"></i> Scan QR Nota</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div class="d-flex align-items-center justify-content-center gap-2 mb-2">
+                    <select id="scanKamera" class="form-select form-select-sm w-auto d-none" aria-label="Pilih kamera"></select>
+                    <button type="button" id="scanUlang" class="btn btn-sm btn-outline-secondary d-none">
+                        <i class="fal fa-redo"></i> Mulai ulang
+                    </button>
+                </div>
+
+                <div id="qrPemindai" style="min-height: 16rem;"></div>
+
+                <div class="text-muted small mt-2" id="scanPetunjuk">
+                    Menyiapkan kamera...
+                </div>
+
+                <hr class="my-3">
+
+                <div class="small text-muted mb-1">Cadangan kalau kamera tidak tersedia:</div>
+                <label class="btn btn-sm btn-outline-secondary mb-0">
+                    <i class="fal fa-image"></i> Scan dari foto QR
+                    <input type="file" id="scanBerkas" accept="image/*" class="d-none">
+                </label>
+            </div>
+        </div>
+    </div>
+</div>
+
 <?= $this->endSection() ?>
 
 <?= $this->section('js') ?>
 <script defer src="https://kit.fontawesome.com/22a9d93fa2.js" data-auto-replace-svg="nest" crossorigin="anonymous"></script>
+<script>
+// ===== Scan QR nota =====
+// Pustaka html5-qrcode dikemas lokal dan baru diunduh saat modal pertama dibuka,
+// supaya halaman Transaksi tidak ikut berat. Kamera browser hanya mau menyala di
+// konteks aman (https atau localhost); kalau tidak, pengguna diarahkan ke cadangan
+// "Scan dari foto" yang tidak butuh akses kamera.
+(function () {
+    'use strict';
+
+    var PUSTAKA = '<?= base_url('assets/js/html5-qrcode.min.js') ?>?v=<?= (int) @filemtime(FCPATH . 'assets/js/html5-qrcode.min.js') ?>';
+
+    var muatPustaka = null;
+    var kamera      = [];
+    var kameraAktif = '';
+    var sedangBeres = false;
+    var KUNCI_KAMERA = 'djuragan_kamera_scan';
+
+    // Satu objek sesi. nomToken dipakai untuk membuang callback dari sesi
+    // lama, jadi buka-tutup cepat atau ganti kamera tidak saling menimpa lagi
+    var sesi = { nomToken: 0, pemindai: null, dinyalakan: false, diterima: false, aktif: false };
+
+    var byId = function (id) {
+        return document.getElementById(id);
+    };
+
+    function wadah() {
+        return byId('qrPemindai');
+    }
+
+    function petunjuk(teks, galat) {
+        var el = byId('scanPetunjuk');
+
+        if (! el) {
+            return;
+        }
+
+        el.textContent = teks;
+        el.classList.toggle('text-danger', Boolean(galat));
+    }
+
+    function jeda(ms) {
+        return new Promise(function (resolve) {
+            window.setTimeout(resolve, ms || 250);
+        });
+    }
+
+    function muatScript() {
+        if (muatPustaka) {
+            return muatPustaka;
+        }
+
+        muatPustaka = new Promise(function (resolve, reject) {
+            var s = document.createElement('script');
+            s.src = PUSTAKA;
+            s.onload = resolve;
+            s.onerror = function () {
+                muatPustaka = null;
+                reject(new Error('Pustaka scanner gagal dimuat dari server.'));
+            };
+            document.head.appendChild(s);
+        });
+
+        return muatPustaka;
+    }
+
+    // getUserMedia tidak ada di http non-localhost: kamera mustahil menyala
+    function bolehKamera() {
+        return window.isSecureContext === true
+            && navigator.mediaDevices
+            && typeof navigator.mediaDevices.getUserMedia === 'function';
+    }
+
+    function pesanGalat(err) {
+        var nama = (err && err.name) ? err.name : '';
+
+        if (nama === 'NotAllowedError' || nama === 'PermissionDeniedError') {
+            return 'Izin kamera ditolak browser. Izinkan akses kamera untuk situs ini lewat ikon kamera di address bar, lalu klik Mulai ulang.';
+        }
+
+        if (nama === 'NotReadableError' || nama === 'TrackStartError') {
+            return 'Kamera sedang dipakai aplikasi lain (Zoom/Meet/DSLR cam). Tutup aplikasi itu lalu klik Mulai ulang.';
+        }
+
+        if (nama === 'NotFoundError' || nama === 'OverconstrainedError' || nama === 'DevicesNotFoundError') {
+            return 'Kamera tidak ditemukan di perangkat ini. Pakai cadangan "Scan dari foto" di bawah.';
+        }
+
+        return (err && err.message ? err.message : 'Kamera gagal dibuka.')
+            + ' — klik Mulai ulang, atau pakai "Scan dari foto" / ketik nomor nota di tombol Cari.';
+    }
+
+    // Kotak baca mengikuti ukuran video: nilai tetap bisa lebih lebar dari
+    // frame kamera laptop, dan kalau begitu scanner tidak membaca apa pun
+    function kotakBaca(lebar, tinggi) {
+        var batas = Math.min(lebar, tinggi);
+
+        // video sangat kecil (webcam murah / jendela sempit): pakai hampir
+        // seluruh frame, jangan paksa minimum yang malah keluar dari frame
+        if (batas < 180) {
+            var kecil = Math.max(40, Math.round(batas * 0.9));
+
+            return { width: kecil, height: kecil };
+        }
+
+        var sisi = Math.round(Math.min(batas * 0.75, batas - 24));
+
+        return { width: Math.max(110, sisi), height: Math.max(110, sisi) };
+    }
+
+    function matikanVideo() {
+        var w = wadah();
+
+        if (! w) {
+            return;
+        }
+
+        [].forEach.call(w.querySelectorAll('video'), function (v) {
+            try { v.pause(); } catch (e) { /* sudah berhenti */ }
+
+            v.srcObject = null;
+        });
+    }
+
+    // Instance baru tiap sesi: memakai ulang objek sesudah stop()/clear()
+    // membuat daerah baca berdimensi 0, dan itu membuat scanner tampak hidup
+    // tapi tidak pernah membaca apa pun
+    function pemindaiBaru() {
+        var w = wadah();
+
+        if (w) {
+            w.innerHTML = '';
+        }
+
+        return new window.Html5Qrcode('qrPemindai');
+    }
+
+    /**
+     * Lepaskan kamera tanpa syarat.
+     *
+     * Bug lama: pelepasan dijaga flag "berjalan" yang baru bernilai true
+     * setelah start() selesai. Modal yang ditutup saat kamera masih menyala
+     * membuat stream tertinggal dan percobaan berikutnya gagal - sumber
+     * "kadang bisa scan, kadang tidak".
+     */
+    function lepaskan() {
+        var inst       = sesi.pemindai;
+        var dinyalakan = sesi.dinyalakan;
+
+        sesi.nomToken += 1;
+        sesi.pemindai    = null;
+        sesi.dinyalakan  = false;
+        sesi.diterima    = false;
+        sesi.aktif       = false;
+
+        if (! inst || ! dinyalakan) {
+            matikanVideo();
+
+            return Promise.resolve();
+        }
+
+        sedangBeres = true;
+
+        var berhenti;
+
+        try {
+            berhenti = inst.stop();
+        } catch (e) {
+            berhenti = Promise.reject(e);
+        }
+
+        return Promise.resolve(berhenti)
+            .catch(function () { /* memang sudah mati */ })
+            .then(function () {
+                try { inst.clear(); } catch (e) { /* belum sempat dibuat */ }
+
+                matikanVideo();
+                sedangBeres = false;
+            });
+    }
+
+    function tungguHasil(nomToken) {
+        window.setTimeout(function () {
+            if (nomToken !== sesi.nomToken || ! sesi.aktif || sesi.diterima) {
+                return;
+            }
+
+            petunjuk('Belum ada QR terbaca. Dekatkan kamera, pastikan cahaya cukup, atau ganti kamera dari daftar di atas.');
+        }, 6000);
+    }
+
+    function terima(teks, nomToken) {
+        var seri = String(teks || '').trim();
+
+        if (seri === '' || nomToken !== sesi.nomToken || ! sesi.aktif || sesi.diterima) {
+            return;
+        }
+
+        sesi.diterima = true;
+        sesi.aktif    = false;
+
+        // kamera yang terbukti bekerja diingat, sesi berikutnya langsung memakai
+        // perangkat yang sama
+        try {
+            window.localStorage.setItem(KUNCI_KAMERA, kameraAktif);
+        } catch (e) { /* mode privat: abaikan */ }
+
+        lepaskan().then(function () {
+            bootstrap.Modal.getOrCreateInstance(byId('modalScan')).hide();
+            cariDenganSeri(seri);
+        });
+    }
+
+    function nyalakan(idKamera, ulang) {
+        if (sedangBeres) {
+            // tunggu pelepasan sesi sebelumnya sampai selesai, jangan menumpuk
+            return jeda(200).then(function () {
+                return nyalakan(idKamera, ulang);
+            });
+        }
+
+        var nomToken = (sesi.nomToken += 1);
+        var inst     = null;
+
+        sesi.dinyalakan = false;
+        sesi.diterima   = false;
+        sesi.aktif      = true;
+
+        return muatScript().then(function () {
+            if (nomToken !== sesi.nomToken) {
+                return;
+            }
+
+            inst = pemindaiBaru();
+            sesi.pemindai = inst;
+
+            return inst.start(
+                idKamera,
+                {
+                    fps: 15,
+                    qrbox: kotakBaca,
+                    verbose: false,
+                    // decoder bawaan browser jauh lebih seret menangkap QR
+                    // kecil/kurang fokus daripada decoder JS bawaan pustaka
+                    useBarCodeDetectorIfSupported: true
+                },
+                function (teksTerbaca) {
+                    // argumen pertama = isi barcode; jangan baca properti hasil
+                    // yang bentuknya berbeda antar versi pustaka
+                    terima(teksTerbaca, nomToken);
+                },
+                function () { /* frame tanpa kode: biarkan terus mencoba */ }
+            );
+        }).then(function () {
+            if (nomToken !== sesi.nomToken) {
+                // sesi sudah digantikan: stream yatim harus ditutup sekarang
+                if (inst) {
+                    try {
+                        inst.stop().then(function () { inst.clear(); }).catch(function () { /* mati */ });
+                    } catch (e) { /* tidak started */ }
+                }
+
+                matikanVideo();
+
+                return;
+            }
+
+            sesi.dinyalakan = true;
+            tungguHasil(nomToken);
+        }).catch(function (err) {
+            if (nomToken !== sesi.nomToken) {
+                return;
+            }
+
+            sesi.dinyalakan = false;
+            sesi.aktif      = false;
+
+            // kamera masih tertahan sesi sebelumnya: lepas lalu coba sekali lagi
+            if (err && (err.name === 'NotReadableError' || err.name === 'InvalidStateError' || err.name === 'NotAllowedError')
+                && (ulang || 0) < 1) {
+                return lepaskan().then(jeda(400)).then(function () {
+                    return nyalakan(idKamera, (ulang || 0) + 1);
+                });
+            }
+
+            throw err;
+        });
+    }
+
+    // Kamera infra-merah (Windows Hello) dan kamera virtual sering menempati
+    // index 0, sementara urutannya bisa berubah antar sesi: gambar mengalir tapi
+    // tidak ada yang terbaca. Labelnya dijadikan penanda, lalu pilihan yang
+    // terbukti berhasil diingat untuk sesi berikutnya
+    function dicurigai(perangkat) {
+        var label = String(perangkat.label || '').toLowerCase();
+
+        if (label === '') {
+            return false;
+        }
+
+        return /\bhir\b|\bir\b|depth|hello|virtual|emulator|obs|unity|fuzzylabs|backend/.test(label);
+    }
+
+    function pilihKamera() {
+        var tersimpan = '';
+
+        try {
+            tersimpan = window.localStorage.getItem(KUNCI_KAMERA) || '';
+        } catch (e) { /* mode privat */ }
+
+        var layak = kamera.filter(function (k) {
+            return ! dicurigai(k);
+        });
+        var daftar = layak.length > 0 ? layak : kamera;
+
+        for (var i = 0; i < daftar.length; i++) {
+            if (daftar[i].id === tersimpan) {
+                return daftar[i].id;
+            }
+        }
+
+        return daftar.length > 0 ? daftar[0].id : '';
+    }
+
+    function isiPemilihKamera() {
+        var pemilih = byId('scanKamera');
+
+        pemilih.innerHTML = '';
+
+        kamera.forEach(function (k, i) {
+            var op = document.createElement('option');
+
+            op.value = k.id;
+            op.textContent = (k.label || ('Kamera ' + (i + 1)))
+                + (dicurigai(k) ? ' (kemungkinan bukan kamera biasa)' : '');
+            pemilih.appendChild(op);
+        });
+
+        pemilih.value = kameraAktif;
+
+        // pemilih selalu tampil walau kamera cuma satu: pengguna bisa melihat
+        // perangkat mana yang sedang dipakai saat hasil scan meragukan
+        pemilih.classList.remove('d-none');
+        byId('scanUlang').classList.remove('d-none');
+    }
+
+    function gantiKamera(id) {
+        kameraAktif = id;
+        petunjuk('Mengalihkan kamera...');
+
+        lepaskan().then(function () {
+            return nyalakan(id);
+        }).catch(function (err) {
+            petunjuk(pesanGalat(err), true);
+        });
+    }
+
+    function siapkan() {
+        if (sedangBeres) {
+            // sesi lama masih melepas kamera: tunggu, jangan mulai dua-duanya
+            jeda(250).then(siapkan);
+
+            return;
+        }
+
+        sesi.nomToken += 1;
+        sesi.aktif    = false;
+
+        petunjuk('Menyiapkan kamera...');
+
+        if (! bolehKamera()) {
+            petunjuk('Browser hanya mengizinkan kamera di https atau localhost. Buka situs lewat http://localhost, pasang https, atau pakai cadangan "Scan dari foto" di bawah.', true);
+
+            // pustaka tetap dimuat supaya cadangan foto bisa dipakai
+            muatScript().catch(function () { /* biarkan pesan tetap tampil */ });
+
+            return;
+        }
+
+        var pemilih = byId('scanKamera');
+
+        pemilih.onchange = function () {
+            gantiKamera(this.value);
+        };
+
+        // urutan perangkat diambil ulang tiap sesi: daftar kamera bisa berubah
+        // sejak sesi terakhir (colok/tulis perangkat, mode privat, dll.)
+        lepaskan()
+            .then(function () {
+                return muatScript();
+            })
+            .then(function () {
+                // wajib daftar perangkat dulu: mengunci facingMode 'environment'
+                // selalu gagal di kamera laptop yang cuma punya satu webcam
+                return window.Html5Qrcode.getCameras();
+            })
+            .then(function (daftar) {
+                kamera = daftar || [];
+
+                if (kamera.length === 0) {
+                    throw { name: 'NotFoundError', message: 'Tidak ada kamera yang terdeteksi.' };
+                }
+
+                kameraAktif = pilihKamera();
+                isiPemilihKamera();
+                petunjuk('Arahkan kamera ke QR pada invoice pelanggan atau lembar kerja penjahit.');
+
+                return nyalakan(kameraAktif);
+            })
+            .catch(function (err) {
+                if (err && err.name === 'NotFoundError') {
+                    petunjuk(pesanGalat(err), true);
+
+                    return;
+                }
+
+                // satu percobaan lagi setelah izin dikabulkan: getCameras() dan
+                // start() berurutan kadang kalah cepat dengan prompt browser
+                if (err && (err.name === 'NotAllowedError' || err.name === 'NotReadableError')) {
+                    petunjuk('Mempercoba sekali lagi setelah izin kamera...');
+
+                    jeda(900).then(function () {
+                        return window.Html5Qrcode.getCameras();
+                    }).then(function (daftar) {
+                        kamera = daftar || [];
+
+                        if (kamera.length === 0) {
+                            throw { name: 'NotFoundError', message: 'Tidak ada kamera yang terdeteksi.' };
+                        }
+
+                        kameraAktif = pilihKamera();
+                        isiPemilihKamera();
+
+                        return nyalakan(kameraAktif);
+                    }).catch(function (err2) {
+                        sesi.aktif = false;
+                        petunjuk(pesanGalat(err2), true);
+                    });
+
+                    return;
+                }
+
+                sesi.aktif = false;
+                petunjuk(pesanGalat(err), true);
+            });
+    }
+
+    // Jalur foto: dibuat tanpa menyentuh kamera, jadi tetap bekerja di http
+    // biasa maupun saat webcam rusak/dipakai aplikasi lain
+    function bacaBerkas(berkas) {
+        var nomToken = (sesi.nomToken += 1);
+
+        petunjuk('Membaca foto QR...');
+
+        lepaskan()
+            .then(function () {
+                return muatScript();
+            })
+            .then(function () {
+                if (nomToken !== sesi.nomToken) {
+                    return;
+                }
+
+                var inst = pemindaiBaru();
+
+                sesi.pemindai   = inst;
+                sesi.dinyalakan = false;
+                sesi.diterima   = false;
+                sesi.aktif      = false;
+
+                return inst.scanFile(berkas, true);
+            })
+            .then(function (teks) {
+                var seri = String(teks || '').trim();
+
+                if (seri === '' || nomToken !== sesi.nomToken) {
+                    return;
+                }
+
+                bootstrap.Modal.getOrCreateInstance(byId('modalScan')).hide();
+                cariDenganSeri(seri);
+            })
+            .catch(function () {
+                matikanVideo();
+                petunjuk('QR tidak terbaca dari foto itu. Ambil ulang lebih dekat dan terang, lalu ulangi.', true);
+            });
+    }
+
+    function cariDenganSeri(seri) {
+        // Sama seperti panel admin: hasil scan diarahkan ke tab "Semua" toko ini
+        // (bebas filter status) yang disaring ke satu nomor nota. Dulu scan mengirim
+        // form Cari yang menempel di tab aktif, jadi nota yang tidak sedang berada di
+        // tab itu (mis. lembar penjahit masih Dalam Proses tapi layar sedang di tab
+        // Pembayaran) ikut tersaring keluar dan scanner tampak gagal.
+        var kueri = '?cari%5Bkolom%5D=faktur&cari%5Bq%5D=' + encodeURIComponent(seri);
+
+        window.location.href = '<?= site_url('user/invoices/lihat/' . rawurlencode($juragan) . '/semua') ?>' + kueri;
+    }
+
+    byId('tombolScan').addEventListener('click', function () {
+        bootstrap.Modal.getOrCreateInstance(byId('modalScan')).show();
+    });
+
+    byId('scanUlang').addEventListener('click', function () {
+        siapkan();
+    });
+
+    byId('scanBerkas').addEventListener('change', function () {
+        var berkas = this.files && this.files[0];
+
+        if (berkas) {
+            bacaBerkas(berkas);
+        }
+
+        this.value = '';
+    });
+
+    var modalScan = byId('modalScan');
+
+    //shown: modal sudah benar-benar terlihat, jadi ukuran elemen video valid
+    modalScan.addEventListener('shown.bs.modal', siapkan);
+    modalScan.addEventListener('hidden.bs.modal', function () {
+        if (sedangBeres) {
+            jeda(300).then(function () { lepaskan(); });
+
+            return;
+        }
+
+        lepaskan();
+    });
+
+    // browser tidak selalu sempat melepas stream saat halaman ditutup
+    window.addEventListener('pagehide', function () {
+        sesi.nomToken += 1;
+        matikanVideo();
+    });
+})();
+</script>
 <?php
 
 $link_api_get_bank       = site_url('api/juragan/all/');

@@ -207,7 +207,6 @@ td .btn.crm-aksi {
             </h4>
             <p class="text-muted small mb-0">Kelola profil customer, segmentasi perilaku, status interaksi, dan tag pelanggan.</p>
         </div>
-        <?= $this->include('admin/crm/tombol_wa') ?>
     </div>
 
 
@@ -376,14 +375,9 @@ td .btn.crm-aksi {
                                     <?= !empty($p['order_terakhir']) ? date('d M Y', strtotime($p['order_terakhir'])) : '<span class="text-muted fst-italic">Belum ada</span>' ?>
                                 </td>
                                 <td class="text-center" data-label="Aksi">
-                                    <a href="<?= site_url('admin/crm/pelanggan/' . $p['id_pelanggan']) ?>" class="btn btn-sm btn-primary crm-aksi me-2" title="Buka Profil Customer 360">
+                                    <a href="<?= site_url('admin/crm/pelanggan/' . $p['id_pelanggan']) ?>" class="btn btn-sm btn-primary crm-aksi" title="Buka Profil Customer 360">
                                         <i class="fal fa-id-card"></i> 360°
                                     </a>
-                                    <?php if (!empty($p['nomor_utama'])): ?>
-                                        <a href="<?= site_url('admin/crm/chat?nomor=' . $p['nomor_utama']) ?>" class="btn btn-sm btn-outline-success crm-aksi" title="Chat WhatsApp">
-                                            <i class="fab fa-whatsapp"></i> Chat
-                                        </a>
-                                    <?php endif; ?>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

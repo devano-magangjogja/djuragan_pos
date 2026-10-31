@@ -7,32 +7,12 @@ use CodeIgniter\Model;
 class CrmModel extends Model
 {
     /**
-     * Jumlah pesan Live Chat WA yang belum dibaca.
-     *
-     * Dihitung dari bubble 'masuk' yang id_pesan-nya masih di atas pointer baca
-     * tiap percakapan (last_read_id), pada chat yang tidak diarsipkan. Begitu chat
-     * dibuka, pointer maju ke pesan terbaru sehingga hitungannya (dan badge angka
-     * di menu Live Chat navbar admin maupun CS) hilang untuk percakapan itu.
-     */
-    public function hitungChatBelumDibaca(): int
-    {
-        return (int) $this->db->table('crm_chat_pesan m')
-            ->join('crm_chat_percakapan p', 'p.id_percakapan = m.percakapan_id')
-            ->where('m.arah', 'masuk')
-            ->where('p.diarsipkan', 0)
-            ->where('m.id_pesan > p.last_read_id', null, false)
-            ->countAllResults();
-    }
-
-    /**
      * Mengambil ringkasan metrik CRM pelanggan yang bercerita
      */
     public function getRingkasan(): array
     {
         $pPel = $this->db->prefixTable('pelanggan');
         $pInv = $this->db->prefixTable('invoice');
-        $pLog = $this->db->prefixTable('crm_pesan_log');
-        $pPro = $this->db->prefixTable('crm_pelanggan_profil');
         $pFol = $this->db->prefixTable('crm_followup');
 
         // 1. Metrik Dasar dari View crm_pelanggan
@@ -56,14 +36,7 @@ class CrmModel extends Model
             COUNT(DISTINCT CASE WHEN order_pertama >= ? THEN id_pelanggan END) as pelanggan_baru_bulan_ini
         FROM crm_pelanggan', [$tigaPuluhHariLalu, $enamPuluhHariLalu, $awalBulanIni])->getRowArray();
 
-        // 3. Prospek Belum Closing (status_crm = 'prospek' ATAU pelanggan yang ordernya 0)
-        $rowProspek = $this->db->query("SELECT 
-            COUNT(*) as prospek_count
-        FROM crm_pelanggan p
-        LEFT JOIN `{$pPro}` pro ON pro.pelanggan_id = p.id_pelanggan
-        WHERE pro.status_crm = 'prospek' OR (p.jumlah_order = 0 AND p.terdaftar_sejak >= UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL 90 DAY)))")->getRowArray();
-
-        // 4. Follow-up Hari Ini
+        // 3. Follow-up Hari Ini
         $hariIni = date('Y-m-d');
         $rowFollowup = $this->db->query("SELECT 
             COUNT(CASE WHEN tanggal_jatuh_tempo = ? AND status = 'menunggu' THEN 1 END) as followup_hari_ini,
@@ -71,17 +44,10 @@ class CrmModel extends Model
             COUNT(CASE WHEN status = 'menunggu' THEN 1 END) as followup_total_pending
         FROM `{$pFol}`", [$hariIni, $hariIni])->getRowArray();
 
-        // 5. Pesan WhatsApp Log
-        $rowPesan = $this->db->query("SELECT 
-            COUNT(*) as total_pesan,
-            COUNT(CASE WHEN status = 'terkirim' THEN 1 END) as pesan_terkirim,
-            COUNT(CASE WHEN status = 'gagal' THEN 1 END) as pesan_gagal
-        FROM `{$pLog}`")->getRowArray();
-
-        // 6. Tagihan Pending
+        // 4. Tagihan Pending
         $rowInv = $this->db->query("SELECT COUNT(*) as tagihan_pending FROM `{$pInv}` WHERE deleted_at IS NULL AND status_pembayaran IN ('1','2','3','4')")->getRowArray();
 
-        // 7. Duplikat Terdeteksi
+        // 5. Duplikat Terdeteksi
         $duplikatCount = 0;
         try {
             $rowDup = $this->db->query('SELECT COUNT(*) as dup_count FROM crm_pelanggan_duplikat')->getRowArray();
@@ -100,13 +66,9 @@ class CrmModel extends Model
             'aktif_bulan_ini'         => (int) ($rowAktif['aktif_bulan_ini'] ?? 0),
             'pasif_pelanggan'         => (int) ($rowAktif['pasif_pelanggan'] ?? 0),
             'pelanggan_baru_bulan_ini'=> (int) ($rowAktif['pelanggan_baru_bulan_ini'] ?? 0),
-            'prospek_belum_closing'   => (int) ($rowProspek['prospek_count'] ?? 0),
             'followup_hari_ini'       => (int) ($rowFollowup['followup_hari_ini'] ?? 0),
             'followup_terlambat'      => (int) ($rowFollowup['followup_terlambat'] ?? 0),
             'followup_total_pending'  => (int) ($rowFollowup['followup_total_pending'] ?? 0),
-            'total_pesan'             => (int) ($rowPesan['total_pesan'] ?? 0),
-            'pesan_terkirim'          => (int) ($rowPesan['pesan_terkirim'] ?? 0),
-            'pesan_gagal'             => (int) ($rowPesan['pesan_gagal'] ?? 0),
             'tagihan_pending'         => (int) ($rowInv['tagihan_pending'] ?? 0),
             'duplikat_terdeteksi'     => $duplikatCount,
         ];
@@ -1128,118 +1090,6 @@ class CrmModel extends Model
     }
 
     /**
-     * Mencocokkan nomor WhatsApp secara otomatis dengan customer di database
-     */
-    public function cariCustomerByWa(string $nomor): ?array
-    {
-        $clean = preg_replace('/[^0-9]/', '', $nomor);
-        if (strlen($clean) < 8) {
-            return null;
-        }
-
-        // Siapkan variasi nomor: 628... vs 08...
-        $variasi = [$clean];
-        if (str_starts_with($clean, '62')) {
-            $variasi[] = '0' . substr($clean, 2);
-        } elseif (str_starts_with($clean, '0')) {
-            $variasi[] = '62' . substr($clean, 1);
-        }
-
-        $pKon = $this->db->prefixTable('pelanggan_kontak');
-        $placeholders = implode(',', array_fill(0, count($variasi), '?'));
-
-        $sql = "SELECT pelanggan_id FROM `{$pKon}` WHERE nomor_pure IN ({$placeholders}) LIMIT 1";
-        $row = $this->db->query($sql, $variasi)->getRowArray();
-
-        if ($row) {
-            return $this->getPelangganDetail((int) $row['pelanggan_id']);
-        }
-
-        return null;
-    }
-
-    /**
-     * Buat Customer Baru langsung dari percakapan WhatsApp
-     */
-    public function buatCustomerDariWa(string $nomor, string $nama, string $kota = '', string $alamat = '', int $user_id = 0): array
-    {
-        $clean = preg_replace('/[^0-9]/', '', $nomor);
-        $time = time();
-
-        // 1. Cek apakah nomor sudah ada
-        $existing = $this->cariCustomerByWa($clean);
-        if ($existing) {
-            return [
-                'success' => false,
-                'message' => 'Nomor ini sudah terdaftar sebagai: ' . $existing['nama_pelanggan'],
-                'data'    => $existing,
-            ];
-        }
-
-        // 2. Format nomor standar
-        $nomorSimpan = $clean;
-        if (str_starts_with($clean, '62')) {
-            $nomorSimpan = '0' . substr($clean, 2);
-        }
-
-        // 3. Insert ke order_pelanggan
-        $dataPelanggan = [
-            'nama_pelanggan' => trim($nama),
-            'hp'             => json_encode([$nomorSimpan]),
-            'alamat'         => trim($alamat) ?: null,
-            'created_at'     => $time,
-            'updated_at'     => $time,
-        ];
-        $this->db->table('pelanggan')->insert($dataPelanggan);
-        $pelangganId = $this->db->insertID();
-
-        // 4. Insert ke order_pelanggan_kontak
-        $this->db->table('pelanggan_kontak')->insert([
-            'pelanggan_id' => $pelangganId,
-            'nomor'        => $nomorSimpan,
-            'urutan'       => 1,
-            'created_at'   => $time,
-        ]);
-
-        // 5. Inisialisasi profil CRM
-        $this->db->table('crm_pelanggan_profil')->insert([
-            'pelanggan_id'     => $pelangganId,
-            'status_crm'       => 'prospek', // Default baru dari WA adalah prospek
-            'opt_in_broadcast' => 1,
-            'catatan'          => "Didaftarkan dari percakapan WhatsApp ({$nomor}).",
-            'created_at'       => $time,
-            'updated_at'       => $time,
-        ]);
-
-        // 6. Hubungkan dengan percakapan chat jika ada
-        $this->db->table('crm_chat_percakapan')
-            ->where('nomor_wa', $clean)
-            ->orWhere('nomor_wa', $nomor)
-            ->orWhere('nomor_wa', $nomorSimpan)
-            ->update([
-                'pelanggan_id' => $pelangganId,
-                'nama_kontak'  => trim($nama),
-            ]);
-
-        // 7. Catat aktivitas
-        $this->tambahAktivitas([
-            'pelanggan_id' => $pelangganId,
-            'tipe'         => 'wa',
-            'judul'        => 'Customer pertama kali terdaftar melalui WhatsApp',
-            'deskripsi'    => "Nomor {$nomor} didaftarkan oleh staff.",
-            'user_id'      => $user_id,
-        ]);
-
-        $detail = $this->getPelangganDetail($pelangganId);
-
-        return [
-            'success' => true,
-            'message' => 'Customer berhasil didaftarkan ke CRM!',
-            'data'    => $detail,
-        ];
-    }
-
-    /**
      * Customer Duplicate / Merge
      */
     public function getDuplikatList(): array
@@ -1402,6 +1252,7 @@ class CrmModel extends Model
             COALESCE(st.tahap, 0) AS tahap,
             COALESCE(st.packing_selesai, 0) AS packing_selesai,
             {$siap} AS siap_ditagih,
+            inv.juragan_id,
             jur.nama_juragan,
             pel.id_pelanggan,
             pel.nama_pelanggan,
@@ -1626,40 +1477,5 @@ class CrmModel extends Model
         }
 
         return $token;
-    }
-
-    /**
-     * Mengambil riwayat pengiriman pesan WhatsApp
-     */
-    public function getLogPesan(int $limit = 50, int $offset = 0): array
-    {
-        $pLog = $this->db->prefixTable('crm_pesan_log');
-        $pPel = $this->db->prefixTable('pelanggan');
-        $pInv = $this->db->prefixTable('invoice');
-        $pUsr = $this->db->prefixTable('user');
-
-        $sql = "SELECT 
-            log.*,
-            pel.nama_pelanggan,
-            inv.seri as invoice_seri,
-            usr.name as nama_pengirim
-        FROM `{$pLog}` log
-        LEFT JOIN `{$pPel}` pel ON pel.id_pelanggan = log.pelanggan_id
-        LEFT JOIN `{$pInv}` inv ON inv.id_invoice = log.invoice_id
-        LEFT JOIN `{$pUsr}` usr ON usr.id = log.user_id
-        ORDER BY log.id_log DESC
-        LIMIT {$limit} OFFSET {$offset}";
-
-        return $this->db->query($sql)->getResultArray();
-    }
-
-    /**
-     * Jumlah seluruh baris log pesan, dipakai pager halaman Riwayat Pesan.
-     */
-    public function countLogPesan(): int
-    {
-        $pLog = $this->db->prefixTable('crm_pesan_log');
-
-        return (int) $this->db->table($pLog)->countAllResults();
     }
 }

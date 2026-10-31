@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * Variabel di bawah ini diisi dari Kpi::index() lewat view('admin/kpi/index', $data).
  * CodeIgniter memanggil extract() di dalam system/View/View.php, jadi analyzers tidak
@@ -6,8 +6,10 @@
  *
  * @var array<string, mixed>                        $s          Saringan: awal, akhir, periode, peran, user_id, juragan_id, juragan_ids
  * @var array<string, array<string, mixed>>         $kartu      Kartu indikator: kunci => [label, nilai, satuan, contoh, tersedia, ...]
- * @var array<string, array<string, mixed>>         $target     Target per indikator: kunci => [target, arah, bobot, aktif]
- * @var list<array<string, mixed>>                  $tren      Baris tren: baki, order, gmv, lunas
+ * @var array<string, array<string, mixed>>         $target     Target per indikator: kunci => [target, arah, aktif]; gmv_cs sudah disesuaikan cakupan (target = tim atau per-CS), keduanya dalam pcs
+ * @var bool                                        $gmv_tim    true = sedang melihat seluruh Tim CS (bukan satu pegawai)
+ * @var array<string, mixed>                        $gmv_ringkas Ringkasan GMV terpisah (pcs katalog): tim_nilai, tim_target, percs_target, arah, jumlah_pegawai
+ * @var list<array<string, mixed>>                  $tren      Baris tren: baki, order, unit, lunas
  * @var array<int, string>                          $pegawai    Pilihan karyawan: id => "nama (level)"
  * @var array<int, string>                          $juragans   Pilihan toko: id => nama
  * @var array<string, string>                       $periode    Label periode: kunci => teks
@@ -30,7 +32,11 @@
 
 $rp = static fn ($n): string => 'Rp ' . number_format((int) $n, 0, ',', '.');
 
-$label_satuan = ['jam' => ' jam', 'menit' => ' menit', 'orang' => ' orang', 'nota' => ' nota'];
+// GMV indikator dibaca dalam pcs, bukan rupiah: satu format bulat untuk semua
+// angka unit supaya tidak ada lagi "Rp" di depan jumlah barang
+$pcs = static fn ($n): string => number_format((float) $n, 0, ',', '.') . ' pcs';
+
+$label_satuan = ['jam' => ' jam', 'menit' => ' menit', 'orang' => ' orang', 'nota' => ' nota', 'pcs' => ' pcs'];
 
 // angka desimal hanya ditampilkan kalau memang ada desimalnya: 906 nota bukan 906,0 nota
 $angka = static fn ($n): string => number_format((float) $n, fmod((float) $n, 1.0) === 0.0 ? 0 : 1, ',', '.');
@@ -114,15 +120,13 @@ $akhir_judul   = min($rekap['jumlah'], $halaman * $batas + $batas);
 // isian grafik disiapkan di PHP: yang masuk ke JS hanya angka dan nama pegawai
 $label_tren    = json_encode(array_column($tren, 'baki'));
 $order_tren    = json_encode(array_map('intval', array_column($tren, 'order')));
-$gmv_tren      = json_encode(array_map('intval', array_column($tren, 'gmv')));
+$unit_tren     = json_encode(array_map('intval', array_column($tren, 'unit')));
 $nama_banding  = json_encode(array_column($pembanding, 'pegawai'));
 $nilai_banding = json_encode(array_map(static fn ($p) => $p['nilai'], $pembanding));
 
 $judul_banding = [
-    'gmv_cs'              => 'GMV per karyawan (Rp)',
+    'gmv_cs'              => 'GMV per karyawan (pcs)',
     'order_diproses'      => 'Pesanan diproses per karyawan (nota)',
-    'first_response_time' => 'Rata-rata first response time per karyawan (menit, makin kecil makin baik)',
-    'konversi_lead'       => 'Lead menjadi order per karyawan (jumlah)',
     'resolution_time'     => 'Rata-rata waktu penyelesaian tindak lanjut (jam, makin kecil makin baik)',
 ];
 
@@ -130,10 +134,8 @@ $judul_banding = [
 $tooltip = [
     'pegawai_dinilai'       => 'Akun Customer Service yang masih aktif.',
     'order_diproses'        => 'Semua nota yang dibuat orang ini pada periode terpilih, sudah lunas maupun belum.',
-    'first_response_time'   => 'Dari pesan masuk pelanggan sampai balasan pertama manusia. Balasan otomatis dan pesan yang gagal kirim tidak dihitung. Satu percakapan dihitung satu kali.',
-    'konversi_lead'         => 'Chat baru dari pelanggan yang belum pernah order, lalu jadi order dalam 14 hari.',
     'resolution_time'       => 'Dari tindak lanjut dibuat sampai ditandai selesai. Yang masih menunggu tidak dihitung.',
-    'gmv_cs'                => 'Hanya nota yang sudah lunas dan tidak dibatalkan, termasuk ongkir dan potongan biaya. Nota dari akun yang sudah nonaktif tidak ikut, jadi angkanya bisa beda dengan halaman Laporan.',
+    'gmv_cs'                => 'Jumlah pcs produk katalog dari nota yang sudah lunas dan tidak dibatalkan; barang jual maupun sewa sama-sama satu pcs. Item yang kodenya tidak ada di katalog produk tidak ikut. Nota dari akun yang sudah nonaktif tidak ikut, jadi angkanya bisa beda dengan halaman Laporan.',
 ];
 ?>
 <?= $this->extend('template/main') ?>
@@ -182,13 +184,87 @@ $tooltip = [
 
     <?= $this->include('admin/kpi/saring') ?>
 
+    <?php
+    // Ringkasan GMV Tim CS — selalu total SELURUH CS, terpisah dari angka per orang.
+    // Satuannya pcs produk katalog nota lunas, bukan rupiah. Saringan pegawai tidak
+    // mengubah blok ini; ia hanya menyorot baris rekap di bawah.
+    $gr        = $gmv_ringkas;
+    $timPunya  = $gr['tim_target'] !== null && (float) $gr['tim_target'] > 0;
+    $timCapai  = $timPunya ? round((float) $gr['tim_nilai'] / (float) $gr['tim_target'] * 100, 1) : null;
+    $timSentuh = $gr['tim_target'] !== null && ($gr['arah'] === 'lebih_rendah'
+        ? (float) $gr['tim_nilai'] <= (float) $gr['tim_target']
+        : (float) $gr['tim_nilai'] >= (float) $gr['tim_target']);
+
+    /* Susunan kartu (permintaan 2026-10-29):
+       - "Pesanan diproses" naik ke baris pertama bersama dua kartu GMV —
+         ketiganya berbagi satu baris (col-lg-4), bukan melebar sendiri;
+       - blok "Ringkasan GMV Tim CS" duduk di slot itu juga, bersebelahan dengan
+         kartu "GMV Tim CS" per orang;
+       - "Waktu penyelesaian tindak lanjut" mengisi slot milik "Pesanan
+         diproses" yang lama, yaitu posisi kedua dari baris empat kartu.
+       Daftar sisanya diambil dari $kartu, jadi indikator baru yang ditambahkan
+       model nanti ikut tampil (jatuh ke kelompok terakhir), bukan hilang. */
+    $sisa = array_diff_key($kartu, array_flip(['order_diproses', 'gmv_cs', 'resolution_time']));
+    $kartu_urut = array_merge(
+        ['order_diproses' => $kartu['order_diproses'], 'gmv_tim' => null, 'gmv_cs' => $kartu['gmv_cs']],
+        array_slice($sisa, 0, 1, true),
+        ['resolution_time' => $kartu['resolution_time']],
+        array_slice($sisa, 1, null, true)
+    );
+    $lebar_kartu = ['order_diproses' => 'col-6 col-lg-4', 'gmv_cs' => 'col-6 col-lg-4'];
+    ?>
     <div class="row gx-2 gy-3 mb-4">
-        <?php foreach ($kartu as $kunci => $k) { ?>
-            <?php $st = $status($kunci, $k, $target); ?>
-            <div class="col-6 col-lg-4 col-xl-3">
+        <?php foreach ($kartu_urut as $kunci => $k) { ?>
+            <?php if ($kunci === 'gmv_tim') { ?>
+                <div class="col-6 col-lg-4">
+                    <div class="h-100 rounded-3 border border-ink-200 bg-white px-3 py-2">
+                        <div class="d-flex flex-wrap align-items-start justify-content-between gap-3">
+                            <div>
+                                <div class="text-muted small text-uppercase fw-semibold">
+                                    <i class="fal fa-users me-1"></i> Ringkasan GMV Tim CS
+                                </div>
+                                <div class="fs-5 fw-bold kpi-angka mt-1"><?= $pcs($gr['tim_nilai']) ?></div>
+                                <div class="small text-muted">
+                                    Gabungan <?= (int) $gr['jumlah_pegawai'] ?> CS &middot; periode <?= esc($s['awal']) ?>&ndash;<?= esc($s['akhir']) ?>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <?php if (! $timPunya) : ?>
+                                    <div class="small text-muted">target Tim CS belum diisi</div>
+                                <?php else : ?>
+                                    <div class="small">Target Tim: <strong><?= $pcs($gr['tim_target']) ?></strong></div>
+                                    <div class="small">
+                                        Capaian <strong><?= number_format((float) $timCapai, 1, ',', '.') ?>%</strong>
+                                        <span class="<?= $timSentuh ? 'text-success' : 'text-danger' ?> fw-semibold">
+                                            &middot; <?= $timSentuh ? 'target tercapai' : 'belum tercapai' ?>
+                                        </span>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                        <div class="small text-muted mt-1">
+                            Pcs produk katalog dari nota lunas, bukan nominal rupiah. Angka per karyawan dibandingkan terhadap target <em>per CS</em> lewat kolom status di tabel rekap di bawah — terpisah dari target tim ini.
+                        </div>
+                    </div>
+                </div>
+                <?php continue; ?>
+            <?php } ?>
+            <?php
+            $st = $status($kunci, $k, $target);
+
+            // GMV dua wajah: total Tim CS vs kontribusi satu orang, dua-duanya pcs.
+            // Judul dan keterangannya ikut cakupan saringan supaya pembaca tidak tertukar.
+            $label = $kunci === 'gmv_cs' ? ($gmv_tim ? 'GMV Tim CS (pcs)' : 'GMV per CS (pcs)') : $k['label'];
+            $tip   = $kunci === 'gmv_cs'
+                ? ($gmv_tim
+                    ? 'Gabungan pcs produk katalog seluruh CS pada periode ini, dibandingkan target Tim CS.'
+                    : 'Pcs produk katalog yang diatribusikan ke satu CS ini, dibandingkan target per CS.')
+                : ($tooltip[$kunci] ?? 'Angka dihitung dari catatan yang tersimpan di database.');
+            ?>
+            <div class="<?= $lebar_kartu[$kunci] ?? 'col-6 col-xl-3' ?>">
                 <div class="h-100 rounded-3 border border-ink-200 bg-white px-3 py-2">
-                    <div class="text-muted small text-uppercase" title="<?= esc($tooltip[$kunci] ?? 'Angka dihitung dari catatan yang tersimpan di database.') ?>">
-                        <?= esc($k['label']) ?>
+                    <div class="text-muted small text-uppercase" title="<?= esc($tip) ?>">
+                        <?= esc($label) ?>
                     </div>
                     <div class="fs-5 fw-bold kpi-angka <?= ($k['tersedia'] ?? true) ? '' : 'text-muted' ?>">
                         <?= $tampil($k) ?>
@@ -283,32 +359,44 @@ $tooltip = [
                         <th scope="col">Karyawan</th>
                         <th scope="col">Role</th>
                         <th scope="col" class="text-end">Order</th>
-                        <th scope="col" class="text-end">GMV</th>
+                        <th scope="col" class="text-end" title="pcs produk katalog dari nota lunas orang ini">GMV (pcs)</th>
+                        <th scope="col" class="text-end" title="GMV pcs orang ini dibandingkan target per CS (bukan target tim)">vs target per-CS</th>
                         <th scope="col" class="text-end" title="nota lunas (status pembayaran 5 atau 6)">Lunas</th>
-                        <th scope="col" class="text-end" title="menit sampai balasan manusia pertama per sesi chat">FRT (menit)</th>
-                        <th scope="col" class="text-end" title="lead baru yang menjadi order dalam 14 hari">Lead jadi</th>
                         <th scope="col" class="text-end" title="jam dari tindak lanjut dibuat sampai diselesaikan">Selesai (jam)</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if ($rekap['baris'] === []) { ?>
                         <tr>
-                            <td colspan="8" class="text-center text-muted py-4">
+                            <td colspan="7" class="text-center text-muted py-4">
                                 Tidak ada karyawan dengan data pada saringan ini.
                             </td>
                         </tr>
                     <?php } ?>
+                    <?php
+                    // Target per-CS (pcs) dipakai untuk status tiap baris; arah GMV lebih tinggi.
+                    $pt   = $gmv_ringkas['percs_target'];
+                    $terpilih = $s['user_id'] !== null ? (int) $s['user_id'] : 0;
+                    ?>
                     <?php foreach ($rekap['baris'] as $b) { ?>
-                        <tr>
+                        <?php $sentuh = $pt !== null && (int) $b['unit'] >= (float) $pt; ?>
+                        <tr<?= (int) $b['user_id'] === $terpilih ? ' class="table-primary"' : '' ?>>
                             <td>
                                 <a href="<?= $t(['pegawai' => (int) $b['user_id']]) ?>"><?= esc($b['pegawai']) ?></a>
                             </td>
                             <td class="small"><?= esc($b['level']) ?></td>
                             <td class="text-end"><?= (int) $b['jumlah_order'] ?></td>
-                            <td class="text-end text-nowrap"><?= $rp($b['gmv']) ?></td>
+                            <td class="text-end text-nowrap"><?= number_format((int) $b['unit'], 0, ',', '.') ?></td>
+                            <td class="text-end text-nowrap">
+                                <?php if ($pt === null) : ?>
+                                    <span class="text-muted small">&mdash;</span>
+                                <?php elseif ($sentuh) : ?>
+                                    <span class="text-success small"><i class="fal fa-check me-1"></i>tercapai</span>
+                                <?php else : ?>
+                                    <span class="text-danger small"><i class="fal fa-times me-1"></i>belum</span>
+                                <?php endif; ?>
+                            </td>
                             <td class="text-end"><?= (int) $b['lunas'] ?></td>
-                            <td class="text-end"><?= $b['frt_menit'] === null ? '&mdash;' : number_format((float) $b['frt_menit'], 1, ',', '.') ?></td>
-                            <td class="text-end"><?= (int) $b['lead_jadi'] ?> / <?= (int) $b['lead'] ?></td>
                             <td class="text-end"><?= $b['resolusi'] === null ? '&mdash;' : number_format((float) $b['resolusi'], 1, ',', '.') ?></td>
                         </tr>
                     <?php } ?>
@@ -350,8 +438,11 @@ $tooltip = [
 // 10px tetap; masih satu baris di 1280/1366/1440/1600/1920px.
 // Seri "SLA fulfillment (jam)" ikut dicabut bersama indikator admin, jadi legenda
 // cuma tinggal dua nama; ukuran di atas dibiarkan karena masih dipakai keduanya.
-// NAMA SERI TIDAK BOLEH DIPENDEKKAN — user menolak "Nilai transaksi"/"Order"
+// NAMA SERI TIDAK BOLEH DIPENDEKKAN â€” user menolak "Nilai transaksi"/"Order"
 // ditulis ulang: "penulisanya disesuaikan dengan yang asli jangan engganti nama".
+// "Nilai transaksi (Rp)" berganti menjadi "GMV (pcs)" bukan pemendekan: indikatornya
+// sendiri pindah satuan dari rupiah ke pcs produk katalog, jadi nama lama akan
+// membohongi pembaca grafik. "Jumlah order" tetap apa adanya.
 $js = <<< JS
     \$(function() {
         'use strict';
@@ -366,9 +457,9 @@ $js = <<< JS
                 data: {
                     labels: {$label_tren},
                     datasets: [{
-                        label: 'Nilai transaksi (Rp)',
+                        label: 'GMV (pcs)',
                         type: 'line',
-                        data: {$gmv_tren},
+                        data: {$unit_tren},
                         borderColor: '#da251d',
                         backgroundColor: '#da251d',
                         fill: false,
@@ -399,7 +490,7 @@ $js = <<< JS
                             id: 'y-axis-1',
                             position: 'right',
                             gridLines: { drawOnChartArea: false },
-                            ticks: { beginAtZero: true, callback: function (v) { return 'Rp ' + (v / 1000000).toFixed(0) + ' jt'; } }
+                            ticks: { beginAtZero: true, callback: function (v) { return v.toLocaleString('id-ID'); } }
                         }]
                     }
                 }

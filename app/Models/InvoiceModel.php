@@ -948,6 +948,16 @@ class InvoiceModel extends Model
         // dicabut lagi; sinkron() memutuskan sendiri arah yang benar.
         (new PoinPenjualanModel())->sinkron((int) $invoice_id);
 
+        // reminder transaksi (konfirmasi DP, pelunasan, permintaan ulasan) ikut
+        // disinkronkan di titik yang sama seperti poin gaji: begitu angka uang
+        // berubah, tugasnya mengikuti. Gagal di sini tidak boleh membatalkan
+        // pembayaran, jadi dibungkus dan hanya dilaporkan.
+        try {
+            (new \App\Models\TugasModel())->sinkronReminder((int) $invoice_id);
+        } catch (Throwable $e) {
+            log_message('error', 'sinkron reminder gagal untuk nota ' . $invoice_id . ': ' . $e->getMessage());
+        }
+
         return $status;
     }
 

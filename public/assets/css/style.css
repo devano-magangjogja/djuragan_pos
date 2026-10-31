@@ -2524,6 +2524,17 @@ input[type="search"].cari_pelanggan::-moz-clear-button {
   border-radius: 9999px !important;
 }
 
+/* Nomor HP di kartu transaksi. Peramban HP (iOS/Samsung) suka menautkan deretan
+   angka dengan sendirinya — telephone=no di kepala halaman sudah mematikan itu,
+   tapi kalau peramban tetap menyuntik <a>, warna tautan bawaan itu MENANG atas
+   warna putih yang diwarisi kotak ini, jadi nomornya berubah biru. Warna dan
+   garis bawah dipaksa ikut kotak aslinya. */
+.chip-hp,
+.chip-hp a {
+  color: #ffffff !important;
+  text-decoration: none !important;
+}
+
 .badge.bg-success {
   background-color: #ecfdf5 !important;
   color: #027a48 !important;
@@ -3133,59 +3144,6 @@ input[type="search"].cari_pelanggan::-moz-clear-button {
   box-shadow: 0 8px 20px rgba(16, 24, 40, 0.2) !important;
 }
 
-/* Tombol Live Chat ikut mengambang, ditumpuk tepat di atas tombol kirim masukan
-   (lingkaran 2.6rem + margin-bottom 1rem milik tombol itu, lalu jarak 0.7rem). */
-.wa-melayang {
-  bottom: 4.3rem;
-}
-
-.wa-melayang .btn {
-  border: 0;
-  border-radius: 9999px !important;
-  padding: 0 !important;
-  width: 2.6rem;
-  height: 2.6rem;
-  box-shadow: 0 4px 12px rgba(16, 24, 40, 0.15) !important;
-}
-
-/* 14. Modern Live Chat WA Container Harmonization */
-.chat-container {
-  border: 1px solid #eaecf0 !important;
-  border-radius: 16px !important;
-  background: #ffffff !important;
-  box-shadow:
-    0 1px 3px rgba(16, 24, 40, 0.05),
-    0 8px 24px -4px rgba(16, 24, 40, 0.06) !important;
-  overflow: hidden !important;
-}
-
-.chat-sidebar {
-  border-right: 1px solid #eaecf0 !important;
-}
-
-.chat-header {
-  border-bottom: 1px solid #eaecf0 !important;
-  background: #ffffff !important;
-}
-
-.chat-footer {
-  border-top: 1px solid #eaecf0 !important;
-  background: #ffffff !important;
-}
-
-.chat-conv-item {
-  border-bottom: 1px solid #f2f4f7 !important;
-}
-
-.chat-conv-item:hover {
-  background: #f9fafb !important;
-}
-
-.chat-conv-item.active {
-  background: #f2f4f7 !important;
-  border-left: 3px solid #101828 !important;
-}
-
 /* 15. Katalog Produk & Stok (kartu produk) */
 .produk-kartu {
   cursor: pointer;
@@ -3792,4 +3750,129 @@ tr.varian-sorot td {
   height: 100%;
   object-fit: contain;
   display: block;
+}
+
+/* 19. Baris tombol aksi kartu transaksi di layar HP (daftar transaksi admin & CS).
+   Dulu tiap tombol mengukur dirinya sendiri dan wadah pembungkus ikut dihitung
+   sebagai satu benda, jadi Sunting, Pembayaran, dan Hapus tercerai ke baris
+   berbeda. Wadah pembungkusnya (grup tombol dan kotak .aksi-hapus) dilucuti
+   dengan display:contents sehingga semua tombol jadi anggota baris flex yang
+   sama, lalu kelas peran yang dipasang di markup menentukan posisinya:
+     .aksi-bagi     -> bagi rata satu baris: Sunting | Pembayaran | Hapus
+     .aksi-penuh    -> kelompok berikutnya yang didahulukan (Cek Pembayaran,
+                       Input Resi); berdampingan dengan .aksi-setengah
+     .aksi-setengah -> Proses Orderan, Sudah kembali, Batalkan
+     .aksi-baris    -> selalu satu baris sendiri (catatan waktu pengembalian)
+   Tombol yang tidak berpasangan memanjang penuh sampai tepi kartu.
+   Penandanya .aksi-transaksi, bukan .aksi saja, karena halaman Pencatatan COD
+   punya .kartu-invoice .aksi dengan tombol yang susunannya tidak boleh diubah.
+   .btn-sm mengunci padding dengan !important dan utilitas Tailwind (flex,
+   gap) juga !important, jadi aturan di bawah ikut !important. */
+@media (max-width: 575.98px) {
+  .kartu-invoice .aksi-transaksi {
+    gap: 0.3rem !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+  }
+
+  .kartu-invoice .aksi-transaksi > div {
+    display: contents !important;
+  }
+
+  /* Pemecah baris sesudah kelompok pertama: benda selebar 100% tapi setinggi 0,
+     ditaruh lewat order tepat sebelum kelompok berikutnya. Tanpa ini "Proses
+     Orderan" ikut naik ke baris Sunting | Hapus begitu ada sisa ruang.
+     Catatan: flex tidak bisa "sisa ruang" dihitung sebelum barisnya ditutup,
+     jadi pemecah ini memang membuat satu baris kosong setinggi 0 — konsekuensinya
+     jarak antara baris pertama dan kedua 4px lebih longgar dari biasanya. */
+  .kartu-invoice .aksi-transaksi::before {
+    content: '';
+    order: 2;
+    flex: 1 1 100%;
+    height: 0;
+  }
+
+  /* Kata pertama dilepas di HP: "Tambah Pembayaran" -> "Pembayaran" dan
+     "Sudah kembali" -> "Kembali". Tanpa itu "Cek Pembayaran" dan
+     "Sudah kembali" tidak pernah muat berdampingan di layar 360px dan
+     kembali bertumpuk. Di desktop labelnya tetap lengkap, begitu pula
+     judul modalnya. */
+  .kartu-invoice .aksi-transaksi .kata-depan {
+    display: none;
+  }
+
+  .kartu-invoice .aksi-transaksi .btn.btn-sm {
+    /* Ukuran hurufnya tetap 0,78rem seperti .btn-sm; hanya padding dan jarak
+       ikon-teks yang dirapatkan, itu saja yang membuat Sunting + Pembayaran +
+       Hapus muat satu baris di layar 360px. */
+    padding: 0.32rem 0.4rem !important;
+    gap: 0.25rem;
+  }
+
+  .kartu-invoice .aksi-transaksi .aksi-bagi {
+    order: 1;
+    /* basisnya auto, bukan 0: tiga tombol dipaksa sebaris akan membuat labelnya
+       terpotong di layar 320px, sedangkan basis auto membiarkan Hapus turun ke
+       baris berikutnya begitu benar-benar tidak muat */
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  /* Nota yang sudah lunas tidak punya tombol Pembayaran, jadi baris pertama cuma
+     berdua (Sunting | Hapus) dan harus belah di titik yang sama persis dengan baris
+     pasangan di bawahnya. Dengan dasar "selebar label", Sunting (74px) dan Hapus
+     (67px) tetap beda lebar setelah sama-sama tumbuh sehingga sumbatnya miring —
+     maka dasarnya dipaksa 50% dikurangi setengah parit.
+     Aturan ini TIDAK dipakai kalau Pembayaran ikut (barisnya bertiga): dasar 50%
+     atau 33% memaksa satu tombol melebar ke lebar minimum labelnya, dan begitu itu
+     terjadi totalnya melebihi baris sehingga Hapus justru jatuh ke baris sendiri. */
+  .kartu-invoice .aksi-transaksi:not(:has(.tambahBayar)) .aksi-bagi {
+    flex: 1 1 calc(50% - 0.15rem);
+  }
+
+  /* "Kembali 27 Okt 2026 14:30" selalu sendirian di barisnya: labelnya panjang
+     dan kalau dipaksa berdampingan ia turun ke dua baris sementara tetangganya
+     tetap pendek, jadi tingginya tidak sama rata. */
+  .kartu-invoice .aksi-transaksi .aksi-baris {
+    order: 2;
+    flex: 1 1 100%;
+  }
+
+  /* Cek Pembayaran/Input Resi (aksi-penuh) dan Proses Orderan/Sudah kembali
+     (aksi-setengah) berbagi baris yang sama. Dulu .aksi-penuh dipaksa 100%
+     sehingga Cek Pembayaran dan Sudah kembali bertumpuk padahal ruang di
+     sampingnya masih ada; basis 50% juga tidak berhasil untuk tiga tombol
+     berlabel panjang karena basis itu membengkak ke lebar minimum teks. */
+  .kartu-invoice .aksi-transaksi .aksi-penuh,
+  .kartu-invoice .aksi-transaksi .aksi-setengah {
+    /* Duanya dibelah rata 50% supaya sumbat baris ini sejajar dengan baris
+       pertama (Sunting | Hapus). Basisnya bukan "selebar label" lagi — dengan
+       basis auto tombol berlabel pendek ("Kembali") ikut melebar sampai 147px
+       sementara yang di atasnya cuma 121px, jadi terlihat tidak rapi.
+       min-width:0 mengizinkan kotak memotong labelnya sendiri, jadi
+       white-space:normal dipakai sebagai katup pengaman: label panjang turun
+       ke dua baris, bukan terpotong atau meluber keluar kartu. */
+    flex: 1 1 calc(50% - 0.15rem);
+    min-width: 0;
+    white-space: normal;
+  }
+
+  .kartu-invoice .aksi-transaksi .aksi-penuh {
+    order: 2;
+  }
+
+  .kartu-invoice .aksi-transaksi .aksi-setengah {
+    order: 3;
+  }
+}
+
+/* 20. Blok tombol "Ongkir" dan "Biaya Lain" di bawah tabel orderan.
+   Dipakai tiga halaman — sunting, tulis admin, tulis CS — jadi aturannya di sini,
+   bukan disalin per halaman. Dulu blok itu nempel ke garis bawah tabel (celah
+   terukur 0px di desktop) dan mulai tepat dari tepi kartu, 16px di sebelah kiri
+   teks kolom pertama tabelnya. Sekarang isian rata keempat sisi 1rem: jarak ke
+   tabel di atas sama dengan jarak ke garis pemisah di bawah, dan tombolnya sejajar
+   kolom pertama. Sengaja di luar @media — dimintanya desktop maupun responsif. */
+.customBiaya.border-bottom {
+  padding: 1rem !important;
 }

@@ -131,6 +131,15 @@ $kueriTab = array_filter([
                memunculkan gulir mendatar */
             overflow-x: hidden;
         }
+
+        /* Popus "Tambah Barang" punya sembilan isian: tanpa batas ini tingginya
+           menyentuh tepi layar (624px dari 640px) dan terasa "terlalu panjang".
+           72vh — sama seperti popus catatan COD — menyisakan latar yang terlihat
+           di atas-bawahnya sehingga kepala dan kaki tombol selalu terbaca, sementara
+           isian sisanya digulir di dalam body (modal-dialog-scrollable). */
+        #modalTambahBarang .modal-content {
+            max-height: 72vh;
+        }
     }
 
     /* "Tambah Barang" memenuhi lebar kartu di layar sempit; dulu ia cuma
@@ -599,7 +608,11 @@ $kueriTab = array_filter([
 
 <?= $this->section('modal') ?>
 <div class="modal fade" id="modalTambahBarang" tabindex="-1" aria-labelledby="modalTambahBarangLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <?php /* scrollable: di layar HP sembilan isian ini lebih tinggi dari layar,
+             jadi badan popusnya yang digulir — kepala dan kaki tombol tetap
+             terlihat. Dialognya tidak dipaksa setinggi layar karena
+             modal-dialog-centered menahan .modal-content seukuran isinya. */ ?>
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <?= form_open('admin/produk/save', ['class' => 'modal-content', 'enctype' => 'multipart/form-data'], [
             'kembali_juragan' => (string) $juragan,
             'kembali_keadaan' => $keadaan,

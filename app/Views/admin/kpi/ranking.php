@@ -7,15 +7,19 @@
  * $pegawai, dan $juragans dipakai juga oleh admin/kpi/saring karena include
  * memakai scope yang sama.
  *
- * @var string $title     judul halaman
- * @var array  $s         nilai saringan aktif: ['awal', 'akhir', 'periode', 'peran', 'user_id', 'juragan_id', ...]
- * @var list   $peringkat baris peringkat per pegawai: ['user_id', 'pegawai', 'level', 'jumlah', 'poin', 'total', 'gmv', 'tercatat', 'peringkat']
- * @var list   $aturan    aturan poin per aktivitas: ['slug', 'nama', 'sumber', 'poin', 'satuan', 'tercatat', 'belum_ternilai']
- * @var array  $luar      sumber data yang tidak dinilai per orang: [sumber => pekerjaan]
- * @var array  $pegawai   pilihan pegawai untuk saringan: [user_id => 'nama (level)']
- * @var array  $juragans  pilihan toko milik akun ini: [juragan_id => nama]
- * @var array  $periode   pilihan periode saringan: [slug => label]
- * @var array  $peran     pilihan peran saringan: [slug => label]
+ * @var string $title    judul halaman
+ * @var array  $s        nilai saringan aktif: ['awal', 'akhir', 'periode', 'peran', 'user_id', 'juragan_id', ...]
+ * @var list   $peringkat baris peringkat per pegawai: ['user_id', 'pegawai', 'level', 'jumlah', 'poin', 'total', 'gmv', 'unit', 'tercatat', 'peringkat']
+ * @var list   $baris    halaman peringkat yang sedang ditampilkan (irisan $peringkat)
+ * @var int    $jumlah   total orang yang dinilai (sebelum diiris halaman)
+ * @var int    $batas    jumlah baris per halaman
+ * @var int    $halaman  indeks halaman aktif, dimulai dari 0
+ * @var list   $aturan   aturan poin per aktivitas: ['slug', 'nama', 'sumber', 'poin', 'satuan', 'tercatat']
+ * @var array  $luar     sumber data yang tidak dinilai per orang: [sumber => pekerjaan]
+ * @var array  $pegawai  pilihan pegawai untuk saringan: [user_id => 'nama (level)']
+ * @var array  $juragans pilihan toko milik akun ini: [juragan_id => nama]
+ * @var array  $periode  pilihan periode saringan: [slug => label]
+ * @var array  $peran    pilihan peran saringan: [slug => label]
  */
 
 /*
@@ -27,20 +31,18 @@
  * hanya berisi angkanya.
  */
 
-$rp    = static fn ($n): string => 'Rp ' . number_format((float) $n, 0, ',', '.');
 $angka = static fn ($n): string => number_format((float) $n, fmod((float) $n, 1.0) === 0.0 ? 0 : 1, ',', '.');
 $poin  = static fn ($n): string => ($n <=> 0) > 0 ? '+' . $angka($n) : $angka($n);
 $sel   = static fn (int $n): string => $n === 0 ? '&mdash;' : $angka($n);
 
-// kelompok kolom supaya tabel tidak perlu tiga belas kolom sekaligus
+// kelompok kolom supaya tabel tidak perlu banyak kolom sekaligus. Kolom Chat,
+// Konversi dan poin broadcast sudah dicabut bersama fitur Live Chat WA / Broadcast.
 $kelompok = [
     'Nota'      => ['nota_dibuat'],
     'Lunas'     => ['nota_lunas'],
     'Nilai'     => ['nilai_lunas'],
     'Produksi'  => ['tahap_produksi', 'foto_progres'],
-    'Chat'      => ['balasan_chat', 'sesi_dijawab'],
-    'Konversi'  => ['lead_jadi_order'],
-    'Lainnya'   => ['tindak_lanjut_selesai', 'aktivitas_crm', 'pesan_manual', 'broadcast_dibuat'],
+    'Lainnya'   => ['tindak_lanjut_selesai', 'aktivitas_crm', 'pesan_manual'],
     'Pengurang' => ['void_salah'],
 ];
 
@@ -49,9 +51,7 @@ $petunjuk = [
     'Lunas'     => 'nota lunas',
     'Nilai'     => 'nota lunas per Rp 1 juta',
     'Produksi'  => 'tahap produksi dikerjakan + foto progres',
-    'Chat'      => 'pesan dibalas + sesi dijawab pertama',
-    'Konversi'  => 'lead menjadi order',
-    'Lainnya'   => 'tindak lanjut, catatan CRM, pesan manual, broadcast',
+    'Lainnya'   => 'tindak lanjut, catatan CRM, pesan manual',
     'Pengurang' => 'nota dibatalkan karena kesalahan',
 ];
 
@@ -261,10 +261,11 @@ $kosong    = count($peringkat) - count($bernilai);
                             <td class="text-end small text-muted">
                                 <?php if ($b['tercatat'] === 0) { ?>
                                     tidak ada aktivitas tercatat
-                                <?php } elseif ((float) $b['gmv'] > 0) { ?>
-                                    nota lunas <?= $rp($b['gmv']) ?>
+                                <?php } elseif ((int) $b['unit'] > 0) { ?>
+                                    <!-- pcs katalog nota lunas, sama dengan indikator GMV -->
+                                    <?= $angka($b['unit']) ?> pcs lunas
                                 <?php } else { ?>
-                                    belum ada nota lunas
+                                    belum ada pcs katalog lunas
                                 <?php } ?>
                             </td>
                         </tr>
@@ -338,11 +339,6 @@ $kosong    = count($peringkat) - count($bernilai);
                                     </td>
                                     <td class="text-end" data-label="Tercatat">
                                         <?= $sel((int) $a['tercatat']) ?>
-                                        <?php if ((int) $a['belum_ternilai'] > 0) { ?>
-                                            <div class="small text-muted">
-                                                + <?= $angka((int) $a['belum_ternilai']) ?> tanpa pelaku
-                                            </div>
-                                        <?php } ?>
                                     </td>
                                 </tr>
                             <?php } ?>

@@ -16,6 +16,7 @@
  * @var array  $invoicesTagihan     baris invoice belum lunas
  * @var array  $reminders           pengingat otomatis
  * @var string $templateTagihan     template pesan WA tagihan
+ * @var array  $toko                id_juragan => nama toko (pilihan toko di form catatan)
  * @var string $saring              saring daftar tagihan: siap|semua
  * @var int    $jumlahSiap          invoice belum lunas yang barangnya sudah selesai
  * @var int    $jumlahSemua         invoice belum lunas keseluruhan
@@ -162,6 +163,16 @@
     .fup-tabel td .btn {
         margin-right: 0.4rem;
     }
+    /* Kolom "Aksi Tagih" cuma berisi satu tombol, jadi ia ikut memanjang sebaris
+       penuh di mode kartu: kalau tidak, tombolnya duduk di kolom kiri saja dan
+       labelnya belah dua ("Catat / Penagihan") seperti di layar 360px. */
+    .fup-tabel td[data-label="Aksi Tagih"] {
+        grid-column: 1 / -1;
+    }
+    .fup-tabel td[data-label="Aksi Tagih"] .btn {
+        width: 100%;
+        margin-right: 0;
+    }
     .reminder-nama {
         white-space: normal;
         overflow: visible;
@@ -208,16 +219,13 @@
         padding-right: 0.9rem;
         line-height: 1.45;
     }
-    /* Baris judul di HP disusun vertikal: judul + penjelasan duluan, tombol
-       Live Chat WA turun ke baris sendiri. Flex row bikin kotak teksnya
+    /* Baris judul di HP disusun vertikal: judul + penjelasan duluan, aksi di
+       kanan turun ke baris sendiri. Flex row bikin kotak teksnya
        melebar sampai sebaris penuh, jadi di sini dijadikan blok biasa. */
     .fup-judul-baris {
         /* !important karena baris ini membawa kelas BS d-flex (utility-nya
            !important, jadi tanpa !important aturan ini kalah) */
         display: block !important;
-    }
-    .fup-judul-aksi {
-        margin-top: 0.6rem;
     }
     /* Seluruh isi halaman dirapatkan ke tepi kiri-kanan layar HP (band 768px
        ke bawah, bukan hanya 576px) supaya bar tab dan teks punya ruang lebih. */
@@ -281,9 +289,6 @@
                 <i class="fal fa-tasks text-primary me-2 d-none d-lg-inline"></i> Pusat Follow-up & Reminder
             </h4>
             <p class="text-muted small mb-0 fup-teks">Kelola tindakan follow-up customer, penagihan invoice, dan pengingat jadwal pakaian penting.</p>
-        </div>
-        <div class="d-flex align-items-center gap-2 fup-judul-aksi">
-            <?= $this->include('admin/crm/tombol_wa') ?>
         </div>
     </div>
 
@@ -421,11 +426,6 @@
                                             <a href="<?= site_url('admin/crm/pelanggan/' . $f['pelanggan_id']) ?>" class="btn btn-sm btn-outline-primary me-2" title="Buka Profil 360">
                                                 <i class="fal fa-id-card"></i>
                                             </a>
-                                            <?php if (!empty($f['nomor_wa'])): ?>
-                                                <a href="<?= site_url('admin/crm/chat?nomor=' . $f['nomor_wa']) ?>" class="btn btn-sm btn-outline-success me-2" title="Chat WhatsApp">
-                                                    <i class="fab fa-whatsapp"></i>
-                                                </a>
-                                            <?php endif; ?>
                                             <?php if ($f['status'] === 'menunggu'): ?>
                                                 <form action="<?= site_url('admin/crm/followup/selesai/' . $f['id_followup']) ?>" method="post" class="d-inline" onsubmit="return confirm('Tandai follow-up ini telah selesai?');">
                                                     <?= csrf_field() ?>
@@ -567,9 +567,11 @@
                                                         data-seri="<?= esc($inv['seri']) ?>"
                                                         data-nama="<?= esc($inv['nama_pelanggan']) ?>"
                                                         data-nomor="<?= esc($inv['nomor_hp']) ?>"
+                                                        data-pelanggan-id="<?= (int) $inv['id_pelanggan'] ?>" data-juragan="<?= (int) ($inv['juragan_id'] ?? 0) ?>"
                                                         data-total="Rp <?= number_format($inv['total_tagihan'], 0, ',', '.') ?>"
-                                                        data-sisa="Rp <?= number_format($inv['sisa_tagihan'], 0, ',', '.') ?>">
-                                                    <i class="fab fa-whatsapp me-1"></i> Kirim Tagihan
+                                                        data-sisa="Rp <?= number_format($inv['sisa_tagihan'], 0, ',', '.') ?>"
+                                                        data-link="<?= site_url('download/invoice/' . $inv['seri']) ?>">
+                                                    <i class="fal fa-note-sticky me-1"></i> Catat Penagihan
                                                 </button>
                                             <?php endif; ?>
                                         </td>
@@ -642,11 +644,6 @@
                                                 <i class="fal fa-user me-1"></i><?= esc($rem['nama_pelanggan']) ?>
                                             </a>
                                             <div class="d-flex gap-1 ms-auto">
-                                                <?php if (!empty($rem['nomor_wa'])): ?>
-                                                    <a href="<?= site_url('admin/crm/chat?nomor=' . $rem['nomor_wa']) ?>" class="btn btn-xs btn-outline-success py-0 px-2" style="font-size: 11px;">
-                                                        <i class="fab fa-whatsapp"></i> Chat
-                                                    </a>
-                                                <?php endif; ?>
                                                 <a href="<?= site_url('admin/crm/pelanggan/' . $rem['pelanggan_id']) ?>" class="btn btn-xs btn-outline-primary py-0 px-2" style="font-size: 11px;">
                                                     Profil 360
                                                 </a>
@@ -667,103 +664,211 @@
 
 
 
-<!-- Modal Kirim Tagihan WhatsApp -->
+<!-- Modal Catat Penagihan -->
 <div class="modal fade" id="modalTagihanWa" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-        <form id="formTagihanWa">
-            <?= csrf_field() ?>
-            <input type="hidden" name="id_invoice" id="tagihanInvoiceId">
-            <input type="hidden" name="tipe_pesan" value="tagihan">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h6 class="modal-title fw-bold">Kirim WhatsApp Follow-up Tagihan</h6>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-2">
-                        <label class="form-label small fw-semibold">Nomor Tujuan</label>
-                        <input type="text" name="nomor" id="tagihanNomor" class="form-control form-control-sm" required>
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+        <div class="modal-content">
+            <?= form_open('admin/tugas/catatan', ['id' => 'formCatatTagihan']) ?>
+            <div class="modal-header">
+                <h6 class="modal-title fw-bold">
+                    <i class="fal fa-note-sticky me-2"></i>Catat Penagihan
+                </h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Nomor Invoice</label>
+                        <input type="text" id="targetSeri" class="form-control form-control-sm" readonly>
                     </div>
-                    <div class="mb-2">
-                        <label class="form-label small fw-semibold">Isi Pesan WhatsApp</label>
-                        <textarea name="pesan" id="tagihanPesan" class="form-control form-control-sm" rows="6" required></textarea>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Nama Pelanggan</label>
+                        <input type="text" id="targetNama" class="form-control form-control-sm" readonly>
                     </div>
-                    <div id="alertTagihan" class="d-none"></div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Nomor WhatsApp</label>
+                        <input type="text" id="targetHp" class="form-control form-control-sm font-monospace" readonly>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Sisa Tagihan</label>
+                        <input type="text" id="targetSisa" class="form-control form-control-sm text-danger fw-bold" readonly>
+                    </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" id="btnKirimTagihanModal" class="btn btn-success btn-sm">
-                        <i class="fab fa-whatsapp me-1"></i> Kirim Sekarang
-                    </button>
+
+                <input type="hidden" name="pelanggan_id" id="targetPelangganId" value="">
+                <input type="hidden" name="seri" id="targetSeriVal" value="">
+
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold">Draf pesan pengingat</label>
+                    <textarea id="targetPesan" class="form-control form-control-sm font-monospace" rows="5" readonly></textarea>
+                    <div class="d-flex align-items-center gap-2 flex-wrap mt-2">
+                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill text-nowrap" id="btnSalinPesan">
+                            <i class="fal fa-copy me-1"></i> <span id="btnSalinText">Salin draf</span>
+                        </button>
+                        <span class="small text-muted">Pesan tidak dikirim otomatis — salin drafnya lalu kirim dari aplikasi WA, lalu catat hasilnya di sini.</span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold">Ringkasan percakapan <span class="text-danger">*</span></label>
+                    <textarea name="ringkasan" id="targetRingkasan" class="form-control form-control-sm" rows="3" required placeholder="mis. sudah ditelepon, janji bayar lusa"></textarea>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Tindakan lanjutan</label>
+                        <input type="text" name="tindakan" class="form-control form-control-sm" maxlength="200" placeholder="mis. Tagih sisa #AM1234">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Jadwal ulang</label>
+                        <input type="date" name="tenggat" class="form-control form-control-sm">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Prioritas</label>
+                        <select name="prioritas" class="form-select form-select-sm">
+                            <option value="rendah">Rendah</option>
+                            <option value="normal" selected>Normal</option>
+                            <option value="tinggi">Tinggi</option>
+                            <option value="mendesak">Mendesak</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Toko</label>
+                        <?php if (($toko ?? []) !== []) : ?>
+                            <select class="form-select form-select-sm" name="juragan_id" id="targetToko" required>
+                                <?php foreach ($toko as $id_toko => $nama_t) : ?>
+                                    <option value="<?= (int) $id_toko ?>"><?= esc($nama_t) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        <?php else : ?>
+                            <div class="small text-danger">
+                                <i class="fal fa-triangle-exclamation me-1"></i> Akun ini tidak memegang toko, catatan tidak bisa disimpan.
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Label pelanggan (opsional)</label>
+                        <input type="text" name="nama_tag_baru" class="form-control form-control-sm" maxlength="60" placeholder="mis. piutang macet">
+                    </div>
                 </div>
             </div>
-        </form>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" data-bs-dismiss="modal">Batal</button>
+                <button type="submit" class="btn btn-sm btn-primary"><i class="fal fa-save me-1"></i> Simpan catatan</button>
+            </div>
+            <?= form_close() ?>
+        </div>
     </div>
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const rawTemplate = <?= json_encode($templateTagihan) ?>;
-    const modalTagihan = new bootstrap.Modal(document.getElementById('modalTagihanWa'));
+    'use strict';
 
-    document.querySelectorAll('.btn-kirim-tagihan').forEach(btn => {
+    var rawTemplate = <?= json_encode($templateTagihan) ?>;
+    var modalEl     = document.getElementById('modalTagihanWa');
+    var modal       = new bootstrap.Modal(modalEl);
+
+    function isi(id, nilai) {
+        var el = document.getElementById(id);
+
+        if (el !== null) {
+            el.value = nilai;
+        }
+    }
+
+    // draf hanya untuk disalin manual; jalur kirim otomatis sudah dicabut
+    function draf(d) {
+        return String(rawTemplate || '')
+            .replace(/\{nama\}/g, d.nama)
+            .replace(/\{invoice\}/g, '#' + d.seri)
+            .replace(/\{total\}/g, d.total)
+            .replace(/\{sisa\}/g, d.sisa)
+            .replace(/\{link_invoice\}/g, d.link);
+    }
+
+    function tandaiTersalin() {
+        var label = document.getElementById('btnSalinText');
+        label.textContent = 'Tersalin';
+        window.setTimeout(function() { label.textContent = 'Salin draf'; }, 1500);
+    }
+
+    function salinLewatKolom(teks) {
+        var area = document.getElementById('targetPesan');
+        area.select();
+        area.setSelectionRange(0, teks.length);
+
+        try {
+            document.execCommand('copy');
+        } catch (err) {
+            // clipboard ditolak browser; drafnya tetap terseleksi dan bisa disalin tangan
+        }
+
+        if (window.getSelection) {
+            window.getSelection().removeAllRanges();
+        }
+    }
+
+    function salinDraf() {
+        var teks = document.getElementById('targetPesan').value;
+
+        if (teks === '') {
+            return;
+        }
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(teks).then(tandaiTersalin, function() {
+                salinLewatKolom(teks);
+                tandaiTersalin();
+            });
+
+            return;
+        }
+
+        salinLewatKolom(teks);
+        tandaiTersalin();
+    }
+
+    document.querySelectorAll('.btn-kirim-tagihan').forEach(function(btn) {
         btn.addEventListener('click', function() {
-            const id = this.dataset.id;
-            const seri = this.dataset.seri;
-            const nama = this.dataset.nama;
-            const nomor = this.dataset.nomor;
-            const total = this.dataset.total;
-            const sisa = this.dataset.sisa;
+            var d = btn.dataset;
 
-            let msg = rawTemplate
-                .replace(/{nama}/g, nama)
-                .replace(/{invoice}/g, '#' + seri)
-                .replace(/{total}/g, total)
-                .replace(/{sisa}/g, sisa);
+            isi('targetPelangganId', d.pelangganId || ''); isi('targetToko', d.juragan || '');
+            isi('targetSeriVal', d.seri || '');
+            isi('targetSeri', '#' + (d.seri || ''));
+            isi('targetNama', d.nama || '');
+            isi('targetHp', d.nomor || '');
+            isi('targetSisa', d.sisa || '');
+            isi('targetPesan', draf({
+                nama: d.nama || '',
+                seri: d.seri || '',
+                total: d.total || '',
+                sisa: d.sisa || '',
+                link: d.link || ''
+            }));
 
-            document.getElementById('tagihanInvoiceId').value = id;
-            document.getElementById('tagihanNomor').value = nomor;
-            document.getElementById('tagihanPesan').value = msg;
-            document.getElementById('alertTagihan').className = 'd-none';
+            // catatan nota sebelumnya tidak boleh ikut terbawa ke nota berikutnya
+            ['ringkasan', 'tindakan', 'tenggat', 'nama_tag_baru'].forEach(function(nama) {
+                var el = modalEl.querySelector('[name="' + nama + '"]');
 
-            modalTagihan.show();
+                if (el !== null) {
+                    el.value = '';
+                }
+            });
+
+            document.getElementById('btnSalinText').textContent = 'Salin draf';
+
+            modal.show();
         });
     });
 
-    const form = document.getElementById('formTagihanWa');
-    if (form) {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const btn = document.getElementById('btnKirimTagihanModal');
-            const alertBox = document.getElementById('alertTagihan');
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fal fa-spinner fa-spin me-1"></i> Mengirim...';
+    var btnSalin = document.getElementById('btnSalinPesan');
 
-            fetch('<?= site_url('admin/crm/kirim_wa') ?>', {
-                method: 'POST',
-                body: new FormData(form),
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
-            })
-            .then(res => res.json())
-            .then(data => {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fab fa-whatsapp me-1"></i> Kirim Sekarang';
-                if (data.status === 'success') {
-                    alertBox.className = 'alert alert-success mt-2 small';
-                    alertBox.innerHTML = '<i class="fal fa-check-circle me-1"></i> ' + data.message;
-                    setTimeout(() => modalTagihan.hide(), 1500);
-                } else {
-                    alertBox.className = 'alert alert-danger mt-2 small';
-                    alertBox.innerHTML = '<i class="fal fa-exclamation-triangle me-1"></i> ' + data.message;
-                }
-            })
-            .catch(() => {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fab fa-whatsapp me-1"></i> Kirim Sekarang';
-                alertBox.className = 'alert alert-danger mt-2 small';
-                alertBox.innerHTML = 'Terjadi kesalahan sistem.';
-            });
-        });
+    if (btnSalin !== null) {
+        btnSalin.addEventListener('click', salinDraf);
     }
 });
 </script>

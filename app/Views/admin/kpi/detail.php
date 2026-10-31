@@ -2,9 +2,9 @@
 /**
  * Daftar baris pembentuk satu angka KPI.
  *
- * Isi pesan WhatsApp dan nama pelanggan tidak ditampilkan di sini: yang dibutuhkan
- * hanya identitas singkat (nomor nota, 4 digit terakhir nomor WA, waktu) supaya
- * halaman ini bisa dibuka tanpa membocorkan percakapan.
+ * Yang ditampilkan hanya identitas singkat (nomor nota atau nomor tindak lanjut,
+ * judul, waktu) — bukan isi catatan pelanggan — supaya halaman ini bisa dibuka
+ * tanpa membocorkan data yang tidak perlu.
  *
  * Variabel di bawah disuntik runtime oleh view() lewat extract() di framework;
  * dideklarasikan di sini agar analyzer (Intelephense P1008) tidak salah lapor.
@@ -12,8 +12,9 @@
  *
  * @var string $title        judul tab browser, dipakai layout template/main
  * @var array  $s            hasil saring(): awal, akhir, periode, peran, user_id, juragan_id, juragan_ids
- * @var string $indikator    kode indikator pada segmen URL, mis. first_response_time
- * @var ?array $aturan       baris kpi_target untuk indikator ini, null bila belum ada
+ * @var string $indikator    kode indikator pada segmen URL, mis. resolution_time
+ * @var ?array $aturan       baris kpi_target indikator ini, atau nama serta
+ *                           penjelasan dari KpiModel::LABEL bila targetnya tidak ada
  * @var int    $jumlah       total baris pencatat untuk indikator ini pada saringan aktif
  * @var array  $baris        baris pembentuk angka, satu halaman: list<array<string, mixed>>
  * @var int    $batas        baris per halaman (10, 25, atau 50)
@@ -35,20 +36,6 @@ $durasi = static fn ($v, string $satuan): string => $v === null
 
 // satu baris = definisi kolom, label, dan cara menampilkan
 $kolom = match ($indikator) {
-    'first_response_time' => [
-        ['percakapan_id', 'Percakapan', $th],
-        ['nomor', 'Nomor (4 akhir)', $th],
-        ['waktu_masuk', 'Pesan masuk', $tw],
-        ['waktu_balas', 'Balasan pertama', $tw],
-        ['frt_menit', 'Respons', static fn ($v) => $durasi($v, 'menit')],
-        ['pelaku', 'Dibalas oleh', $th],
-    ],
-    'konversi_lead' => [
-        ['pelanggan_id', 'Pelanggan', $th],
-        ['waktu_mulai', 'Percakapan mulai', $tw],
-        ['terkonversi', 'Jadi order', static fn ($v) => (int) $v === 1 ? 'ya' : 'belum'],
-        ['pelaku', 'Ditangani', $th],
-    ],
     'resolution_time' => [
         ['id_followup', 'Tindak lanjut', $th],
         ['judul', 'Judul', $th],
@@ -57,6 +44,17 @@ $kolom = match ($indikator) {
         ['selesai_at', 'Selesai', $tw],
         ['durasi_jam', 'Durasi', static fn ($v) => $durasi($v, 'jam')],
         ['pelaku', 'Ditutup oleh', $th],
+    ],
+    'gmv_cs' => [
+        ['id_invoice', 'Nota', $th],
+        ['seri', 'Nomor seri', $th],
+        ['tanggal_pesan', 'Tanggal pesan', $th],
+        // 'unit' = pcs produk katalog (baris ber-produk_id); 'qty' semua baris item,
+        // termasuk ejaan kode yang tidak pernah masuk katalog
+        ['unit', 'GMV (pcs)', static fn ($v) => $angka($v)],
+        ['qty', 'Qty semua item', static fn ($v) => $angka($v)],
+        ['status_pembayaran', 'Status bayar', static fn ($v) => esc(status_pembayaran([], (int) $v, 'label'))],
+        ['pembuat', 'Pembuat nota', $th],
     ],
     default => [
         ['id_invoice', 'Nota', $th],
@@ -113,11 +111,13 @@ $kembali = site_url('admin/kpi') . '?' . http_build_query(array_filter([
         <?php if (! empty($aturan['aturan'])) { ?>
             <div class="mt-1"><strong>Aturan hitung:</strong> <?= esc($aturan['aturan']) ?></div>
         <?php } ?>
-        <?php if ($aturan !== null && $aturan['target'] !== null) { ?>
+        <?php if ($aturan !== null && ($aturan['target'] ?? null) !== null) { ?>
             <div class="mt-1">
                 <strong>Target:</strong>
                 <?= esc(($aturan['arah'] === 'lebih_rendah' ? 'maks ' : 'min ') . $angka($aturan['target']) . ' ' . $aturan['satuan']) ?>
-                (bobot <?= esc((string) $aturan['bobot']) ?>)
+                <?php if ($indikator === 'gmv_cs' && isset($aturan['scope'])) : ?>
+                    <span class="text-muted">(<?= $aturan['scope'] === 'tim' ? 'Tim CS, total seluruh karyawan' : 'per CS, satu karyawan' ?>)</span>
+                <?php endif; ?>
             </div>
         <?php } ?>
         Periode terbaca: <?= esc($s['awal']) ?> &ndash; <?= esc($s['akhir']) ?>

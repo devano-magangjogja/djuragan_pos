@@ -144,7 +144,7 @@ $routes->group('admin', static function ($routes) {
     $routes->group('kpi', ['filter' => 'auth:admin,superadmin'], static function ($routes) {
         $routes->get('/', 'Admin\Kpi::index', ['as' => 'hal.kpi']);
 
-        // menentukan target dan bobot khusus Superadmin; admin hanya melihat
+        // menentukan target khusus Superadmin; admin hanya melihat
         // ringkasan, ranking, dan detail angkanya. Filter grup bersarang digabung,
         // jadi admin lolos pagar luar namun dipotong pagar dalam.
         $routes->group('', ['filter' => 'auth:superadmin'], static function ($routes) {
@@ -158,70 +158,27 @@ $routes->group('admin', static function ($routes) {
         $routes->get('detail/(:segment)', 'Admin\Kpi::detail/$1');
     });
 
-    // crm: manajemen pelanggan, live chat WA, follow-up tagihan, notif resi, broadcast, pengaturan gateway WA
-    // CS hanya boleh membuka & membalas Live Chat (lihat daftar + kirim pesan);
-    // seluruh kelola CRM (hapus/ubah chat, webhook, gateway, pelanggan, broadcast,
-    // template, log, dsb) tetap khusus admin & superadmin lewat grup bersarang di
-    // bawah. Filter grup bersarang digabung, jadi CS lolos pagar luar namun dipotong
-    // pagar dalam. Daftar percakapan tidak dipilah per pengguna (nomor WA satu),
-    // sehingga semua CS melihat inbox yang sama.
-    $routes->group('crm', ['filter' => 'auth:admin,superadmin,cs'], static function ($routes) {
-        // Live Chat WA yang boleh diakses CS: buka + balas + daftarkan lead +
-        // ubah/hapus chat, sama seperti superadmin. buat_customer menautkan
-        // pelanggan_id ke percakapan, syarat KPI "Konversi lead ke order".
-        // Daftar arsip ikut terbaca di sini (CS boleh melihat isinya); yang
-        // khusus admin hanya aksi memindahkan chat ke/dari arsip, rutenya ada
-        // di grup di bawah.
-        $routes->get('chat', 'Admin\Crm::chat');
-        $routes->get('chat/percakapan', 'Admin\Crm::chat_percakapan');
-        $routes->get('chat/pesan/(:num)', 'Admin\Crm::chat_pesan/$1');
-        $routes->get('chat/polling/(:num)', 'Admin\Crm::chat_polling/$1');
-        $routes->post('chat/kirim', 'Admin\Crm::chat_kirim');
-        $routes->get('chat/status_pesan', 'Admin\Crm::chat_status_pesan');
-        $routes->get('chat/token', 'Admin\Crm::chat_token');
-        $routes->post('chat/buat_customer', 'Admin\Crm::buat_customer_wa');
-        $routes->post('chat/hapus', 'Admin\Crm::chat_hapus');
-        $routes->post('chat/nama', 'Admin\Crm::chat_ganti_nama');
-        // badge angka menu + "Tandai Belum Dibaca" per chat: dipakai CS juga,
-        // jadi rutenya tetap di grup luar bersama jalur baca/kirim lainnya
-        $routes->get('chat/belum_dibaca', 'Admin\Crm::chat_belum_dibaca');
-        $routes->post('chat/belum_dibaca', 'Admin\Crm::chat_belum_dibaca_tandai');
-
-        // selain itu: khusus admin & superadmin
-        $routes->group('', ['filter' => 'auth:admin,superadmin'], static function ($routes) {
-            // CS boleh membuka daftar arsip (rutenya ada di atas), tapi hanya
-            // admin & superadmin yang boleh memindahkan chat ke/dari arsip
-            $routes->post('chat/arsip', 'Admin\Crm::chat_arsip');
-            $routes->get('/', 'Admin\Crm::index', ['as' => 'hal.crm']);
-            $routes->get('chat/webhook_status', 'Admin\Crm::webhook_status');
-            $routes->post('chat/webhook_uji', 'Admin\Crm::webhook_uji');
-            $routes->get('pelanggan', 'Admin\Crm::pelanggan');
-            $routes->get('pelanggan/(:num)', 'Admin\Crm::pelanggan_detail/$1');
-            $routes->post('pelanggan/simpan_profil/(:num)', 'Admin\Crm::simpan_profil/$1');
-            $routes->post('pelanggan/simpan_ukuran/(:num)', 'Admin\Crm::simpan_ukuran/$1');
-            $routes->post('pelanggan/tambah_aktivitas/(:num)', 'Admin\Crm::tambah_aktivitas/$1');
-            $routes->post('pelanggan/tambah_tag/(:num)', 'Admin\Crm::tambah_tag/$1');
-            $routes->post('pelanggan/hapus_tag/(:num)/(:num)', 'Admin\Crm::hapus_tag/$1/$2');
-            $routes->post('pelanggan/kirim_pesan/(:num)', 'Admin\Crm::kirim_pesan_pelanggan/$1');
-            $routes->get('followup', 'Admin\Crm::followup');
-            $routes->post('followup/simpan', 'Admin\Crm::simpan_followup');
-            $routes->post('followup/selesai/(:num)', 'Admin\Crm::selesaikan_followup/$1');
-            $routes->get('duplikat', 'Admin\Crm::duplikat');
-            $routes->post('duplikat/merge', 'Admin\Crm::proses_merge');
-            $routes->get('chat/cek_kontak', 'Admin\Crm::cek_kontak_wa');
-            $routes->get('tagihan', 'Admin\Crm::tagihan');
-            $routes->get('broadcast', 'Admin\Crm::broadcast');
-            $routes->get('template', 'Admin\Crm::template');
-            $routes->get('log', 'Admin\Crm::log');
-            $routes->get('pengaturan', 'Admin\Crm::pengaturan');
-            $routes->post('kirim_wa', 'Admin\Crm::kirim_wa');
-            $routes->post('kirim_broadcast', 'Admin\Crm::kirim_broadcast');
-            $routes->post('simpan_template', 'Admin\Crm::simpan_template');
-            $routes->post('simpan_pengaturan', 'Admin\Crm::simpan_pengaturan');
-            $routes->post('tes_koneksi', 'Admin\Crm::tes_koneksi');
-            $routes->match(['GET', 'POST'], 'cek_status_fonnte', 'Admin\Crm::cek_status_fonnte');
-            $routes->match(['GET', 'POST'], 'ambil_qr_fonnte', 'Admin\Crm::ambil_qr_fonnte');
-        });
+    // crm: manajemen pelanggan, follow-up tagihan, notif resi. Kirim WhatsApp
+    // satu nota sudah dicabut — percakapan dengan pelanggan sekarang dicatat
+    // manual lewat Tugas CS > Catatan percakapan.
+    // Live Chat WA, Broadcast, Riwayat Pesan, Template Pesan, Pengaturan WA dan
+    // webhook-nya sudah dihapus — dulunya CS hanya punya akses ke Live Chat, jadi
+    // grup bersarang untuk memisahkan CS dari kelola CRM tidak diperlukan lagi.
+    $routes->group('crm', ['filter' => 'auth:admin,superadmin'], static function ($routes) {
+        $routes->get('/', 'Admin\Crm::index', ['as' => 'hal.crm']);
+        $routes->get('pelanggan', 'Admin\Crm::pelanggan');
+        $routes->get('pelanggan/(:num)', 'Admin\Crm::pelanggan_detail/$1');
+        $routes->post('pelanggan/simpan_profil/(:num)', 'Admin\Crm::simpan_profil/$1');
+        $routes->post('pelanggan/simpan_ukuran/(:num)', 'Admin\Crm::simpan_ukuran/$1');
+        $routes->post('pelanggan/tambah_aktivitas/(:num)', 'Admin\Crm::tambah_aktivitas/$1');
+        $routes->post('pelanggan/tambah_tag/(:num)', 'Admin\Crm::tambah_tag/$1');
+        $routes->post('pelanggan/hapus_tag/(:num)/(:num)', 'Admin\Crm::hapus_tag/$1/$2');
+        $routes->get('followup', 'Admin\Crm::followup');
+        $routes->post('followup/simpan', 'Admin\Crm::simpan_followup');
+        $routes->post('followup/selesai/(:num)', 'Admin\Crm::selesaikan_followup/$1');
+        $routes->get('duplikat', 'Admin\Crm::duplikat');
+        $routes->post('duplikat/merge', 'Admin\Crm::proses_merge');
+        $routes->get('tagihan', 'Admin\Crm::tagihan');
     });
 
     // reminder penjahit: orderan pembuatan/jual yang deadline-nya sudah dekat.
@@ -233,6 +190,88 @@ $routes->group('admin', static function ($routes) {
 
         $routes->group('', ['filter' => 'auth:superadmin'], static function ($routes) {
             $routes->post('pengaturan', 'Reminder::simpan');
+        });
+    });
+
+    // antrean tugas CS: CS mengambil dan mengerjakan, Admin menetapkan dan memantau.
+    // Membagi tugas khusus admin/superadmin; angka badge menu dibaca dari rute
+    // jumlah yang memakai filter yang sama.
+    $routes->group('tugas', ['filter' => 'auth:admin,superadmin,cs'], static function ($routes) {
+        $routes->get('/', 'Admin\Tugas::index', ['as' => 'hal.tugas']);
+        $routes->get('jumlah', 'Admin\Tugas::jumlah');
+        $routes->get('dasbor', 'Admin\Tugas::dasbor');
+        $routes->get('cari-pelanggan', 'Admin\Tugas::cariPelanggan');
+        $routes->get('catatan', 'Admin\Tugas::catatan');
+        $routes->post('catatan', 'Admin\Tugas::simpanCatatan');
+        $routes->post('ulasan/(:num)', 'Admin\Tugas::ulasan/$1');
+        // (:num) saja, jadi 'jumlah' di atas tidak pernah dikira id tugas
+        $routes->get('(:num)', 'Admin\Tugas::lihat/$1');
+        $routes->post('simpan', 'Admin\Tugas::simpan');
+        $routes->post('ambil/(:num)', 'Admin\Tugas::ambil/$1');
+        $routes->post('status/(:num)', 'Admin\Tugas::status/$1');
+        $routes->post('operan/(:num)', 'Admin\Tugas::operan/$1');
+
+        $routes->group('', ['filter' => 'auth:admin,superadmin'], static function ($routes) {
+            $routes->get('pengaturan', 'Admin\Tugas::pengaturan');
+            $routes->post('pengaturan', 'Admin\Tugas::simpanPengaturan');
+            $routes->get('template', 'Admin\Tugas::template');
+            $routes->post('template', 'Admin\Tugas::simpanTemplate');
+            $routes->post('template-pakai', 'Admin\Tugas::pakaiTemplate');
+            $routes->post('template-aktif', 'Admin\Tugas::matikanTemplate');
+            $routes->get('laporan', 'Admin\Tugas::laporan');
+            $routes->get('laporan/csv', 'Admin\Tugas::eksporLaporan');
+            $routes->post('sinkron', 'Admin\Tugas::sinkron');
+            $routes->get('shift', 'Admin\Tugas::shift');
+            $routes->post('shift', 'Admin\Tugas::simpanShift');
+            $routes->post('sapu', 'Admin\Tugas::sapu');
+            $routes->post('tetapkan/(:num)', 'Admin\Tugas::tetapkan/$1');
+        });
+    });
+
+    // toko online + pengenalan toko untuk CS. CS boleh melihat tokonya sendiri dan
+    // mengisi status pengenalannya; menambah/mengubah toko dan menautkan CS
+    // khusus Admin & Superadmin.
+    $routes->group('toko', ['filter' => 'auth:admin,superadmin,cs'], static function ($routes) {
+        $routes->get('/', 'Admin\Toko::index', ['as' => 'hal.toko']);
+        $routes->get('pengenalan', 'Admin\Toko::pengenalan');
+        $routes->post('status', 'Admin\Toko::statusSendiri');
+
+        $routes->group('', ['filter' => 'auth:admin,superadmin'], static function ($routes) {
+            $routes->post('simpan', 'Admin\Toko::simpan');
+            $routes->post('aktif', 'Admin\Toko::aktif');
+            $routes->get('cs/(:num)', 'Admin\Toko::cs/$1');
+            $routes->post('tambah-cs', 'Admin\Toko::tambahCs');
+            $routes->post('copot-cs', 'Admin\Toko::copotCs');
+            $routes->post('status-orang', 'Admin\Toko::statusOrang');
+        });
+    });
+
+    // checklist toko harian + pemeriksaan email manual. CS membuka dan mengisi
+    // sesinya; templat butir dan penonaktifan butir khusus Admin & Superadmin.
+    $routes->group('checklist', ['filter' => 'auth:admin,superadmin,cs'], static function ($routes) {
+        $routes->get('/', 'Admin\Checklist::index', ['as' => 'hal.checklist']);
+        $routes->post('mulai', 'Admin\Checklist::mulai');
+        $routes->get('jumlah', 'Admin\Checklist::jumlah');
+        $routes->get('(:num)', 'Admin\Checklist::run/$1');
+        $routes->post('isi/(:num)', 'Admin\Checklist::isi/$1');
+        $routes->post('selesai/(:num)', 'Admin\Checklist::selesai/$1');
+
+        $routes->group('', ['filter' => 'auth:admin,superadmin'], static function ($routes) {
+            $routes->get('aturan', 'Admin\Checklist::aturan');
+            $routes->post('butir', 'Admin\Checklist::simpanButir');
+            $routes->post('butir-aktif', 'Admin\Checklist::matikanButir');
+        });
+    });
+
+    // pustaka SOP: semua peran membaca, hanya Admin & Superadmin yang menulis.
+    // Dokumen tidak pernah dihapus, hanya dimatikan.
+    $routes->group('sop', ['filter' => 'auth:admin,superadmin,cs'], static function ($routes) {
+        $routes->get('/', 'Admin\Sop::index', ['as' => 'hal.sop']);
+        $routes->get('(:num)', 'Admin\Sop::lihat/$1');
+
+        $routes->group('', ['filter' => 'auth:admin,superadmin'], static function ($routes) {
+            $routes->post('simpan', 'Admin\Sop::simpan');
+            $routes->post('aktif', 'Admin\Sop::matikan');
         });
     });
 
@@ -408,11 +447,6 @@ $routes->get('pelanggan/data/(:num)', 'Pelanggan::data/$1', ['filter' => 'auth:a
 $routes->post('pelanggan/baru', 'Pelanggan::baru', ['filter' => 'auth:admin,superadmin,user']);
 
 $routes->post('kirim-masukan', 'Masukan::kirim', ['filter' => 'auth:admin,superadmin,user']);
-
-// Webhook WhatsApp (Kapso / Fonnte) untuk menerima pesan masuk pelanggan secara real-time
-$routes->match(['GET', 'POST'], 'webhook', 'Webhook::index');
-$routes->match(['GET', 'POST'], 'webhook/whatsapp', 'Webhook::index');
-$routes->match(['GET', 'POST'], 'webhook/kapso', 'Webhook::index');
 
 /*
  * --------------------------------------------------------------------
