@@ -1252,6 +1252,7 @@ class CrmModel extends Model
             COALESCE(st.tahap, 0) AS tahap,
             COALESCE(st.packing_selesai, 0) AS packing_selesai,
             {$siap} AS siap_ditagih,
+            inv.juragan_id,
             jur.nama_juragan,
             pel.id_pelanggan,
             pel.nama_pelanggan,

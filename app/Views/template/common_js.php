@@ -16,7 +16,6 @@ if ($current_user_id === 0) {
 }
 
 $link_api_notif   = site_url('api/notifikasi/');
-$link_reminder    = site_url('admin/reminder/jumlah');
 
 $js = <<< JS
     $(function() {
@@ -63,10 +62,10 @@ $js = <<< JS
     		});
     	}
 
-        var reminderMenu = document.querySelector('[data-reminder-menu="1"]');
-        if (reminderMenu) {
-            function renderReminderBadge(jumlah) {
-                var badge = reminderMenu.querySelector('.badge-reminder');
+        var badgeMenu = document.querySelectorAll('[data-badge-url]');
+        if (badgeMenu.length) {
+            function renderBadge(anchor, jumlah) {
+                var badge = anchor.querySelector('.badge-live');
 
                 if (jumlah === 0) {
                     if (badge) badge.remove();
@@ -75,28 +74,33 @@ $js = <<< JS
 
                 if (!badge) {
                     badge = document.createElement('span');
-                    badge.className = 'badge rounded-pill bg-danger ms-auto badge-reminder';
-                    reminderMenu.appendChild(badge);
+                    badge.className = 'badge rounded-pill bg-danger ms-auto badge-live';
+                    anchor.appendChild(badge);
                 }
 
                 badge.textContent = jumlah > 99 ? '99+' : String(jumlah);
-                badge.title = jumlah + ' orderan mendekati/lewat deadline';
+                badge.title = jumlah + ' ' + (anchor.getAttribute('data-badge-unit') || '');
             }
 
-            function pollReminderBadge() {
-                fetch('{$link_reminder}', { credentials: 'same-origin' })
-                    .then(function(r) {
-                        if (!r.ok) throw new Error('HTTP ' + r.status);
-                        return r.json();
-                    })
-                    .then(function(res) {
-                        if (res && res.status === 'success') renderReminderBadge(Number(res.count || 0));
-                    })
-                    .catch(function() { /* jaringan sesaat: biarkan angka terakhir */ });
+            // satu poller untuk semua badge angka di sidebar (Reminder, Tugas CS):
+            // yang membedakan hanya data-badge-url di tiap item, jadi menambah menu
+            // berbadge tidak pernah menambah skrip baru lagi
+            function pollBadges() {
+                Array.prototype.forEach.call(badgeMenu, function(anchor) {
+                    fetch(anchor.getAttribute('data-badge-url'), { credentials: 'same-origin' })
+                        .then(function(r) {
+                            if (!r.ok) throw new Error('HTTP ' + r.status);
+                            return r.json();
+                        })
+                        .then(function(res) {
+                            if (res && res.status === 'success') renderBadge(anchor, Number(res.count || 0));
+                        })
+                        .catch(function() { /* jaringan sesaat: biarkan angka terakhir */ });
+                });
             }
 
-            pollReminderBadge();
-            setInterval(pollReminderBadge, 5000);
+            pollBadges();
+            setInterval(pollBadges, 5000);
         }
 
     	var notifikasi = document.getElementById('notifikasi');

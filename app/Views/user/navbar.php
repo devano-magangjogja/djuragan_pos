@@ -10,9 +10,15 @@ $isChartAktif = url_is('user/chart*');
 // katalog produk CS dilayani halaman yang sama dengan admin (read-only)
 $isProdukAktif = url_is('admin/produk*');
 $isReminderAktif = url_is('admin/reminder*');
+$isTugasAktif    = url_is('admin/tugas*');
+$isCklAktif      = url_is('admin/checklist*');
+$isSopAktif     = url_is('admin/sop*');
+$isTokoAktif     = url_is('admin/toko*');
 // badge Reminder Penjahit (helper fungsi tidak autoload): orderan dekat/lewat deadline
 helper('fungsi');
 $reminderCount = pengingat_penjahit_jumlah();
+$tugasTerbuka  = (new \App\Models\TugasModel())->hitungTerbuka(juragan_dipakai_sesi());
+$cklTerbuka    = (new \App\Models\ChecklistModel())->hitungTerbuka(juragan_dipakai_sesi(), date('Y-m-d'));
 ?>
 
 <!-- Topbar khusus layar kecil; di desktop lonceng notifikasi melayang sendiri
@@ -101,12 +107,45 @@ $reminderCount = pengingat_penjahit_jumlah();
                 </a>
             </li>
             <li class="nav-item">
-                <a class="sidebar-link <?= $isReminderAktif ? 'active' : '' ?>" href="<?= site_url('admin/reminder') ?>" data-reminder-menu="1">
+                <a class="sidebar-link <?= $isReminderAktif ? 'active' : '' ?>" href="<?= site_url('admin/reminder') ?>"
+                    data-badge-url="<?= site_url('admin/reminder/jumlah') ?>" data-badge-unit="orderan mendekati/lewat deadline">
                     <i class="sidebar-link-icon fal fa-cut"></i>
                     <span>Reminder Pesanan</span>
                     <?php if ($reminderCount > 0) : ?>
-                        <span class="badge rounded-pill bg-danger ms-auto badge-reminder" title="<?= (int) $reminderCount ?> orderan mendekati/lewat deadline"><?= (int) $reminderCount ?></span>
+                        <span class="badge rounded-pill bg-danger ms-auto badge-live" title="<?= (int) $reminderCount ?> orderan mendekati/lewat deadline"><?= (int) $reminderCount ?></span>
                     <?php endif; ?>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="sidebar-link <?= $isTugasAktif ? 'active' : '' ?>" href="<?= site_url('admin/tugas') ?>"
+                    data-badge-url="<?= site_url('admin/tugas/jumlah') ?>" data-badge-unit="tugas CS yang belum selesai">
+                    <i class="sidebar-link-icon fal fa-tasks"></i>
+                    <span>Tugas CS</span>
+                    <?php if ($tugasTerbuka > 0) : ?>
+                        <span class="badge rounded-pill bg-danger ms-auto badge-live" title="<?= (int) $tugasTerbuka ?> tugas CS yang belum selesai"><?= (int) $tugasTerbuka ?></span>
+                    <?php endif; ?>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="sidebar-link <?= $isCklAktif ? 'active' : '' ?>" href="<?= site_url('admin/checklist') ?>"
+                    data-badge-url="<?= site_url('admin/checklist/jumlah') ?>" data-badge-unit="sesi checklist hari ini yang belum ditutup">
+                    <i class="sidebar-link-icon fal fa-ballot-check"></i>
+                    <span>Checklist Harian</span>
+                    <?php if ($cklTerbuka > 0) : ?>
+                        <span class="badge rounded-pill bg-danger ms-auto badge-live" title="<?= (int) $cklTerbuka ?> sesi checklist hari ini yang belum ditutup"><?= (int) $cklTerbuka ?></span>
+                    <?php endif; ?>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="sidebar-link <?= $isSopAktif ? 'active' : '' ?>" href="<?= site_url('admin/sop') ?>">
+                    <i class="sidebar-link-icon fal fa-book-open"></i>
+                    <span>SOP &amp; Panduan</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="sidebar-link <?= $isTokoAktif ? 'active' : '' ?>" href="<?= site_url('admin/toko/pengenalan') ?>">
+                    <i class="sidebar-link-icon fal fa-store"></i>
+                    <span>Pengenalan Toko</span>
                 </a>
             </li>
         </ul>

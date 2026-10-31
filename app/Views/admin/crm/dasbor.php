@@ -6,8 +6,6 @@
  *
  * @var array  $ringkasan  metrik KPI dari CrmModel::getRingkasan()
  * @var array  $reminders  jadwal follow-up dari CrmModel::getReminders()
- * @var string $provider   nama gateway WA aktif (kapso/fonnte)
- * @var int    $isSandbox  1 bila mode sandbox Kapso aktif
  */
 ?>
 <?= $this->extend('template/main') ?>
@@ -165,17 +163,9 @@
             </h4>
         </div>
         <div class="d-flex align-items-center gap-2 flex-nowrap">
-            <?php if (($provider ?? '') !== 'fonnte') : ?>
-                <?php if ($isSandbox) : ?>
-                    <span class="btn btn-sm pe-none fw-semibold text-nowrap bg-warning text-dark border-warning" title="Mode sandbox Kapso aktif">
-                        <i class="fal fa-flask me-1"></i> Sandbox
-                    </span>
-                <?php else : ?>
-                    <span class="btn btn-sm pe-none fw-semibold text-nowrap bg-success text-white border-success" title="Production mode">
-                        <i class="fal fa-check-circle me-1"></i> Production
-                    </span>
-                <?php endif; ?>
-            <?php endif; ?>
+            <a class="btn btn-sm btn-outline-secondary rounded-pill" href="<?= site_url('admin/tugas/catatan') ?>">
+                <i class="fal fa-note-sticky me-1"></i> Catat Percakapan
+            </a>
         </div>
     </div>
 

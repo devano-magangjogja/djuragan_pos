@@ -398,9 +398,9 @@
             </h4>
         </div>
         <div class="d-flex gap-2 tombol-360">
-            <button class="btn btn-primary btn-sm fw-semibold" data-bs-toggle="modal" data-bs-target="#modalKirimWaDirect">
-                <i class="fal fa-paper-plane me-1"></i> <span class="d-none d-lg-inline">Kirim </span>WhatsApp
-            </button>
+            <a class="btn btn-sm btn-outline-secondary rounded-pill" href="<?= site_url('admin/tugas/catatan') ?>">
+                <i class="fal fa-note-sticky me-1"></i> Catat Percakapan
+            </a>
         </div>
     </div>
 
@@ -1320,50 +1320,6 @@
     </div>
 </div>
 
-<!-- ================= MODAL KIRIM WHATSAPP LANGSUNG ================= -->
-<div class="modal fade" id="modalKirimWaDirect" tabindex="-1">
-    <div class="modal-dialog">
-        <form id="formKirimWaDirect">
-            <?= csrf_field() ?>
-            <input type="hidden" name="nomor" value="<?= esc($pelanggan['nomor_utama']) ?>">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h6 class="modal-title fw-bold">
-                        <i class="fab fa-whatsapp text-success me-1"></i> Kirim WhatsApp ke <?= esc($pelanggan['nama_pelanggan']) ?>
-                    </h6>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label small fw-semibold">Nomor Tujuan</label>
-                        <input type="text" class="form-control form-control-sm bg-light" value="<?= esc($pelanggan['nomor_utama']) ?>" readonly>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label small fw-semibold">Gunakan Template Pesan</label>
-                        <select id="selectTemplateWaDirect" class="form-select form-select-sm">
-                            <option value="">-- Ketik Pesan Manual --</option>
-                            <?php foreach ($templates as $t): ?>
-                                <option value="<?= esc($t['pesan']) ?>"><?= esc($t['judul']) ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label small fw-semibold">Isi Pesan WhatsApp</label>
-                        <textarea id="pesanWaDirect" name="pesan" class="form-control form-control-sm" rows="6" placeholder="Tuliskan pesan WhatsApp..." required></textarea>
-                    </div>
-                    <div id="alertWaDirect" class="d-none"></div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">Tutup</button>
-                    <button type="submit" id="btnSubmitWaDirect" class="btn btn-success btn-sm fw-semibold">
-                        <i class="fal fa-paper-plane me-1"></i> Kirim Sekarang
-                    </button>
-                </div>
-            </div>
-        </form>
-    </div>
-</div>
-
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Dropdown pengganti strip tab di layar sempit: nilainya id tombol tab,
@@ -1377,78 +1333,6 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('#customer360Tabs .nav-link').forEach(function(tombol) {
             tombol.addEventListener('shown.bs.tab', function() {
                 pilih360.value = tombol.id;
-            });
-        });
-    }
-
-    // Template dropdown selection
-    const selTpl = document.getElementById('selectTemplateWaDirect');
-    const txtPesan = document.getElementById('pesanWaDirect');
-    if (selTpl && txtPesan) {
-        const urlTokenWa  = '<?= site_url('admin/crm/pesan_token') ?>';
-        const idPelanggan = <?= (int) ($pelanggan['id_pelanggan'] ?? 0) ?>;
-        let tokenWa = null;
-
-        const isiTokenWa = (teks, token) => teks.replace(/\{([a-zA-Z_][a-zA-Z0-9_]*)\}/g, function (utuh, kunci) {
-            const nilai = token[kunci.toLowerCase()];
-            return (nilai === undefined || nilai === null || nilai === '') ? utuh : nilai;
-        });
-
-        selTpl.addEventListener('change', function() {
-            const mentah = this.value;
-            if (!mentah) return;
-
-            const pasang = (token) => { txtPesan.value = isiTokenWa(mentah, token || {}); };
-            if (tokenWa) { pasang(tokenWa); return; }
-
-            fetch(urlTokenWa + '?id_pelanggan=' + idPelanggan, { headers: { 'Accept': 'application/json' } })
-                .then(r => r.json())
-                .then(res => { tokenWa = (res && res.data) ? res.data : {}; pasang(tokenWa); })
-                .catch(() => pasang({}));
-        });
-    }
-
-    // Handle Direct WA submit via AJAX
-    const formWa = document.getElementById('formKirimWaDirect');
-    const alertBox = document.getElementById('alertWaDirect');
-    const btnSubmit = document.getElementById('btnSubmitWaDirect');
-
-    if (formWa) {
-        formWa.addEventListener('submit', function(e) {
-            e.preventDefault();
-            btnSubmit.disabled = true;
-            btnSubmit.innerHTML = '<i class="fal fa-spinner fa-spin me-1"></i> Mengirim...';
-            alertBox.className = 'd-none';
-
-            const formData = new FormData(formWa);
-
-            fetch('<?= site_url('admin/crm/pelanggan/kirim_pesan/' . $pelanggan['id_pelanggan']) ?>', {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(res => res.json())
-            .then(data => {
-                btnSubmit.disabled = false;
-                btnSubmit.innerHTML = '<i class="fal fa-paper-plane me-1"></i> Kirim Sekarang';
-                if (data.status === 'success') {
-                    alertBox.className = 'alert alert-success mt-2 small';
-                    alertBox.innerHTML = '<i class="fal fa-check-circle me-1"></i> ' + data.message + (data.notice ? '<br><small class="text-muted">' + data.notice + '</small>' : '');
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 1500);
-                } else {
-                    alertBox.className = 'alert alert-danger mt-2 small';
-                    alertBox.innerHTML = '<i class="fal fa-exclamation-triangle me-1"></i> ' + data.message;
-                }
-            })
-            .catch(err => {
-                btnSubmit.disabled = false;
-                btnSubmit.innerHTML = '<i class="fal fa-paper-plane me-1"></i> Kirim Sekarang';
-                alertBox.className = 'alert alert-danger mt-2 small';
-                alertBox.innerHTML = 'Terjadi kesalahan jaringan atau server.';
             });
         });
     }

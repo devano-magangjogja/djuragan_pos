@@ -3,19 +3,17 @@
 namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
-use App\Libraries\WhatsApp\WhatsAppManager;
 use App\Models\CrmModel;
+use App\Models\JuraganModel;
 use Config\Database;
 
 class Crm extends BaseController
 {
     protected CrmModel $crmModel;
-    protected WhatsAppManager $wa;
 
     public function __construct()
     {
         $this->crmModel = new CrmModel();
-        $this->wa       = WhatsAppManager::getInstance();
     }
 
     /**
@@ -25,8 +23,6 @@ class Crm extends BaseController
     {
         $ringkasan  = $this->crmModel->getRingkasan();
         $reminders  = $this->crmModel->getReminders();
-        $provider   = $this->wa->getActiveProviderName();
-        $isSandbox  = ($provider === 'kapso') ? (int) $this->wa->getSetting('kapso_sandbox_mode', '1') : 0;
 
         // Ambil beberapa follow-up aktif hari ini
         $followupHariIni = $this->crmModel->getFollowupList(['status' => 'menunggu'], 5);
@@ -36,8 +32,6 @@ class Crm extends BaseController
             'ringkasan'       => $ringkasan,
             'reminders'       => array_slice($reminders, 0, 6),
             'followupHariIni' => $followupHariIni,
-            'provider'        => $provider,
-            'isSandbox'       => $isSandbox,
         ];
 
         return view('admin/crm/dasbor', $data);
@@ -352,6 +346,9 @@ class Crm extends BaseController
             'totalInvoicesTagihan' => $totalInvoicesTagihan,
             'reminders'            => $reminders,
             'templateTagihan'      => $templateTagihan['pesan'] ?? '',
+            // popup "Catat Penagihan" menulis catatan, jadi petanya harus sekopi
+            // dengan pagar yang dipakai Tugas::simpanCatatan
+            'toko'                 => $this->tokoCatatan(),
         ];
 
         return view('admin/crm/followup', $data);
@@ -403,51 +400,6 @@ class Crm extends BaseController
         }
 
         return redirect()->back()->with('pesan', 'Follow-up berhasil diselesaikan.');
-    }
-
-    /**
-     * Kirim Pesan Langsung dari Profil Customer 360
-     */
-    public function kirim_pesan_pelanggan(int $id)
-    {
-        $nomor = trim($this->request->getPost('nomor') ?? '');
-        $pesan = trim($this->request->getPost('pesan') ?? '');
-
-        if (empty($nomor) || empty($pesan)) {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Nomor dan pesan wajib diisi.']);
-        }
-
-        $user = pengguna_sesi();
-
-        $pesan = crm_isi_token($pesan, $this->crmModel->getTokenPesan((int) $id));
-
-        $res = $this->wa->send($nomor, $pesan, [
-            'pelanggan_id' => $id,
-            'tipe_pesan'   => 'manual',
-            'user_id'      => $user,
-        ]);
-
-        if ($res['success']) {
-            // Catat ke timeline
-            $this->crmModel->tambahAktivitas([
-                'pelanggan_id' => $id,
-                'tipe'         => 'wa',
-                'judul'        => 'Pesan WhatsApp Terkirim',
-                'deskripsi'    => $pesan,
-                'user_id'      => $user,
-            ]);
-
-            return $this->response->setJSON([
-                'status'  => 'success',
-                'message' => 'Pesan WhatsApp berhasil terkirim ke customer!',
-                'notice'  => $res['notice'] ?? null,
-            ]);
-        }
-
-        return $this->response->setJSON([
-            'status'  => 'error',
-            'message' => 'Gagal mengirim pesan: ' . ($res['error'] ?? 'Periksa koneksi WhatsApp.'),
-        ]);
     }
 
     /**
@@ -519,101 +471,37 @@ class Crm extends BaseController
             'invoices'     => $invoices,
             'cari'         => $cari,
             'template'     => $template['pesan'] ?? '',
-            'provider'     => $this->wa->getActiveProviderName(),
-            'isSandbox'    => ($this->wa->getActiveProviderName() === 'kapso') ? (int) $this->wa->getSetting('kapso_sandbox_mode', '1') : 0,
             'page'         => $page,
             'totalPages'   => $totalPages,
             'totalTagihan' => $totalTagihan,
+            // sama seperti followup(): hanya toko yang boleh ditulis akun ini
+            'toko'         => $this->tokoCatatan(),
         ];
 
         return view('admin/crm/tagihan', $data);
     }
 
     /**
-     * Alias endpoint kirim_wa → kirim_pesan (kompatibilitas route lama)
+     * Peta id_toko => nama untuk form pencatatan manual. Sengaja mengikuti
+     * `tokoBoleh()` — pagar yang sama dipakai Tugas::simpanCatatan — supaya layar
+     * tidak pernah menawarkan toko yang ujungnya ditolak saat disimpan.
+     *
+     * @return array<int, string>
      */
-    public function kirim_wa()
+    private function tokoCatatan(): array
     {
-        return $this->kirim_pesan();
+        $ids = $this->tokoBoleh();
+
+        if ($ids === []) {
+            return [];
+        }
+
+        $peta = [];
+
+        foreach ((new JuraganModel())->whereIn('id_juragan', $ids)->orderBy('nama_juragan', 'ASC')->findAll() as $t) {
+            $peta[(int) $t->id_juragan] = $t->nama_juragan;
+        }
+
+        return $peta;
     }
-
-    /**
-     * Kirim Pesan Manual / Follow-up Satuan
-     */
-    public function kirim_pesan()
-    {
-        $idInvoice = (int) $this->request->getPost('id_invoice');
-        $nomor     = trim($this->request->getPost('nomor') ?? '');
-        $pesan     = trim($this->request->getPost('pesan') ?? '');
-        $tipePesan = $this->request->getPost('tipe_pesan') ?? 'tagihan';
-
-        if (empty($nomor) || empty($pesan)) {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Nomor tujuan dan isi pesan wajib diisi.']);
-        }
-
-        $inv = null;
-        if ($idInvoice > 0) {
-            $inv = $this->crmModel->getInvoiceDetailPesan($idInvoice);
-        }
-
-        $pelangganId = $inv['id_pelanggan'] ?? null;
-
-        // Token {nama} {invoice} {total} {sisa} {link_invoice} {kurir} {resi} diisi
-        // di sini juga, bukan hanya di JavaScript, supaya pesan yang tertinggal
-        // ber-token (misalnya dikirim lewat tab lama) tidak pernah sampai ke
-        // pelanggan dalam bentuk kurung kurawal.
-        $pesan = crm_isi_token($pesan, $this->crmModel->getTokenPesan((int) $pelangganId, $idInvoice));
-
-        $res = $this->wa->send($nomor, $pesan, [
-            'invoice_id'   => $idInvoice > 0 ? $idInvoice : null,
-            'pelanggan_id' => $pelangganId,
-            'tipe_pesan'   => $tipePesan,
-        ]);
-
-        if ($res['success']) {
-            if ($pelangganId) {
-                $this->crmModel->tambahAktivitas([
-                    'pelanggan_id' => $pelangganId,
-                    'tipe'         => 'wa',
-                    'judul'        => 'Follow-up WhatsApp Terkirim (' . ucfirst($tipePesan) . ')',
-                    'deskripsi'    => $pesan,
-                    'invoice_id'   => $idInvoice > 0 ? $idInvoice : null,
-                    'user_id'      => pengguna_sesi(),
-                ]);
-            }
-
-            return $this->response->setJSON([
-                'status'     => 'success',
-                'message'    => 'Pesan WhatsApp berhasil terkirim!',
-                'message_id' => $res['message_id'],
-                'notice'     => $res['notice'] ?? null,
-            ]);
-        }
-
-        return $this->response->setJSON([
-            'status'  => 'error',
-            'message' => 'Gagal mengirim pesan: ' . ($res['error'] ?? 'Periksa konfigurasi WhatsApp API.'),
-        ]);
-    }
-
-    /**
-     * AJAX: isi token {nama} {invoice} {total} ... untuk pratinjau template di
-     * popus "Kirim WhatsApp" pada Profil Customer 360. Dulu endpoint ini bagian
-     * dari Live Chat (admin/crm/chat/token); halamannya sudah dihapus, jadi
-     * hanya jalur pelanggan yang tersisa di sini.
-     */
-    public function pesan_token()
-    {
-        $idPelanggan = (int) $this->request->getGet('id_pelanggan');
-
-        if ($idPelanggan <= 0) {
-            return $this->response->setJSON(['status' => 'error', 'message' => 'Pelanggan tidak ditemukan.']);
-        }
-
-        return $this->response->setJSON([
-            'status' => 'success',
-            'data'   => $this->crmModel->getTokenPesan($idPelanggan, 0),
-        ]);
-    }
-
 }

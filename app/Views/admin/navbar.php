@@ -8,6 +8,10 @@ $namaInisial = strtoupper(mb_substr($namaSesi, 0, 1));
 // Deteksi menu induk aktif
 $isDasborAktif   = url_is('admin/dasbor*') || $di_halaman === 'admin';
 $isReminderAktif = url_is('admin/reminder*');
+$isTugasAktif    = url_is('admin/tugas*');
+$isCklAktif      = url_is('admin/checklist*');
+$isSopAktif     = url_is('admin/sop*');
+$isTokoAktif     = url_is('admin/toko*');
 $isTrxAktif      = url_is('admin/invoices*') || url_is('admin/cod*');
 $isProdukAktif   = url_is('admin/produk*') || url_is('admin/poin*');
 $isCrmAktif      = url_is('admin/crm*');
@@ -29,6 +33,8 @@ if ($levelSesi === 'superadmin') {
 // toko yang sedang login, jadi angkanya cocok dengan daftar yang akan dibuka.
 helper('fungsi');
 $reminderCount = pengingat_penjahit_jumlah();
+$tugasTerbuka  = (new \App\Models\TugasModel())->hitungTerbuka(juragan_dipakai_sesi());
+$cklTerbuka    = (new \App\Models\ChecklistModel())->hitungTerbuka(juragan_dipakai_sesi(), date('Y-m-d'));
 
 // Submenu Transaksi
 // 'invoices' tetap satu halaman dengan 'cod': yang pertama dipakai untuk orderan
@@ -220,12 +226,45 @@ if ($levelSesi === 'superadmin') {
                 </div>
             </li>
             <li class="nav-item">
-                <a class="sidebar-link <?= $isReminderAktif ? 'active' : '' ?>" href="<?= site_url('admin/reminder') ?>" data-reminder-menu="1">
+                <a class="sidebar-link <?= $isReminderAktif ? 'active' : '' ?>" href="<?= site_url('admin/reminder') ?>"
+                    data-badge-url="<?= site_url('admin/reminder/jumlah') ?>" data-badge-unit="orderan mendekati/lewat deadline">
                     <i class="sidebar-link-icon fal fa-cut"></i>
                     <span>Reminder Pesanan</span>
                     <?php if ($reminderCount > 0) : ?>
-                        <span class="badge rounded-pill bg-danger ms-auto badge-reminder" title="<?= (int) $reminderCount ?> orderan mendekati/lewat deadline"><?= (int) $reminderCount ?></span>
+                        <span class="badge rounded-pill bg-danger ms-auto badge-live" title="<?= (int) $reminderCount ?> orderan mendekati/lewat deadline"><?= (int) $reminderCount ?></span>
                     <?php endif; ?>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="sidebar-link <?= $isTugasAktif ? 'active' : '' ?>" href="<?= site_url('admin/tugas') ?>"
+                    data-badge-url="<?= site_url('admin/tugas/jumlah') ?>" data-badge-unit="tugas CS yang belum selesai">
+                    <i class="sidebar-link-icon fal fa-tasks"></i>
+                    <span>Tugas CS</span>
+                    <?php if ($tugasTerbuka > 0) : ?>
+                        <span class="badge rounded-pill bg-danger ms-auto badge-live" title="<?= (int) $tugasTerbuka ?> tugas CS yang belum selesai"><?= (int) $tugasTerbuka ?></span>
+                    <?php endif; ?>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="sidebar-link <?= $isCklAktif ? 'active' : '' ?>" href="<?= site_url('admin/checklist') ?>"
+                    data-badge-url="<?= site_url('admin/checklist/jumlah') ?>" data-badge-unit="sesi checklist hari ini yang belum ditutup">
+                    <i class="sidebar-link-icon fal fa-ballot-check"></i>
+                    <span>Checklist Harian</span>
+                    <?php if ($cklTerbuka > 0) : ?>
+                        <span class="badge rounded-pill bg-danger ms-auto badge-live" title="<?= (int) $cklTerbuka ?> sesi checklist hari ini yang belum ditutup"><?= (int) $cklTerbuka ?></span>
+                    <?php endif; ?>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="sidebar-link <?= $isSopAktif ? 'active' : '' ?>" href="<?= site_url('admin/sop') ?>">
+                    <i class="sidebar-link-icon fal fa-book-open"></i>
+                    <span>SOP &amp; Panduan</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="sidebar-link <?= $isTokoAktif ? 'active' : '' ?>" href="<?= site_url('admin/toko') ?>">
+                    <i class="sidebar-link-icon fal fa-store"></i>
+                    <span>Toko Online</span>
                 </a>
             </li>
         </ul>
