@@ -659,7 +659,10 @@ $session  = \Config\Services::session();
                     </div>
                     <div class="col-12 helper-rombongan-busana d-none mb-2">
                         <div class="alert alert-info py-2 px-3 small border-0 bg-brand-50 text-brand-700 rounded-lg mb-0">
-                            <i class="fal fa-info-circle me-1.5"></i> Cukup pilih jenis busana. Jenis ini akan otomatis digunakan sebagai acuan ukuran tiap anggota di daftar Anggota Rombongan.
+                            <i class="fal fa-info-circle me-1.5"></i>
+                            <!-- Layar sempit (di bawah 768px, sama seperti breakpoint modal ini): kalimat dipotong jadi satu baris pendek -->
+                            <span class="d-none d-md-inline">Cukup pilih jenis busana. Jenis ini akan otomatis digunakan sebagai acuan ukuran tiap anggota di daftar Anggota Rombongan.</span>
+                            <span class="d-md-none">Jenis busana otomatis jadi acuan ukuran tiap anggota.</span>
                         </div>
                     </div>
                     <?= ukuran_form_panel(['id' => 'ukuranModal']) ?>

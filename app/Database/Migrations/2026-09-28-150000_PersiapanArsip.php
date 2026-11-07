@@ -61,7 +61,12 @@ class PersiapanArsip extends Migration
         ];
     }
 
-    private function daftarView(): array
+    /**
+     * Definisi view arsip. PUBLIC supaya PerbaikanViewArsip bisa memulihkan
+     * view yang rusak tanpa menyalin SQL-nya untuk kedua kali: dua salinan
+     * definisi adalah dua tempat yang bisa lari berbeda.
+     */
+    public function daftarView(): array
     {
         return [
             // Satu baris per order lama, kolom mengikuti nama di order_invoice.
