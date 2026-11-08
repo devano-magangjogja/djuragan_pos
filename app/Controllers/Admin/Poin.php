@@ -62,18 +62,19 @@ class Poin extends BaseController
         }
 
         $data = [
-            'title'     => 'Akumulasi Poin Gaji',
-            'f'         => $f,
-            'akumulasi' => $model->akumulasi($f, $ids),
-            'ringkas'   => $model->ringkas($f, $ids),
-            'rincian'   => $model->rincian($f, $ids, $limit, $offset),
-            'total'     => $model->rincianJumlah($f, $ids),
-            'pegawai'   => $model->pegawai($ids),
-            'juragans'  => $juragans,
-            'limit'     => $limit,
-            'page'      => $page,
-            'sukses'    => session('sukses'),
-            'gagal'     => session('gagal'),
+            'title'        => 'Akumulasi Poin Gaji',
+            'f'            => $f,
+            'akumulasi'    => $model->akumulasi($f, $ids),
+            'ringkas'      => $model->ringkas($f, $ids),
+            'rincian'      => $model->rincian($f, $ids, $limit, $offset),
+            'total'        => $model->rincianJumlah($f, $ids),
+            'per_pegawai'  => $model->perPegawai($f, $ids),
+            'pegawai'      => $model->pegawai($ids),
+            'juragans'     => $juragans,
+            'limit'        => $limit,
+            'page'         => $page,
+            'sukses'       => session('sukses'),
+            'gagal'        => session('gagal'),
         ];
 
         return view('admin/poin/index', $data);

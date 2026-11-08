@@ -7,13 +7,17 @@ use CodeIgniter\Model;
 /**
  * Ledger poin gaji.
  *
- * Poin diberikan saat nota sudah SELESAI dikerjakan (masuk tab Selesai,
- * status_pengiriman = 3) DAN lunas. Lunas saja tidak cukup: orderan boleh sudah
- * dibayar penuh tapi barangnya belum tentu dikerjakan, dan poin gaji adalah
- * imbalan atas pekerjaan yang sampai ke pelanggan. Salah satu syarat lepas,
- * poin dicabut lagi (lihat sinkron()).
- * Perhitungan dilakukan satu kali lewat sinkron(): pemanggilnya tidak perlu
- * tahu apakah notasinya baru selesai atau sedang balik jadi belum lunas.
+ * Poin diberikan saat nota sudah LUNAS dan barangnya sudah berpindah tangan.
+ * Yang terakhir ini punya dua wajah, jadi dilihat per baris barang:
+ *   - baris yang ditautkan ke unit stok sudah keluar dari rak begitu nota dibayar;
+ *     pembeli membawanya pulang sendiri, tidak pernah ada kurir atau resi, jadi
+ *     nota seperti ini tidak boleh menunggu tab Selesai selamanya;
+ *   - baris tulisan tangan (custom/pembuatan) baru dikerjakan setelah barangnya
+ *     jadi, jadi tetap menunggu nota masuk tab Selesai (status_pengiriman = 3).
+ * Lunas saja tidak cukup untuk yang kedua: orderan boleh sudah dibayar penuh tapi
+ * barangnya belum tentu dikerjakan, dan poin gaji adalah imbalan atas pekerjaan
+ * yang sampai ke pelanggan. Salah satu syarat lepas, poin baris itu dicabut lagi
+ * (lihat sinkron()).
  *
  * Nota sewa punya satu syarat lagi: barangnya harus sudah dikonfirmasi kembali.
  * Selama tombol "Sudah kembali" di nota belum ditekan, nota itu masih tercatat
@@ -23,7 +27,8 @@ use CodeIgniter\Model;
  * Yang menerima poin adalah pembuat nota (invoice.user_id), bukan orang yang
  * menekan tombol cek pembayaran. Nilainya dipotret saat pemberian (poin_satuan
  * dan qty), sehingga perubahan poin varian di kemudian hari tidak mengubah
- * gaji yang sudah terlanjur dihitung.
+ * gaji yang sudah terlanjur dihitung — karena itu baris yang sudah tercatat tidak
+ * pernah dihitung ulang, hanya ditambah atau dicabut.
  */
 class PoinPenjualanModel extends Model
 {
@@ -31,7 +36,7 @@ class PoinPenjualanModel extends Model
     protected $primaryKey    = 'id_poin';
     protected $returnType    = 'array';
     protected $allowedFields = [
-        'invoice_id', 'user_id', 'juragan_id', 'stok_id', 'produk_id',
+        'invoice_id', 'dibeli_id', 'user_id', 'juragan_id', 'stok_id', 'produk_id',
         'kode', 'ukuran', 'qty', 'poin_satuan', 'poin_total', 'created_at',
     ];
     protected $useTimestamps  = false;
@@ -44,7 +49,8 @@ class PoinPenjualanModel extends Model
      *
      * Dipanggil setiap kali status pembayaran atau status pengiriman sebuah
      * invoice berubah, jadi pemanggil tidak perlu memutuskan sendiri memberi
-     * atau mencabut poin.
+     * atau mencabut poin. Per baris barang: yang baru layak ditambah, yang
+     * sudah tidak layak dicabut, yang sudah tercatat dibiarkan apa adanya.
      */
     public function sinkron(int $invoice_id): void
     {
@@ -58,61 +64,56 @@ class PoinPenjualanModel extends Model
             return;
         }
 
-        $lunas     = InvoiceModel::sudahLunas($nota);
-        $selesai   = (string) $nota->status_pengiriman === self::SELESAI;
-        $tersimpan = $nota->deleted_at === null;
+        $lunas      = InvoiceModel::sudahLunas($nota);
+        $selesai    = (string) $nota->status_pengiriman === self::SELESAI;
+        $tersimpan  = $nota->deleted_at === null;
         $dibatalkan = (string) $nota->status_pesanan === '3';
-        $pulang    = ! InvoiceModel::adalahSewa($nota->rincian ?? null) || (int) ($nota->sewa_kembali_at ?? 0) > 0;
+        $pulang     = ! InvoiceModel::adalahSewa($nota->rincian ?? null) || (int) ($nota->sewa_kembali_at ?? 0) > 0;
 
-        if (! $lunas || ! $selesai || ! $tersimpan || ! $pulang || $dibatalkan || (int) $nota->user_id <= 0) {
+        // syarat setingkat nota; "selesai" tidak lagi ikut di sini karena baris
+        // berstok boleh dihitung lebih dulu
+        if (! $lunas || ! $tersimpan || ! $pulang || $dibatalkan || (int) $nota->user_id <= 0) {
             $this->cabut($invoice_id);
 
             return;
         }
 
-        // sudah pernah diberi: jangan disentuh lagi supaya snapshot poin yang
-        // tercatat waktu itu tetap utuh dan tidak ada pemberian ganda
-        if ($this->where('invoice_id', $invoice_id)->countAllResults() > 0) {
+        // baris warisan aturan lama (dibeli_id masih kosong) tidak bisa dicocokkan
+        // ke baris orderan mana pun, jadi ledger nota itu dibiarkan utuh
+        if ($this->where('invoice_id', $invoice_id)->where('dibeli_id', null)->countAllResults() > 0) {
             return;
         }
 
-        $baris = $this->rayahPoin($invoice_id, (int) $nota->user_id, (int) $nota->juragan_id);
+        $tercatat = $this->tercatat($invoice_id);
+        $item     = $this->barisNota($invoice_id);
+        $poin     = $this->poinProduk($item);
+        $waktu    = time();
 
-        if ($baris !== []) {
-            $this->insertBatch($baris);
-        }
-    }
+        $baru  = [];
+        $hapus = [];
 
-    /** Hapus semua baris ledger milik satu nota (pencabutan poin). */
-    public function cabut(int $invoice_id): void
-    {
-        $this->where('invoice_id', $invoice_id)->delete();
-    }
-
-    /**
-     * Susun baris ledger dari item-item sebuah nota. Poin tiap item dibaca dari
-     * master produk (satu nilai per nama barang, berlaku untuk semua ukuran).
-     *
-     * @return list<array<string, mixed>>
-     */
-    private function rayahPoin(int $invoice_id, int $user_id, int $juragan_id): array
-    {
-        $item = $this->db->query('SELECT produk_id, kode, ukuran, qty'
-            . ' FROM `' . $this->t('dibeli') . '` WHERE invoice_id = ?', [$invoice_id])
-            ->getResultArray();
-
-        if ($item === []) {
-            return [];
-        }
-
-        $poin  = $this->poinProduk($item);
-        $waktu = time();
-        $baris = [];
+        // daftar baris orderan yang masih ada hari ini
+        $masih_ada = array_fill_keys(array_map(static fn (array $b): int => (int) $b['id_beli'], $item), true);
 
         foreach ($item as $b) {
-            $qty = (int) $b['qty'];
+            $id_beli = (int) $b['id_beli'];
+            $qty     = (int) $b['qty'];
 
-            if ($qty <= 0) {
+            // barang belum berpindah tangan: custom yang notasinya belum Selesai,
+            // atau qty nol karena barisnya sudah tidak dihitung lagi
+            $berserah = $qty > 0 && ($selesai || $b['stok_id'] !== null);
+
+            if (! $berserah) {
+                if (isset($tercatat[$id_beli])) {
+                    $hapus[] = $id_beli;
+                }
+
+                continue;
+            }
+
+            // sudah tercatat: potret nilainya dibiarkan, walau poin produknya
+            // berubah atau menjadi nol di kemudian hari
+            if (isset($tercatat[$id_beli])) {
                 continue;
             }
 
@@ -124,10 +125,12 @@ class PoinPenjualanModel extends Model
                 continue;
             }
 
-            $baris[] = [
+            $baru[] = [
                 'invoice_id'  => $invoice_id,
-                'user_id'     => $user_id,
-                'juragan_id'  => $juragan_id,
+                'dibeli_id'   => $id_beli,
+                'user_id'     => (int) $nota->user_id,
+                'juragan_id'  => (int) $nota->juragan_id,
+                'stok_id'     => $b['stok_id'] !== null ? (int) $b['stok_id'] : null,
                 'produk_id'   => $produkId > 0 ? $produkId : null,
                 'kode'        => (string) $b['kode'],
                 'ukuran'      => $b['ukuran'] !== null ? (string) $b['ukuran'] : null,
@@ -138,7 +141,51 @@ class PoinPenjualanModel extends Model
             ];
         }
 
-        return $baris;
+        // baris orderannya sendiri sudah hilang (nota disunting) — poinnya ikut
+        foreach ($tercatat as $id_beli => $_) {
+            if (! isset($masih_ada[$id_beli])) {
+                $hapus[] = $id_beli;
+            }
+        }
+
+        if ($baru !== []) {
+            $this->insertBatch($baru);
+        }
+
+        $hapus = array_values(array_unique($hapus));
+
+        if ($hapus !== []) {
+            $this->where('invoice_id', $invoice_id)->whereIn('dibeli_id', $hapus)->delete();
+        }
+    }
+
+    /** Hapus semua baris ledger milik satu nota (pencabutan poin). */
+    public function cabut(int $invoice_id): void
+    {
+        $this->where('invoice_id', $invoice_id)->delete();
+    }
+
+    /**
+     * Baris orderan milik satu nota, termasuk yang hari ini tidak berpoin:
+     * penautan stoknya dipakai untuk memutuskan barang sudah berpindah tangan atau
+     * belum, dan id_beli dipakai sebagai kunci rekonsiliasi dengan ledger.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function barisNota(int $invoice_id): array
+    {
+        return $this->db->query('SELECT id_beli, produk_id, stok_id, kode, ukuran, qty'
+            . ' FROM `' . $this->t('dibeli') . '` WHERE invoice_id = ?', [$invoice_id])
+            ->getResultArray();
+    }
+
+    /** Peta id_beli => true untuk baris ledger nota ini yang sudah tercatat. */
+    private function tercatat(int $invoice_id): array
+    {
+        $baris = $this->db->query('SELECT dibeli_id FROM `' . $this->t('poin_penjualan')
+            . '` WHERE invoice_id = ? AND dibeli_id IS NOT NULL', [$invoice_id])->getResultArray();
+
+        return array_fill_keys(array_map(static fn (array $b): int => (int) $b['dibeli_id'], $baris), true);
     }
 
     /**
@@ -271,6 +318,36 @@ class PoinPenjualanModel extends Model
             ->getFirstRow();
 
         return array_map('intval', (array) $baris);
+    }
+
+    /**
+     * Rincian per pegawai per produk, untuk panel detail di tab Rekap.
+     *
+     * Satu baris ledger dipotret saat pemberiannya, jadi nilai per satuan ikut
+     * dibulatkan sebagai kunci: pegawai yang produknya berpoin 5 lalu berubah jadi
+     * 7 akan punya dua baris, dan itu memang dua angk berbeda dalam gaji.
+     *
+     * @return array<int, list<array<string, mixed>>> user_id => daftar produk
+     */
+    public function perPegawai(array $f, array $juragan_ids = []): array
+    {
+        [$where, $bind] = $this->saring($f, $juragan_ids);
+
+        $baris = $this->db->query('SELECT p.user_id, p.kode, p.ukuran, p.poin_satuan,'
+            . ' COALESCE(SUM(p.qty), 0) AS unit,'
+            . ' COUNT(DISTINCT p.invoice_id) AS nota,'
+            . ' COALESCE(SUM(p.poin_total), 0) AS poin'
+            . ' FROM `' . $this->t('poin_penjualan') . '` p WHERE ' . $where
+            . ' GROUP BY p.user_id, p.kode, p.ukuran, p.poin_satuan'
+            . ' ORDER BY p.user_id ASC, poin DESC, unit DESC, kode ASC', $bind)->getResultArray();
+
+        $petakan = [];
+
+        foreach ($baris as $b) {
+            $petakan[(int) $b['user_id']][] = $b;
+        }
+
+        return $petakan;
     }
 
     /**

@@ -6,6 +6,7 @@
  * @var list<array<string, mixed>>    $akumulasi Rekap poin per pegawai
  * @var array<string, int>            $ringkas   Total poin, unit, nota, pegawai
  * @var list<array<string, mixed>>    $rincian   Pemberian poin per item (drill-down)
+ * @var array<int, list<array>>       $per_pegawai user_id => rincian produk yang dijualnya
  * @var int                           $total     Jumlah baris rincian (untuk pager)
  * @var list<array<string, mixed>>    $pegawai   Pilihan pegawai pada filter
  * @var array<int, string>            $juragans  Pilihan toko pada filter
@@ -17,6 +18,10 @@ $pager = \Config\Services::pager();
 
 $rupiah  = static fn (int $n): string => number_format($n, 0, ',', '.');
 $tanggal = static fn ($ts): string => $ts ? date('d/m/Y', (int) $ts) : '-';
+
+// daftar produk di panel detail dibatasi; sisanya diringkas satu baris supaya
+// totalnya tetap sama dengan angka di baris pegawai di atasnya
+$detail_batas = 12;
 ?>
 <?= $this->extend('template/main') ?>
 
@@ -46,6 +51,33 @@ $tanggal = static fn ($ts): string => $ts ? date('d/m/Y', (int) $ts) : '-';
         min-width: 0;
     }
     .poin-saring .form-label { letter-spacing: 0.01em; }
+
+    /* Baris rekap pegawai sekaligus tombol pembuka detailnya. Chevron dan
+       perputarannya sudah ditanggung aturan global [data-bs-toggle="collapse"]
+       [aria-expanded] .fa-chevron-down di style.css, jadi di sini hanya ukuran
+       dan warnanya yang dirapikan. */
+    .poin-user-baris { cursor: pointer; }
+    .poin-user-baris .poin-user-kupon { color: var(--color-ink-400); font-size: 0.75rem; }
+    .poin-user-baris:focus-visible {
+        outline: 2px solid var(--color-brand-500);
+        outline-offset: -2px;
+    }
+    .poin-user-isi {
+        background: var(--color-ink-50);
+        border-top: 1px solid var(--color-ink-100);
+        border-bottom: 1px solid var(--color-ink-100);
+        padding: 0.65rem 0.75rem 0.85rem;
+    }
+    .poin-user-isi table { font-size: 0.82rem; }
+    .poin-user-isi thead th {
+        color: var(--color-ink-500);
+        font-size: 0.72rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+    .poin-user-rumus { color: var(--color-ink-500); font-variant-numeric: tabular-nums; }
+    .poin-user-jumlah td { border-top: 1px solid var(--color-ink-200); font-weight: 700; }
 </style>
 <?php $this->endSection() ?>
 
@@ -57,6 +89,7 @@ $tanggal = static fn ($ts): string => $ts ? date('d/m/Y', (int) $ts) : '-';
     <p class="text-muted small mb-4">
         Rekap poin yang terkumpul dari penjualan produk yang sudah <strong>Lunas</strong>. Poin diberikan
         kepada pembuat nota; angka di sini dipakai sebagai dasar perhitungan gaji.
+        Klik baris pegawai untuk membuka rincian produk di baliknya.
     </p>
 
     <div class="row gx-2 gy-3 mb-4">
@@ -150,12 +183,92 @@ $tanggal = static fn ($ts): string => $ts ? date('d/m/Y', (int) $ts) : '-';
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php foreach ($akumulasi as $a) { ?>
-                                        <tr>
-                                            <td><?= esc($a['nama']) ?></td>
+                                    <?php foreach ($akumulasi as $a) {
+                                        $id_pedia = (int) $a['user_id'];
+                                        $detail   = $per_pegawai[$id_pedia] ?? [];
+                                        $tampil   = array_slice($detail, 0, $detail_batas);
+                                        $sisa     = array_slice($detail, $detail_batas);
+                                        $sisa_poin = array_sum(array_map(static fn (array $d): int => (int) $d['poin'], $sisa));
+                                        $poin     = (int) $a['poin'];
+                                        ?>
+                                        <tr class="poin-user-baris" data-bs-toggle="collapse" data-bs-target="#poin-user-<?= $id_pedia ?>" role="button" tabindex="0" aria-expanded="false" aria-controls="poin-user-<?= $id_pedia ?>">
+                                            <td>
+                                                <i class="fal fa-chevron-down poin-user-kupon me-2"></i><?= esc($a['nama']) ?>
+                                            </td>
                                             <td class="text-end"><?= (int) $a['nota'] ?></td>
                                             <td class="text-end"><?= $rupiah((int) $a['unit']) ?></td>
-                                            <td class="text-end fw-bold"><?= $rupiah((int) $a['poin']) ?></td>
+                                            <td class="text-end fw-bold"><?= $rupiah($poin) ?></td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="4" class="p-0 border-0">
+                                                <div class="collapse" id="poin-user-<?= $id_pedia ?>">
+                                                    <div class="poin-user-isi">
+                                                        <?php if ($detail === []) { ?>
+                                                            <div class="text-muted small">Belum ada rincian produk untuk pegawai ini.</div>
+                                                        <?php } else { ?>
+                                                            <div class="small text-muted mb-2">
+                                                                <i class="fal fa-boxes-stacked me-1"></i>
+                                                                Barang yang dijual <?= esc($a['nama']) ?> — <?= count($detail) ?> produk, <?= $rupiah((int) $a['unit']) ?> unit
+                                                            </div>
+
+                                                            <div class="table-responsive">
+                                                                <table class="table table-sm align-middle mb-0">
+                                                                    <thead>
+                                                                        <tr>
+                                                                            <th>Produk</th>
+                                                                            <th class="text-end">Nota</th>
+                                                                            <th class="text-end">Unit</th>
+                                                                            <th class="text-end">Poin/satuan</th>
+                                                                            <th class="text-end">Perhitungan</th>
+                                                                            <th class="text-end">Poin</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        <?php foreach ($tampil as $d) {
+                                                                            $ukuran = trim((string) ($d['ukuran'] ?? ''));
+                                                                            $unit   = (int) $d['unit'];
+                                                                            $satuan = (int) $d['poin_satuan'];
+                                                                            ?>
+                                                                            <tr>
+                                                                                <td>
+                                                                                    <span class="fw-semibold"><?= esc($d['kode']) ?></span>
+                                                                                    <?php if ($ukuran !== '') { ?><span class="text-muted">/ <?= esc($ukuran) ?></span><?php } ?>
+                                                                                </td>
+                                                                                <td class="text-end"><?= (int) $d['nota'] ?></td>
+                                                                                <td class="text-end"><?= $rupiah($unit) ?></td>
+                                                                                <td class="text-end"><?= $rupiah($satuan) ?></td>
+                                                                                <td class="text-end poin-user-rumus"><?= $rupiah($unit) . ' × ' . $rupiah($satuan) ?></td>
+                                                                                <td class="text-end"><?= $rupiah((int) $d['poin']) ?></td>
+                                                                            </tr>
+                                                                        <?php } ?>
+
+                                                                        <?php if ($sisa !== []) { ?>
+                                                                            <tr>
+                                                                                <td class="text-muted" colspan="5">
+                                                                                    &hellip; dan <?= count($sisa) ?> produk/nilai lainnya
+                                                                                </td>
+                                                                                <td class="text-end text-muted"><?= $rupiah($sisa_poin) ?></td>
+                                                                            </tr>
+                                                                        <?php } ?>
+
+                                                                        <tr class="poin-user-jumlah">
+                                                                            <td colspan="5">Total poin pegawai ini pada periode/filter ini</td>
+                                                                            <td class="text-end"><?= $rupiah($poin) ?></td>
+                                                                        </tr>
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+
+                                                            <div class="small text-muted mt-2">
+                                                                <i class="fal fa-circle-info me-1"></i>
+                                                                Nilai per satuan dipotret saat nota dilunasi, jadi produk yang sama bisa muncul dua kali
+                                                                kalau poin produknya pernah diubah. Barang dari stok terhitung sejak notasinya lunas;
+                                                                barang tulisan tangan baru terhitung setelah notasinya masuk Selesai.
+                                                            </div>
+                                                        <?php } ?>
+                                                    </div>
+                                                </div>
+                                            </td>
                                         </tr>
                                     <?php } ?>
                                 </tbody>
@@ -236,6 +349,19 @@ document.addEventListener('DOMContentLoaded', function () {
         new bootstrap.Tab(btnRincian).show();
     }
     <?php } ?>
+    // Baris rekap adalah <tr> yang bisa diklik; Bootstrap 5.2 hanya memasang
+    // penangan klik untuk pemicu collapse, jadi Enter/Space ditangani sendiri
+    // supaya baris dengan role="button" ini tidak sekadar terlihat bisa ditekan.
+    document.querySelectorAll('#tab-rekap tr.poin-user-baris').forEach(function (baris) {
+        baris.addEventListener('keydown', function (e) {
+            if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'Spacebar') {
+                return;
+            }
+
+            e.preventDefault();
+            baris.click();
+        });
+    });
 });
 </script>
 <?php $this->endSection() ?>
