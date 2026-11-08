@@ -2,7 +2,7 @@
 /**
  * Laporan akumulasi poin gaji (khusus Superadmin).
  *
- * @var array<string, mixed>          $f         Filter aktif: awal, akhir, juragan, user
+ * @var array<string, mixed>          $f         Filter aktif: awal, akhir, juragan, user, cari
  * @var list<array<string, mixed>>    $akumulasi Rekap poin per pegawai
  * @var array<string, int>            $ringkas   Total poin, unit, nota, pegawai
  * @var list<array<string, mixed>>    $rincian   Pemberian poin per item (drill-down)
@@ -46,6 +46,70 @@ $tanggal = static fn ($ts): string => $ts ? date('d/m/Y', (int) $ts) : '-';
         min-width: 0;
     }
     .poin-saring .form-label { letter-spacing: 0.01em; }
+
+    /* Kolom cari: isian memanjang, ikon Terapkan lalu tombol Filter di kanannya.
+       Kedua tombol hanya muncul di layar sempit (lihat media query), jadi di
+       desktop kolom ini tetap berisi satu isian seperti sebelumnya. */
+    .poin-cari-baris {
+        display: flex; gap: .3rem; align-items: stretch;
+    }
+    .poin-cari-baris .form-control { flex: 1 1 auto; min-width: 0; }
+    .poin-cari-terapkan,
+    .poin-saring-tombol {
+        display: none; flex: 0 0 auto; align-items: center; gap: .3rem;
+    }
+    .poin-saring-angka {
+        display: inline-flex; align-items: center; justify-content: center;
+        min-width: 1.05rem; height: 1.05rem; padding: 0 .25rem; border-radius: 999px;
+        background: #fde047; color: #101828; font-size: .66rem; font-weight: 700;
+    }
+    .poin-saring .poin-tutup { display: none; }
+    .poin-saring.buka .poin-buka { display: none; }
+    .poin-saring.buka .poin-tutup { display: inline-flex; }
+
+    /* Dua tombol aksi berbagi lebar kolomnya: Terapkan dan ikon Ulangi sama
+       besar, sama tinggi — di desktop maupun di dalam popus. */
+    .poin-aksi-baris { display: flex; gap: .3rem; align-items: stretch; }
+    .poin-aksi-baris > .btn { flex: 1 1 0; justify-content: center; }
+
+    /* Di desktop kedua pembungkus popus tidak terlihat (display: contents),
+       sehingga keempat field-nya tetap duduk satu baris di dalam .row. */
+    .poin-saring-lipat,
+    .poin-saring-kotak { display: contents; }
+
+    /* Layar sempit: baris filter tinggal kolom cari dengan ikon Terapkan dan
+       tombol Filter di kanannya; keempat saringan lain dibuka lewat popus yang
+       duduk di TENGAH layar, sama seperti popus halaman lain. */
+    @media (max-width: 575.98px) {
+        .poin-cari-terapkan,
+        .poin-saring-tombol { display: inline-flex; }
+
+        .poin-saring-lipat {
+            display: none; position: fixed; inset: 0; z-index: 1050;
+            align-items: center; justify-content: center; padding: 1rem;
+            background: rgba(15, 23, 42, .35);
+            /* .row > * menyisipkan margin-top seukuran gutter; pada lapisan yang
+               dipatok inset:0 margin itu menggesernya 8px ke bawah, sehingga
+               seiris layar paling atas tidak terredup dan tidak bisa diklik */
+            margin-top: 0;
+        }
+        .poin-saring.buka .poin-saring-lipat { display: flex; }
+
+        .poin-saring-kotak {
+            display: flex; flex-wrap: wrap; gap: .55rem .6rem;
+            width: 100%; max-width: 24rem; flex: 0 0 auto; padding: .9rem 1rem;
+            background: #fff; border: 1px solid #e2e8f0; border-radius: 1rem;
+            box-shadow: 0 1.2rem 2.4rem rgba(15, 23, 42, .22);
+            max-height: 82vh; overflow-y: auto;
+        }
+        /* .col-* bawaan Bootstrap membawa gutter 0.75rem di kiri-kanannya; di
+           dalam kartu jaraknya diatur lewat gap, jadi padding-nya dinetralkan */
+        .poin-saring-kotak > div {
+            flex: 1 1 100%; width: auto; padding: 0; min-width: 0;
+        }
+        /* dua tanggal berpasangan satu baris, toko dan pegawai sebaris penuh */
+        .poin-saring-kotak > .poin-setengah { flex: 1 1 calc(50% - .3rem); }
+    }
 </style>
 <?php $this->endSection() ?>
 
@@ -80,38 +144,84 @@ $tanggal = static fn ($ts): string => $ts ? date('d/m/Y', (int) $ts) : '-';
         <?php } ?>
     </div>
 
+    <?php
+    // berapa saringan yang sedang aktif di balik tombol Filter (layar kecil).
+    // Rentang tanggal baru dihitung kalau memang menyimpang dari bawaannya
+    // (awal bulan s/d hari ini), sebab kedua field itu tidak pernah kosong.
+    $saringAktif = ($f['awal'] !== date('Y-m-01') || $f['akhir'] !== date('Y-m-d')) ? 1 : 0;
+    $saringAktif += (int) $f['juragan'] > 0 ? 1 : 0;
+    $saringAktif += (int) $f['user'] > 0 ? 1 : 0;
+    ?>
     <?= form_open('admin/poin', ['method' => 'get', 'class' => 'row g-2 align-items-end mb-4 poin-saring']) ?>
-    <div class="col-6 col-md-4 col-xl">
-        <?= form_label('Dari tanggal', 'awal', ['class' => 'form-label small mb-1']) ?>
-        <?= form_input(['type' => 'date', 'class' => 'form-control form-control-sm', 'name' => 'awal', 'value' => $f['awal']]) ?>
+    <div class="col-12 col-md-4 col-xl">
+        <?= form_label('Cari nama', 'cari', ['class' => 'form-label small mb-1']) ?>
+        <div class="poin-cari-baris">
+            <?= form_input([
+                'type'        => 'search',
+                'class'       => 'form-control form-control-sm',
+                'name'        => 'cari',
+                'id'          => 'cari',
+                'value'       => $f['cari'],
+                'placeholder' => 'nama pegawai',
+            ]) ?>
+            <?php /* sama seperti kolom cari halaman lain: kaca pembesar, bukan corong
+               — corong hanya milik tombol Filter supaya keduanya tidak kembar */ ?>
+            <button class="btn btn-sm btn-dark poin-cari-terapkan" type="submit" title="Terapkan" aria-label="Terapkan">
+                <i class="fal fa-search"></i>
+            </button>
+            <button class="btn btn-sm btn-dark poin-saring-tombol" type="button" id="poin-saring-buka"
+                aria-expanded="false" aria-controls="poin-saring-lipat">
+                <span class="poin-buka"><i class="fal fa-filter"></i> Filter</span>
+                <span class="poin-tutup"><i class="fal fa-xmark"></i> Tutup</span>
+                <?php if ($saringAktif > 0) { ?><span class="poin-saring-angka"><?= $saringAktif ?></span><?php } ?>
+            </button>
+        </div>
     </div>
-    <div class="col-6 col-md-4 col-xl">
-        <?= form_label('Sampai tanggal', 'akhir', ['class' => 'form-label small mb-1']) ?>
-        <?= form_input(['type' => 'date', 'class' => 'form-control form-control-sm', 'name' => 'akhir', 'value' => $f['akhir']]) ?>
-    </div>
-    <div class="col-6 col-md-4 col-xl">
-        <?= form_label('Toko', 'juragan', ['class' => 'form-label small mb-1']) ?>
-        <?= form_dropdown([
-            'class'    => 'form-select form-select-sm',
-            'name'     => 'juragan',
-            'options'  => [0 => 'Semua toko'] + $juragans,
-            'selected' => $f['juragan'],
-        ]) ?>
-    </div>
-    <div class="col-6 col-md-4 col-xl">
-        <?= form_label('Pegawai', 'user', ['class' => 'form-label small mb-1']) ?>
-        <?= form_dropdown([
-            'class'    => 'form-select form-select-sm',
-            'name'     => 'user',
-            'options'  => [0 => 'Semua pegawai'] + array_column($pegawai, 'nama', 'user_id'),
-            'selected' => $f['user'],
-        ]) ?>
-    </div>
-    <div class="col-6 col-md-4 col-xl">
-        <button class="btn btn-sm btn-dark w-100" type="submit"><i class="fal fa-filter me-1"></i>Terapkan</button>
+
+    <?php /* Di layar sempit keempat saringan ini dilipat ke dalam popus; kedua
+       pembungkusnya display: contents di desktop jadi field-nya tetap satu baris */ ?>
+    <div class="poin-saring-lipat" id="poin-saring-lipat">
+        <div class="poin-saring-kotak">
+            <div class="col-6 col-md-4 col-xl poin-setengah">
+                <?= form_label('Dari tanggal', 'awal', ['class' => 'form-label small mb-1']) ?>
+                <?= form_input(['type' => 'date', 'class' => 'form-control form-control-sm', 'name' => 'awal', 'value' => $f['awal']]) ?>
+            </div>
+            <div class="col-6 col-md-4 col-xl poin-setengah">
+                <?= form_label('Sampai tanggal', 'akhir', ['class' => 'form-label small mb-1']) ?>
+                <?= form_input(['type' => 'date', 'class' => 'form-control form-control-sm', 'name' => 'akhir', 'value' => $f['akhir']]) ?>
+            </div>
+            <div class="col-6 col-md-4 col-xl">
+                <?= form_label('Toko', 'juragan', ['class' => 'form-label small mb-1']) ?>
+                <?= form_dropdown([
+                    'class'    => 'form-select form-select-sm',
+                    'name'     => 'juragan',
+                    'options'  => [0 => 'Semua toko'] + $juragans,
+                    'selected' => $f['juragan'],
+                ]) ?>
+            </div>
+            <div class="col-6 col-md-4 col-xl">
+                <?= form_label('Pegawai', 'user', ['class' => 'form-label small mb-1']) ?>
+                <?= form_dropdown([
+                    'class'    => 'form-select form-select-sm',
+                    'name'     => 'user',
+                    'options'  => [0 => 'Semua pegawai'] + array_column($pegawai, 'nama', 'user_id'),
+                    'selected' => $f['user'],
+                ]) ?>
+            </div>
+            <div class="col-6 col-md-4 col-xl">
+                <div class="poin-aksi-baris">
+                    <button class="btn btn-sm btn-dark" type="submit"><i class="fal fa-filter me-1"></i>Terapkan</button>
+                    <button class="btn btn-sm btn-dark d-inline-flex" type="button" data-saring-reset=""
+                        title="Kosongkan saringan" aria-label="Kosongkan saringan">
+                        <i class="fal fa-sync"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
     <?= form_close() ?>
 
+    <div data-saring-wadah>
     <div class="card mb-4">
         <div class="card-header bg-white border-bottom py-2 px-2 px-sm-3">
             <ul class="nav nav-pills" id="poinTabs" role="tablist">
@@ -217,22 +327,75 @@ $tanggal = static fn ($ts): string => $ts ? date('d/m/Y', (int) $ts) : '-';
             </div>
         </div>
     </div>
+    </div>
 </div>
 <?= $this->endSection() ?>
 
 <?= $this->section('js') ?>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    var tabs = document.getElementById('poinTabs');
-    if (!tabs || !window.bootstrap) {
-        return;
+    // popus saringan layar sempit: dibuka dari tombol Filter di samping kolom
+    // cari, ditutup lagi begitu yang diklik jatuh di luar kartunya (termasuk
+    // latar redupnya) atau Esc ditekan. Desktop tidak pernah melihat tombol ini
+    // karena display-nya diatur di media query, jadi tidak perlu cek lebar layar.
+    var saring = document.querySelector('.poin-saring');
+    var buka   = document.getElementById('poin-saring-buka');
+    var kotak  = document.querySelector('.poin-saring-kotak');
+
+    if (saring && buka && kotak) {
+        var tutup = function () {
+            saring.classList.remove('buka');
+            buka.setAttribute('aria-expanded', 'false');
+        };
+
+        buka.addEventListener('click', function () {
+            var kini = ! saring.classList.contains('buka');
+
+            saring.classList.toggle('buka', kini);
+            buka.setAttribute('aria-expanded', kini ? 'true' : 'false');
+        });
+
+        document.addEventListener('click', function (peristiwa) {
+            if (! saring.classList.contains('buka') || kotak.contains(peristiwa.target) || buka.contains(peristiwa.target)) {
+                return;
+            }
+
+            tutup();
+        });
+
+        document.addEventListener('keydown', function (peristiwa) {
+            if (peristiwa.key === 'Escape') {
+                tutup();
+            }
+        });
     }
+
+    // Kepala tab duduk di dalam wadah hasil, jadi tab yang sedang dibuka diingat
+    // lewat delegasi di document: setelah saringan direset (isi ditukar tanpa muat
+    // ulang) pengguna tidak terlempar lagi ke tab rekap.
+    var tabAktif = <?= $page > 1 ? "'btn-tab-rincian'" : "'btn-tab-rekap'" ?>;
+
+    document.addEventListener('click', function (peristiwa) {
+        var pemicu = peristiwa.target.closest ? peristiwa.target.closest('#poinTabs .nav-link') : null;
+
+        if (pemicu) {
+            tabAktif = pemicu.id;
+        }
+    });
+
+    document.addEventListener('saring:segar', function () {
+        var pemicu = document.getElementById(tabAktif);
+
+        if (pemicu && ! pemicu.classList.contains('active') && window.bootstrap) {
+            new bootstrap.Tab(pemicu).show();
+        }
+    });
 
     // Rincian satu-satunya tab yang punya paginasi: saat halaman berubah
     // (page > 1), buka tab rincian lagi supaya pengguna tidak terlempar ke rekap.
     <?php if ($page > 1) { ?>
     var btnRincian = document.getElementById('btn-tab-rincian');
-    if (btnRincian) {
+    if (btnRincian && window.bootstrap) {
         new bootstrap.Tab(btnRincian).show();
     }
     <?php } ?>

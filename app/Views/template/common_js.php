@@ -164,7 +164,7 @@ $js = <<< JS
 
             // angka "berapa saringan yang aktif" ikut hilang karena saringannya
             // sudah dikosongkan
-            document.querySelectorAll('.em-saring-angka, .wa-saring-jumlah, .tugas-saring-jumlah').forEach(function (angka) {
+            document.querySelectorAll('.em-saring-angka, .poin-saring-angka, .wa-saring-jumlah, .tugas-saring-jumlah').forEach(function (angka) {
                 angka.remove();
             });
 

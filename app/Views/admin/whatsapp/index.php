@@ -32,6 +32,12 @@ $hari_ini = date('Y-m-d');
 // kolom "Role" pada tab "Tidak Jadi Dikerjakan": level akun yang memegang tugasnya
 $role = ['cs' => 'CS', 'admin' => 'Admin', 'superadmin' => 'Superadmin'];
 
+// Label pendek untuk HP. Tab duduk dalam grid 2 kolom, jadi di ≤575px tiap kolom
+// cuma ±115px isi — "Sudah Diselesaikan" dan "Tidak Jadi Dikerjakan" turun baris
+// dan tulisannya jadi tidak sejajar dengan tab lain. Yang dipendekkan labelnya,
+// bukan angkanya; di ≥576px label panjang tetap dipakai.
+$tabPendek = ['selesai' => 'Selesai', 'tak_selesai' => 'Tidak Jadi'];
+
 $peta_nomor = [];
 
 foreach ($nomor as $n) {
@@ -78,12 +84,26 @@ $tanya = static function (array $ubah): string {
         background: #f4f6f9; color: #475569; text-decoration: none; border: 1px solid #e2e8f0;
     }
     .wa-tab a.aktif { background: #101828; border-color: #101828; color: #fff; }
-    .wa-tab a span { font-weight: 700; }
+    /* Angka ikut DI DALAM wadah label, bukan berdiri sebagai flex item sendiri:
+       begitu label turun baris, kotak flex item teks ikut melebar sampai sisa
+       kolom, sehingga angkanya terdorong jauh ke kanan dan terlihat lepas dari
+       namanya. Di dalam satu wadah teks angka selalu menempel kata terakhir. */
+    .wa-tab a .wa-teks { text-align: center; }
+    .wa-tab a .wa-angka { font-weight: 700; margin-left: .3rem; }
 
     .wa-saring { display: flex; flex-wrap: wrap; align-items: flex-end; gap: .55rem; margin-bottom: 1rem; border-bottom: 1px solid #eaecf0; padding: 1rem 1.15rem; }
     .wa-saring .lapangan { display: flex; flex-direction: column; gap: .2rem; }
     .wa-saring label { font-size: .7rem; font-weight: 700; color: #667085; text-transform: uppercase; letter-spacing: .04em; }
     .wa-saring .form-control, .wa-saring .form-select { max-width: 190px; }
+
+    /* Geng aksi kanan baris filter: "Buat Reminder" + (di layar lebar) "Delegasi
+       Nomor" yang dipindah JS ke dalamnya. Wadusnya tidak boleh menyusut maupun
+       melipat, jadi kalau ruang baris tidak cukup yang turun baris adalah geng
+       ini—rata kanan—bukan satu tombol saja yang tertinggal sendiri di kiri. */
+    .wa-buat-grup {
+        display: flex; align-items: center; gap: .55rem;
+        margin-left: auto; flex: 0 0 auto;
+    }
 
     /* pemicu filter hanya dipakai di layar sempit; di desktop saringan itu sudah
        terlihat, jadi kotaknya tidak perlu — selector harus sedalam .wa-saring
@@ -188,7 +208,8 @@ $tanya = static function (array $ubah): string {
         .wa-head > .me-auto { flex: 1 1 100%; }
         .wa-head > a.btn, .wa-head > button.btn { flex: 1 1 auto; min-width: 0; }
         /* tombol Buat Reminder melebar penuh satu baris di layar sempit */
-        .wa-saring .wa-btn-buat { grid-column: 1 / -1; width: 100%; }
+        .wa-saring .wa-buat-grup { grid-column: 1 / -1; width: 100%; }
+        .wa-saring .wa-btn-buat { width: 100%; }
         .wa-tab { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
         .wa-tab a { justify-content: center; }
         .wa-tab a:last-child:nth-child(odd) { grid-column: 1 / -1; }
@@ -213,7 +234,7 @@ $tanya = static function (array $ubah): string {
             <p>Percakapan yang perlu dibalas, ditagih, atau dikonfirmasi. Siapa cepat dia ambil &mdash; setiap perpindahan tangan tercatat.</p>
         </div>
         <?php if ($kelola) : ?>
-            <a class="btn btn-sm btn-outline-secondary rounded-pill" href="<?= esc(site_url('admin/tugas/whatsapp/nomor')) ?>">
+            <a class="btn btn-sm btn-outline-secondary rounded-pill" id="waDelegasi" href="<?= esc(site_url('admin/tugas/whatsapp/nomor')) ?>">
                 <i class="fal fa-phone-alt me-1"></i> Delegasi Nomor
             </a>
         <?php endif; ?>
@@ -226,8 +247,7 @@ $tanya = static function (array $ubah): string {
         <div class="wa-tab">
             <?php foreach ($tab as $kode => $nama) : ?>
                 <a class="<?= $s['tab'] === $kode ? 'aktif' : '' ?>" href="<?= esc($tanya(['tab' => $kode])) ?>">
-                    <?= esc($nama) ?>
-                    <?php if (($angka[$kode] ?? 0) > 0) : ?><span><?= (int) $angka[$kode] ?></span><?php endif; ?>
+                    <span class="wa-teks"><span class="d-none d-sm-inline"><?= esc($nama) ?></span><span class="d-sm-none"><?= esc($tabPendek[$kode] ?? $nama) ?></span><?php if (($angka[$kode] ?? 0) > 0) : ?><span class="wa-angka"><?= (int) $angka[$kode] ?></span><?php endif; ?></span>
                 </a>
             <?php endforeach; ?>
             <a class="<?= (int) $s['milik_saya'] === $milik ? 'aktif' : '' ?>"
@@ -289,9 +309,12 @@ $tanya = static function (array $ubah): string {
                         title="Kosongkan saringan" aria-label="Kosongkan saringan"><i class="fal fa-sync"></i></button>
                 </div>
             </div>
-            <button type="button" class="btn btn-sm btn-primary ms-auto wa-btn-buat" data-bs-toggle="modal" data-bs-target="#modalWaBaru">
-                <i class="fal fa-plus"></i> Buat Reminder
-            </button>
+            <div class="wa-buat-grup">
+                <button type="button" class="btn btn-sm btn-primary wa-btn-buat" data-bs-toggle="modal" data-bs-target="#modalWaBaru">
+                    <i class="fal fa-plus"></i> Buat Reminder
+                </button>
+                <?php /* JS menyisipkan #waDelegasi di sini pada layar ≥ 992px */ ?>
+            </div>
 
             <!-- popus filter layar sempit: ditulis DI DALAM form yang sama supaya
                  field yang dipindah JS ke dalamnya tetap ikut terkirim saat submit -->
@@ -342,6 +365,36 @@ $tanya = static function (array $ubah): string {
 
             tata();
             sempit.addEventListener('change', tata);
+        }());
+
+        (function () {
+            'use strict';
+
+            var delegasi = document.getElementById('waDelegasi');
+            var grup     = document.querySelector('.wa-saring .wa-buat-grup');
+
+            if (! delegasi || ! grup) {
+                return;
+            }
+
+            var kepala  = delegasi.parentNode;
+            var sesudah = delegasi.nextElementSibling;
+            var lebar   = window.matchMedia('(min-width: 992px)');
+
+            // desktop: "Delegasi Nomor" digandeng ke kanan tombol "Buat Reminder"
+            // dalam satu geng aksi; HP: kembali ke kepala halaman seperti
+            // sebelumnya. Satu simpul dipindah bolak-balik — dua salinan tautan
+            // akan membingungkan pembaca layar dan keyboard
+            function tata() {
+                if (lebar.matches) {
+                    grup.appendChild(delegasi);
+                } else {
+                    kepala.insertBefore(delegasi, sesudah);
+                }
+            }
+
+            tata();
+            lebar.addEventListener('change', tata);
         }());
         </script>
 

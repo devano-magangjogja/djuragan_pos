@@ -203,7 +203,7 @@ class PoinPenjualanModel extends Model
     /**
      * Bangun klausa WHERE + bind dari filter laporan.
      *
-     * @param array $f  kunci: awal, akhir (Y-m-d), juragan (int), user (int)
+     * @param array $f  kunci: awal, akhir (Y-m-d), juragan (int), user (int), cari (nama pegawai)
      */
     private function saring(array $f, array $juragan_ids): array
     {
@@ -235,6 +235,16 @@ class PoinPenjualanModel extends Model
         if ($user > 0) {
             $where[] = 'p.user_id = ?';
             $bind[]  = $user;
+        }
+
+        $cari = trim((string) ($f['cari'] ?? ''));
+
+        if ($cari !== '') {
+            // nama pegawai dicari lewat sub-query, bukan lewat JOIN: clause ini
+            // dipakai juga oleh query yang tidak menggandeng tabel user
+            // (ringkas & jumlah rincian)
+            $where[] = 'p.user_id IN (SELECT `id` FROM `' . $this->t('user') . '` WHERE `name` LIKE ?)';
+            $bind[]  = '%' . $cari . '%';
         }
 
         return [implode(' AND ', $where), $bind];

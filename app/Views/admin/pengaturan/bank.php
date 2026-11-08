@@ -73,6 +73,12 @@ $sunting_err = $validation->hasError('sunting_nama_bank') || $validation->hasErr
     .bank-tabel tbody td:nth-child(2) {
         overflow-wrap: anywhere;
     }
+    /* tombol "Tambah Bank / EDC" menutup lebar kartu di HP, sama seperti kontrol
+       lain di layar sempit; kepala kartunya sudah flex-wrap jadi tombolnya turun
+       satu baris sendiri di bawah judul */
+    .card-header [data-bs-target="#modalTambahBank"] {
+        flex: 1 1 100%;
+    }
 }
 </style>
 <?= $this->endSection() ?>

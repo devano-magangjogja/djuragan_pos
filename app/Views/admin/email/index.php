@@ -344,6 +344,24 @@ $tanya = static function (array $ubah): string {
             overflow: visible;
             text-align: right;
         }
+        /* wadah pemegang (ikon orang) diratakan ke kanan; dan padding kanan sel
+           ini dimatikan karena style.css menulis .8rem 1rem pada TIAP sel dengan
+           !important — tanpa !important pilnya berhenti 16px sebelum tepi kartu
+           dan terlihat mengambang (terukur 36px dari tepi kartu) */
+        .em-kartu:not(.em-email-kartu) .em-daftar td:nth-child(3) .em-pegang {
+            justify-content: flex-end;
+        }
+        .em-kartu:not(.em-email-kartu) .em-daftar td:nth-child(3),
+        .em-kartu:not(.em-email-kartu) .em-daftar td:nth-child(4) {
+            padding-right: 0 !important;
+        }
+        /* tabel-rapi.css menengahkan SETIAP blok di kolom tengah
+           (width: fit-content + margin-inline: auto) — itulah 12px yang
+           tersisa; di sel ini bloknya harus melebar penuh dan tanpa margin */
+        .em-kartu:not(.em-email-kartu) .em-daftar td:nth-child(3) > div {
+            width: 100%;
+            margin-inline: 0;
+        }
         /* kolom Aksi: baris bawah, kolom kanan */
         .em-kartu:not(.em-email-kartu) .em-daftar td:nth-child(4) {
             display: block;
@@ -351,7 +369,9 @@ $tanya = static function (array $ubah): string {
             grid-row: 2;
             padding: 0 0 0 .75rem;
             border: none;
-            text-align: right;
+            /* !important: sel ini bawa class="text-center" milik Bootstrap yang
+               !important, tanpa itu tombol Selesai mengambang di tengah kolom */
+            text-align: right !important;
         }
         .em-kartu:not(.em-email-kartu) .em-daftar .em-aksi {
             flex-direction: column;
