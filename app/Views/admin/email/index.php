@@ -190,6 +190,27 @@ $tanya = static function (array $ubah): string {
     .em-email { font-weight: 700; color: #0f172a; }
     .em-mati .em-email { color: #94a3b8; text-decoration: line-through; }
     .em-pegang { display: flex; flex-wrap: wrap; gap: .3rem; align-items: center; }
+    /* penanggung jawab: daftar orang toko terpilih. Kotaknya digulir supaya popup
+       tidak memanjang tak tentu saat sebuah toko punya belasan CS */
+    .em-penanggung { padding: .45rem .55rem; border: 1px solid #e2e8f0; border-radius: .7rem; }
+    .em-penanggung-kepala { display: flex; align-items: center; justify-content: space-between;
+        gap: .5rem; margin-bottom: .35rem; padding-bottom: .35rem; border-bottom: 1px dashed #e2e8f0; }
+    .em-penanggung-all { display: flex; align-items: center; gap: .45rem; margin: 0;
+        font-size: .78rem; font-weight: 700; color: #334155; }
+    .em-penanggung-cari { position: relative; flex: 0 1 9.5rem; min-width: 6rem; }
+    /* padding kiri dipaksa !important karena .form-control-sm di style.css juga
+       memakai !important — sama seperti .ckl-cs-cari di layar Cek Toko; tanpa ini
+       ikon kaca pembesar menimpa placeholder */
+    .em-penanggung-cari .form-control { padding-left: 1.7rem !important; }
+    .em-penanggung-cari i { position: absolute; left: .55rem; top: 50%; transform: translateY(-50%);
+        font-size: .7rem; color: #94a3b8; pointer-events: none; }
+    .em-penanggung-isi { display: grid; gap: .2rem; max-height: 8.5rem; overflow-y: auto; }
+    .em-penanggung-baris { display: flex; align-items: center; gap: .45rem; margin: 0;
+        font-size: .8rem; color: #334155; }
+    .em-penanggung-nama { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
+    .em-penanggung-level { flex: 0 0 auto; padding: .1rem .4rem; border-radius: 999px;
+        background: #f1f5f9; font-size: .66rem; font-weight: 700; color: #64748b; }
+    .em-penanggung-kosong { font-size: .78rem; color: #94a3b8; }
     /* kelas ini menempel di <td>, jadi tidak boleh dijadikan flex container:
        sel kehilangan display: table-cell-nya, vertical-align: middle ikut hilang,
        dan isinya naik ke atas baris. Chip dibiarkan inline — mereka sudah bisa
@@ -578,10 +599,28 @@ $tanya = static function (array $ubah): string {
                                     <?php if ($terlambat) : ?><i class="fal fa-exclamation-triangle"></i><?php endif; ?>
                                 </td>
                                 <td>
+                                    <?php $ditunjuk = $penanggung[$id] ?? []; ?>
                                     <?php if ($w['nama_dikerjakan']) : ?>
                                         <span class="pil-orang"><i class="fal fa-user-check me-1"></i><?= esc($w['nama_dikerjakan']) ?></span>
                                         <?php if ($w['nama_selesai']) : ?>
                                             <div class="em-sub"><span>selesai: <?= esc($w['nama_selesai']) ?></span></div>
+                                        <?php endif; ?>
+                                        <?php if ($ditunjuk !== []) : ?>
+                                            <div class="em-pegang mt-1">
+                                                <?php foreach ($ditunjuk as $p) : ?>
+                                                    <span class="pil-orang pil-buat"><i class="fal fa-user"></i> <?= esc($p['nama']) ?></span>
+                                                <?php endforeach; ?>
+                                            </div>
+                                        <?php endif; ?>
+                                    <?php elseif ($ditunjuk !== []) : ?>
+                                        <?php /* yang ditunjuk saat catatannya dibuat; pemegang alamat tetap ikut melihat */ ?>
+                                        <div class="em-pegang">
+                                            <?php foreach ($ditunjuk as $p) : ?>
+                                                <span class="pil-orang pil-buat"><i class="fal fa-user-check"></i> <?= esc($p['nama']) ?></span>
+                                            <?php endforeach; ?>
+                                        </div>
+                                        <?php if ($pemegang !== []) : ?>
+                                            <div class="em-sub"><span class="text-muted small">+ <?= count($pemegang) ?> pemegang alamat email</span></div>
                                         <?php endif; ?>
                                     <?php elseif ($pemegang !== []) : ?>
                                         <?php /* belum ada yang menandai selesai: yang memegang alamatnya sudah jadi penggarapnya */ ?>
@@ -825,11 +864,73 @@ $tanya = static function (array $ubah): string {
                         </div>
                     </div>
 
-                    <div class="form-text small mt-2">
-                        <?= $kelola
-                            ? 'Catatan masuk ke antrean orang yang memegang alamat email itu, jadi pilih alamatnya lebih dulu.'
-                            : 'Tugas baru masuk ke tab Belum Dikerjakan; hanya alamat email yang kamu pegang yang bisa dipilih.' ?>
-                    </div>
+                    <?php if ($kelola) : ?>
+                        <?php
+                        // daftar orang tiap toko ditulis sekali di atribut kotaknya; berpindah
+                        // toko tinggal mengisi ulang centangnya tanpa permintaan tambahan ke
+                        // server (pola yang sama dengan popup "Buat catatan" di layar Cek
+                        // Toko). Yang diservis lebih dulu hanya toko yang sedang terpilih,
+                        // supaya form tetap terisi walau JavaScript mati
+                        $isi = [];
+
+                        foreach ($pengelola as $id_toko => $grup) {
+                            // satu orang bisa punya lebih dari satu baris relasi di
+                            // toko yang sama; daftar namanya tidak boleh menampilkannya
+                            // dua kali, jadi ditampung dulu dengan id sebagai kunci
+                            $satu = [];
+
+                            foreach (['cs', 'admin'] as $level) {
+                                foreach ($grup[$level] ?? [] as $orang) {
+                                    $satu[(int) $orang['id']] ??= [$level, (string) $orang['nama']];
+                                }
+                            }
+
+                            foreach ($satu as $id_orang => $o) {
+                                $isi[(int) $id_toko][] = [$id_orang, $o[1], $o[0]];
+                            }
+                        }
+
+                        $toko_awal = (int) old('juragan_id', (string) (array_key_first($toko) ?? 0));
+                        $kirim     = old('penanggung');
+                        $kirim     = is_array($kirim) ? array_map('intval', $kirim) : null;
+                        $daftar    = $isi[$toko_awal] ?? [];
+                        ?>
+                        <label class="form-label small fw-bold mt-2">Penanggung jawab</label>
+                        <div class="em-penanggung" data-pengelola="<?= esc(json_encode($isi), 'attr') ?>">
+                            <div class="em-penanggung-kepala">
+                                <label class="em-penanggung-all" for="tugas-penanggung-semua">
+                                    <input class="form-check-input mt-0" type="checkbox" id="tugas-penanggung-semua">
+                                    Pilih semua orang di toko ini
+                                </label>
+
+                                <div class="em-penanggung-cari">
+                                    <i class="fal fa-search"></i>
+                                    <input type="search" class="form-control form-control-sm" id="tugas-penanggung-cari"
+                                        placeholder="Cari nama" autocomplete="off" aria-label="Cari nama penanggung jawab">
+                                </div>
+                            </div>
+
+                            <div class="em-penanggung-isi" id="tugas-penanggung-isi">
+                                <?php foreach ($daftar as $i => $o) : ?>
+                                    <?php $centang = $kirim === null ? $o[2] === 'cs' : in_array($o[0], $kirim, true); ?>
+                                    <label class="em-penanggung-baris" for="tugas-penanggung-<?= $i ?>">
+                                        <input class="form-check-input mt-0" type="checkbox" name="penanggung[]"
+                                            id="tugas-penanggung-<?= $i ?>" value="<?= $o[0] ?>" <?= $centang ? 'checked' : '' ?>>
+                                        <span class="em-penanggung-nama"><?= esc($o[1]) ?></span>
+                                        <span class="em-penanggung-level"><?= $o[2] === 'cs' ? 'CS' : 'Admin' ?></span>
+                                    </label>
+                                <?php endforeach; ?>
+                                <?php if ($daftar === []) : ?>
+                                    <span class="em-penanggung-kosong">toko ini belum punya Admin/CS yang ditautkan — tautkan orangnya dulu di Kelola Toko</span>
+                                <?php endif; ?>
+                            </div>
+
+                            <!-- dicari tapi tidak ada: letaknya di luar daftar karena
+                                 daftarnya dibuang-delengkap saat toko berganti -->
+                            <div class="em-penanggung-kosong" id="tugas-penanggung-tak-ada" hidden>tidak ada nama yang cocok</div>
+                        </div>
+                        <div class="form-text small mt-1" id="tugas-penanggung-hitung"></div>
+                    <?php endif; ?>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-sm btn-link text-decoration-none" data-bs-dismiss="modal">Batal</button>
@@ -1004,6 +1105,132 @@ document.addEventListener('DOMContentLoaded', function() {
     if (modalTugas && modalTugas.dataset.buka === '1' && window.bootstrap) {
         bootstrap.Modal.getOrCreateInstance(modalTugas).show();
     }
+
+    // penanggung jawab ikut toko yang dipilih: berpindah toko cukup menggambar
+    // ulang kotak centang dari peta yang sudah ditulis server di atribut kotaknya,
+    // jadi tidak ada request tambahan dan tidak ada daftar toko lama yang tertinggal.
+    // Dibungkus fungsi sendiri: nama-nama di dalamnya (saring, isi, cari) pernah
+    // menimpa var di scope DOMContentLoaded ini dan membuat seluruh layar error
+    (function () {
+        var penanggung = document.querySelector('.em-penanggung');
+
+        if (! penanggung) {
+            return;
+        }
+
+        var pilihToko = document.getElementById('tugas-toko');
+        var isi      = document.getElementById('tugas-penanggung-isi');
+        var semua    = document.getElementById('tugas-penanggung-semua');
+        var hitung   = document.getElementById('tugas-penanggung-hitung');
+        var cari     = document.getElementById('tugas-penanggung-cari');
+        var takAda   = document.getElementById('tugas-penanggung-tak-ada');
+        var peta     = {};
+
+        try {
+            peta = JSON.parse(penanggung.dataset.pengelola || '{}') || {};
+        } catch (e) {
+            peta = {};
+        }
+
+        var ringkas = function () {
+            var kotak   = isi.querySelectorAll('input[type="checkbox"]');
+            var dipilih = isi.querySelectorAll('input[type="checkbox"]:checked').length;
+
+            hitung.textContent = dipilih === 0
+                ? 'Belum ada yang dipilih — catatan ini hanya sampai ke pemegang alamat emailnya.'
+                : dipilih + ' dari ' + kotak.length + ' orang ditunjuk sebagai penanggung jawab.';
+
+            semua.checked       = kotak.length > 0 && dipilih === kotak.length;
+            semua.indeterminate = dipilih > 0 && dipilih < kotak.length;
+        };
+
+        // pencarian hanya menyembunyikan baris, centangnya tetap utuh: orang yang
+        // tercentang lalu tersaring tetap ikut terkirim dan tetap terhitung di
+        // angka "N dari M orang"
+        var saringNama = function () {
+            var kunci  = (cari.value || '').toLowerCase().trim();
+            var baris  = [].slice.call(isi.querySelectorAll('.em-penanggung-baris'));
+            var tampil = 0;
+
+            baris.forEach(function (b) {
+                var nama  = b.querySelector('.em-penanggung-nama');
+                var cocok = kunci === '' || (nama ? nama.textContent : '').toLowerCase().indexOf(kunci) > -1;
+
+                b.classList.toggle('d-none', ! cocok);
+                tampil += cocok ? 1 : 0;
+            });
+
+            takAda.hidden = tampil > 0 || baris.length === 0;
+        };
+
+        var gambar = function (id_toko) {
+            var daftar = peta[id_toko] || [];
+
+            while (isi.firstChild) {
+                isi.removeChild(isi.firstChild);
+            }
+
+            daftar.forEach(function (orang, i) {
+                var baris = document.createElement('label');
+                baris.className = 'em-penanggung-baris';
+                baris.htmlFor   = 'tugas-penanggung-' + i;
+
+                var kotak = document.createElement('input');
+                kotak.className = 'form-check-input mt-0';
+                kotak.type      = 'checkbox';
+                kotak.name      = 'penanggung[]';
+                kotak.id        = baris.htmlFor;
+                kotak.value     = orang[0];
+                // CS langsung tercentang karena yang sehari-hari membuka mailbox
+                // adalah CS di toko itu; Admin ikut kalau memang diminta
+                kotak.checked = orang[2] === 'cs';
+
+                var nama = document.createElement('span');
+                nama.className   = 'em-penanggung-nama';
+                nama.textContent = orang[1];
+
+                var level = document.createElement('span');
+                level.className   = 'em-penanggung-level';
+                level.textContent = orang[2] === 'cs' ? 'CS' : 'Admin';
+
+                baris.append(kotak, nama, level);
+                isi.append(baris);
+            });
+
+            if (daftar.length === 0) {
+                var kosong = document.createElement('span');
+                kosong.className   = 'em-penanggung-kosong';
+                kosong.textContent = 'toko ini belum punya Admin/CS yang ditautkan — tautkan orangnya dulu di Kelola Toko';
+                isi.append(kosong);
+            }
+
+            semua.closest('label').hidden = daftar.length === 0;
+            cari.value = '';
+            ringkas();
+            saringNama();
+        };
+
+        if (pilihToko) {
+            pilihToko.addEventListener('change', function () {
+                gambar(pilihToko.value);
+            });
+        }
+
+        cari.addEventListener('input', saringNama);
+
+        isi.addEventListener('change', ringkas);
+
+        semua.addEventListener('change', function () {
+            isi.querySelectorAll('input[type="checkbox"]').forEach(function (kotak) {
+                kotak.checked = semua.checked;
+            });
+
+            ringkas();
+        });
+
+        ringkas();
+        saringNama();
+    })();
 
     // satu aksi satu pengiriman: kontrol dikunci begitu form pertama jalan, jadi
     // klik ganda tidak menghasilkan delegasi atau status rangkap

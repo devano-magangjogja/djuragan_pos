@@ -82,6 +82,7 @@
         });
     </script>
     <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script defer src="<?= base_url('assets/js/kabar-hasil.js') ?>?v=<?= (int) @filemtime(FCPATH . 'assets/js/kabar-hasil.js') ?>"></script>
 
     <!-- lonceng notifikasi hidup di setiap halaman, bukan per-view lagi -->
     <?= $this->include('template/common_js') ?>

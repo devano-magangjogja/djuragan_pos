@@ -32,6 +32,11 @@ $session  = \Config\Services::session();
 // sendiri tetap ada untuk semua orang: yang dibatasi cuma aksi penilaiannya.
 $cekBayar = ((string) $session->get('level')) === 'superadmin';
 
+// Lembar cetak daftar transaksi adalah alat kerja pengelola toko, jadi centang
+// nota dan tombol Cetaknya hanya muncul untuk admin & superadmin. CS melihat
+// daftar yang sama tanpa baris pilih ini (routenya juga dipagari sama).
+$boleh_cetak = in_array((string) $session->get('level'), ['admin', 'superadmin'], true);
+
 ?>
 <?= $this->extend('template/main') ?>
 
@@ -279,6 +284,55 @@ $cekBayar = ((string) $session->get('level')) === 'superadmin';
 .kartu-invoice .aksi .aksi-hapus {
     margin-left: 0 !important;
 }
+
+/* Daftar nota di dalam popup Cetak: tiap baris cuma memuat nomor nota, nama
+   pemesan, dan nilai pesanan, jadi tiga kolom itu dipatok supaya barisnya
+   tetap satu baris dan tidak melebar melewati popup. */
+.daftar-pilih-nota {
+    max-height: 12rem;
+    overflow-y: auto;
+    padding: 0.25rem;
+    border: 1px solid rgba(15, 23, 42, .12);
+    border-radius: 0.75rem;
+}
+.nota-pilih {
+    display: grid;
+    grid-template-columns: auto 7.5rem minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0;
+    padding: 0.3rem 0.5rem;
+    border-radius: 0.5rem;
+    font-size: 0.8125rem;
+    cursor: pointer;
+}
+.nota-pilih:hover {
+    background: rgba(15, 23, 42, .04);
+}
+.nota-pilih.terpilih {
+    background: rgba(13, 110, 253, .08);
+}
+.nota-pilih .form-check-input {
+    width: 1.05rem;
+    height: 1.05rem;
+    cursor: pointer;
+}
+.nota-pilih__seri {
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.nota-pilih__nama {
+    color: #64748b;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.nota-pilih__nilai {
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
 </style>
 <?= $this->endSection() ?>
 
@@ -299,6 +353,27 @@ $cekBayar = ((string) $session->get('level')) === 'superadmin';
         ['selesai', 'Selesai', 'counterSelesai', 'Transaksi yang sudah selesai; nota sewa yang barangnya sudah dicatat kembali punya tempat sendiri di tab Disewa'],
         ['masih-disewa', 'Disewa', 'counterDisewa', 'Nota sewa yang dananya sudah masuk (DP, dicicil, atau lunas). Angkanya hanya bagian Masih Disewa; bagian Sudah Kembali ada di dalam tab yang sama'],
     ];
+
+    // Kata yang sedang dicari harus survive di semua tautan: tab, filter kategori,
+    // maupun bagian tab Disewa. Kalau tidak, berpindah tab diam-diam membuang
+    // hasil pencarian dan daftarnya terlihat "kok jadi banyak".
+    $ada_cari = ! ($cari === '' || $cari === []);
+    $cari_isi = is_array($cari) ? $cari : [];
+
+    // Keadaan pencarian + bagian tab Disewa yang sedang dibuka ikut ditempel di
+    // semua tautan (tab, pill, filter kategori, dropdown toko). Tanpa ini pindah
+    // tab atau ganti kategori diam-diam membuang hasil pencarian, dan daftarnya
+    // tiba-tiba penuh lagi seolah pencariannya gagal.
+    $kueri_jaga = http_build_query($ada_cari ? ['cari' => $cari_isi] : []);
+
+    if ($hal === 'masih-disewa' && $sewa_sudah) {
+        $kueri_jaga .= ($kueri_jaga === '' ? '' : '&') . 'bagian=sudah';
+    }
+
+    $kueri_cari = $kueri_jaga === '' ? '' : '?' . $kueri_jaga;
+
+    // untuk "Hapus pencarian": bagian tab yang dibuka tetap, kata kuncinya dibuang
+    $kueri_bagian_saja = ($hal === 'masih-disewa' && $sewa_sudah) ? '?bagian=sudah' : '';
     ?>
     <div class="toolbar-transaksi mb-4">
         <div class="toolbar-transaksi__geser">
@@ -308,7 +383,7 @@ $cekBayar = ((string) $session->get('level')) === 'superadmin';
                 <?php
                 foreach ($tab as [$slug, $label, $counter, $keterangan]) {
                     echo anchor(
-                        'admin/invoices/lihat/' . $juragan . '/' . $slug,
+                        'admin/invoices/lihat/' . $juragan . '/' . $slug . $kueri_cari,
                         $label . ' <span class="badge rounded-pill bg-ink-100 text-ink-600" id="' . $counter . '">0</span>',
                         [
                             'class' => 'btn rounded-pill btn-' . ($hal === $slug ? 'primary' : 'outline-secondary'),
@@ -325,8 +400,8 @@ $cekBayar = ((string) $session->get('level')) === 'superadmin';
         <div class="toolbar-transaksi__aksi">
             <?php
             // Tab, filter kategori, dan kata yang sedang dicari ikut dibawa ke
-            // tautan toko supaya ganti toko tidak melempar user ke tab lain.
-            $kueri_cari = ($cari === '' || $cari === []) ? '' : '?' . http_build_query(['cari' => (array) $cari]);
+            // tautan toko supaya ganti toko tidak melempar user ke tab lain
+            // ($kueri_cari sudah dihitung di atas, bersama tautan tab).
             ?>
             <?php if (count($daftar_toko) > 1) : ?>
                 <div class="dropdown">
@@ -345,6 +420,16 @@ $cekBayar = ((string) $session->get('level')) === 'superadmin';
                         <?php endforeach; ?>
                     </ul>
                 </div>
+            <?php endif; ?>
+
+            <?php if ($boleh_cetak) : ?>
+                <?= form_button([
+                    'class'          => 'btn rounded-pill btn-outline-secondary',
+                    'content'        => '<i class="fal fa-print"></i> <span class="hidden sm:inline">Cetak</span>',
+                    'title'          => 'Cetak daftar transaksi per hari / minggu / bulan / tahun, atau hanya nota yang dicentang',
+                    'data-bs-target' => '#modalCetak',
+                    'data-bs-toggle' => 'modal',
+                ]) ?>
             <?php endif; ?>
 
             <?= form_button([
@@ -366,6 +451,58 @@ $cekBayar = ((string) $session->get('level')) === 'superadmin';
             ]) ?>
         </div>
     </div>
+
+    <?php if ($ada_cari) : ?>
+        <?php
+        // Pencarian sekarang ikut dibawa ke tab lain, jadi keadaan "sedang
+        // mencari" harus terlihat — kalau tidak, daftar pendek seolah error.
+        $label_cari = [
+            'pembayaran' => ['1' => 'Belum bayar', '2A' => 'Tunggu konfirmasi', '4' => 'Cicilan / kredit', '5' => 'Ada kelebihan', '6' => 'Sudah lunas'],
+            'orderan'    => ['1' => 'Belum diproses', '2' => 'Sedang/sudah diproses', '3' => 'Dibatalkan'],
+            'pengiriman' => ['1' => 'Belum dikirim', '2A' => 'Dikirim'],
+        ];
+        $pil_cari = [
+            ''              => 'semua kolom',
+            'nama'          => 'Nama Pelanggan',
+            'hp'            => 'HP Pelanggan',
+            'faktur'        => 'Kode Invoice',
+            'tanggal_pesan' => 'Tanggal Pesan',
+            'kode'          => 'Kode Produk',
+        ];
+
+        $status_aktif = [];
+
+        foreach ($label_cari as $kolom => $pil) {
+            $isi = (string) ($cari_isi[$kolom] ?? '');
+
+            if (isset($pil[$isi])) {
+                $status_aktif[] = $pil[$isi];
+            }
+        }
+
+        $kata_cari = trim((string) ($cari_isi['q'] ?? ''));
+        ?>
+        <div class="mb-4 flex flex-wrap items-center gap-x-2 gap-y-1 rounded-2xl border border-ink-200 bg-[#fcfdfe] px-3.5 py-2.5 text-sm text-ink-600">
+            <span class="inline-flex items-center gap-2">
+                <i class="fal fa-search text-ink-400"></i>
+                <?php if ($kata_cari !== '') : ?>
+                    Mencari <span class="rounded-md bg-ink-900 px-2 py-0.5 font-semibold text-white"><?= esc($kata_cari) ?></span>
+                    pada <?= esc($pil_cari[(string) ($cari_isi['kolom'] ?? '')] ?? 'semua kolom') ?>
+                <?php else : ?>
+                    Daftar ini disaring dari modal <strong>Cari</strong>
+                <?php endif; ?>
+            </span>
+
+            <?php foreach ($status_aktif as $s) : ?>
+                <span class="rounded-full border border-ink-200 px-2 py-0.5 text-xs"><?= esc($s) ?></span>
+            <?php endforeach; ?>
+
+            <a href="<?= site_url('admin/invoices/lihat/' . $juragan . '/' . $hal . '/' . $kategori) . $kueri_bagian_saja ?>"
+               class="ms-auto inline-flex items-center gap-1 text-xs font-semibold text-ink-500 hover:text-ink-800">
+                <i class="fal fa-times"></i> Hapus pencarian
+            </a>
+        </div>
+    <?php endif; ?>
 
     <?php if (in_array($hal, ['pembayaran', 'belum-proses', 'saring'], true)) : ?>
         <?php
@@ -393,6 +530,7 @@ $cekBayar = ((string) $session->get('level')) === 'superadmin';
                     'class'       => 'form-select form-select-sm w-auto flex-fill min-w-0',
                     'id'          => 'filterKategori',
                     'data-tautan' => site_url('admin/invoices/lihat/' . $juragan . '/' . $hal),
+                    'data-kueri'  => $kueri_cari,
                 ]) ?>
             </div>
         </div>
@@ -403,7 +541,7 @@ $cekBayar = ((string) $session->get('level')) === 'superadmin';
         // Tab Disewa dibagi dua bagian. Parameternya `bagian`, sama seperti sub-tab
         // halaman Email; kata yang sedang dicari ikut terbawa supaya tidak hilang
         // saat berpindah bagian.
-        $kueri_bagian = ($cari === '' || $cari === []) ? [] : ['cari' => (array) $cari];
+        $kueri_bagian = $ada_cari ? ['cari' => $cari_isi] : [];
         $bagian_sewa  = [
             'belum' => ['Masih Disewa', 'counterBagianBelum', 'Nota sewa yang pengembaliannya belum dicatat'],
             'sudah' => ['Sudah Kembali', 'counterBagianSudah', 'Nota sewa yang sudah dicatat kembali. Salah klik? Batalkan di barisnya.'],
@@ -800,50 +938,93 @@ $cekBayar = ((string) $session->get('level')) === 'superadmin';
                     <div class="collapse" id="produk-<?= esc($pesanan->id_invoice) ?>">
                         <div class="border-t border-ink-200 px-[1.15rem] py-3">
                             <?php $punya_ukuran = false; ?>
-                            <ul class="m-0 list-none p-0 text-sm">
+                            <ul class="produk-rinci">
                                 <?php foreach ($pesanan->barang as $b) { ?>
-                                    <li class="flex flex-wrap items-baseline gap-1 py-[0.2rem]">
-                                        <span class="grow"><?= strtoupper($b->kode) ?> (<?= strtoupper($b->ukuran) ?>)</span>
-                                        <span class="shrink-0 font-semibold whitespace-nowrap"><?= $b->qty ?> pcs</span>
-                                        <span class="shrink-0 font-semibold whitespace-nowrap tabular-nums"><?= number_to_currency($b->harga * $b->qty, 'IDR'); ?></span>
+                                    <?php
+                                    // catatan panjang dipisah dari badge lain: kotaknya
+                                    // sendiri, dijepit dua baris, dan bisa dibuka —
+                                    // dulu dia ikut mengalir sebagai chip paling panjang
+                                    $rincian_item = daftar_rincian($b->rincian ?? null, 'produk');
+                                    $badge        = [];
+                                    $catatan      = [];
 
-                                        <?php
-                                        $content = '<div class=\'text-end\'>';
-                                        $content .= 'harga @: <strong>' . number_to_currency($b->harga, 'IDR') . '</strong>';
-                                        if ($b->qty > 1) {
-                                            $content .= '<br/>harga @ x ' . $b->qty . ': <strong>' . number_to_currency($b->harga * $b->qty, 'IDR') . '</strong>';
+                                    foreach ($rincian_item as $item) {
+                                        if ($item['label'] === 'Catatan') {
+                                            $catatan[] = $item;
+                                        } else {
+                                            $badge[] = $item;
                                         }
-                                        $content .= '</div>';
+                                    }
 
-                                        echo form_button([
-                                            'data-bs-toggle'  => 'popHarga',
-                                            'data-bs-content' => $content,
-                                            'content'         => '<i class="fal fa-info-circle"></i> <span class="sr-only">info</span>',
-                                            'class'           => 'cursor-pointer border-0 bg-transparent p-0 text-xs text-ink-500 hover:underline',
-                                        ]);
+                                    $ukuran_item = $b->nilai_ukuran ?? [];
 
-                                        $rincian_item = daftar_rincian($b->rincian ?? null, 'produk');
+                                    if ($ukuran_item !== []) {
+                                        $punya_ukuran = true;
+                                    }
+                                    ?>
+                                    <li class="produk-baris">
+                                        <span class="produk-ava"><i class="fal fa-tshirt"></i></span>
 
-                                        if ($rincian_item !== []) { ?>
-                                            <div class="basis-full mb-[0.15rem] mt-[0.3rem] flex flex-wrap gap-[0.3rem] pl-[1.1rem]">
-                                                <?php foreach ($rincian_item as $item) { ?>
-                                                    <span class="inline-flex max-w-full items-baseline gap-1 rounded-full border border-ink-200 bg-[#f6f8fb] px-[0.55rem] py-[0.2rem] text-xs leading-snug text-ink-600 [&>.fal]:text-[0.7rem] [&>.fal]:text-ink-400"><i class="fal <?= $item['ikon'] ?>"></i> <span class="font-bold tracking-wide text-ink-500 whitespace-nowrap"><?= esc($item['label']) ?></span> <span class="break-words"><?= esc($item['nilai']) ?></span></span>
+                                        <div class="produk-isi">
+                                            <div class="produk-kepala">
+                                                <span class="produk-nama"><?= strtoupper($b->kode) ?> (<?= strtoupper($b->ukuran) ?>)</span>
+
+                                                <?php if ($badge !== []) { ?>
+                                                    <div class="produk-badge">
+                                                        <?php foreach ($badge as $item) { ?>
+                                                            <span class="produk-pil"><i class="fal <?= $item['ikon'] ?>"></i> <span class="pil-kunci"><?= esc($item['label']) ?></span> <span class="pil-nilai"><?= esc($item['nilai']) ?></span></span>
+                                                        <?php } ?>
+                                                    </div>
                                                 <?php } ?>
                                             </div>
-                                        <?php } ?>
 
-                                        <?php $ukuran_item = $b->nilai_ukuran ?? []; ?>
+                                            <?php foreach ($catatan as $item) { ?>
+                                                <div class="produk-catatan">
+                                                    <i class="fal <?= $item['ikon'] ?> produk-catatan-ikon"></i>
 
-                                        <?php if ($ukuran_item !== []) { ?>
-                                            <?php $punya_ukuran = true; ?>
-                                            <div class="basis-full mb-[0.15rem] mt-[0.3rem] flex flex-wrap items-baseline gap-[0.3rem] pl-[1.1rem]">
-                                                <span class="text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500"><i class="fal fa-ruler-combined"></i> Ukuran</span>
+                                                    <div class="produk-catatan-lebar">
+                                                        <div class="produk-catatan-kepala">
+                                                            <span class="produk-catatan-label"><?= esc($item['label']) ?></span>
+                                                            <button type="button" class="produk-catatan-pilih" aria-expanded="false" hidden>
+                                                                Lihat selengkapnya <i class="fal fa-chevron-down"></i>
+                                                            </button>
+                                                        </div>
 
-                                                <?php foreach ($ukuran_item as $u) { ?>
-                                                    <span class="inline-flex max-w-full items-baseline gap-1 rounded-full border border-ink-200 bg-[#f6f8fb] px-[0.55rem] py-[0.2rem] text-xs leading-snug text-ink-600"><span class="font-bold tracking-wide text-ink-500 whitespace-nowrap"><?= esc($u[0]) ?></span> <span class="break-words"><?= esc($u[1]) ?></span></span>
-                                                <?php } ?>
-                                            </div>
-                                        <?php } ?>
+                                                        <p class="produk-catatan-teks"><?= esc($item['nilai']) ?></p>
+                                                    </div>
+                                                </div>
+                                            <?php } ?>
+
+                                            <?php if ($ukuran_item !== []) { ?>
+                                                <div class="produk-ukuran">
+                                                    <span class="produk-label"><i class="fal fa-ruler-combined"></i> Ukuran</span>
+
+                                                    <?php foreach ($ukuran_item as $u) { ?>
+                                                        <span class="produk-pil"><span class="pil-kunci"><?= esc($u[0]) ?></span> <span class="pil-nilai"><?= esc($u[1]) ?></span></span>
+                                                    <?php } ?>
+                                                </div>
+                                            <?php } ?>
+                                        </div>
+
+                                        <span class="produk-harga">
+                                            <span><?= $b->qty ?> pcs</span>
+                                            <span><?= number_to_currency($b->harga * $b->qty, 'IDR'); ?></span>
+                                            <?php
+                                            $content = '<div class=\'text-end\'>';
+                                            $content .= 'harga @: <strong>' . number_to_currency($b->harga, 'IDR') . '</strong>';
+                                            if ($b->qty > 1) {
+                                                $content .= '<br/>harga @ x ' . $b->qty . ': <strong>' . number_to_currency($b->harga * $b->qty, 'IDR') . '</strong>';
+                                            }
+                                            $content .= '</div>';
+
+                                            echo form_button([
+                                                'data-bs-toggle'  => 'popHarga',
+                                                'data-bs-content' => $content,
+                                                'content'         => '<i class="fal fa-info-circle"></i> <span class="sr-only">info</span>',
+                                                'class'           => 'produk-info',
+                                            ]);
+                                            ?>
+                                        </span>
                                     </li>
                                 <?php } ?>
                             </ul>
@@ -867,7 +1048,7 @@ $cekBayar = ((string) $session->get('level')) === 'superadmin';
                         </h6>
 
                         <div class="collapse" id="anggota-<?= esc($pesanan->id_invoice) ?>">
-                            <div class="border-t border-ink-200 px-[1.15rem] py-3">
+                            <div class="anggota-rinci border-t border-ink-200 px-[1.15rem] py-3">
                                 <?php
                                 // daftar nama orang tidak menyebut bajunya apa; produk orderan ini
                                 // jadi acuannya karena ukuran anggota belum ditautkan per barang
@@ -878,33 +1059,44 @@ $cekBayar = ((string) $session->get('level')) === 'superadmin';
                                 }
                                 ?>
                                 <?php if ($produk_rombongan !== []) { ?>
-                                    <p class="mb-2 text-xs text-ink-500"><i class="fal fa-tshirt"></i> Produk: <?= esc(implode(', ', $produk_rombongan)) ?></p>
+                                    <p class="anggota-produk"><i class="fal fa-tshirt"></i> Produk: <?= esc(implode(', ', $produk_rombongan)) ?></p>
                                 <?php } ?>
 
-                                <ul class="m-0 list-none p-0 text-sm">
-                                    <?php foreach ($pesanan->anggota as $o) { ?>
-                                        <li class="flex flex-wrap items-baseline gap-1 py-[0.2rem]">
-                                            <span class="grow"><?= esc($o->nama) ?></span>
+                                <ul class="anggota-daftar-rinci m-0 list-none p-0">
+                                    <?php foreach ($pesanan->anggota as $i => $o) { ?>
+                                        <li class="anggota-orang">
+                                            <button class="anggota-kepala" type="button" data-bs-toggle="collapse" data-bs-target="#anggota-<?= esc($pesanan->id_invoice) ?>-<?= $i; ?>" aria-expanded="<?= $i === 0 ? 'true' : 'false' ?>" aria-controls="anggota-<?= esc($pesanan->id_invoice) ?>-<?= $i; ?>">
+                                                <span class="anggota-ava"><i class="fal fa-user"></i></span>
+                                                <span class="anggota-nama"><?= str_pad((string) ($i + 1), 2, '0', STR_PAD_LEFT) ?>. <?= esc($o->nama) ?></span>
 
-                                            <?php if (! empty($o->nomor)) { ?>
-                                                <span class="shrink-0 font-semibold whitespace-nowrap"><?= esc($o->nomor) ?></span>
-                                            <?php } ?>
+                                                <?php if (! empty($o->nomor)) { ?>
+                                                    <span class="anggota-nomor" title="Nomor / tinggi"><i class="fal fa-tag"></i> <?= esc($o->nomor) ?></span>
+                                                <?php } ?>
 
-                                            <?php if (! empty($o->catatan)) { ?>
-                                                <div class="basis-full mt-[0.15rem] break-words text-xs leading-[1.5] text-ink-500"><?= esc($o->catatan) ?></div>
-                                            <?php } ?>
+                                                <i class="fal fa-chevron-down anggota-panah"></i>
+                                            </button>
 
-                                            <?php if (! empty($o->nilai)) { ?>
-                                                <div class="basis-full mb-[0.15rem] mt-[0.3rem] flex flex-wrap items-baseline gap-[0.3rem] pl-[1.1rem]">
-                                                    <span class="text-[0.72rem] font-bold uppercase tracking-[0.09em] text-ink-500"><i class="fal fa-ruler-combined"></i> Ukuran</span>
-
-                                                    <?php foreach ($o->nilai as $u) { ?>
-                                                        <span class="inline-flex max-w-full items-baseline gap-1 rounded-full border border-ink-200 bg-[#f6f8fb] px-[0.55rem] py-[0.2rem] text-xs leading-snug text-ink-600"><span class="font-bold tracking-wide text-ink-500 whitespace-nowrap"><?= esc($u[0]) ?></span> <span class="break-words"><?= esc($u[1]) ?></span></span>
+                                            <div class="collapse<?= $i === 0 ? ' show' : '' ?>" id="anggota-<?= esc($pesanan->id_invoice) ?>-<?= $i; ?>">
+                                                <section class="anggota-isi">
+                                                    <?php if (! empty($o->catatan)) { ?>
+                                                        <p class="anggota-catatan"><span class="anggota-label">Catatan</span> <?= esc($o->catatan) ?></p>
                                                     <?php } ?>
-                                                </div>
-                                            <?php } else { ?>
-                                                <div class="basis-full mt-[0.15rem] text-xs text-ink-500"><i class="fal fa-ruler-combined"></i> Ukuran belum diisi</div>
-                                            <?php } ?>
+
+                                                    <?php if (! empty($o->nilai)) { ?>
+                                                        <div class="ukuran-kotak">
+                                                            <p class="ukuran-judul"><i class="fal fa-ruler-combined"></i> Ukuran</p>
+
+                                                            <div class="ukuran-grid">
+                                                                <?php foreach ($o->nilai as $u) { ?>
+                                                                    <p class="ukuran-baris"><span class="ukuran-nama"><?= esc($u[0]) ?></span> <span class="ukuran-nilai"><?= esc($u[1]) ?></span></p>
+                                                                <?php } ?>
+                                                            </div>
+                                                        </div>
+                                                    <?php } else { ?>
+                                                        <p class="anggota-kosong"><i class="fal fa-ruler-combined"></i> Ukuran belum diisi</p>
+                                                    <?php } ?>
+                                                </section>
+                                            </div>
                                         </li>
                                     <?php } ?>
                                 </ul>
@@ -1438,76 +1630,185 @@ $cekBayar = ((string) $session->get('level')) === 'superadmin';
 <!-- Modal pencarian invoice -->
 <div class="modal fade" id="modalCari" tabindex="-1" aria-labelledby="modalCariLabel" aria-hidden="true">
     <div class="modal-dialog modal-md modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-body">
-                <?= form_open('admin/invoices/lihat/' . $juragan . '/' . $hal . '/' . $kategori, ['method' => 'get']) ?>
-                <div class="row g-2 align-items-center">
-                    <div class="col-4">
-                        <?= form_label('Status Pembayaran', 'status_pembayaran', ['class' => 'form-label visually-hidden']) ?>
-                        <?php
-                        $opsi_pembayaran = [
-                            ''   => 'Opsi Pembayaran',
-                            '1'  => 'Belum bayar',
-                            '2A' => 'Tunggu Konfirmasi Pembayaran',
-                            '4'  => 'Cicilan / Kredit',
-                            '5'  => 'Ada kelebihan',
-                            '6'  => 'Sudah lunas',
-                        ];
-                        echo form_dropdown('cari[pembayaran]', $opsi_pembayaran, '', ['class' => 'form-select mb-2 me-sm-2']);
-                        ?>
-                    </div>
+        <div class="modal-content rounded-2xl border-0 shadow">
+            <div class="modal-header border-0 pb-0 px-4 pt-4">
+                <h5 class="modal-title flex items-center gap-2 text-ink-800" id="modalCariLabel">
+                    <i class="fal fa-search text-ink-400"></i> Cari Transaksi
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+            </div>
+            <?= form_open('admin/invoices/lihat/' . $juragan . '/' . $hal . '/' . $kategori, ['method' => 'get']) ?>
+            <?php if ($hal === 'masih-disewa' && $sewa_sudah) : ?>
+                <?= form_hidden('bagian', 'sudah') ?>
+            <?php endif; ?>
+            <div class="modal-body px-4 pb-2 pt-3">
+                <?php if ($hal === 'masih-disewa') : ?>
+                    <p class="mb-3 text-xs text-ink-500">
+                        <i class="fal fa-info-circle me-1"></i>
+                        Pencarian hanya membaca nota sewa di bagian
+                        <strong><?= $sewa_sudah ? 'Sudah Kembali' : 'Masih Disewa' ?></strong> — semua nota sewa di sini sudah ada dananya masuk.
+                    </p>
+                <?php endif; ?>
+                <div class="mb-3">
+                    <label class="block text-xs font-semibold uppercase tracking-wide text-ink-500 mb-2">Filter status</label>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <div>
+                            <?php
+                            $opsi_pembayaran = [
+                                ''   => 'Semua Pembayaran',
+                                '1'  => 'Belum bayar',
+                                '2A' => 'Tunggu Konfirmasi',
+                                '4'  => 'Cicilan / Kredit',
+                                '5'  => 'Ada kelebihan',
+                                '6'  => 'Sudah lunas',
+                            ];
 
-                    <div class="col-4">
-                        <div class="col-12">
-                            <?= form_label('Status Orderan', 'status_orderan', ['class' => 'form-label visually-hidden']) ?>
+                            if ($hal === 'masih-disewa') {
+                                // mustahil cocok: tab ini memang hanya memuat nota
+                                // yang dananya sudah masuk, jadi opsi ini dibuang
+                                // daripada memberi hasil kosong
+                                unset($opsi_pembayaran['1']);
+                            }
+
+                            echo form_dropdown('cari[pembayaran]', $opsi_pembayaran, $cari_isi['pembayaran'] ?? '', ['class' => 'form-select form-select-sm']);
+                            ?>
+                        </div>
+                        <div>
                             <?php
                             $opsi_orderan = [
-                                ''  => 'Opsi Orderan',
+                                ''  => 'Semua Orderan',
                                 '1' => 'Belum diproses',
                                 '2' => 'Sedang/sudah diproses',
                                 '3' => 'Dibatalkan',
                             ];
-                            echo form_dropdown('cari[orderan]', $opsi_orderan, '', ['class' => 'form-select mb-2 me-sm-2']);
+                            echo form_dropdown('cari[orderan]', $opsi_orderan, $cari_isi['orderan'] ?? '', ['class' => 'form-select form-select-sm']);
+                            ?>
+                        </div>
+                        <div>
+                            <?php
+                            $opsi_pengiriman = [
+                                ''   => 'Semua Pengiriman',
+                                '1'  => 'Belum dikirim',
+                                '2A' => 'Dikirim',
+                            ];
+                            echo form_dropdown('cari[pengiriman]', $opsi_pengiriman, $cari_isi['pengiriman'] ?? '', ['class' => 'form-select form-select-sm']);
                             ?>
                         </div>
                     </div>
+                </div>
 
-                    <div class="col-4">
-                        <?= form_label('Status Pengiriman', 'status_pengiriman', ['class' => 'form-label visually-hidden']) ?>
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wide text-ink-500 mb-2">Kata kunci</label>
+                    <div class="flex gap-2">
                         <?php
-                        $opsi_pengiriman = [
-                            ''   => 'Opsi pengiriman',
-                            '1'  => 'Belum dikirim',
-                            '2A' => 'Dikirim',
+                        $opsi_kolom = [
+                            ''              => 'Semua kolom',
+                            'nama'          => 'Nama Pelanggan',
+                            'hp'            => 'HP Pelanggan',
+                            'faktur'        => 'Kode Invoice',
+                            'tanggal_pesan' => 'Tanggal Pesan',
+                            'kode'          => 'Kode Produk',
                         ];
-                        echo form_dropdown('cari[pengiriman]', $opsi_pengiriman, '', ['class' => 'form-select mb-2 me-sm-2']);
+                        echo form_dropdown('cari[kolom]', $opsi_kolom, $cari_isi['kolom'] ?? '', ['class' => 'form-select form-select-sm', 'style' => 'width:auto;min-width:9rem']);
+                        echo form_input(['name' => 'cari[q]', 'class' => 'form-control form-control-sm allow-enter', 'style' => 'flex:1', 'placeholder' => 'Ketik kata kunci...', 'value' => $cari_isi['q'] ?? '']);
                         ?>
                     </div>
+                    <p class="mt-1.5 mb-0 text-xs text-ink-400">Tanggal: pakai format <code class="text-ink-500">2020-09-20</code></p>
                 </div>
-
-                <div class="input-group mb-2">
-                    <?php
-                    $opsi_kolom = [
-                        ''              => 'Opsi Pencarian',
-                        'nama'          => 'Nama Pelanggan',
-                        'hp'            => 'HP Pelanggan',
-                        'faktur'        => 'Kode Invoice',
-                        'tanggal_pesan' => 'Tanggal Pesan',
-                        'kode'          => 'Kode Produk',
-                    ];
-                    echo form_dropdown('cari[kolom]', $opsi_kolom, '', ['class' => 'form-select']);
-                    echo form_input(['name' => 'cari[q]', 'class' => 'form-control allow-enter', 'style' => 'flex:2', 'placeholder' => 'cari .....']);
-                    ?>
-                    <div class="text-muted">untuk pencarian berdasarkan tanggal, gunakan format seperti: <code>2020-09-20</code></div>
-                </div>
-
-                <div class="col-12">
-                    <button type="submit" class="btn btn-primary">Submit</button>
-                </div>
-                <?= form_close() ?>
-
             </div>
+            <div class="modal-footer border-0 px-4 pb-4 pt-1">
+                <a href="<?= site_url('admin/invoices/lihat/' . $juragan . '/' . $hal . '/' . $kategori) . $kueri_bagian_saja ?>" class="btn btn-sm btn-outline-secondary rounded-pill"><i class="fal fa-times me-1"></i> Hapus pencarian</a>
+                <button type="submit" class="btn btn-sm btn-primary rounded-pill px-4"><i class="fal fa-search me-1"></i> Cari</button>
+            </div>
+            <?= form_close() ?>
+        </div>
+    </div>
+</div>
 
+<!-- Modal cetak daftar transaksi -->
+<div class="modal fade" id="modalCetak" tabindex="-1" aria-labelledby="modalCetakLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" style="max-width: 42rem;">
+        <div class="modal-content rounded-2xl border-0 shadow">
+            <div class="modal-header border-0 pb-0 px-4 pt-3">
+                <h5 class="modal-title flex items-center gap-2 text-ink-800" id="modalCetakLabel">
+                    <i class="fal fa-print text-ink-400"></i> Cetak Transaksi
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+            </div>
+            <div class="modal-body px-4 pb-2 pt-2">
+                <label class="block text-xs font-semibold uppercase tracking-wide text-ink-500 mb-1">Periode</label>
+                <div class="d-flex flex-wrap gap-1">
+                    <?php
+                    $pil_periode = [
+                        'harian'   => ['Harian', 'fa-calendar-day', true],
+                        'mingguan' => ['Mingguan', 'fa-calendar-week', false],
+                        'bulanan'  => ['Bulanan', 'fa-calendar', false],
+                        'tahunan'  => ['Tahunan', 'fa-calendar-alt', false],
+                    ];
+
+                    foreach ($pil_periode as $kunci => [$label, $ikon, $default]) : ?>
+                        <input type="radio" class="btn-check" name="periode" id="periode-<?= $kunci ?>" value="<?= $kunci ?>" autocomplete="off" <?= $default ? 'checked' : '' ?>>
+                        <label class="btn btn-sm rounded-pill btn-outline-primary" for="periode-<?= $kunci ?>">
+                            <i class="fal <?= $ikon ?> me-1"></i> <?= $label ?>
+                        </label>
+                    <?php endforeach; ?>
+                </div>
+
+                <div class="mt-2">
+                    <label class="block text-xs font-semibold uppercase tracking-wide text-ink-500 mb-1" for="cetakTanggal">Tanggal acuan</label>
+                    <input type="date" id="cetakTanggal" class="form-control form-control-sm w-auto" value="<?= date('Y-m-d') ?>">
+                    <p class="mt-1 mb-0 text-xs text-ink-400">
+                        Mingguan memakai minggu Senin&ndash;Minggu, bulanan dan tahunan mengikuti tanggal ini.
+                    </p>
+                </div>
+
+                <hr class="my-2">
+
+                <label class="block text-xs font-semibold uppercase tracking-wide text-ink-500 mb-1">Yang dicetak</label>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="cakup" id="cetakPeriode" value="periode" checked>
+                    <label class="form-check-label" for="cetakPeriode">Semua transaksi pada periode di atas</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="cakup" id="cetakTerpilih" value="terpilih">
+                    <label class="form-check-label" for="cetakTerpilih">
+                        Pilih sendiri transaksinya —
+                        <strong><span id="cetakJumlah">0</span> dipilih</strong>
+                    </label>
+                </div>
+
+                <?php /* daftarnya baru dimuat begitu "pilih sendiri" dipilih, supaya
+                        popup tetap ringan untuk orang yang mencetak per periode */ ?>
+                <div id="panelPilihNota" class="d-none mt-2">
+                    <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                        <input type="search" id="cetakCariNota" class="form-control form-control-sm" style="max-width: 17rem;" placeholder="Saring nomor nota atau pemesan" aria-label="Saring daftar transaksi">
+                        <button type="button" class="btn btn-sm rounded-pill btn-outline-secondary" id="cetakPilihSemua">Pilih semua</button>
+                        <button type="button" class="btn btn-sm rounded-pill btn-outline-secondary" id="cetakKosongkan">Kosongkan</button>
+                        <span class="ms-auto text-xs text-ink-400"><span id="daftarJumlahTampil">0</span> ditampilkan</span>
+                    </div>
+
+                    <div class="daftar-pilih-nota" id="daftarPilihNota"></div>
+
+                    <p class="mt-2 mb-0 text-xs text-ink-400 d-none" id="cetakBatas">
+                        <i class="fal fa-circle-info me-1"></i>
+                        Daftar dipotong <?= number_format(\App\Models\LaporanModel::KAPASITAS_DETAIL, 0, ',', '.') ?> nota terbaru; persempit periode kalau nota yang dicari tidak muncul.
+                    </p>
+                </div>
+
+                <p class="mt-2 mb-0 text-xs text-ink-400">
+                    <i class="fal fa-circle-info me-1"></i>
+                    PDF memuat 300 nota terbaru; pakai Excel kalau daftarnya lebih panjang dari itu.
+                </p>
+            </div>
+            <div class="modal-footer border-0 px-4 pb-3 pt-1">
+                <span class="me-auto text-xs text-ink-400" id="cetakRingkas"></span>
+                <button type="button" class="btn btn-sm rounded-pill btn-outline-primary px-3" id="cetakExcel">
+                    <i class="fal fa-file-excel me-1"></i> Excel
+                </button>
+                <button type="button" class="btn btn-sm rounded-pill btn-primary px-3" id="cetakPdf">
+                    <i class="fal fa-file-pdf me-1"></i> PDF
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -2099,6 +2400,12 @@ $link_sewa_kembali       = site_url('admin/invoices/sewa_kembali');
 $link_tambah_pembayaran  = site_url('admin/invoices/simpan_pembayaran');
 $link_update_pembayaran  = site_url('admin/invoices/update_bayar');
 $link_api_counter_tab    = site_url('api/invoice/counter_tab/' . $juragan_id);
+$link_cetak_unduh        = site_url('admin/cetak/unduh');
+$link_cetak_daftar       = site_url('admin/cetak/daftar');
+
+// nomor toko untuk JS cetak; heredoc di bawah tidak memproses tag PHP, jadi
+// semua nilai yang dibutuhkan JavaScript disiapkan sebagai variabel di sini
+$juragan_js              = (int) $juragan_id;
 
 // dropdown "dana ada / tidak ada" di dalam modal Info Pembayaran
 $boleh_cek_js            = $cekBayar ? 'true' : 'false';
@@ -2124,6 +2431,38 @@ $js = <<< JS
     	var tt = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
     	var ttl = tt.map(function(e) {
     		return new bootstrap.Tooltip(e);
+    	});
+
+    	// catatan produk dijepit dua baris, dan tombol "Lihat selengkapnya" hanya
+    	// muncul kalau teksnya memang terpotong. Di dalam lipatan yang masih
+    	// tertutup tingginya nol, jadi pemeriksaannya diulang lagi begitu
+    	// lipatannya selesai dibuka
+    	function rapikanCatatan(root) {
+    		root.find('.produk-catatan').each(function() {
+    			var kotak = $(this),
+    				teks = kotak.find('.produk-catatan-teks'),
+    				tombol = kotak.find('.produk-catatan-pilih');
+
+    			if (kotak.hasClass('buka')) {
+    				return;
+    			}
+
+    			tombol.prop('hidden', teks[0].scrollHeight - teks[0].clientHeight <= 2);
+    		});
+    	}
+
+    	rapikanCatatan($('body'));
+
+    	$(document).on('shown.bs.collapse', function(e) {
+    		rapikanCatatan($(e.target));
+    	});
+
+    	$(document).on('click', '.produk-catatan-pilih', function() {
+    		var kotak = $(this).closest('.produk-catatan'),
+    			buka = kotak.toggleClass('buka').hasClass('buka');
+
+    		$(this).attr('aria-expanded', buka ? 'true' : 'false');
+    		$(this).html((buka ? 'Tutup ' : 'Lihat selengkapnya ') + '<i class="fal fa-chevron-down"></i>');
     	});
 
 
@@ -2845,8 +3184,221 @@ $js = <<< JS
 
     	// filter kategori pembayaran: langsung pindah ke tab yang sama dengan kategori terpilih
     	$('#filterKategori').on('change', function() {
-    		document.location.href = $(this).data('tautan') + '/' + this.value;
+    		// kata yang sedang dicari (plus bagian tab Disewa) ikut dipindah,
+    		// kalau tidak ganti kategori diam-diam menampilkan daftar penuh
+    		document.location.href = $(this).data('tautan') + '/' + this.value + ($(this).data('kueri') || '');
     	});
+
+    // ---- Cetak daftar transaksi ---------------------------------------------
+    // Pilihan nota disimpan di localStorage: popup bisa tertutup tanpa sengaja,
+    // dan memilih-nota lalu mencetak sering dilakukan sambil membuka beberapa
+    // halaman daftar sekaligus.
+    var tokoAktif     = {$juragan_js};
+    var KUNCI_PILIHAN = 'transaksi-cetak-pilihan';
+    var pilihanNota   = bacaPilihan();
+    var daftarNota    = [];
+    var notaTermuat   = false;
+
+    function bacaPilihan() {
+        var isi = new Set();
+
+        try {
+            (JSON.parse(localStorage.getItem(KUNCI_PILIHAN)) || []).map(Number)
+                .filter(function (n) { return n > 0; })
+                .forEach(function (n) { isi.add(n); });
+        } catch (e) {
+            return new Set();
+        }
+
+        return isi;
+    }
+
+    function simpanPilihan() {
+        try {
+            localStorage.setItem(KUNCI_PILIHAN, JSON.stringify(Array.from(pilihanNota)));
+        } catch (e) {}
+    }
+
+    function rupiah(n) {
+        return 'Rp ' + Number(n || 0).toLocaleString('id-ID');
+    }
+
+    function escapeHtml(teks) {
+        return String(teks === null || teks === undefined || teks === '' ? '-' : teks)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    // satu baris ringkas di kaki modal: orang harus tahu apa yang tercetak
+    // sebelum berkasnya dibuka di tab baru
+    function ringkasCetak() {
+        var jumlah = pilihanNota.size,
+            teks;
+
+        if ($('#cetakTerpilih').is(':checked')) {
+            teks = jumlah + ' nota terpilih';
+        } else {
+            var periode = $('input[name="periode"]:checked').val() || 'harian',
+                tanggal = $('#cetakTanggal').val();
+
+            teks = periode.charAt(0).toUpperCase() + periode.slice(1)
+                + (tanggal ? ' · ' + tanggal.split('-').reverse().join('/') : '');
+        }
+
+        $('#cetakRingkas').text(teks);
+        $('#cetakJumlah').text(jumlah);
+
+        // "pilih sendiri" tanpa satu pun centang cuma menghasilkan kertas kosong
+        $('#cetakPdf, #cetakExcel').prop('disabled', $('#cetakTerpilih').is(':checked') && jumlah === 0);
+    }
+
+    function gambarDaftar() {
+        var kata   = ($('#cetakCariNota').val() || '').toLowerCase(),
+            html   = '',
+            tampil = 0;
+
+        daftarNota.forEach(function (n) {
+            if (kata !== '' && (n.seri + ' ' + n.nama_pelanggan).toLowerCase().indexOf(kata) === -1) {
+                return;
+            }
+
+            var cek = pilihanNota.has(n.id);
+
+            tampil++;
+            html += '<label class="nota-pilih' + (cek ? ' terpilih' : '') + '">'
+                + '<input type="checkbox" class="form-check-input m-0 cetak-pilih" value="' + n.id + '"' + (cek ? ' checked' : '') + '>'
+                + '<span class="nota-pilih__seri">' + escapeHtml(n.seri) + '</span>'
+                + '<span class="nota-pilih__nama">' + escapeHtml(n.nama_pelanggan) + '</span>'
+                + '<span class="nota-pilih__nilai">' + rupiah(n.tagihan) + '</span>'
+                + '</label>';
+        });
+
+        $('#daftarJumlahTampil').text(tampil);
+        $('#daftarPilihNota').html(html || '<p class="small text-muted mb-0 px-2 py-3">Tidak ada transaksi yang cocok.</p>');
+    }
+
+    function muatDaftar(paksa) {
+        if (notaTermuat && ! paksa) {
+            gambarDaftar();
+
+            return;
+        }
+
+        var parameter = {
+            periode: $('input[name="periode"]:checked').val() || 'harian',
+            tanggal: $('#cetakTanggal').val() || ''
+        };
+
+        if (tokoAktif > 0) {
+            parameter.juragan = tokoAktif;
+        }
+
+        $('#daftarPilihNota').html('<p class="small text-muted mb-0 px-2 py-3"><i class="fal fa-spinner-third fa-spin me-1"></i> Memuat daftar transaksi...</p>');
+
+        $.getJSON('{$link_cetak_daftar}', parameter, function (hasil) {
+            daftarNota = ((hasil && hasil.baris) || []).map(function (b) {
+                return {
+                    id: Number(b.id_invoice),
+                    seri: b.seri,
+                    nama_pelanggan: b.nama_pelanggan,
+                    tagihan: Number(b.tagihan)
+                };
+            });
+            notaTermuat = true;
+
+            $('#cetakBatas').toggleClass('d-none', daftarNota.length < Number((hasil && hasil.batas) || 0));
+            gambarDaftar();
+            ringkasCetak();
+        }).fail(function () {
+            $('#daftarPilihNota').html('<p class="small text-danger mb-0 px-2 py-3">Daftar gagal dimuat. Coba lagi.</p>');
+        });
+    }
+
+    // daftar nota mengikuti periode di atasnya, jadi ganti periode berarti
+    // ganti isi daftar juga
+    $('input[name="periode"], #cetakTanggal').on('change', function () {
+        notaTermuat = false;
+
+        if (! $('#panelPilihNota').hasClass('d-none')) {
+            muatDaftar(true);
+        }
+
+        ringkasCetak();
+    });
+
+    $('input[name="cakup"]').on('change', function () {
+        var pilih = $('#cetakTerpilih').is(':checked');
+
+        $('#panelPilihNota').toggleClass('d-none', ! pilih);
+
+        if (pilih) {
+            muatDaftar(false);
+        }
+
+        ringkasCetak();
+    });
+
+    $(document).on('change', '.cetak-pilih', function () {
+        var id = Number(this.value);
+
+        if (this.checked) {
+            pilihanNota.add(id);
+        } else {
+            pilihanNota.delete(id);
+        }
+
+        $(this).closest('label').toggleClass('terpilih', this.checked);
+        simpanPilihan();
+        ringkasCetak();
+    });
+
+    $('#cetakCariNota').on('input', gambarDaftar);
+
+    $('#cetakPilihSemua').on('click', function () {
+        $('#daftarPilihNota .cetak-pilih').each(function () {
+            this.checked = true;
+            pilihanNota.add(Number(this.value));
+            $(this).closest('label').addClass('terpilih');
+        });
+
+        simpanPilihan();
+        ringkasCetak();
+    });
+
+    $('#cetakKosongkan').on('click', function () {
+        pilihanNota.clear();
+        $('#daftarPilihNota .cetak-pilih').prop('checked', false).closest('label').removeClass('terpilih');
+        simpanPilihan();
+        ringkasCetak();
+    });
+
+    function urlCetak(format) {
+        var parameter = new URLSearchParams();
+
+        if ($('#cetakTerpilih').is(':checked')) {
+            // periode sengaja tidak dikirim: yang tercetak harus persis yang dipilih
+            pilihanNota.forEach(function (id) { parameter.append('id[]', id); });
+        } else {
+            parameter.set('periode', $('input[name="periode"]:checked').val() || 'harian');
+
+            if ($('#cetakTanggal').val()) {
+                parameter.set('tanggal', $('#cetakTanggal').val());
+            }
+        }
+
+        // toko yang sedang dibuka ikut dibawa, kalau tidak superadmin mencetak semua tokonya
+        if (tokoAktif > 0) {
+            parameter.set('juragan', tokoAktif);
+        }
+
+        return '{$link_cetak_unduh}/' + format + '?' + parameter.toString();
+    }
+
+    // berkas dibuka di tab baru, sama seperti tombol Penjahit/Invoice per kartu
+    $('#cetakPdf').on('click', function () { window.open(urlCetak('pdf'), '_blank'); });
+    $('#cetakExcel').on('click', function () { window.open(urlCetak('xlsx'), '_blank'); });
+
+    $(document).ready(ringkasCetak);
 
     	// disable hit enter
     	// https://stackoverflow.com/a/895231/2094645

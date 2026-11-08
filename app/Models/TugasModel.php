@@ -439,24 +439,50 @@ class TugasModel extends Model
             $b->where('t.email_id', (int) $s['email_id']);
         }
 
-        // CS hanya mengurus alamat yang didelegasikan kepadanya. Catatan lama yang
-        // belum punya alamat ikut ditampilkan supaya tidak ada yang menghilang.
-        if (isset($s['email_ids'])) {
-            $ids = array_values(array_unique(array_map('intval', (array) $s['email_ids'])));
+        // CS hanya mengurus alamat yang didelegasikan kepadanya. Catatan yang
+        // namanya ditunjuk sebagai penanggung jawab ikut terlihat walaupun
+        // alamatnya tidak ia pegang — menambah, bukan menggantikan — dan catatan
+        // lama yang belum punya alamat tetap ditampilkan supaya tidak ada yang
+        // menghilang.
+        $email_ids  = isset($s['email_ids'])
+            ? array_values(array_unique(array_map('intval', (array) $s['email_ids'])))
+            : null;
+        $untuk_saya = (int) ($s['pegang_user'] ?? 0);
 
-            if ($ids !== []) {
-                $b->groupStart();
+        if ($email_ids !== null || $untuk_saya > 0) {
+            $ada_email = false;
+
+            $b->groupStart();
+
+            if ($email_ids !== null && $email_ids !== []) {
+                $ada_email = true;
 
                 if (! empty($s['email_ids_atau_null'])) {
-                    $b->where('t.email_id IS NULL')->orWhereIn('t.email_id', $ids);
+                    $b->where('t.email_id IS NULL')->orWhereIn('t.email_id', $email_ids);
                 } else {
-                    $b->whereIn('t.email_id', $ids);
+                    $b->whereIn('t.email_id', $email_ids);
                 }
+            } elseif ($email_ids !== null && ! empty($s['email_ids_atau_null'])) {
+                $ada_email = true;
 
-                $b->groupEnd();
-            } elseif (! empty($s['email_ids_atau_null'])) {
                 $b->where('t.email_id IS NULL');
             }
+
+            if ($untuk_saya > 0) {
+                $tautan = $this->db->table('crm_tugas_pegang')
+                    ->select('tugas_id')
+                    ->where('user_id', $untuk_saya);
+
+                // kalau alamatnya sudah menyumbang syarat, penanggung jawab jadi
+                // alternatif; kalau belum, dia satu-satunya penyaring di sini
+                if ($ada_email) {
+                    $b->orWhereIn('t.id_tugas', $tautan, false);
+                } else {
+                    $b->whereIn('t.id_tugas', $tautan, false);
+                }
+            }
+
+            $b->groupEnd();
         }
 
         // cakupan sesi: tugas tanpa toko (mis. pemeriksaan email bersama) tetap
@@ -791,6 +817,120 @@ class TugasModel extends Model
         }
 
         return ['id' => $this->buat($data, $user), 'baru' => true];
+    }
+
+    /* ── Penanggung jawab ────────────────────────────────────────────────────
+     * Satu catatan bisa menjadi tanggung jawab beberapa orang sekaligus, jadi
+     * daftarnya hidup di crm_tugas_pegang sementara crm_tugas.dikerjakan_oleh
+     * tetap berarti "siapa yang sedang mengerjakan".
+     */
+
+    /**
+     * Tunjuk orang ke sebuah catatan. Yang sudah tertaut dilewati, jadi memanggil
+     * ini dua kali (mis. tombol Simpan ditekan dua kali) tidak menghasilkan apa pun.
+     *
+     * @param array<int> $user_ids
+     *
+     * @return int berapa tautan baru yang tertulis
+     */
+    public function tunjuk(int $id_tugas, array $user_ids, ?int $oleh): int
+    {
+        $ids = array_values(array_unique(array_filter(
+            array_map('intval', $user_ids),
+            static fn (int $v): bool => $v > 0
+        )));
+
+        if ($id_tugas < 1 || $ids === []) {
+            return 0;
+        }
+
+        $sudah = array_map(
+            static fn (array $r): int => (int) $r['user_id'],
+            $this->db->table('crm_tugas_pegang')
+                ->select('user_id')
+                ->where('tugas_id', $id_tugas)
+                ->whereIn('user_id', $ids)
+                ->get()
+                ->getResultArray()
+        );
+
+        $baru = array_values(array_diff($ids, $sudah));
+
+        if ($baru === []) {
+            return 0;
+        }
+
+        $waktu = time();
+        $baris = [];
+
+        foreach ($baru as $id_user) {
+            $baris[] = [
+                'tugas_id'    => $id_tugas,
+                'user_id'     => $id_user,
+                'dibuat_oleh' => $oleh,
+                'created_at'  => $waktu,
+            ];
+        }
+
+        $this->db->table('crm_tugas_pegang')->insertBatch($baris);
+
+        return count($baris);
+    }
+
+    /**
+     * Orang yang ditunjuk pada satu catatan, urut nama.
+     *
+     * @return array<int, array{id: int, nama: string, level: string}>
+     */
+    public function penanggung(int $id_tugas): array
+    {
+        return $this->penanggungPeta([$id_tugas])[$id_tugas] ?? [];
+    }
+
+    /**
+     * Peta penanggung jawab untuk banyak catatan sekaligus: layar daftar tidak
+     * boleh mengirim satu permintaan per baris.
+     *
+     * @param array<int> $id_tugas
+     *
+     * @return array<int, array<int, array{id: int, nama: string, level: string}>>
+     */
+    public function penanggungPeta(array $id_tugas): array
+    {
+        $ids = array_values(array_unique(array_filter(array_map('intval', $id_tugas))));
+
+        if ($ids === []) {
+            return [];
+        }
+
+        $peta = [];
+
+        $baris = $this->db->table('crm_tugas_pegang p')
+            ->select('p.tugas_id, u.id AS user_id, u.name AS nama, u.level')
+            ->join('user u', 'u.id = p.user_id')
+            ->whereIn('p.tugas_id', $ids)
+            ->orderBy('u.name', 'ASC')
+            ->get()
+            ->getResultArray();
+
+        foreach ($baris as $r) {
+            $peta[(int) $r['tugas_id']][] = [
+                'id'    => (int) $r['user_id'],
+                'nama'  => (string) $r['nama'],
+                'level' => (string) $r['level'],
+            ];
+        }
+
+        return $peta;
+    }
+
+    /** Apakah orang ini memang ditunjuk pada catatan ini. */
+    public function penanggungPunya(int $id_tugas, int $user_id): bool
+    {
+        return (int) $this->db->table('crm_tugas_pegang')
+            ->where('tugas_id', $id_tugas)
+            ->where('user_id', $user_id)
+            ->countAllResults() > 0;
     }
 
     /**

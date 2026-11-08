@@ -83,3 +83,644 @@
 .collapsing {
     visibility: visible;
 }
+
+/* Daftar anggota rombongan di kartu transaksi. Bentuknya ditiru dari rancangan
+   baru — satu kartu per orang, ukuran dibaca sebagai tabel label/nilai — tapi
+   warnanya tetap milik tema ini. Semua aturan dikunci di bawah .anggota-rinci
+   karena .anggota-isi, .anggota-nama, dan .anggota-nomor sudah dipakai form
+   Tulis/Sunting dengan bentuk yang lain. Isinya dibungkus <section>, bukan
+   <div>, supaya tidak kena aturan `.blok-lipat .collapse > div`. */
+.anggota-rinci .anggota-produk {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.35rem;
+    margin: 0 0 0.7rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-ink-600);
+}
+
+.anggota-rinci .anggota-daftar-rinci {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.anggota-rinci .anggota-orang {
+    border: 1px solid var(--color-ink-200);
+    border-radius: 0.9rem;
+    background: #fff;
+    overflow: hidden;
+}
+
+.anggota-rinci .anggota-kepala {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.6rem 0.8rem;
+    border: 0;
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+}
+
+.anggota-rinci .anggota-ava {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.1rem;
+    height: 2.1rem;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    border: 1px solid var(--color-brand-100);
+    background: var(--color-brand-50);
+    color: var(--color-brand-500);
+    font-size: 0.9rem;
+}
+
+.anggota-rinci .anggota-nama {
+    min-width: 0;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--color-ink-800);
+    overflow-wrap: anywhere;
+}
+
+.anggota-rinci .anggota-nomor {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    flex: 0 0 auto;
+    padding: 0.15rem 0.55rem;
+    border: 1px solid var(--color-ink-200);
+    border-radius: 9999px;
+    background: var(--color-ink-50);
+    color: var(--color-ink-600);
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.anggota-rinci .anggota-panah {
+    margin-left: auto;
+    flex: 0 0 auto;
+    color: var(--color-ink-400);
+    transition: transform 0.15s ease;
+}
+
+.anggota-rinci .anggota-kepala[aria-expanded="true"] .anggota-panah {
+    transform: rotate(180deg);
+}
+
+.anggota-rinci .anggota-isi {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding: 0 0.8rem 0.75rem;
+}
+
+.anggota-rinci .anggota-catatan {
+    margin: 0;
+    padding: 0.45rem 0.65rem;
+    border-radius: 0.6rem;
+    background: var(--color-ink-50);
+    color: var(--color-ink-600);
+    font-size: 0.8rem;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+}
+
+.anggota-rinci .anggota-label {
+    display: block;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-ink-500);
+}
+
+.anggota-rinci .anggota-kosong {
+    margin: 0;
+    font-size: 0.78rem;
+    color: var(--color-ink-500);
+}
+
+.anggota-rinci .ukuran-kotak {
+    padding: 0.5rem 0.7rem 0.2rem;
+    border: 1px solid var(--color-ink-200);
+    border-radius: 0.7rem;
+    background: #fcfdfe;
+}
+
+.anggota-rinci .ukuran-judul {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin: 0 0 0.15rem;
+    padding-bottom: 0.35rem;
+    border-bottom: 1px solid var(--color-ink-100);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-ink-500);
+}
+
+.anggota-rinci .ukuran-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    column-gap: 1.1rem;
+}
+
+@media (min-width: 576px) {
+    .anggota-rinci .ukuran-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.anggota-rinci .ukuran-baris {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin: 0;
+    padding: 0.3rem 0;
+    border-bottom: 1px dashed var(--color-ink-100);
+    font-size: 0.8rem;
+}
+
+.anggota-rinci .ukuran-nama {
+    color: var(--color-ink-500);
+    overflow-wrap: anywhere;
+}
+
+.anggota-rinci .ukuran-nilai {
+    flex: 0 0 auto;
+    font-weight: 700;
+    color: var(--color-ink-800);
+    white-space: nowrap;
+}
+
+/* ── Modal kabar ──────────────────────────────────────────────────────────────
+   Popup hasil akhir (orderan tercatat / gagal / error tak terduga) yang dibangun
+   assets/js/modal-kabar.js tanpa plugin Bootstrap, jadi bentuknya diurus di sini.
+   Kelasnya semua berawalan modal-kabar supaya tidak menabrak .modal milik
+   Bootstrap yang dipakai popup ukuran dan cetak. */
+.modal-kabar {
+    position: fixed;
+    inset: 0;
+    z-index: 1080;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.modal-kabar-remang {
+    position: absolute;
+    inset: 0;
+    background: rgb(15 23 42 / 0.55);
+}
+
+.modal-kabar-kotak {
+    position: relative;
+    width: min(100%, 26rem);
+    max-height: calc(100vh - 2rem);
+    overflow: auto;
+    padding: 1.5rem 1.25rem 1.25rem;
+    background: #fff;
+    border-radius: var(--radius-kartu);
+    box-shadow: 0 24px 60px -20px rgb(15 23 42 / 0.45);
+    text-align: center;
+    animation: modal-kabar-masuk 0.18s ease-out;
+}
+
+@keyframes modal-kabar-masuk {
+    from {
+        opacity: 0;
+        transform: translateY(0.6rem) scale(0.98);
+    }
+}
+
+body.modal-kabar-muncul {
+    overflow: hidden;
+}
+
+.modal-kabar-ikon {
+    font-size: 2rem;
+    line-height: 1;
+}
+
+.modal-kabar-galat .modal-kabar-ikon {
+    color: var(--color-brand-500);
+}
+
+.modal-kabar-judul {
+    margin: 0.6rem 0 0.3rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--color-ink-900);
+}
+
+.modal-kabar-teks {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--color-ink-600);
+}
+
+.modal-kabar-daftar {
+    display: grid;
+    gap: 0.4rem;
+    margin: 0.5rem 0 0;
+    padding: 0;
+    list-style: none;
+    text-align: left;
+}
+
+.modal-kabar-daftar li {
+    padding: 0.5rem 0.65rem;
+    border: 1px solid var(--color-ink-200);
+    border-radius: 0.7rem;
+    background: var(--color-ink-50);
+    font-size: 0.85rem;
+    color: var(--color-ink-700);
+    overflow-wrap: anywhere;
+}
+
+.modal-kabar-galat .modal-kabar-daftar li {
+    border-color: var(--color-brand-100);
+    background: var(--color-brand-50);
+    color: var(--color-brand-700);
+}
+
+.modal-kabar-catatan {
+    margin: 0.75rem 0 0;
+    font-size: 0.8rem;
+    line-height: 1.45;
+    color: var(--color-ink-500);
+}
+
+.modal-kabar-aksi {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 1.15rem;
+}
+
+.modal-kabar-tombol {
+    padding: 0.5rem 1.25rem;
+    border: 0;
+    border-radius: 0.7rem;
+    background: var(--color-ink-800);
+    color: #fff;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.modal-kabar-tombol:hover {
+    background: var(--color-ink-900);
+}
+
+.modal-kabar-tombol:focus-visible {
+    outline: 3px solid rgb(218 37 29 / 0.25);
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .modal-kabar-kotak {
+        animation: none;
+    }
+}
+
+/* ── Lower third kabar orderan ───────────────────────────────────────────────
+   Konfirmasi hasil akhir yang tidak boleh meminta klik: muncul di pojok kanan
+   bawah lalu memudar sendiri. Jarak bawahnya menyisakan tempat untuk tombol
+   melayang "Kirim Masukan" (template/feedback.php, .fixed-bottom) supaya tidak
+   tertutup, dan KABAR di kabaran.js duduk di kanan atas sehingga keduanya
+   tidak pernah bertumpuk. */
+.kabar-bawah {
+    position: fixed;
+    right: 0.9rem;
+    bottom: 2.75rem;
+    z-index: 1080;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+    width: min(23rem, calc(100vw - 1.8rem));
+    pointer-events: none;
+}
+
+.low-third {
+    pointer-events: auto;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    padding: 0.75rem 0.85rem;
+    border: 1px solid var(--color-ink-200);
+    border-left: 3px solid var(--color-selesai);
+    border-radius: 0.85rem;
+    background: #fff;
+    box-shadow: 0 12px 28px rgb(16 24 40 / 0.16);
+    animation: low-third-masuk 0.22s ease-out;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+@keyframes low-third-masuk {
+    from {
+        opacity: 0;
+        transform: translateY(0.75rem);
+    }
+}
+
+.low-third-pudar {
+    opacity: 0;
+    transform: translateY(0.5rem);
+}
+
+.low-third-ikon {
+    margin-top: 0.1rem;
+    font-size: 1.05rem;
+    line-height: 1;
+    color: var(--color-selesai);
+}
+
+.low-third-isi {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.low-third-judul {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--color-ink-900);
+}
+
+.low-third-teks {
+    margin-top: 0.1rem;
+    font-size: 0.8rem;
+    line-height: 1.45;
+    color: var(--color-ink-600);
+    overflow-wrap: anywhere;
+}
+
+.low-third-tutup {
+    flex: 0 0 auto;
+    padding: 0 0.1rem;
+    border: 0;
+    background: transparent;
+    color: var(--color-ink-400);
+    font-size: 1.1rem;
+    line-height: 1;
+}
+
+.low-third-tutup:hover {
+    color: var(--color-ink-700);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .low-third {
+        animation: none;
+        transition: none;
+    }
+}
+
+/* ── Daftar produk pada detail nota ─────────────────────────────────────────
+   Satu baris per barang, rata tiga kolom: ikon di kiri, lalu nama diikuti
+   badge-nya, dan harga pada kolom kanan sendiri dengan garis pemisah. Tidak
+   ada kartu per barang lagi — tinggi baris jadi pendek dan harga selalu
+   mulai dari x yang sama, apa pun panjang namanya. Warna dan bentuk tetap
+   memakai token yang sudah ada di halaman ini.
+   Semua aturan diawali .produk-rinci supaya tidak menimpa .produk-* di form. */
+.produk-rinci {
+    display: grid;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 0.875rem;
+}
+
+.produk-rinci .produk-baris {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 0.75rem;
+    padding: 0.6rem 0;
+}
+
+.produk-rinci .produk-baris + .produk-baris {
+    border-top: 1px solid var(--color-ink-100);
+}
+
+.produk-rinci .produk-ava {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.1rem;
+    height: 2.1rem;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    border: 1px solid var(--color-brand-100);
+    background: var(--color-brand-50);
+    color: var(--color-brand-500);
+    font-size: 0.9rem;
+}
+
+.produk-rinci .produk-isi {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    min-width: 0;
+}
+
+.produk-rinci .produk-kepala {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.3rem 0.6rem;
+}
+
+.produk-rinci .produk-nama {
+    flex: 0 1 auto;
+    min-width: 0;
+    font-weight: 700;
+    color: var(--color-ink-900);
+    overflow-wrap: anywhere;
+}
+
+/* kolom harga: nowrap supaya angkanya tidak pernah melipat, dan garis kiri
+   tipis sebagai pemisah dari kolom isi. Lebar minimumnya dibuat tetap agar
+   garis pemisah itu tidak bergeser mengikuti panjang angka yang berbeda-beda
+   antar baris; angka-angkanya sendiri dirapatkan ke tepi kanan daftar. */
+.produk-rinci .produk-harga {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: baseline;
+    justify-content: flex-end;
+    gap: 0.45rem;
+    min-width: 10.5rem;
+    padding-left: 0.75rem;
+    border-left: 1px solid var(--color-ink-200);
+    font-weight: 700;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-ink-800);
+}
+
+.produk-rinci .produk-info {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    font-size: 0.75rem;
+    line-height: 1;
+    color: var(--color-ink-400);
+    cursor: pointer;
+}
+
+.produk-rinci .produk-info:hover {
+    color: var(--color-brand-500);
+}
+
+.produk-rinci .produk-badge,
+.produk-rinci .produk-ukuran {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.3rem;
+}
+
+.produk-rinci .produk-label {
+    flex: 0 0 auto;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--color-ink-500);
+}
+
+.produk-rinci .produk-label .fal {
+    color: var(--color-ink-400);
+}
+
+.produk-rinci .produk-pil {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.3rem;
+    max-width: 100%;
+    padding: 0.2rem 0.55rem;
+    border: 1px solid var(--color-ink-200);
+    border-radius: 999px;
+    background: #f6f8fb;
+    font-size: 0.78rem;
+    line-height: 1.35;
+    color: var(--color-ink-600);
+}
+
+.produk-rinci .produk-pil > .fal {
+    font-size: 0.7rem;
+    color: var(--color-ink-400);
+}
+
+.produk-rinci .pil-kunci {
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    color: var(--color-ink-500);
+}
+
+.produk-rinci .pil-nilai {
+    overflow-wrap: anywhere;
+}
+
+.produk-rinci .produk-catatan {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    padding: 0.5rem 0.65rem;
+    border: 1px solid var(--color-ink-200);
+    border-radius: 0.7rem;
+    background: var(--color-ink-50);
+}
+
+.produk-rinci .produk-catatan-ikon {
+    margin-top: 0.15rem;
+    font-size: 0.8rem;
+    color: var(--color-ink-400);
+}
+
+.produk-rinci .produk-catatan-lebar {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 0;
+}
+
+.produk-rinci .produk-catatan-kepala {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.produk-rinci .produk-catatan-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-ink-500);
+}
+
+/* dijepit dua baris: catatan sepanjang apa pun tidak boleh menelan kartu */
+.produk-rinci .produk-catatan-teks {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+    margin: 0;
+    font-size: 0.8rem;
+    line-height: 1.45;
+    color: var(--color-ink-600);
+    overflow-wrap: anywhere;
+}
+
+.produk-rinci .produk-catatan.buka .produk-catatan-teks {
+    display: block;
+    -webkit-line-clamp: unset;
+    line-clamp: unset;
+    overflow: visible;
+}
+
+.produk-rinci .produk-catatan-pilih {
+    flex: 0 0 auto;
+    padding: 0 0.1rem;
+    border: 0;
+    background: transparent;
+    font-size: 0.74rem;
+    font-weight: 700;
+    color: var(--color-brand-500);
+    cursor: pointer;
+}
+
+.produk-rinci .produk-catatan-pilih[hidden] {
+    display: none;
+}
+
+.produk-rinci .produk-catatan-pilih:hover {
+    color: var(--color-brand-600);
+    text-decoration: underline;
+}
+
+.produk-rinci .produk-catatan-pilih .fal {
+    font-size: 0.65rem;
+    transition: transform 0.15s ease;
+}
+
+.produk-rinci .produk-catatan.buka .produk-catatan-pilih .fal {
+    transform: rotate(180deg);
+}

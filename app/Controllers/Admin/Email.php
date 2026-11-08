@@ -60,6 +60,22 @@ class Email extends BaseController
         }
         $page   = max(1, min($this->halaman(), max(1, (int) ceil($total / $batas))));
 
+        $toko  = $this->tokoPeta();
+        $baris = $model->daftar($this->korong($s), $batas, ($page - 1) * $batas);
+
+        // penanggung jawab yang dipilih orang per catatan; satu query untuk
+        // seluruh halaman, bukan satu per baris
+        $penanggung = $model->penanggungPeta(array_map(
+            static fn (array $w): int => (int) $w['id_tugas'],
+            $baris
+        ));
+
+        // daftar orang tiap toko untuk form penugasan. Hanya yang boleh menunjuk
+        // yang membutuhkannya; CS membuat tugas untuk dirinya sendiri
+        $pengelola = $this->bolehKelola()
+            ? (new JuraganModel())->pengelola(array_keys($toko))
+            : [];
+
         $angka = [];
 
         foreach (array_keys(self::TAB) as $tab) {
@@ -69,16 +85,18 @@ class Email extends BaseController
         return view('admin/email/index', [
             'title'  => 'Cek Email',
             's'      => $s,
-            'baris'  => $model->daftar($this->korong($s), $batas, ($page - 1) * $batas),
+            'baris'  => $baris,
             'total'  => $total,
             'page'   => $page,
             'batas'  => $batas,
             'tab'    => self::TAB,
             'angka'  => $angka,
-            'toko'   => $this->tokoPeta(),
+            'toko'   => $toko,
             'email'  => $this->emailPilihan(),
             'daftar' => $baris_email,
             'pegang' => $pemegang,
+            'penanggung' => $penanggung,
+            'pengelola'  => $pengelola,
             'staf'   => $this->stafCs(),
             'hitung' => $model->hitungPerEmail($this->tokoBoleh()),
             'kelola' => $this->bolehKelola(),
@@ -130,9 +148,51 @@ class Email extends BaseController
             'tenggat'     => $this->tanggal((string) $this->request->getPost('tenggat')),
         ], (int) session()->get('id'));
 
-        return $id > 0
-            ? redirect()->to(site_url('admin/tugas/email'))->with('sukses', 'Catatan tersimpan.')
-            : redirect()->back()->with('galat', 'Catatan gagal disimpan. Coba lagi.')->withInput();
+        // penanggung jawab yang dipilih ikut menerima catatan, di samping pemegang
+        // alamat emailnya yang memang sudah melihatnya sejak dulu. CS tidak punya
+        // pilihan ini — tugasnya untuk dirinya sendiri
+        $ditunjuk = $this->bolehKelola()
+            ? $this->penanggungSah($toko, (array) $this->request->getPost('penanggung'))
+            : [];
+
+        if ($id > 0 && $ditunjuk !== []) {
+            $model->tunjuk($id, $ditunjuk, (int) session()->get('id'));
+        }
+
+        if ($id < 1) {
+            return redirect()->back()->with('galat', 'Catatan gagal disimpan. Coba lagi.')->withInput();
+        }
+
+        return redirect()->to(site_url('admin/tugas/email'))->with('sukses', $ditunjuk === []
+            ? 'Catatan tersimpan untuk pemegang alamat emailnya.'
+            : 'Catatan tersimpan dan menjadi tanggung jawab ' . count($ditunjuk) . ' orang.');
+    }
+
+    /**
+     * Angka yang boleh ditunjuk: hanya Admin/CS yang benar-benar memegang toko
+     * itu. Sumber daftarnya sama dengan yang ditulis ke form, jadi mengirim id
+     * orang dari toko lain lewat permintaan tangan tidak akan pernah tersimpan.
+     *
+     * @param array<int> $kirim
+     *
+     * @return array<int>
+     */
+    private function penanggungSah(int $toko, array $kirim): array
+    {
+        $boleh = [];
+
+        foreach ((new JuraganModel())->pengelola([$toko])[$toko] ?? [] as $grup) {
+            foreach ($grup as $orang) {
+                $boleh[] = (int) $orang['id'];
+            }
+        }
+
+        $dipilih = array_values(array_unique(array_filter(
+            array_map('intval', $kirim),
+            static fn (int $v): bool => $v > 0
+        )));
+
+        return array_values(array_intersect($dipilih, $boleh));
     }
 
     public function lepas(int $id)
@@ -394,6 +454,10 @@ class Email extends BaseController
                 (new EmailModel())->milikUser((int) session()->get('id'))
             );
             $q['email_ids_atau_null'] = true;
+
+            // catatan yang namanya ditunjuk sebagai penanggung jawab ikut terlihat,
+            // walaupun alamat email di dalamnya tidak ia pegang
+            $q['pegang_user'] = (int) session()->get('id');
         }
 
         return $q;
@@ -427,7 +491,8 @@ class Email extends BaseController
      */
     private function catatanMilikSaya(int $id): array
     {
-        $baris = (new TugasModel())->satu($id);
+        $model = new TugasModel();
+        $baris = $model->satu($id);
 
         if ($baris === null || (string) $baris['jenis'] !== 'pemeriksaan_email'
             || ($baris['juragan_id'] !== null && ! $this->bolehToko((int) $baris['juragan_id']))) {
@@ -435,11 +500,15 @@ class Email extends BaseController
         }
 
         $id_email = (int) ($baris['email_id'] ?? 0);
+        $saya     = (int) session()->get('id');
 
         // catatan lama dari sebelum daftar email dipakai tidak punya alamat untuk
         // diperebutkan; biar tetap bisa dikerjakan semua CS di toko itu
         if ($id_email > 0 && ! $this->bolehKelola()
-            && ! (new EmailModel())->pegangPunya($id_email, (int) session()->get('id'))) {
+            && ! (new EmailModel())->pegangPunya($id_email, $saya)
+            // yang ditunjuk sebagai penanggung jawab boleh mengerjakan catatannya
+            // walaupun alamat emailnya bukan miliknya
+            && ! $model->penanggungPunya($id, $saya)) {
             throw PageNotFoundException::forPageNotFound();
         }
 

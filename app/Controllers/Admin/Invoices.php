@@ -207,11 +207,31 @@ class Invoices extends BaseController
             'template_ukuran' => $komponen->semuaTemplate(),
             'ukuran_item'     => $nilai->perItemForm($id),
             'jenis_item'      => $nilai->petaJenis($id),
+            'jenis_rombongan' => $this->jenisRombongan($x->rincian, $nilai->jenisTerpakai($id)),
             'anggota_item'    => $anggota_item,
             'foto_sudah'      => (new FotoModel())->untukInvoice($id),
         ];
 
         return view('admin/invoice/sunting', $data);
+    }
+
+    /**
+     * Jenis busana yang disediakan jadi tab ukuran anggota di form Sunting: yang
+     * dulu ditulis peramban ke `rincian.jenis_busana`, ditambah jenis yang masih
+     * kebagian angka ukuran (nota lama tidak menyimpan daftar jenisnya).
+     *
+     * @param mixed $rincian isi kolom rincian invoice apa adanya
+     *
+     * @return int[]
+     */
+    private function jenisRombongan($rincian, array $terpakai): array
+    {
+        $disimpan = array_filter(array_map('intval', explode(
+            ',',
+            (string) (baca_rincian($rincian)['jenis_busana'] ?? '')
+        )));
+
+        return array_values(array_unique(array_merge($disimpan, $terpakai)));
     }
 
     // hapus invoice
@@ -337,7 +357,7 @@ class Invoices extends BaseController
                 // 'status_pengiriman'=> '',
                 'keterangan' => ($this->request->getPost('keterangan') !== '' ? $this->request->getPost('keterangan') : null),
                 'deadline'   => deadline_iso($rincian),
-                'rincian'    => rincian_json($rincian, array_keys(meta_rincian('pesanan')), ['tipe' => array_keys(tipe_pesanan()), 'orderan' => ['satuan', 'rombongan']]),
+                'rincian'    => rincian_json($rincian, key_rincian_pesanan(), ['tipe' => array_keys(tipe_pesanan()), 'orderan' => ['satuan', 'rombongan']]),
             ];
 
             $invModel = new InvoiceModel();
@@ -416,6 +436,8 @@ class Invoices extends BaseController
                 'status' => 'data tersimpan',
                 // id dibutuhkan halaman untuk mengirim foto setelah orderan ada
                 'id'     => $invoice_id,
+                // nomor faktur dibaca halaman tujuan untuk pesan "sudah tercatat"
+                'nomor'  => $seri,
                 'url'    => site_url('admin/invoices/lihat/semua/semua?cari[kolom]=faktur&cari[q]=' . $seri),
             ];
 
@@ -480,7 +502,7 @@ class Invoices extends BaseController
             $rincian_invoice = $this->request->getPost('rincian');
 
             if (is_array($rincian_invoice)) {
-                $data_invoice['rincian']  = rincian_json($rincian_invoice, array_keys(meta_rincian('pesanan')), ['tipe' => array_keys(tipe_pesanan()), 'orderan' => ['satuan', 'rombongan']]);
+                $data_invoice['rincian']  = rincian_json($rincian_invoice, key_rincian_pesanan(), ['tipe' => array_keys(tipe_pesanan()), 'orderan' => ['satuan', 'rombongan']]);
                 $data_invoice['deadline'] = deadline_iso($rincian_invoice);
             }
 

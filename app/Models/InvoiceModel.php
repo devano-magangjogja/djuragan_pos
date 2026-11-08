@@ -135,6 +135,131 @@ class InvoiceModel extends Model
     }
 
     /**
+     * Isi lengkap sejumlah nota untuk lembar cetak detail.
+     *
+     * Beda dengan getAll(): semua tabel anak diambil sekali pakai WHERE IN lalu
+     * dikelompokkan di PHP. Lembar cetak bisa memuat ratusan nota, dan satu
+     * getAll() per nota berarti ribuan query kecil yang membuat berkasnya lama
+     * jadi. Foto dan rombongan sengaja tidak ikut: lembar kerja cetak tidak
+     * membutuhkannya.
+     *
+     * @param list<int> $ids
+     *
+     * @return list<object> nota urut tanggal pesan terbaru, anak-anaknya menempel
+     */
+    public function detailLengkap(array $ids): array
+    {
+        $ids = array_values(array_unique(array_filter(array_map('intval', $ids))));
+
+        if ($ids === []) {
+            return [];
+        }
+
+        $nota = $this->whereIn('id_invoice', $ids)
+            ->orderBy('tanggal_pesan DESC, seri DESC')
+            ->findAll();
+
+        if ($nota === []) {
+            return [];
+        }
+
+        $grup = static function (array $baris): array {
+            $out = [];
+
+            foreach ($baris as $b) {
+                $out[(int) $b->invoice_id][] = $b;
+            }
+
+            return $out;
+        };
+
+        $barang = $grup((new BarangDibeli())
+            ->select('invoice_id, kode, ukuran, qty, harga, rincian')
+            ->whereIn('invoice_id', $ids)
+            ->findAll());
+
+        $biaya = $grup((new BiayaModel())
+            ->select('invoice_id, biaya_id, nominal, label')
+            ->whereIn('invoice_id', $ids)
+            ->findAll());
+
+        $bayar = $grup((new PembayaranModel())
+            ->select('pembayaran.invoice_id, pembayaran.total_pembayaran as nominal, pembayaran.status,'
+                . ' pembayaran.tanggal_pembayaran as tanggal_bayar, pembayaran.tanggal_cek,'
+                . ' bank.nama_bank as bank, bank.atas_nama')
+            ->join('bank', 'bank.id_bank=pembayaran.sumber_dana')
+            ->whereIn('pembayaran.invoice_id', $ids)
+            ->findAll());
+
+        $pelanggan = $this->petaId(
+            (new PelangganModel())
+                ->select('id_pelanggan, nama_pelanggan, hp, alamat, kecamatan, kabupaten, provinsi')
+                ->whereIn('id_pelanggan', $this->kumpul($nota, ['pemesan_id', 'kirimKepada_id']) ?: [0])
+                ->findAll(),
+            'id_pelanggan'
+        );
+
+        $juragan = $this->petaId(
+            (new JuraganModel())
+                ->select('id_juragan, nama_juragan')
+                ->whereIn('id_juragan', $this->kumpul($nota, ['juragan_id']) ?: [0])
+                ->findAll(),
+            'id_juragan'
+        );
+
+        $pengguna = $this->petaId(
+            (new UserModel())
+                ->select('id, name as nama')
+                ->whereIn('id', $this->kumpul($nota, ['user_id']) ?: [0])
+                ->findAll(),
+            'id'
+        );
+
+        foreach ($nota as $n) {
+            $idn            = (int) $n->id_invoice;
+            $n->barang      = $barang[$idn] ?? [];
+            $n->biaya       = $biaya[$idn] ?? [];
+            $n->pembayaran  = $bayar[$idn] ?? [];
+            $n->pelanggan   = $pelanggan[(int) $n->pemesan_id] ?? null;
+            $n->kirimKe     = $pelanggan[(int) $n->kirimKepada_id] ?? null;
+            $n->juragan     = $juragan[(int) $n->juragan_id] ?? null;
+            $n->pengguna    = $pengguna[(int) $n->user_id] ?? null;
+        }
+
+        return $nota;
+    }
+
+    /** @param list<string> $kolom @return list<int> id unik bukan nol dari kolom-kolom itu */
+    private function kumpul(array $nota, array $kolom): array
+    {
+        $out = [];
+
+        foreach ($nota as $n) {
+            foreach ($kolom as $k) {
+                $v = (int) ($n->{$k} ?? 0);
+
+                if ($v > 0) {
+                    $out[$v] = $v;
+                }
+            }
+        }
+
+        return array_values($out);
+    }
+
+    /** @return array<int, object> id baris => barisnya */
+    private function petaId(array $baris, string $kunci): array
+    {
+        $out = [];
+
+        foreach ($baris as $b) {
+            $out[(int) $b->{$kunci}] = $b;
+        }
+
+        return $out;
+    }
+
+    /**
      * Nilai invoice.status_pembayaran milik satu kategori pembayaran
      */
     private static function statusKategori(string $kategori): array

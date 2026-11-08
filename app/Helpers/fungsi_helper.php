@@ -1042,6 +1042,21 @@ if (! function_exists('rincian_json')) {
     }
 }
 
+if (! function_exists('key_rincian_pesanan')) {
+    /**
+     * Key yang boleh ditulis ke `order_invoice.rincian`. meta_rincian('pesanan')
+     * hanya menyebut yang ditampilkan di kartu transaksi, sedangkan `jenis_busana`
+     * disimpan diam-diam: form Sunting membutuhkannya untuk menyusun tab ukuran
+     * anggota, sebab jenis yang dipilih di Tambah Barang tidak tercatat di mana pun.
+     *
+     * @return string[]
+     */
+    function key_rincian_pesanan(): array
+    {
+        return array_merge(array_keys(meta_rincian('pesanan')), ['jenis_busana']);
+    }
+}
+
 if (! function_exists('baca_rincian')) {
     /**
      * Balik isi kolom `rincian` jadi array [key => teks]; data lama (NULL)
@@ -1220,7 +1235,8 @@ if (! function_exists('ukuran_form_panel')) {
      * tercatat ikut terkirim terus setiap kali orderan disunting; panel modal
      * tanpa $nama karena kunci barisnya baru ada saat produk ditambahkan.
      *
-     * @param array $isi nama, jenis, nilai ([id_komponen => angka]), id
+     * @param array $isi nama, jenis, nilai ([id_komponen => angka]), id, rombongan
+     *                   (panel anggota: jenisnya jadi tab, bukan dropdown), jenis_set
      */
     function ukuran_form_panel(array $isi = []): string
     {
@@ -1234,10 +1250,15 @@ if (! function_exists('ukuran_form_panel')) {
             ];
         }
 
-        $isi    += ['nama' => '', 'jenis' => null, 'nilai' => [], 'id' => '', 'kelas' => ''];
+        $isi    += ['nama' => '', 'jenis' => null, 'nilai' => [], 'id' => '', 'kelas' => '', 'rombongan' => false, 'jenis_set' => []];
         $jenis   = (int) $isi['jenis'];
         $template = $jenis > 0 ? $peta['template'][$jenis] ?? [] : [];
-        $daftar  = array_merge($peta['template'][0] ?? [], $template);
+
+        // Panel anggota rombongan tidak terikat satu jenis: tab-nya disusun
+        // JavaScript dari barang yang masuk orderan, jadi semua komponen tersimpan
+        // di luar template umum dikirim sebagai cadangan supaya tidak ada angka
+        // yang hilang waktu jenisnya belum ketahuan di sisi server.
+        $daftar  = $isi['rombongan'] ? $peta['template'][0] ?? [] : array_merge($peta['template'][0] ?? [], $template);
         $punya   = array_column($daftar, null, 'id_komponen');
 
         // angka yang tersimpan tapi komponennya sudah tidak masuk template
@@ -1260,8 +1281,14 @@ if (! function_exists('ukuran_form_panel')) {
                 'id_komponen' => (int) $k['id_komponen'],
                 'nama'        => $k['nama'],
                 'satuan'      => $k['satuan'],
+                'jenis_id'    => $k['jenis_id'] === null ? null : (int) $k['jenis_id'],
             ];
         }
+
+        $jenis_set = array_values(array_unique(array_filter(
+            array_map('intval', (array) $isi['jenis_set']),
+            static fn (int $id): bool => $id > 0
+        )));
 
         $data = [
             'data-nama'  => $isi['nama'],
@@ -1269,6 +1296,11 @@ if (! function_exists('ukuran_form_panel')) {
             'data-nilai' => json_encode((object) $isi['nilai']),
             'data-lebih' => json_encode($lebih),
         ];
+
+        if ($isi['rombongan']) {
+            $data['data-rombongan'] = '1';
+            $data['data-jenis-set'] = implode(',', $jenis_set);
+        }
 
         $attr = [];
 
@@ -1318,9 +1350,10 @@ if (! function_exists('anggota_baris_form')) {
      * anggota[k][nilai_ukuran][id]. Baris cadangan pakai kunci `__K__` yang
      * nanti ditukar JavaScript waktu barisnya ditambah.
      *
-     * @param array $isi nama, nomor, catatan, jenis, nilai ([id_komponen => angka])
+     * @param array $isi       nama, nomor, catatan, jenis, nilai ([id_komponen => angka])
+     * @param int[] $jenis_set jenis busana yang dipakai orderan, jadi tab ukuran anggota
      */
-    function anggota_baris_form(array $isi = [], string $key = ''): string
+    function anggota_baris_form(array $isi = [], string $key = '', array $jenis_set = []): string
     {
         $isi += ['nama' => '', 'nomor' => '', 'catatan' => '', 'jenis' => null, 'nilai' => []];
 
@@ -1348,16 +1381,22 @@ if (! function_exists('anggota_baris_form')) {
             . '<span class="uk-ringkas badge bg-ink-100 text-ink-700 border border-ink-200 px-2 py-1 text-xs fw-normal d-none"></span>'
             . '</div>'
             . ukuran_form_panel([
-                'nama'  => 'anggota[' . $key . ']',
-                'jenis' => $isi['jenis'],
-                'nilai' => $isi['nilai'],
-                'kelas' => 'ukuran-subcard w-100',
+                'nama'      => 'anggota[' . $key . ']',
+                'jenis'     => $isi['jenis'],
+                'nilai'     => $isi['nilai'],
+                'kelas'     => 'ukuran-subcard w-100',
+                'rombongan' => true,
+                'jenis_set' => $jenis_set,
             ])
             . '</div>'
             . '</div>'
             . '<button type="button" class="bg-transparent border-0 hapus-anggota p-1 text-danger flex-shrink-0 mt-0.5" aria-label="Hapus anggota" title="Hapus anggota">'
             . '<i class="fal fa-trash-alt"></i>'
             . '</button>'
+            // baris sebanyak QTY pesanan dikunci JavaScript; gemboknya pengganti tombol hapus
+            . '<span class="kunci-qty d-none text-ink-300 flex-shrink-0 mt-1 px-1" title="Anggota ini mengikuti QTY pesanan, jadi tidak bisa dihapus">'
+            . '<i class="fal fa-lock-alt"></i>'
+            . '</span>'
             . '</div>'
             . '</div>';
     }
@@ -1372,15 +1411,21 @@ if (! function_exists('anggota_panel_form')) {
      * dimuat, penandanya tetap ada untuk baris yang sudah tersimpan, sedangkan
      * order yang belum punya anggota sama sekali tidak akan pernah tersentuh.
      *
-     * @param array $daftar baris anggota: id_anggota, nama, nomor, catatan, jenis, nilai
+     * @param array $daftar    baris anggota: id_anggota, nama, nomor, catatan, jenis, nilai
+     * @param int[] $jenis_set jenis busana yang sudah diterapkan pada orderan
      */
-    function anggota_panel_form(array $daftar = []): string
+    function anggota_panel_form(array $daftar = [], array $jenis_set = []): string
     {
         $ada   = $daftar !== [];
         $baris = '';
 
+        $jenis_set = array_values(array_unique(array_filter(
+            array_map('intval', $jenis_set),
+            static fn (int $id): bool => $id > 0
+        )));
+
         foreach ($daftar as $a) {
-            $baris .= anggota_baris_form($a, (string) $a['id_anggota']);
+            $baris .= anggota_baris_form($a, (string) $a['id_anggota'], $jenis_set);
         }
 
         return '<div class="card mb-3 overflow-hidden rounded-kartu border-ink-200 shadow-kartu">'
@@ -1392,11 +1437,21 @@ if (! function_exists('anggota_panel_form')) {
             . '<i class="fal fa-chevron-down ms-auto text-ink-400 ikon-panah-anggota transition-transform' . ($ada ? ' rotate-180' : '') . '"></i>'
             . '</button>'
             . '</div>'
-            . '<div class="card-body anggota-isi' . ($ada ? '' : ' d-none') . ' p-3 p-sm-4">'
+            . '<div class="card-body anggota-isi' . ($ada ? '' : ' d-none') . ' p-3 p-sm-4"'
+            // nilai awal tab ukuran anggota waktu halaman dibuka; JavaScript
+            // menyamakannya lagi dengan barang yang ada di daftar
+            . ($jenis_set === [] ? '' : ' data-jenis-rombongan="' . implode(',', $jenis_set) . '"')
+            . '>'
             . '<input type="hidden" name="anggota_dikirim" value="1">'
+            // jenis busana yang dipakai orderan; ditulis JavaScript tiap daftar barang
+            // berubah supaya form Sunting tahu tab apa saja yang harus disediakan
+            . '<input type="hidden" class="jenis_busana" name="rincian[jenis_busana]" value="' . esc(implode(',', $jenis_set), 'attr') . '">'
             . '<div class="row gx-2">'
-            . '<div class="col-12 mb-3">'
-            . '<p class="small text-muted mb-0"><i class="fal fa-info-circle me-1 text-primary"></i>Isi nama dan ukuran per orang untuk pesanan rombongan. Order satuan boleh dibiarkan kosong.</p>'
+            . '<div class="col-12 mb-2">'
+            . '<p class="small text-muted mb-0"><i class="fal fa-info-circle me-1 text-primary"></i>Jenis busana mengikuti barang yang ditambah lewat <strong>Tambah Barang</strong>, dan anggota sebanyak total QTY terkunci — tombol hapusnya hanya muncul untuk anggota tambahan.</p>'
+            . '</div>'
+            . '<div class="col-12 mb-3 jenis-terpakai d-none">'
+            . '<div class="jenis-terpakai-list d-flex flex-wrap align-items-center gap-1.5"></div>'
             . '</div>'
             . '<div class="col-12 mb-2">'
             . '<input type="text" class="form-control form-control-sm anggota-cari" placeholder="🔍 Cari nama anggota..." autocomplete="off">'
@@ -1421,7 +1476,7 @@ if (! function_exists('anggota_panel_form')) {
             . '</div>'
             . '</div>'
             . '</div>'
-            . '<template class="anggota-cadang">' . anggota_baris_form([], '__K__') . '</template>'
+            . '<template class="anggota-cadang">' . anggota_baris_form([], '__K__', $jenis_set) . '</template>'
             . '</div>'
             . '</div>'
             . '<div class="modal fade" id="modalTempelWA" tabindex="-1" aria-labelledby="modalTempelWALabel" aria-hidden="true">'
@@ -2437,6 +2492,11 @@ if (! function_exists('cek_email_terbuka_sesi')) {
                 (new \App\Models\EmailModel())->milikUser((int) session()->get('id'))
             );
             $s['email_ids_atau_null'] = true;
+
+            // sama seperti daftar di layarnya: catatan yang namanya ditunjuk
+            // sebagai penanggung jawab ikut dihitung, bukan hanya yang beralamat
+            // di tangannya
+            $s['pegang_user'] = (int) session()->get('id');
         }
 
         return (new \App\Models\TugasModel())->jumlah($s);

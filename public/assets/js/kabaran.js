@@ -74,7 +74,11 @@
       });
 
     $kartu.append($tutup);
-    pastikan().append($kartu);
+
+    // pastikan() mengembalikan node DOM, dan ParentNode.append() bawaan peramban
+    // mengubah argumen objek menjadi "[object Object]" — jQuery-lah yang tahu
+    // cara memasang elemennya
+    $(pastikan()).append($kartu);
 
     var jeda = window.setTimeout(buang, UMUR);
 

@@ -140,6 +140,13 @@ $routes->group('admin', static function ($routes) {
         $routes->get('(:segment)', 'Admin\Laporan::index/$1');
     });
 
+    // lembar cetak daftar transaksi dari layar Tracking Transaksi: per periode
+    // atau dari daftar nota yang sedang dicentang
+    $routes->group('cetak', ['filter' => 'auth:admin,superadmin'], static function ($routes) {
+        $routes->get('unduh/(:alpha)', 'Admin\Cetak::unduh/$1');
+        $routes->get('daftar', 'Admin\Cetak::daftar');
+    });
+
     // KPI karyawan: angka admin dan CS, dihitung dari jejak kerja yang tercatat
     $routes->group('kpi', ['filter' => 'auth:admin,superadmin'], static function ($routes) {
         $routes->get('/', 'Admin\Kpi::index', ['as' => 'hal.kpi']);

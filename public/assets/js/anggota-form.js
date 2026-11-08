@@ -16,6 +16,117 @@
     return Math.round(new Date().getTime() + Math.random() * 100);
   }
 
+  /**
+   * Jenis yang sudah tercatat di server waktu halaman dibuka. Form Sunting tidak
+   * menyimpan jenis di baris barang, jadi tanpa dasar ini daftar tab anggota
+   * jadi kosong setiap kali halaman dimuat ulang.
+   */
+  var DASAR = null;
+
+  function jenisDasar() {
+    if (DASAR === null) {
+      DASAR = [];
+
+      $.each(
+        String($(".anggota-isi").first().attr("data-jenis-rombongan") || "").split(","),
+        function (i, mentah) {
+          var id = $.trim(mentah);
+
+          if (id !== "" && DASAR.indexOf(id) === -1) {
+            DASAR.push(id);
+          }
+        },
+      );
+    }
+
+    return DASAR;
+  }
+
+  /**
+   * Jenis busana yang berlaku untuk orderan rombongan, diambil dari baris barang
+   * yang sudah masuk daftar (satu pesanan boleh memuat beberapa jenis). Urutannya
+   * mengikuti urutan barangnya, jadi tab ukurannya tidak melompat-lompat.
+   */
+  function jenisOrderan() {
+    var $tipe = $("#tipe_orderan");
+
+    if ($tipe.length > 0 && $tipe.val() !== "rombongan") {
+      return [];
+    }
+
+    var ids = [],
+      punya = {};
+
+    $(".list-orderan tr[data-kunci] .ukuran-panel").each(function () {
+      var j = $.trim($(this).attr("data-jenis") || "");
+
+      if (j !== "" && !punya[j]) {
+        punya[j] = true;
+        ids.push(j);
+      }
+    });
+
+    // jenis yang sudah tercatat di orderan tetap dipakai walau baris barangnya
+    // tidak mengenalinya lagi, jadi tab ukuran anggota tidak hilang begitu saja
+    $.each(jenisDasar(), function (i, j) {
+      if (!punya[j]) {
+        punya[j] = true;
+        ids.push(j);
+      }
+    });
+
+    return ids;
+  }
+
+  /** Total QTY semua baris barang: sebanyak itulah anggota utama orderan. */
+  function qtyOrderan() {
+    var total = 0;
+
+    $(".list-orderan tr[data-kunci]").each(function () {
+      total +=
+        parseInt($(this).find('input[name$="[qty]"]').first().val(), 10) || 0;
+    });
+
+    return total;
+  }
+
+  /** Baris yang belum diisi apa pun; cuma baris semacam ini yang boleh dibuang otomatis. */
+  function kosong($baris) {
+    var terisi = false;
+
+    $baris
+      .find('.anggota-nama, .uk-field, input[name$="[nomor]"], input[name$="[catatan]"]')
+      .each(function () {
+        if ($.trim($(this).val() || "") !== "") {
+          terisi = true;
+
+          return false;
+        }
+      });
+
+    return !terisi;
+  }
+
+  /**
+   * Tandai baris yang lahir dari QTY pesanan: tombol hapusnya disembunyikan dan
+   * barisnya diberi kelas supaya klik paksa pun tetap ditolak. Baris di luar
+   * jumlah QTY adalah anggota tambahan dan bebas dihapus.
+   */
+  function tandaiKunci($daftar) {
+    var qty = qtyOrderan();
+
+    $daftar.children(".anggota-baris").each(function (i) {
+      var terkunci = i < qty,
+        $baris = $(this);
+
+      $baris.toggleClass("qty-terkunci", terkunci);
+      $baris.find(".hapus-anggota").toggleClass("d-none", terkunci);
+      $baris.find(".kunci-qty").toggleClass("d-none", !terkunci);
+    });
+
+    return qty;
+  }
+
   function hitung($daftar) {
     var $baris = $daftar.children(".anggota-baris");
 
@@ -27,6 +138,7 @@
         .text(i + 1);
     });
 
+    tandaiKunci($daftar);
     $daftar.closest(".card").find(".jumlah-anggota").text($baris.length);
   }
 
@@ -51,19 +163,6 @@
 
     var $row = $($cadang.html().split(GANTIAN).join(kunci()));
 
-    // Wariskan jenis busana dari orderan (rombongan) atau anggota pertama jika sudah pernah dipilih
-    var jenisRombongan =
-      window.JENIS_BUSANA_ROMBONGAN ||
-      $daftar.closest(".anggota-isi").attr("data-jenis-rombongan") ||
-      $("#ukuranModal .uk-jenis").val() ||
-      $(".list-orderan .ukuran-panel").first().attr("data-jenis");
-
-    var jenisDipakai =
-      jenisRombongan || $daftar.find(".uk-jenis").first().val();
-    if (jenisDipakai) {
-      $row.find(".ukuran-panel").attr("data-jenis", jenisDipakai);
-    }
-
     $daftar.append($row);
 
     // Bersihkan filter cari agar baris baru tidak tersembunyi oleh search aktif
@@ -72,6 +171,15 @@
 
     if (window.UKURAN) {
       window.UKURAN.tempel($row.find(".ukuran-panel"));
+
+      // jenis busana tidak dipilih per orang lagi: tab ukurannya mengikuti
+      // barang yang sudah masuk orderan
+      if (window.UKURAN.jenisRombongan) {
+        window.UKURAN.jenisRombongan(
+          $row.find(".ukuran-panel").first(),
+          jenisOrderan(),
+        );
+      }
     }
 
     if (isi) {
@@ -194,6 +302,93 @@
     return count;
   }
 
+  /** Deret jenis busana yang sedang diterapkan orderan, di atas daftar anggota. */
+  function gambarJenis($isi, ids) {
+    var $kotak = $isi.find(".jenis-terpakai").first(),
+      nama = (window.UKURAN_FORM && window.UKURAN_FORM.jenis) || {};
+
+    if ($kotak.length === 0) {
+      return;
+    }
+
+    var $list = $kotak.find(".jenis-terpakai-list").first().empty();
+
+    if (ids.length > 0) {
+      $list.append(
+        $('<span class="text-xs fw-semibold text-ink-500 me-1">Jenis busana pada orderan:</span>'),
+      );
+    }
+
+    $.each(ids, function (i, id) {
+      if (!nama[id]) {
+        return;
+      }
+
+      $list.append(
+        $(
+          '<span class="badge rounded-pill bg-brand-50 text-brand-700 border border-brand-100 px-2 py-1 text-xs fw-semibold"><i class="fal fa-shirt me-1"></i></span>',
+        ).append(document.createTextNode(nama[id])),
+      );
+    });
+
+    $kotak.toggleClass("d-none", ids.length === 0);
+  }
+
+  /**
+   * Samakan panel anggota dengan keadaan orderan: jenis busana yang tersedia,
+   * jumlah anggota utama sebanyak total QTY barang, dan baris mana yang terkunci.
+   * Dipanggil halaman tiap daftar barangnya berubah.
+   */
+  var ROMBONGAN = {
+    jenis: jenisOrderan,
+    qty: qtyOrderan,
+    sinkron: function () {
+      var $isi = $(".anggota-isi").first();
+
+      if ($isi.length === 0) {
+        return;
+      }
+
+      var ids = jenisOrderan(),
+        $daftar = $isi.find(".anggota-daftar").first();
+
+      $isi.attr("data-jenis-rombongan", ids.join(","));
+      $(".jenis_busana").val(ids.join(","));
+      gambarJenis($isi, ids);
+
+      if ($("#tipe_orderan").val() === "rombongan") {
+        var qty = qtyOrderan();
+
+        // QTY turun: kelebihan baris yang masih kosong dibuang, yang sudah terisi
+        // ditinggal jadi anggota tambahan supaya isian orangnya tidak hilang
+        $daftar.children(".anggota-baris").slice(qty).each(function () {
+          if (kosong($(this))) {
+            $(this).remove();
+          }
+        });
+
+        while ($daftar.children(".anggota-baris").length < qty) {
+          if (baris($daftar) === null) {
+            break;
+          }
+        }
+      }
+
+      $daftar.children(".anggota-baris").each(function () {
+        if (window.UKURAN && window.UKURAN.jenisRombongan) {
+          window.UKURAN.jenisRombongan(
+            $(this).find(".ukuran-panel").first(),
+            ids,
+          );
+        }
+      });
+
+      hitung($daftar);
+    },
+  };
+
+  window.ROMBONGAN = ROMBONGAN;
+
   $(document)
     .on("click", ".buka-anggota", function (e) {
       e.preventDefault();
@@ -207,9 +402,13 @@
       $(this).attr("aria-expanded", buka ? "true" : "false");
       $panah.toggleClass("rotate-180", buka);
 
-      // Jika dibuka dan belum ada baris sama sekali, otomatis munculkan 1 anggota
+      // dibuka tanpa satu pun baris: munculkan anggota sebanyak QTY orderan,
+      // atau satu baris kalau barangnya memang belum ditambah
       if (buka) {
+        ROMBONGAN.sinkron();
+
         var $daftar = $isi.find(".anggota-daftar").first();
+
         if ($daftar.children(".anggota-baris").length === 0) {
           baris($daftar);
         }
@@ -219,9 +418,22 @@
       baris($(this).closest(".anggota-isi").find(".anggota-daftar").first());
     })
     .on("click", ".hapus-anggota", function () {
-      var $daftar = $(this).closest(".anggota-daftar");
+      var $baris = $(this).closest(".anggota-baris"),
+        $daftar = $baris.closest(".anggota-daftar");
 
-      $(this).closest(".anggota-baris").remove();
+      // tombolnya sudah disembunyikan; ini jaring pengaman kalau barisnya
+      // terlanjur terkunci sebelum tandanya sempat dipasang
+      if ($baris.hasClass("qty-terkunci")) {
+        if (window.KABAR) {
+          KABAR.galat(
+            "Anggota ini terbentuk dari QTY pesanan, jadi tidak bisa dihapus. Kurangi QTY barangnya kalau jumlahnya memang berubah.",
+          );
+        }
+
+        return;
+      }
+
+      $baris.remove();
       hitung($daftar);
     })
     .on("click", ".tambah-tempelan", function () {
@@ -398,6 +610,10 @@
     $(".anggota-daftar").each(function () {
       hitung($(this));
     });
+
+    // dijalankan terakhir: panel ukuran sudah ditempel ukuran-form.js dan draf
+    // halaman sudah dipulihkan, jadi jenis + QTY orderan bisa dibaca apa adanya
+    ROMBONGAN.sinkron();
   });
 
   // ---- Search anggota ----

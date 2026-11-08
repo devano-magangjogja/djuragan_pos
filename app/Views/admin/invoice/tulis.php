@@ -659,7 +659,7 @@ $session  = \Config\Services::session();
                     </div>
                     <div class="col-12 helper-rombongan-busana d-none mb-2">
                         <div class="alert alert-info py-2 px-3 small border-0 bg-brand-50 text-brand-700 rounded-lg mb-0">
-                            <i class="fal fa-info-circle me-1.5"></i> Cukup pilih jenis busana. Jenis ini akan otomatis digunakan sebagai acuan ukuran tiap anggota di daftar Anggota Rombongan.
+                            <i class="fal fa-info-circle me-1.5"></i> Pilih jenis busana lalu klik <strong>Tambahkan</strong>. Setiap jenis yang masuk daftar barang jadi tab ukuran sendiri di daftar Anggota Rombongan, jadi satu pesanan boleh memuat beberapa jenis busana sekaligus.
                         </div>
                     </div>
                     <?= ukuran_form_panel(['id' => 'ukuranModal']) ?>
@@ -1274,13 +1274,19 @@ $js = <<< JS
     		if (!buka) {
     			pnl.find('.anggota-daftar').empty();
     			$('.jumlah-anggota').text(0);
+    			$('.jenis-terpakai').addClass('d-none');
+    			$('.jenis_busana').val('');
     		} else {
+    			// jumlah baris mengikuti total QTY barang yang sudah masuk daftar orderan,
+    			// bukan QTY yang sedang diketik di modal tambah produk
+    			if (window.ROMBONGAN) {
+    				ROMBONGAN.sinkron();
+    			}
+
     			var df = pnl.find('.anggota-daftar').first();
+
     			if (df.children('.anggota-baris').length === 0) {
-    				var qty = parseInt($('#QTY').val()) || 1;
-    				for (var qi = 0; qi < qty; qi++) {
-    					$('.tambah-anggota').first().trigger('click');
-    				}
+    				$('.tambah-anggota').first().trigger('click');
     			}
     		}
     	}
@@ -1295,23 +1301,13 @@ $js = <<< JS
     		$('#tambahProduk').toggleClass('is-rombongan-modal', isRombongan);
     	}
 
-    	function terapkanJenisRombongan(jenis) {
-    		if (!jenis) return;
-    		window.JENIS_BUSANA_ROMBONGAN = jenis;
-    		$('.anggota-isi').attr('data-jenis-rombongan', jenis);
-
-    		$('.anggota-daftar .anggota-baris').each(function() {
-    			var pnl = $(this).find('.ukuran-panel').first();
-    			pnl.attr('data-jenis', jenis);
-    			var uk = pnl.find('.uk-jenis');
-    			if (uk.length > 0) {
-    				if (uk.val() !== jenis) {
-    					uk.val(jenis).trigger('change');
-    				}
-    			} else if (window.UKURAN && typeof window.UKURAN.pilihJenis === 'function') {
-    				window.UKURAN.pilihJenis(pnl, jenis);
-    			}
-    		});
+    	// Jenis busana rombongan tidak dipilih di panel anggota lagi: ia dibaca dari
+    	// barang yang sudah masuk daftar orderan, jadi satu pesanan boleh memuat
+    	// beberapa jenis sekaligus. Logikanya di assets/js/anggota-form.js.
+    	function terapkanJenisRombongan() {
+    		if (window.ROMBONGAN) {
+    			ROMBONGAN.sinkron();
+    		}
     	}
 
     	$(document).on('change', '#ukuranModal .uk-jenis', function() {
@@ -1324,7 +1320,6 @@ $js = <<< JS
     					$('#kode_produk').val(teks);
     				}
     			}
-    			terapkanJenisRombongan(v);
     		}
     	});
 
@@ -1335,10 +1330,7 @@ $js = <<< JS
     		if (v === 'rombongan') {
     			tampilAnggota(true);
     			tampilKategori(v);
-    			var jAwal = $('#ukuranModal .uk-jenis').val() || $('.list-orderan .ukuran-panel').first().attr('data-jenis');
-    			if (jAwal) {
-    				terapkanJenisRombongan(jAwal);
-    			}
+    			terapkanJenisRombongan();
     		}
     		else if (v === 'satuan') {
     			if ($('.anggota-daftar .anggota-baris').length === 0 || confirm('Kosongkan daftar anggota rombongan?')) {
@@ -1358,23 +1350,6 @@ $js = <<< JS
     	// default kategori satuan: card rombongan langsung tersembunyi sejak awal
     	tampilKategori($('#tipe_orderan').val());
     	sinkronModalRombongan();
-
-    	// QTY → sesuaikan jumlah baris anggota rombongan secara otomatis
-    	$(document).on('input change', '#QTY', function() {
-    		if ($('#tipe_orderan').val() !== 'rombongan') return;
-    		var qty = parseInt($(this).val()) || 0;
-    		if (qty <= 0) return;
-    		var dftQty = $('.anggota-daftar').first();
-    		var adaQty = dftQty.children('.anggota-baris').length;
-    		if (qty > adaQty) {
-    			for (var qi = adaQty; qi < qty; qi++) {
-    				$('.tambah-anggota').first().trigger('click');
-    			}
-    		} else if (qty < adaQty) {
-    			dftQty.children('.anggota-baris').slice(qty).remove();
-    			$('.jumlah-anggota').text(qty);
-    		}
-    	});
 
     	// spesifikasi custom hanya muncul saat ukuran = Custom; ukuran terstruktur
     	// sekarang ikut di dalam panelnya
@@ -1527,10 +1502,6 @@ $js = <<< JS
 
     		var tr = bikinBaris(k, d, a, e, b, rincian, jenis, nilai, s, kolam);
 
-    		if ($('#tipe_orderan').val() === 'rombongan' && jenis) {
-    			terapkanJenisRombongan(jenis);
-    		}
-
     		if (rowEdit) {
     			rowEdit.replaceWith(tr);
     			rowEdit = null;
@@ -1540,6 +1511,12 @@ $js = <<< JS
     			pl=tb.data('length'),
     			tb.data('length',pl+1),
     			listOrder();
+    		}
+
+    		// jenis dan QTY dibaca dari baris yang sudah ada di daftar, jadi panel
+    		// anggota baru boleh disamakan setelah barisnya benar-benar terpasang
+    		if ($('#tipe_orderan').val() === 'rombongan') {
+    			terapkanJenisRombongan();
     		}
 
     		// ringkasan ukuran dihitung ulang setelah baris masuk DOM
@@ -1567,6 +1544,12 @@ $js = <<< JS
     			window.STOK&&STOK.sinkronFoto&&STOK.sinkronFoto()
     		),
     		totalbiaya();
+    	});
+
+    	// barang dihapus: jenis busana dan total QTY orderan berubah, jadi jumlah
+    	// anggota utama dan tab ukuran tiap orang ikut disamakan ulang
+    	$(document).on('click', '.list-orderan .hapus_row', function() {
+    		terapkanJenisRombongan();
     	});
 
     	// klik ubah: isi ulang modal dengan data baris, kunci baris dipertahankan
@@ -1852,6 +1835,12 @@ $js = <<< JS
     			data: serializedData
     		});
 
+    		// permintaan ini punya handler sendiri, jadi ditandai supaya jaring
+    		// pengaman global di kabar-hasil.js tidak menampilkan pesan keduanya
+    		if (window.KABAR_HASIL) {
+    			KABAR_HASIL.jaga(request);
+    		}
+
     		// Callback handler that will be called on success
     		request.done(function (response, textStatus, jqXHR){
     			// orderan tersimpan: draf tidak relevan lagi
@@ -1859,6 +1848,13 @@ $js = <<< JS
 
     			// foto sengaja ditahan peramban sampai orderan ini punya id
     			var id = parseInt(response.id || 0, 10);
+
+    			// pesannya baru terbaca di halaman tujuan karena Simpan selalu
+    			// diakhiri pindah halaman — dititipkan termasuk untuk jalan
+    			// "lewati foto", yang pindah halamannya terjadi belakangan
+    			if (window.KABAR_HASIL) {
+    				KABAR_HASIL.catatSukses({ nomor: response.nomor || '', id: id });
+    			}
 
     			if (id > 0 && window.FOTO && window.FOTO.ada()) {
     				window.FOTO.kirim(id, response.url);
@@ -1875,15 +1871,29 @@ $js = <<< JS
     			terkunci = false;
     			inputs.prop("disabled", false);
 
-    			// pesan validasi dari server dulu dituang ke wadah #lTo yang tidak
-    			// pernah ada di halaman ini, lalu ditampil dengan API toast Bootstrap 4
-    			// padahal aplikasinya memakai Bootstrap 5 — jadi galat apa pun hilang
-    			// tanpa jejak. Sekarang tiap pesan menjadi popup yang menutup sendiri.
-    			if (window.KABAR) {
-    				$.each(jqXHR.responseJSON || {}, function (k, v) {
-    					KABAR.galat(v);
-    				});
+    			// permintaan yang dibatalkan peramban (halaman sedang pindah) bukan
+    			// galat, jadi tidak perlu dilaporkan
+    			if (textStatus === 'abort' || ! window.KABAR_HASIL) {
+    				return;
     			}
+
+    			// pesan validasi dari server dulu dituang ke wadah #lTo yang tidak
+    			// pernah ada di halaman ini, lalu lewat API toast Bootstrap 4
+    			// padahal aplikasinya Bootstrap 5 — galat hilang tanpa jejak. Setelah
+    			// itu jadi popup yang menutup sendiri dalam 5 detik, yang setebal
+    			// itu tidak terbaca: sekarang ditahan di modal sampai ditutup.
+    			var daftar = [];
+
+    			$.each(jqXHR.responseJSON || {}, function (k, v) {
+    				daftar.push(typeof v === 'string' ? v : k);
+    			});
+
+    			KABAR_HASIL.galat({
+    				request: jqXHR,
+    				judul: 'Orderan belum tersimpan',
+    				pesan: daftar,
+    				catatan: 'Tidak ada orderan yang tercatat, jadi betulkan dulu lalu tekan Simpan lagi.'
+    			});
     		});
 
     		// sengaja tidak ada handler "always": setelah sukses kolom memang

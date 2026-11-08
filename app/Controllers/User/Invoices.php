@@ -75,7 +75,7 @@ class Invoices extends BaseController
                 'user_id'        => $user_id,
                 'keterangan'     => ($this->request->getPost('keterangan') !== '' ? trim($this->request->getPost('keterangan')) : null),
                 'deadline'       => deadline_iso($rincian),
-                'rincian'        => rincian_json($rincian, array_keys(meta_rincian('pesanan')), ['tipe' => array_keys(tipe_pesanan()), 'orderan' => ['satuan', 'rombongan']]),
+                'rincian'        => rincian_json($rincian, key_rincian_pesanan(), ['tipe' => array_keys(tipe_pesanan()), 'orderan' => ['satuan', 'rombongan']]),
             ];
 
             // sama seperti di panel admin: satu orderan, satu transaksi
@@ -151,6 +151,8 @@ class Invoices extends BaseController
                 'status' => 'data tersimpan',
                 // sama seperti panel admin: foto naik setelah orderan punya id
                 'id'     => $invoice_id,
+                // nomor faktur dibaca halaman tujuan untuk pesan "sudah tercatat"
+                'nomor'  => $seri,
                 'url'    => site_url('user/invoices/lihat/' . $juragan . '/semua?cari[kolom]=faktur&cari[q]=' . $seri),
             ];
 

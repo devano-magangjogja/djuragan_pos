@@ -7,6 +7,11 @@
  * angka yang sudah tercatat ikut terkirim terus saat orderan disunting, panel
  * modal tidak punya nama (kunci barisnya baru ada saat produk ditambah, jadi
  * nilainya diambil lewat UKURAN.nilai()).
+ *
+ * Panel anggota rombongan bertanda data-rombongan dan tidak punya dropdown jenis
+ * sendiri: jenisnya mengikuti barang yang sudah masuk orderan (data-jenis-set,
+ * ditulis ROMBONGAN.sinkron() di anggota-form.js) dan tampil sebagai tab, jadi
+ * satu pesanan bisa memuat beberapa jenis busana sekaligus.
  */
 (function ($) {
   "use strict";
@@ -118,9 +123,6 @@
 
     return (
       '<div class="col-12 mb-2 pb-2 border-bottom border-ink-200/70">' +
-      '<div class="d-flex align-items-center justify-content-between mb-1">' +
-      '<button type="button" class="btn btn-link text-decoration-none p-0 text-xs terapkan-semua-jenis d-none" title="Terapkan jenis ini ke semua anggota rombongan"><i class="fal fa-clone me-1"></i>Terapkan ke semua</button>' +
-      "</div>" +
       '<select class="form-select form-select-sm bg-white uk-jenis">' +
       html.join("") +
       "</select>" +
@@ -143,10 +145,10 @@
   }
 
   /** "Lingkar Dada 102 cm" per kolom yang terisi (koma, bukan titik). */
-  function isiRingkas($panel) {
+  function kelompok($kolom) {
     var bagian = [];
 
-    $panel.find(".uk-field").each(function () {
+    $kolom.each(function () {
       var v = $.trim($(this).val() || ""),
         s = $(this).data("satuan");
 
@@ -161,6 +163,24 @@
     });
 
     return bagian;
+  }
+
+  function isiRingkas($panel) {
+    if ($panel.attr("data-rombongan")) {
+      var bag = [];
+
+      $panel.find(".uk-grup").each(function () {
+        var isi = kelompok($(this).find(".uk-field"));
+
+        if (isi.length > 0) {
+          bag.push($(this).attr("data-nama-jenis") + ": " + isi.join(" · "));
+        }
+      });
+
+      return bag;
+    }
+
+    return kelompok($panel.find(".uk-field"));
   }
 
   function ringkas($panel) {
@@ -228,18 +248,237 @@
       $panel.find(".uk-isi").html(html.join("") + tombolTutup);
     }
 
-    // Tampilkan tombol "Terapkan ke semua" jika ada lebih dari 1 anggota di daftar
-    var $daftar = $panel.closest(".anggota-daftar");
-    if (
-      $daftar.length > 0 &&
-      $daftar.children(".anggota-baris").length > 1 &&
-      jenis
-    ) {
-      $panel.find(".terapkan-semua-jenis").removeClass("d-none");
-    } else {
-      $panel.find(".terapkan-semua-jenis").addClass("d-none");
+    ringkas($panel);
+  }
+
+  /* ---- panel anggota rombongan: satu tab per jenis busana yang dipakai ---- */
+
+  /**
+   * Tab yang harus tampil untuk satu anggota: komponen umum sekali (kalau ada),
+   * satu tab per jenis yang diterapkan orderan urut barangnya masuk, lalu tab
+   * untuk angka tersimpan yang komponennya sudah tidak masuk daftar — tanpa tab
+   * itu nilainya ikut terhapus waktu orderan disimpan. Komponen semacam itu
+   * membawa jenisnya sendiri, jadi ia kembali ke tab jenisnya kalau jenis itu
+   * masih dipakai orderan, dan bukan dilempar ke satu tab tanpa nama.
+   */
+  function tabRombongan($panel) {
+    var tab = [],
+      byJenis = {},
+      punya = {},
+      umum = (data.komponen[0] || []).slice();
+
+    if (umum.length > 0) {
+      tab.push({ kunci: "0", nama: "Ukuran Umum", komponen: umum });
+
+      $.each(umum, function (i, k) {
+        punya[k.id_komponen] = true;
+      });
     }
 
+    $.each(
+      String($panel.attr("data-jenis-set") || "").split(","),
+      function (i, mentah) {
+        var id = $.trim(mentah);
+
+        if (id === "" || id === "0" || !data.jenis[id] || byJenis[id]) {
+          return;
+        }
+
+        var komponen = (data.komponen[id] || []).slice();
+
+        $.each(komponen, function (j, k) {
+          punya[k.id_komponen] = true;
+        });
+
+        byJenis[id] = { kunci: id, nama: data.jenis[id], komponen: komponen };
+        tab.push(byJenis[id]);
+      },
+    );
+
+    var yatim = {},
+      urut = [];
+
+    $.each($panel.data("lebih") || [], function (i, k) {
+      if (punya[k.id_komponen]) {
+        return;
+      }
+
+      punya[k.id_komponen] = true;
+
+      var j = k.jenis_id && data.jenis[k.jenis_id] ? String(k.jenis_id) : "";
+
+      if (j !== "" && byJenis[j]) {
+        byJenis[j].komponen.push(k);
+
+        return;
+      }
+
+      var kunci = j === "" ? "lain" : "s" + j;
+
+      if (!yatim[kunci]) {
+        yatim[kunci] = {
+          kunci: kunci,
+          nama: j === "" ? "Ukuran Lain" : data.jenis[j],
+          komponen: [],
+        };
+        urut.push(kunci);
+      }
+
+      yatim[kunci].komponen.push(k);
+    });
+
+    $.each(urut, function (i, kunci) {
+      tab.push(yatim[kunci]);
+    });
+
+    return tab;
+  }
+
+  /**
+   * Angka yang sudah diisi untuk jenis yang baru dibuang dari orderan tidak boleh
+   * hilang diam-diam: komponennya dipindah ke cadangan supaya tetap tampil (tab
+   * "Ukuran Lain") dan tetap terkirim waktu orderan disimpan.
+   */
+  function selamatkan($panel, set) {
+    var cakupan = {},
+      lebih = ($panel.data("lebih") || []).slice(),
+      punya = {};
+
+    $.each(data.komponen[0] || [], function (i, k) {
+      cakupan[k.id_komponen] = true;
+    });
+
+    $.each(set, function (i, id) {
+      $.each(data.komponen[id] || [], function (j, k) {
+        cakupan[k.id_komponen] = true;
+      });
+    });
+
+    $.each(lebih, function (i, k) {
+      punya[k.id_komponen] = true;
+    });
+
+    $panel.find(".uk-field").each(function () {
+      var id = parseInt($(this).data("key"), 10);
+
+      if (cakupan[id] || punya[id] || $.trim($(this).val() || "") === "") {
+        return;
+      }
+
+      punya[id] = true;
+      lebih.push({
+        id_komponen: id,
+        nama: $(this).data("label"),
+        satuan: $(this).data("satuan"),
+      });
+    });
+
+    $panel.data("lebih", lebih);
+  }
+
+  function pilihTab($panel, kunci) {
+    $panel.attr("data-jenis-aktif", kunci);
+
+    $panel.find(".uk-tab-jenis").each(function () {
+      var nyala = $(this).attr("data-tab") === kunci;
+
+      $(this)
+        .toggleClass("btn-primary", nyala)
+        .toggleClass("text-white", nyala)
+        .toggleClass("btn-light", !nyala)
+        .toggleClass("text-ink-700", !nyala)
+        .attr("aria-pressed", nyala ? "true" : "false");
+    });
+
+    $panel.find(".uk-grup").each(function () {
+      $(this).toggleClass("d-none", $(this).attr("data-tab") !== kunci);
+    });
+  }
+
+  function isiRombongan($panel) {
+    var tab = tabRombongan($panel),
+      nilai = $.extend({}, $panel.data("nilai") || {}, angka($panel)),
+      nama = $panel.data("nama") || "",
+      aktif = String($panel.attr("data-jenis-aktif") || ""),
+      cocok = false;
+
+    if (tab.length === 0) {
+      $panel
+        .attr("data-jenis-aktif", "")
+        .html(
+          '<div class="w-100 py-2"><p class="small text-muted mb-0">' +
+            '<i class="fal fa-info-circle me-1 text-primary"></i>' +
+            "Belum ada jenis busana pada orderan ini. Tambahkan barangnya lewat " +
+            "<strong>Tambah Barang</strong>, kolom ukuran tiap anggota menyesuaikan sendiri." +
+            "</p></div>",
+        );
+
+      ringkas($panel);
+
+      return;
+    }
+
+    $.each(tab, function (i, t) {
+      cocok = cocok || t.kunci === aktif;
+    });
+
+    if (!cocok) {
+      aktif = tab[0].kunci;
+    }
+
+    var pill = [],
+      grup = [];
+
+    $.each(tab, function (i, t) {
+      var html = [];
+
+      $.each(t.komponen, function (j, k) {
+        html.push(kolom(k, nilai[k.id_komponen], nama));
+      });
+
+      pill.push(
+        '<button type="button" class="uk-tab-jenis btn btn-sm btn-light border rounded-pill px-2.5 py-1 text-xs fw-semibold"' +
+          ' data-tab="' +
+          t.kunci +
+          '">' +
+          lepas(t.nama) +
+          "</button>",
+      );
+
+      grup.push(
+        '<div class="uk-grup w-100" data-tab="' +
+          t.kunci +
+          '" data-nama-jenis="' +
+          lepas(t.nama) +
+          '">' +
+          '<div class="uk-isi row gx-2 w-100">' +
+          (html.length > 0
+            ? html.join("")
+            : '<div class="col-12"><p class="small text-muted mb-0">Jenis ini belum punya kolom ukuran.</p></div>') +
+          "</div></div>",
+      );
+    });
+
+    var tombolTutup =
+      $panel.closest(".ukuran-wrapper").find(".buka-ukuran").length > 0
+        ? '<div class="w-100 mt-1 pt-2 border-top border-ink-200/60 d-flex justify-content-between align-items-center">' +
+          '<span class="text-xs text-muted"><i class="fal fa-check-circle text-success me-1"></i>Ukuran tersimpan otomatis</span>' +
+          '<button type="button" class="btn btn-xs btn-light border py-1 px-2.5 text-xs tutup-ukuran-btn"><i class="fal fa-check me-1"></i>Selesai</button>' +
+          "</div>"
+        : "";
+
+    $panel.html(
+      '<div class="uk-tab d-flex flex-wrap gap-1.5 w-100 mb-2 pb-2 border-bottom border-ink-200/70">' +
+        '<span class="text-xs fw-semibold text-secondary align-self-center me-1">Jenis busana</span>' +
+        pill.join("") +
+        "</div>" +
+        '<div class="uk-grup-isi w-100">' +
+        grup.join("") +
+        "</div>" +
+        tombolTutup,
+    );
+
+    pilihTab($panel, aktif);
     ringkas($panel);
   }
 
@@ -247,9 +486,14 @@
   function tempel(panel) {
     var $panel = $(panel);
 
+    if ($panel.attr("data-rombongan")) {
+      isiRombongan($panel);
+
+      return $panel;
+    }
+
     $panel.html(
-      pilihan($panel.data("jenis")) +
-        '<div class="uk-isi row gx-2 w-100"></div>',
+      pilihan($panel.data("jenis")) + '<div class="uk-isi row gx-2 w-100"></div>',
     );
     isi($panel, $panel.data("jenis") || "");
 
@@ -270,6 +514,9 @@
     })
     .on("input", ".uk-field", function () {
       ringkas($(this).closest(".ukuran-panel"));
+    })
+    .on("click", ".uk-tab-jenis", function () {
+      pilihTab($(this).closest(".ukuran-panel"), $(this).attr("data-tab"));
     })
     .on("click", ".buka-ukuran", function (e) {
       e.preventDefault();
@@ -308,30 +555,28 @@
       );
       $btn.find(".ikon-panah").removeClass("rotate-180");
       ringkas($panel);
-    })
-    .on("click", ".terapkan-semua-jenis", function (e) {
-      e.preventDefault();
-      var val = $(this).closest(".col-12").find(".uk-jenis").val();
-      if (!val) {
-        return;
-      }
-      var $daftar = $(this).closest(".anggota-daftar");
-      $daftar.find(".ukuran-panel").each(function () {
-        var $p = $(this);
-        $p.find(".uk-jenis").val(val);
-        isi($p, val);
-      });
     });
 
   // dipakai JS bawaan halaman untuk memindahkan angka ke hidden input baris baru
   window.UKURAN = {
     tempel: tempel,
     isi: isi,
-    pilihJenis: function (panel, jenis) {
-      var $panel = $(panel);
-      $panel.attr("data-jenis", jenis || "");
-      $panel.find(".uk-jenis").val(jenis || "");
-      isi($panel, jenis || "");
+    /** Jenis busana yang berlaku untuk satu anggota, urut barangnya masuk orderan. */
+    jenisRombongan: function (panel, ids) {
+      var $panel = $(panel),
+        set = [];
+
+      $.each(ids || [], function (i, v) {
+        v = $.trim(String(v === undefined || v === null ? "" : v));
+
+        if (v !== "" && data.jenis[v]) {
+          set.push(v);
+        }
+      });
+
+      $panel.attr("data-jenis-set", set.join(","));
+      selamatkan($panel, set);
+      isiRombongan($panel);
     },
     nilai: function (panel) {
       var hasil = [];
@@ -360,8 +605,14 @@
       var $panel = $(panel);
 
       $panel.find(".uk-jenis").val("");
+      $panel.find(".uk-field").val("");
       $panel.data("nilai", {});
-      isi($panel, "");
+
+      if ($panel.attr("data-rombongan")) {
+        isiRombongan($panel);
+      } else {
+        isi($panel, "");
+      }
     },
   };
 })(jQuery);

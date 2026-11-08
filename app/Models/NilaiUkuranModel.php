@@ -161,6 +161,29 @@ class NilaiUkuranModel extends Model
     }
 
     /**
+     * Jenis busana yang terpakai pada satu orderan, urut angka pertamanya dicatat.
+     *
+     * Dibaca dari komponen ukuran yang tersimpan — baris barang maupun anggota —
+     * karena jenis pilihan form Tulis tidak ikut dikirim ke server. Satu orderan
+     * rombongan boleh memuat beberapa jenis, jadi hasilnya daftar, bukan satu angka.
+     *
+     * @return int[]
+     */
+    public function jenisTerpakai(int $invoice_id): array
+    {
+        $nilai = $this->db->prefixTable('nilai_ukuran');
+        $kompo = $this->db->prefixTable('ukuran_komponen');
+
+        return array_map('intval', array_column(
+            $this->db->query('SELECT k.jenis_id FROM `' . $nilai . '` n'
+                . ' JOIN `' . $kompo . '` k ON k.id_komponen = n.komponen_id'
+                . ' WHERE n.invoice_id = ' . $invoice_id . ' AND k.jenis_id IS NOT NULL'
+                . ' GROUP BY k.jenis_id ORDER BY MIN(n.id_nilai)')->getResultArray(),
+            'jenis_id'
+        ));
+    }
+
+    /**
      * Ukuran siap tampil, dikelompokkan per baris orderan:
      * [id_beli => [[label, angka], ...]]. Diambil sekali query untuk banyak
      * invoice supaya daftar transaksi tidak menambah query per kartu.

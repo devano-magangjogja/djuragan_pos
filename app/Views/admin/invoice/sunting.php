@@ -564,7 +564,8 @@ $rincian_pesanan = baca_rincian($orderan->rincian);
             </div>
         </div>
 
-        <?= anggota_panel_form($anggota_item) ?>
+        <?php // jenis busana orderan jadi nilai awal tab ukuran anggota; JS menyamakannya lagi dengan daftar barang ?>
+        <?= anggota_panel_form($anggota_item, $jenis_rombongan ?? []) ?>
 
         <?= foto_panel_form($foto_sudah, (int) $orderan->id_invoice) ?>
 
@@ -805,7 +806,7 @@ $rincian_pesanan = baca_rincian($orderan->rincian);
                     </div>
                     <div class="col-12 helper-rombongan-busana d-none mb-2">
                         <div class="alert alert-info py-2 px-3 small border-0 bg-brand-50 text-brand-700 rounded-lg mb-0">
-                            <i class="fal fa-info-circle me-1.5"></i> Cukup pilih jenis busana. Jenis ini akan otomatis digunakan sebagai acuan ukuran tiap anggota di daftar Anggota Rombongan.
+                            <i class="fal fa-info-circle me-1.5"></i> Pilih jenis busana lalu klik <strong>Tambahkan</strong>. Setiap jenis yang masuk daftar barang jadi tab ukuran sendiri di daftar Anggota Rombongan, jadi satu pesanan boleh memuat beberapa jenis busana sekaligus.
                         </div>
                     </div>
                     <?= ukuran_form_panel(['id' => 'ukuranModal']) ?>
@@ -1412,13 +1413,19 @@ $js = <<< JS
     		if (!buka) {
     			pnl.find('.anggota-daftar').empty();
     			$('.jumlah-anggota').text(0);
+    			$('.jenis-terpakai').addClass('d-none');
+    			$('.jenis_busana').val('');
     		} else {
+    			// jumlah baris mengikuti total QTY barang yang sudah masuk daftar orderan,
+    			// bukan QTY yang sedang diketik di modal tambah produk
+    			if (window.ROMBONGAN) {
+    				ROMBONGAN.sinkron();
+    			}
+
     			var df = pnl.find('.anggota-daftar').first();
+
     			if (df.children('.anggota-baris').length === 0) {
-    				var qty = parseInt($('#QTY').val()) || 1;
-    				for (var qi = 0; qi < qty; qi++) {
-    					$('.tambah-anggota').first().trigger('click');
-    				}
+    				$('.tambah-anggota').first().trigger('click');
     			}
     		}
     	}
@@ -1433,23 +1440,13 @@ $js = <<< JS
     		$('#tambahProduk').toggleClass('is-rombongan-modal', isRombongan);
     	}
 
-    	function terapkanJenisRombongan(jenis) {
-    		if (!jenis) return;
-    		window.JENIS_BUSANA_ROMBONGAN = jenis;
-    		$('.anggota-isi').attr('data-jenis-rombongan', jenis);
-
-    		$('.anggota-daftar .anggota-baris').each(function() {
-    			var pnl = $(this).find('.ukuran-panel').first();
-    			pnl.attr('data-jenis', jenis);
-    			var uk = pnl.find('.uk-jenis');
-    			if (uk.length > 0) {
-    				if (uk.val() !== jenis) {
-    					uk.val(jenis).trigger('change');
-    				}
-    			} else if (window.UKURAN && typeof window.UKURAN.pilihJenis === 'function') {
-    				window.UKURAN.pilihJenis(pnl, jenis);
-    			}
-    		});
+    	// Jenis busana rombongan tidak dipilih di panel anggota lagi: ia dibaca dari
+    	// barang yang sudah masuk daftar orderan, jadi satu pesanan boleh memuat
+    	// beberapa jenis sekaligus. Logikanya di assets/js/anggota-form.js.
+    	function terapkanJenisRombongan() {
+    		if (window.ROMBONGAN) {
+    			ROMBONGAN.sinkron();
+    		}
     	}
 
     	$(document).on('change', '#ukuranModal .uk-jenis', function() {
@@ -1462,7 +1459,6 @@ $js = <<< JS
     					$('#kode_produk').val(teks);
     				}
     			}
-    			terapkanJenisRombongan(v);
     		}
     	});
 
@@ -1473,23 +1469,6 @@ $js = <<< JS
     	tampilKategori($('#tipe_orderan').val());
     	sinkronModalRombongan();
 
-    	// QTY → sesuaikan jumlah baris anggota rombongan secara otomatis
-    	$(document).on('input change', '#QTY', function() {
-    		if ($('#tipe_orderan').val() !== 'rombongan') return;
-    		var qty = parseInt($(this).val()) || 0;
-    		if (qty <= 0) return;
-    		var dftQty = $('.anggota-daftar').first();
-    		var adaQty = dftQty.children('.anggota-baris').length;
-    		if (qty > adaQty) {
-    			for (var qi = adaQty; qi < qty; qi++) {
-    				$('.tambah-anggota').first().trigger('click');
-    			}
-    		} else if (qty < adaQty) {
-    			dftQty.children('.anggota-baris').slice(qty).remove();
-    			$('.jumlah-anggota').text(qty);
-    		}
-    	});
-
     	$('#tipe_orderan').on('change', function() {
     		var v = $(this).val();
     		sinkronModalRombongan();
@@ -1497,10 +1476,7 @@ $js = <<< JS
     		if (v === 'rombongan') {
     			tampilAnggota(true);
     			tampilKategori(v);
-    			var jAwal = $('#ukuranModal .uk-jenis').val() || $('.list-orderan .ukuran-panel').first().attr('data-jenis');
-    			if (jAwal) {
-    				terapkanJenisRombongan(jAwal);
-    			}
+    			terapkanJenisRombongan();
     		}
     		else if (v === 'satuan') {
     			if ($('.anggota-daftar .anggota-baris').length === 0 || confirm('Kosongkan daftar anggota rombongan?')) {
@@ -1668,10 +1644,6 @@ $js = <<< JS
 
     		var tr = bikinBaris(k, d, a, e, b, rincian, jenis, nilai, s, kolam);
 
-    		if ($('#tipe_orderan').val() === 'rombongan' && jenis) {
-    			terapkanJenisRombongan(jenis);
-    		}
-
     		if (rowEdit) {
     			rowEdit.replaceWith(tr);
     			rowEdit = null;
@@ -1681,6 +1653,12 @@ $js = <<< JS
     			pl=tb.data('length'),
     			tb.data('length',pl+1),
     			listOrder();
+    		}
+
+    		// jenis dan QTY dibaca dari baris yang sudah ada di daftar, jadi panel
+    		// anggota baru boleh disamakan setelah barisnya benar-benar terpasang
+    		if ($('#tipe_orderan').val() === 'rombongan') {
+    			terapkanJenisRombongan();
     		}
 
     		// ringkasan ukuran dihitung ulang setelah baris masuk DOM
@@ -1708,6 +1686,12 @@ $js = <<< JS
     			window.STOK&&STOK.sinkronFoto&&STOK.sinkronFoto()
     		),
     		totalbiaya();
+    	});
+
+    	// barang dihapus: jenis busana dan total QTY orderan berubah, jadi jumlah
+    	// anggota utama dan tab ukuran tiap orang ikut disamakan ulang
+    	$(document).on('click', '.list-orderan .hapus_row', function() {
+    		terapkanJenisRombongan();
     	});
 
     	// klik ubah: isi ulang modal dengan data baris, kunci baris dipertahankan

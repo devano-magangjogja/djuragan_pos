@@ -122,6 +122,33 @@ class LaporanEkspor
         return (string) $dompdf->output();
     }
 
+    /**
+     * Isi berkas PDF berisi satu kartu detail per nota.
+     *
+     * Potret tegak, bukan melebar seperti pdf(): isinya blok-blok sempit
+     * (keterangan, barang, pembayaran) yang justru boros tempat kalau dipaksa
+     * landscape, dan satu nota diusahakan utuh dalam satu halaman.
+     *
+     * @param list<object> $nota
+     */
+    public function pdfDetail(string $judul, array $keteran, array $nota, string $catatan = ''): string
+    {
+        $opsi = new Options();
+        $opsi->set('chroot', [FCPATH]);
+
+        $dompdf = new Dompdf($opsi);
+        $dompdf->loadHtml(view('admin/cetak_detail', [
+            'judul'   => $judul,
+            'keteran' => $keteran,
+            'nota'    => $nota,
+            'catatan' => $catatan,
+        ]));
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        return (string) $dompdf->output();
+    }
+
     /** Nama berkas: hanya karakter aman, karena masuk ke header Content-Disposition. */
     public function nama(string $jenis, array $f, string $format): string
     {
@@ -326,10 +353,16 @@ class LaporanEkspor
         ];
     }
 
-    private function detail(array $baris): array
+    /**
+     * Lampiran daftar nota.
+     *
+     * Dibuka untuk tombol Cetak di Tracking Transaksi: di sana blok inilah isi
+     * berkasnya, bukan sekadar lampiran, jadi judul dan baris total boleh diganti.
+     */
+    public function detail(array $baris, string $judul = 'Detail nota', ?array $total = null): array
     {
         return [
-            'judul' => 'Detail nota',
+            'judul' => $judul,
             'kolom' => [
                 ['Faktur', 'seri', 'teks', 'kiri'],
                 ['Tanggal pesan', 'tanggal_pesan', 'tanggal', 'kiri'],
@@ -343,7 +376,7 @@ class LaporanEkspor
                 ['Pengiriman', 'status_pengiriman', 'kirim', 'kiri'],
             ],
             'baris' => $baris,
-            'total' => null,
+            'total' => $total,
         ];
     }
 

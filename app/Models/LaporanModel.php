@@ -323,13 +323,31 @@ class LaporanModel extends Model
     {
         [$dasar, $bind] = $this->basis($juragan_ids, $f);
 
-        $baris = $this->db->query('SELECT t.seri, t.slug, t.nama_juragan, t.nama_pelanggan, t.tanggal_pesan,'
+        $baris = $this->db->query('SELECT t.id_invoice, t.seri, t.slug, t.nama_juragan, t.nama_pelanggan, t.tanggal_pesan,'
             . ' t.deadline, t.status_pembayaran, t.status_pengiriman, t.tagihan, t.masuk,'
             . ' GREATEST(t.tagihan - t.masuk, 0) AS sisa'
             . ' FROM (' . $dasar . ') t'
             . ' ORDER BY t.tanggal_pesan DESC, t.seri DESC LIMIT ' . self::KAPASITAS_DETAIL, $bind)->getResultArray();
 
         return $this->bilatkan($baris, ['tagihan', 'masuk', 'sisa', 'status_pembayaran', 'status_pengiriman']);
+    }
+
+    /**
+     * Daftar nota untuk dipilih di dalam popup Cetak.
+     *
+     * Hanya nomor nota, pemesan, dan nilainya yang dikirim: daftarnya bisa
+     * sepanjang KAPASITAS_DETAIL baris, jadi kolom yang tidak dipakai orang
+     * untuk memilih tidak ikut membebani jawabannya.
+     *
+     * @return list<array{id_invoice:int|string, seri:string, nama_pelanggan:?string, tagihan:int|string}>
+     */
+    public function pilihan(array $juragan_ids, array $f): array
+    {
+        [$dasar, $bind] = $this->basis($juragan_ids, $f);
+
+        return $this->db->query('SELECT t.id_invoice, t.seri, t.nama_pelanggan, t.tagihan'
+            . ' FROM (' . $dasar . ') t'
+            . ' ORDER BY t.tanggal_pesan DESC, t.seri DESC LIMIT ' . self::KAPASITAS_DETAIL, $bind)->getResultArray();
     }
 
     /**
@@ -503,14 +521,30 @@ class LaporanModel extends Model
             $sql .= ' AND o.juragan_id = ' . $juragan;
         }
 
-        if ($sumbu === 'bayar') {
-            $sql .= ' AND FROM_UNIXTIME(p.tanggal_pembayaran, "%Y-%m-%d") BETWEEN :awal: AND :akhir:';
-        } else {
-            $sql .= ' AND o.tanggal_pesan BETWEEN :awal: AND :akhir:';
+        // Rentang tanggal dipakai selama laporan menyebut sebuah periode. Cetak
+        // daftar nota terpilih melepasnya: yang tercetak harus persis yang dipilih
+        // orang, walau notanya dibuat di luar periode yang sedang terbuka di layar.
+        $ada_awal  = (string) ($f['awal'] ?? '') !== '';
+        $ada_akhir = (string) ($f['akhir'] ?? '') !== '';
+
+        if ($ada_awal && $ada_akhir) {
+            if ($sumbu === 'bayar') {
+                $sql .= ' AND FROM_UNIXTIME(p.tanggal_pembayaran, "%Y-%m-%d") BETWEEN :awal: AND :akhir:';
+            } else {
+                $sql .= ' AND o.tanggal_pesan BETWEEN :awal: AND :akhir:';
+            }
+
+            $bind['awal']  = $f['awal'];
+            $bind['akhir'] = $f['akhir'];
         }
 
-        $bind['awal']  = $f['awal'];
-        $bind['akhir'] = $f['akhir'];
+        // daftar nota tertentu (tombol Cetak di Tracking Transaksi): kalau diisi,
+        // hanya nota ini yang dihitung
+        $pilihan = array_values(array_unique(array_filter(array_map('intval', (array) ($f['id'] ?? [])))));
+
+        if ($pilihan !== []) {
+            $sql .= ' AND o.id_invoice IN (' . $this->daftar($pilihan) . ')';
+        }
 
         $kode = trim((string) ($f['kode'] ?? ''));
 
