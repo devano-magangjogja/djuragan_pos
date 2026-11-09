@@ -659,7 +659,10 @@ $session  = \Config\Services::session();
                     </div>
                     <div class="col-12 helper-rombongan-busana d-none mb-2">
                         <div class="alert alert-info py-2 px-3 small border-0 bg-brand-50 text-brand-700 rounded-lg mb-0">
-                            <i class="fal fa-info-circle me-1.5"></i> Pilih jenis busana lalu klik <strong>Tambahkan</strong>. Setiap jenis yang masuk daftar barang jadi tab ukuran sendiri di daftar Anggota Rombongan, jadi satu pesanan boleh memuat beberapa jenis busana sekaligus.
+                            <i class="fal fa-info-circle me-1.5"></i>
+                            <!-- Layar sempit (di bawah 768px, sama seperti breakpoint modal ini): kalimat dipotong jadi satu baris pendek -->
+                            <span class="d-none d-md-inline">Pilih jenis busana lalu klik <strong>Tambahkan</strong>. Setiap jenis yang masuk daftar barang jadi tab ukuran sendiri di daftar Anggota Rombongan, jadi satu pesanan boleh memuat beberapa jenis busana sekaligus.</span>
+                            <span class="d-md-none">Pilih jenis busana lalu klik <strong>Tambahkan</strong>. Tiap jenis jadi tab ukuran sendiri di daftar Anggota Rombongan.</span>
                         </div>
                     </div>
                     <?= ukuran_form_panel(['id' => 'ukuranModal']) ?>

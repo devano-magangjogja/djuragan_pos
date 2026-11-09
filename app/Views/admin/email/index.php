@@ -152,6 +152,10 @@ $tanya = static function (array $ubah): string {
     .em-daftar thead th:first-child { width: 46%; }
     .em-catatan { color: #0f172a; font-size: .88rem; line-height: 1.45; }
     .em-sub { font-size: .76rem; color: #64748b; display: flex; flex-wrap: wrap; gap: .2rem .6rem; margin-top: .22rem; }
+    /* chip status + "dibuat:" disatukan dalam satu bungkus supaya keduanya selalu
+       duduk di baris yang sama dan tidak pernah dipisahkan lipatan .em-sub:
+       seluruh bungkusnya dihitung satu item oleh flex */
+    .em-sub-pasangan { display: inline-flex; align-items: center; gap: .6rem; }
     .em-kosong { padding: 2.8rem 1rem; text-align: center; color: #94a3b8; font-size: .9rem; }
     .em-kosong i { font-size: 2rem; display: block; margin-bottom: .5rem; }
 
@@ -290,6 +294,15 @@ $tanya = static function (array $ubah): string {
         }
         .em-kartu:not(.em-email-kartu) .em-daftar tr:last-child { border-bottom: none; }
 
+        /* Susunan sesuai sketsa: catatan + chip di kiri, pil orang di POJOK
+           KANAN ATAS sebaris dengan teks, Tenggat + tombol menutup di bawah.
+           Kuncinya satu angka: kolom pil dipatok 148px (termasuk padding
+           kirinya 12px) dan baris yang butuh ruang lebar meminjam 148px itu
+           lewat margin negatif — ruang yang dipinjam adalah DI BAWAH pil, karena
+           pil hanya menempati satu baris paling atas. Angka -148 harus selalu
+           sama dengan width kolom pil; kalau berbeda, barisnya lewat tepi kartu
+           dan terpotong lagi oleh .em-kartu overflow: hidden. */
+
         /* kolom Catatan: baris atas, kolom kiri */
         .em-kartu:not(.em-email-kartu) .em-daftar td:nth-child(1) {
             display: block;
@@ -297,8 +310,19 @@ $tanya = static function (array $ubah): string {
             grid-row: 1;
             padding: 0 0 .5rem 0;
             border: none;
+            min-width: 0;
+            overflow-wrap: anywhere;
         }
-        /* kolom Tenggat: baris bawah, kolom kiri */
+        /* baris chip ikut seluruh lebar kartu: #1577/keren/no rules di baris
+           pertama, lalu "Di antrean" + "dibuat:" satu baris di bawahnya.
+           Incarnya td:nth-child(1) .em-sub, BUKAN .em-sub begitu saja: kelas
+           yang sama juga dipakai baris "selesai: nama" di dalam sel penanggung
+           jawab, dan margin negatif di sana malah mendorong teks keluar kartu */
+        .em-kartu:not(.em-email-kartu) .em-daftar td:nth-child(1) .em-sub {
+            margin-right: -148px;
+        }
+        /* kolom Tenggat: baris bawah, kolom kiri — juga meminjam lebar yang
+           sama supaya tanggalnya tetap satu baris dan tidak melipat jelek */
         .em-kartu:not(.em-email-kartu) .em-daftar td:nth-child(2) {
             display: flex;
             align-items: center;
@@ -308,9 +332,20 @@ $tanya = static function (array $ubah): string {
             padding: 0;
             border: none;
             font-size: .76rem;
+            min-width: 0;
+            margin-right: -148px;
+        }
+        /* tanggal boleh melipat kalau benar-benar sempit: nowrap dari desktop
+           akan memaksa track 1fr melebar dan mendorong tombol keluar kartu */
+        .em-kartu:not(.em-email-kartu) .em-daftar .em-teenggat {
+            white-space: normal;
         }
         .em-tenggat-label { display: inline; }
-        /* kolom Penanggung jawab: baris atas, kolom kanan */
+        /* kolom Penanggung jawab: pojok kanan atas, rata kanan, kolomnya DIPATOK
+           148px — cukup untuk ~18 huruf, dan nama yang lebih panjang melipat ke
+           baris kedua (white-space: normal), tidak dipotong mentah. Elipsis di
+           pil ini toh tidak pernah tampil: .pil-orang inline-flex sedangkan
+           text-overflow hanya berlaku pada kontainer blok */
         .em-kartu:not(.em-email-kartu) .em-daftar td:nth-child(3) {
             display: flex;
             align-items: flex-start;
@@ -319,13 +354,34 @@ $tanya = static function (array $ubah): string {
             grid-row: 1;
             padding: 0 0 .5rem .75rem;
             border: none;
-            max-width: 120px;
+            width: 148px;
+            max-width: 148px;
+            min-width: 0;
         }
+        /* nama penggarap satu baris, jaraknya ikut padding baris (1rem) */
         .em-kartu:not(.em-email-kartu) .em-daftar td:nth-child(3) .pil-orang {
-            max-width: 110px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            max-width: 100%;
+            white-space: normal;
+            overflow: visible;
+            text-align: right;
+        }
+        /* wadah pemegang (ikon orang) diratakan ke kanan; dan padding kanan sel
+           ini dimatikan karena style.css menulis .8rem 1rem pada TIAP sel dengan
+           !important — tanpa !important pilnya berhenti 16px sebelum tepi kartu
+           dan terlihat mengambang (terukur 36px dari tepi kartu) */
+        .em-kartu:not(.em-email-kartu) .em-daftar td:nth-child(3) .em-pegang {
+            justify-content: flex-end;
+        }
+        .em-kartu:not(.em-email-kartu) .em-daftar td:nth-child(3),
+        .em-kartu:not(.em-email-kartu) .em-daftar td:nth-child(4) {
+            padding-right: 0 !important;
+        }
+        /* tabel-rapi.css menengahkan SETIAP blok di kolom tengah
+           (width: fit-content + margin-inline: auto) — itulah 12px yang
+           tersisa; di sel ini bloknya harus melebar penuh dan tanpa margin */
+        .em-kartu:not(.em-email-kartu) .em-daftar td:nth-child(3) > div {
+            width: 100%;
+            margin-inline: 0;
         }
         /* kolom Aksi: baris bawah, kolom kanan */
         .em-kartu:not(.em-email-kartu) .em-daftar td:nth-child(4) {
@@ -334,7 +390,9 @@ $tanya = static function (array $ubah): string {
             grid-row: 2;
             padding: 0 0 0 .75rem;
             border: none;
-            text-align: right;
+            /* !important: sel ini bawa class="text-center" milik Bootstrap yang
+               !important, tanpa itu tombol Selesai mengambang di tengah kolom */
+            text-align: right !important;
         }
         .em-kartu:not(.em-email-kartu) .em-daftar .em-aksi {
             flex-direction: column;
@@ -589,8 +647,10 @@ $tanya = static function (array $ubah): string {
                                             <span><i class="fal fa-inbox"></i> <?= esc($w['email_label'] ?: $w['email_alamat']) ?></span>
                                         <?php endif; ?>
                                         <?php if ($w['nama_juragan']) : ?><span><i class="fal fa-store"></i> <?= esc($w['nama_juragan']) ?></span><?php endif; ?>
-                                        <span class="pil-status s-<?= esc($st) ?>"><?= esc(\App\Models\TugasModel::STATUS[$st] ?? $st) ?></span>
-                                        <span class="pil-orang pil-buat">dibuat: <?= esc($w['nama_dibuat'] ?: '?') ?></span>
+                                        <span class="em-sub-pasangan">
+                                            <span class="pil-status s-<?= esc($st) ?>"><?= esc(\App\Models\TugasModel::STATUS[$st] ?? $st) ?></span>
+                                            <span class="pil-orang pil-buat">dibuat: <?= esc($w['nama_dibuat'] ?: '?') ?></span>
+                                        </span>
                                     </div>
                                 </td>
                                 <td class="em-teenggat <?= $terlambat ? 'lewat' : '' ?>">

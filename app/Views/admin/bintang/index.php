@@ -36,6 +36,10 @@ $hari_ini = date('Y-m-d');
 // kolom "Role" pada tab "Tidak Jadi Dikerjakan": level akun yang memegang tugasnya
 $role = ['cs' => 'CS', 'admin' => 'Admin', 'superadmin' => 'Superadmin'];
 
+// nama tab yang lebih pendek untuk layar sempit, supaya dua pil masih muat sebaris
+// dan tidak melipat dua baris (sama seperti daftar tab Live Chat)
+$tabPendek = ['selesai' => 'Selesai', 'tak_selesai' => 'Tidak Jadi'];
+
 $jejak = $s['tab'] === 'tak_selesai';
 
 $tanya = static function (array $ubah): string {
@@ -69,7 +73,7 @@ $tanya = static function (array $ubah): string {
         background: #f4f6f9; color: #475569; text-decoration: none; border: 1px solid #e2e8f0;
     }
     .b5-tab a.aktif { background: #101828; border-color: #101828; color: #fff; }
-    .b5-tab a span { font-weight: 700; }
+    .b5-tab .b5-angka { font-weight: 700; }
 
     .b5-saring { display: flex; flex-wrap: wrap; align-items: flex-end; gap: .55rem; margin-bottom: 1rem; }
     .b5-saring .lapangan { display: flex; flex-direction: column; gap: .2rem; }
@@ -118,6 +122,9 @@ $tanya = static function (array $ubah): string {
         .b5-head h1 > i { display: none; }
         .b5-head > .me-auto { flex: 1 1 100%; }
         .b5-head > a.btn { flex: 1 1 auto; min-width: 0; }
+        /* dua pil sebaris seperti daftar tab Live Chat; yang bikin muat adalah
+           nama pendeknya (Selesai / Tidak Jadi), bukan pilnya dipaksa satu per
+           baris — dan pil terakhir (Hanya punyaku) menutup barisnya sendiri */
         .b5-tab { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
         .b5-tab a { justify-content: center; }
         .b5-tab a:last-child:nth-child(odd) { grid-column: 1 / -1; }
@@ -131,6 +138,50 @@ $tanya = static function (array $ubah): string {
            line-height:1), jadi tingginya dipatok sama dengan kotak isian 2rem */
         .b5-saring .b5-aksi { align-items: stretch; }
         .b5-saring .b5-aksi .btn { min-height: 2rem; }
+    }
+
+    /* Daftar antrean di HP. Lima kolom dipaksa muat di layar kecil membuat kolom
+       "Ulasan" melipat satu kata per baris dan tanggal tenggat terpotong di tengah
+       angka. Yang dipakai di sini mode kartu yang sama dengan halaman CRM: kepala
+       kolom dibuang, tiap sel membawa labelnya sendiri (data-label), nota dan
+       aksi dapat barisnya sendiri, sisanya berpasangan dua kolom. */
+    @media (max-width: 767.98px) {
+        .b5-antrean, .b5-antrean tbody, .b5-antrean td { display: block; width: 100%; }
+        .b5-antrean thead { display: none; }
+        .b5-antrean tr {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            column-gap: .9rem;
+            border: 1px solid #eaecf0; border-radius: 10px;
+            margin-bottom: .6rem; padding: .55rem .7rem;
+        }
+        .b5-antrean td {
+            padding: .3rem 0 !important;
+            border-bottom: 0 !important;
+            text-align: left !important;
+            white-space: normal !important;
+        }
+        .b5-antrean td::before {
+            content: attr(data-label);
+            display: block;
+            margin-bottom: .15rem;
+            font-size: .7rem; font-weight: 600; color: #98a2b3;
+            letter-spacing: .04em; text-transform: uppercase;
+        }
+        /* hanya nota yang dapat baris penuh; ulasan|tenggat dan penanggung
+           jawab|aksi berpasangan — tombol aksinya 93px, jadi tetap muat di
+           setengah lebar kartu (terukur kolom 174px di kartu 390px) */
+        .b5-antrean td:first-child { grid-column: 1 / -1; }
+        .b5-antrean .b5-aksi { display: flex; flex-wrap: wrap; gap: .4rem; justify-content: flex-start; }
+        /* Sorotan baris: style.css mewarnai TIAP SEL, dan sel di mode kartu tidak
+           punya ruang kiri-kanan, jadi yang disorot harus kartunya (tr). */
+        .b5-antrean tbody tr:hover td { background-color: transparent !important; }
+        .b5-antrean tbody tr { background-color: #fff; transition: background-color .15s ease, border-color .15s ease; }
+        @media (hover: hover) {
+            .b5-antrean tbody tr:hover { background-color: #f9fafb; border-color: #d0d5dd; }
+        }
+        /* tidak ada lagi area geser di HP: isinya sudah memanjang penuh */
+        .b5-antrean-wadah { overflow: hidden !important; }
     }
 
     .b5-kartu {
@@ -186,7 +237,10 @@ $tanya = static function (array $ubah): string {
     .b5-waktu { font-size: .76rem; color: #475569; white-space: nowrap; }
 
     .b5-teenggat { font-size: .76rem; white-space: nowrap; }
-    .lewat { color: #b81c16; font-weight: 700; }
+    /* merah tenggat lewat harus !important: style.css §"tabel" mewarnai SETIAP
+       sel (.table tbody td, color: #344054 !important), jadi .lewat biasa tidak
+       pernah menang — dulu cuma tebalnya saja yang kelihatan, warnanya tetap abu */
+    .b5-daftar .lewat { color: #b81c16 !important; font-weight: 700; }
     .b5-aksi { display: inline-flex; gap: .3rem; align-items: center; }
     .b5-pager { padding: .8rem 1rem; background: #fff; border-top: 1px solid #eaecf0; }
 </style>
@@ -216,8 +270,8 @@ $tanya = static function (array $ubah): string {
         <div class="b5-tab">
             <?php foreach ($tab as $kode => $nama) : ?>
                 <a class="<?= $s['tab'] === $kode ? 'aktif' : '' ?>" href="<?= esc($tanya(['tab' => $kode])) ?>">
-                    <?= esc($nama) ?>
-                    <?php if (($angka[$kode] ?? 0) > 0) : ?><span><?= (int) $angka[$kode] ?></span><?php endif; ?>
+                    <span class="d-none d-sm-inline"><?= esc($nama) ?></span><span class="d-sm-none"><?= esc($tabPendek[$kode] ?? $nama) ?></span>
+                    <?php if (($angka[$kode] ?? 0) > 0) : ?><span class="b5-angka"><?= (int) $angka[$kode] ?></span><?php endif; ?>
                 </a>
             <?php endforeach; ?>
             <a class="<?= (int) $s['milik_saya'] === $milik ? 'aktif' : '' ?>"
@@ -245,14 +299,6 @@ $tanya = static function (array $ubah): string {
                     </select>
                 </div>
             <?php endif; ?>
-            <div class="lapangan">
-                <label for="batas">Baris</label>
-                <select class="form-select form-select-sm" id="batas" name="batas">
-                    <?php foreach ([10, 25, 50] as $n) : ?>
-                        <option value="<?= $n ?>" <?= $batas === $n ? 'selected' : '' ?>><?= $n ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
             <div class="lapangan b5-saring-aksi">
                 <label>&nbsp;</label>
                 <div class="b5-aksi">
@@ -362,8 +408,8 @@ $tanya = static function (array $ubah): string {
                 </table>
             </div>
         <?php else : ?>
-            <div class="table-responsive b5-gulir">
-                <table class="table table-hover align-middle b5-daftar tabel-rapi">
+            <div class="table-responsive b5-gulir b5-antrean-wadah">
+                <table class="table table-hover align-middle b5-daftar b5-antrean tabel-rapi">
                     <thead>
                         <tr>
                             <th>Nota</th>
@@ -386,7 +432,7 @@ $tanya = static function (array $ubah): string {
                             $pil     = $platform[(int) $w['juragan_id']] ?? [];
                             ?>
                             <tr>
-                                <td>
+                                <td data-label="Nota">
                                     <a class="b5-nama" href="<?= esc(site_url('admin/tugas/' . $id)) ?>"><?= esc($w['judul']) ?></a>
                                     <div class="b5-sub">
                                         <span>#<?= $id ?></span>
@@ -404,7 +450,7 @@ $tanya = static function (array $ubah): string {
                                         </div>
                                     <?php endif; ?>
                                 </td>
-                                <td>
+                                <td data-label="Ulasan">
                                     <?php if ($u !== null && (string) $u['status'] === 'diterima') : ?>
                                         <span class="pil-bintang"><i class="fal fa-star me-1"></i><?= (int) $u['bintang'] ?> bintang</span>
                                         <?php if ($u['platform']) : ?>
@@ -419,11 +465,10 @@ $tanya = static function (array $ubah): string {
                                         <span class="text-muted small">belum diminta</span>
                                     <?php endif; ?>
                                 </td>
-                                <td class="b5-teenggat <?= $terlambat ? 'lewat' : '' ?>">
+                                <td data-label="Tenggat" class="b5-teenggat <?= $terlambat ? 'lewat' : '' ?>">
                                     <?= $tenggat === '' ? '-' : esc(tanggal_rincian($tenggat)) ?>
-                                    <?php if ($terlambat) : ?><i class="fal fa-exclamation-triangle"></i><?php endif; ?>
                                 </td>
-                                <td>
+                                <td data-label="Penanggung jawab">
                                     <?php if ($w['nama_dikerjakan']) : ?>
                                         <span class="pil-orang"><i class="fal fa-user-check me-1"></i><?= esc($w['nama_dikerjakan']) ?></span>
                                         <?php if ($w['nama_selesai']) : ?>
@@ -433,7 +478,7 @@ $tanya = static function (array $ubah): string {
                                         <span class="text-muted">belum diambil</span>
                                     <?php endif; ?>
                                 </td>
-                                <td class="text-center">
+                                <td data-label="Aksi" class="text-center">
                                     <div class="b5-aksi">
                                         <?php if ($st === 'queued') : ?>
                                             <form method="post" action="<?= esc(site_url('admin/tugas/bintang/ambil/' . $id)) ?>">

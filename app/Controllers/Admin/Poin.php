@@ -19,7 +19,7 @@ use App\Models\PoinPenjualanModel;
 class Poin extends BaseController
 {
     /**
-     * Halaman laporan. Query string: awal, akhir, juragan, user, page.
+     * Halaman laporan. Query string: awal, akhir, juragan, user, cari, page.
      *
      * @return string
      */
@@ -49,7 +49,16 @@ class Poin extends BaseController
         }
 
         $user = (int) $this->request->getGet('user');
-        $f    = ['awal' => $awal, 'akhir' => $akhir, 'juragan' => $juragan, 'user' => $user];
+
+        // pencarian nama pegawai (kolom cari di baris pertama; di layar sempit
+        // inilah satu-satunya isian yang selalu terlihat)
+        $cari = trim((string) $this->request->getGet('cari'));
+
+        if (mb_strlen($cari) > 60) {
+            $cari = mb_substr($cari, 0, 60);
+        }
+
+        $f    = ['awal' => $awal, 'akhir' => $akhir, 'juragan' => $juragan, 'user' => $user, 'cari' => $cari];
 
         $limit  = config('Pager')->perPage;
         $page   = max(1, (int) $this->request->getGet('page'));

@@ -69,10 +69,19 @@ $tanya = static function (array $ubah): string {
         text-transform: uppercase; letter-spacing: .05em;
     }
 
-    .ckl-saring { display: flex; flex-wrap: wrap; align-items: flex-end; gap: .55rem; padding: 1rem 1.15rem 1.6rem; border-bottom: 1px solid #eaecf0; }
+    .ckl-saring { --lebar-tanggal: 8.5rem; display: flex; flex-wrap: wrap; align-items: flex-end; gap: .55rem; padding: 1rem 1.15rem 1.6rem; border-bottom: 1px solid #eaecf0; }
     .ckl-saring .lapangan { display: flex; flex-direction: column; gap: .2rem; }
     .ckl-saring label { font-size: .7rem; font-weight: 700; color: #667085; text-transform: uppercase; letter-spacing: .04em; }
     .ckl-saring .form-control, .ckl-saring .form-select { max-width: 180px; }
+    /* tombol catatan dipanjangkan sampai sama dengan kolom tanggal: dulu keduanya
+       sama-sama hitam dan bersebelahan tapi beda panjang (terukur 136px vs 119px),
+       dan angka lebarnya dipegang satu variabel supaya tidak bisa beda lagi */
+    /* tombol catatan tidak boleh melebihi kolom tanggal: lebarnya dipatok ke
+       variabel yang sama DAN tidak boleh didorong isi tulisannya (min-width:0),
+       karena "+ Buat catatan" dengan ikon butuh ±148px — lebih lebar dari
+       tanggalnya sendiri. Ikonnya dibuang, tulisannya tetap utuh. */
+    .ckl-saring #tanggal { width: var(--lebar-tanggal); }
+    .ckl-saring #tombolCatatan { width: var(--lebar-tanggal); max-width: var(--lebar-tanggal); min-width: 0; min-height: 2rem; }
     /* tombol ikon saja selalu lebih pendek dari tombol bertulisan di sampingnya;
        stretch + tinggi minimum 2rem membuat keduanya setinggi sama */
     .ckl-saring-aksi .btn { min-height: 2rem; }
@@ -490,7 +499,7 @@ $tanya = static function (array $ubah): string {
             <?php if ($toko !== []) : ?>
                 <button type="button" class="btn btn-sm btn-dark ms-lg-auto" id="tombolCatatan"
                     data-bs-toggle="modal" data-bs-target="#modalCatatan">
-                    <i class="fal fa-plus me-1"></i> Buat catatan
+                    Buat catatan
                 </button>
             <?php endif; ?>
         </form>

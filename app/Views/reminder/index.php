@@ -244,6 +244,42 @@ $sukses   = session()->getFlashdata('sukses');
     }
     .reminder-tab.aktif span { background: rgba(255, 255, 255, .2); color: #fff; }
 
+    /* Kedua pil tab dipaksa kanan-kiri satu baris di layar HP. Defaultnya
+       membungkus jadi dua baris karena satu pil saja sudah ~185px (label + ikon
+       + angka + padding), sehingga dua pil tidak pernah muat berdampingan.
+       flex: 1 1 0 + min-width: 0 membagi lebarnya rata-dua — flex item biasa
+       tidak mau menyusut di bawah lebar isinya, itulah sebabnya pilnya turun;
+       rata tengah supaya keduanya terlihat seimbang meski labelnya beda panjang.
+       Bloknya sengaja DITULIS DI SINI, di bawah aturan .reminder-tab di atas:
+       spesifikasinya sama, jadi kalau ditaruh lebih awal aturan dasarnya yang
+       menang dan pilnya tetap turun. */
+    @media (max-width: 767.98px) {
+        .reminder-tab-bar {
+            flex-wrap: nowrap;
+            gap: .35rem;
+        }
+        .reminder-tab {
+            flex: 1 1 0;
+            min-width: 0;
+            justify-content: center;
+            gap: .3rem;
+            padding: .4rem .45rem;
+            font-size: .78rem;
+        }
+        .reminder-tab span {
+            min-width: 1.2rem;
+        }
+    }
+
+    /* di bawah 400px ikon bel/centangnya dilepas: label + angkanya sudah
+       membedakan kedua tab, dan ruang ~17px itu yang menentukan muat satu baris
+       atau tidak di layar 360px */
+    @media (max-width: 400px) {
+        .reminder-tab > i {
+            display: none;
+        }
+    }
+
     /* nomor nota kini tautan: tetap tegak & sewarna teks, hanya garis saat hover */
     .reminder-seri { text-decoration: none; }
     .reminder-seri:hover { color: #0f172a; text-decoration: underline; }
@@ -255,6 +291,37 @@ $sukses   = session()->getFlashdata('sukses');
     .reminder-kanan-atas .reminder-pill { margin-top: 0; }
     .reminder-selesai { font-size: .74rem; }
     .reminder-item.sudah { opacity: .94; }
+
+    /* Layar sempit: sisi kanan kartu (pil + tanggal + tombol) lebih panjang dari
+       ruang yang tersisa, sementara .reminder-kanan flex-shrink: 0 — jadi kartu
+       melebar melewati layar dan tanggal serta tombol "Selesai" terpotong di tepi
+       kanan. Sisi kanannya kini boleh menyusut dan kelompok pil+tanggal boleh
+       pecah baris (pil di atas, tanggal di bawah), sehingga semuanya tetap masuk.
+       Jarak & padding kartu ditipiskan untuk memberi ruang nomor nota dan nama
+       pelanggan di kiri. Ditulis DI SINI, di paling bawah, karena aturan
+       .reminder-kanan / .reminder-item di atas punya spesifikasi yang sama. */
+    @media (max-width: 767.98px) {
+        .reminder-item {
+            gap: .6rem;
+            /* padding atas-bawah sengaja lebih longgar dari desktop (.95rem):
+               di mobile pil & tanggal sudah pecah dua baris, jadi isinya
+               terlihat nempel ke tepi kartu tanpa ruang ekstra */
+            padding: 1.15rem .9rem;
+        }
+        .reminder-kanan {
+            flex-shrink: 1;
+            min-width: 0;
+            gap: .5rem;
+        }
+        .reminder-kanan-atas {
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            gap: .3rem .5rem;
+        }
+        .reminder-tanggal {
+            font-size: .78rem;
+        }
+    }
 </style>
 <?= $this->endSection() ?>
 

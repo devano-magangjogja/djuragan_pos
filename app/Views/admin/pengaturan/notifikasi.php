@@ -18,13 +18,42 @@ $rp = static fn (int $angka): string => number_format($angka, 0, ',', '.');
 ?>
 <?= $this->extend('template/main') ?>
 
+<?= $this->section('css') ?>
+<style>
+    /* Layar sempit ditata sama seperti halaman daftar lain: tombol kepala
+       mengambil satu baris sendiri (tidak menggantung di kanan di bawah
+       judul), kartu angka dua per baris, dan kartu terakhir yang ganjil
+       memanjang penuh supaya tidak ada separuh baris menganggur. */
+    @media (max-width: 575.98px) {
+        .pn-head-aksi {
+            flex: 1 1 100%;
+            justify-content: center;
+        }
+    }
+
+    /* sepanjang kartu masih col-6 (sampai md aktif di 768px) kartu ketiga yang
+       ganjil memanjang penuh — di 576-767px aturannya sama seperti di HP */
+    @media (max-width: 767.98px) {
+        .pn-angka:last-child:nth-child(odd) {
+            flex: 0 0 100%;
+            max-width: 100%;
+        }
+    }
+</style>
+<?= $this->endSection() ?>
+
 <?= $this->section('content') ?>
 <?= $this->include('admin/navbar') ?>
 
 <div class="container-xxl">
-    <div class="d-flex flex-wrap align-items-center gap-2 mt-5 mb-3">
-        <h1 class="h3 mb-0">Pengaturan Notifikasi</h1>
-        <a class="btn btn-sm btn-outline-secondary ms-auto" href="<?= site_url(base_user() . '/notifikasi/semua') ?>">
+    <?php /* mt-5 menempel di h1, bukan di barisnya: aturan global
+       body.has-app-sidebar .h3.mt-5 menormalkan margin itu jadi nol dan sudah
+       menyisihkan jarak atas lewat padding container — di sini sebelumnya mt-5
+       duduk di pembungkus flex sehingga tidak ikut dinormalkan dan judulnya
+       turun ±48px lebih dalam daripada halaman lain */ ?>
+    <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+        <h1 class="h3 mt-5">Pengaturan Notifikasi</h1>
+        <a class="btn btn-sm btn-outline-secondary ms-auto pn-head-aksi" href="<?= site_url(base_user() . '/notifikasi/semua') ?>">
             <i class="fal fa-bell"></i> Buka daftar notifikasi
         </a>
     </div>
@@ -40,29 +69,29 @@ $rp = static fn (int $angka): string => number_format($angka, 0, ',', '.');
     <?php } ?>
 
     <div class="row gx-3 gy-3 mb-4">
-        <div class="col-12 col-md-4">
+        <div class="col-6 col-md-4 pn-angka">
             <div class="card h-100 rounded-kartu shadow-kartu">
                 <div class="card-body py-3">
                     <div class="text-muted small">Sudah terbaca</div>
-                    <div class="h3 mb-0"><?= esc($rp((int) $terbaca)) ?></div>
+                    <div class="fs-5 fw-bold mb-0"><?= esc($rp((int) $terbaca)) ?></div>
                     <div class="small text-muted"><?= esc($rp((int) $sendiri)) ?> di antaranya ada di kotak akun Anda</div>
                 </div>
             </div>
         </div>
-        <div class="col-12 col-md-4">
+        <div class="col-6 col-md-4 pn-angka">
             <div class="card h-100 rounded-kartu shadow-kartu">
                 <div class="card-body py-3">
                     <div class="text-muted small">Belum dibaca</div>
-                    <div class="h3 mb-0"><?= esc($rp((int) $belum)) ?></div>
+                    <div class="fs-5 fw-bold mb-0"><?= esc($rp((int) $belum)) ?></div>
                     <div class="small text-muted">tidak pernah ikut terhapus</div>
                 </div>
             </div>
         </div>
-        <div class="col-12 col-md-4">
+        <div class="col-6 col-md-4 pn-angka">
             <div class="card h-100 rounded-kartu shadow-kartu">
                 <div class="card-body py-3">
                     <div class="text-muted small">Melewati batas umur</div>
-                    <div class="h3 mb-0"><?= esc($rp((int) $usang)) ?></div>
+                    <div class="fs-5 fw-bold mb-0"><?= esc($rp((int) $usang)) ?></div>
                     <div class="small text-muted">
                         <?= $setelan['aktif']
                             ? 'calon sapuan otomatis berikutnya (batas ' . (int) $setelan['umur_hari'] . ' hari)'

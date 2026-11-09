@@ -255,6 +255,21 @@ $kotak_pilihan = static function (string $nama, string $id, array $daftar, strin
         min-width: 0;
     }
 
+    /* tombol aksi mengisi kolomnya. Kolomnya sudah col-6, sama seperti select di
+       sebelahnya, tapi .form-select/.form-control memang melebar penuh sedangkan
+       .btn hanya seukuran tulisannya — tanpa aturan ini tombol tetap terlihat
+       lebih kecil daripada filter di atasnya walau kolomnya sama lebar. Di layar
+       besar kolomnya col-lg-auto (selebar isi tombolnya sendiri) jadi lebar
+       penuh tidak diperlukan lagi */
+    .cod-saring .cod-aksi-tambah > .btn {
+        width: 100%;
+    }
+    @media (min-width: 992px) {
+        .cod-saring .cod-aksi-tambah > .btn {
+            width: auto;
+        }
+    }
+
     /* pesan hasil hapus pilihan: diam di bawah sampai dipanggil, lalu muncul
        dan dihilangkan lagi oleh JavaScript setelah 3 detik */
     .cod-pesan {
@@ -414,85 +429,12 @@ $kotak_pilihan = static function (string $nama, string $id, array $daftar, strin
         }
     }
 
-    /* Toolbar transaksi: tab status di kiri, aksi Cari & Tambah di kanan */
-    .toolbar-transaksi {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 0.4rem 0.5rem;
-    }
-    .toolbar-transaksi__tab {
-        display: flex;
-        align-items: center;
-        gap: 0.35rem;
-        flex: 1 1 auto;
-        min-width: 0;
-        /* pil yang tidak muat digeser lewat tombol panah, jadi wadahnya selalu bisa
-           digulir mendatar di semua lebar: tombol panahnya sendiri muncul hanya
-           kalau scrollWidth lebih besar dari clientWidth, dan itu hanya bisa
-           diketahui kalau overflow-x-nya terpasang sejak awal, bukan di layar
-           sempit saja. Gulir rodanya ditutup karena sudah ada tombolnya. */
-        overflow-x: auto;
-        scrollbar-width: none;
-        overscroll-behavior-x: contain;
-    }
-    .toolbar-transaksi__tab::-webkit-scrollbar {
-        display: none;
-    }
-
-    /* Tombol geser strip pil, sama seperti strip tab di halaman semua transaksi. */
-    .toolbar-transaksi__geser {
-        display: flex;
-        align-items: center;
-        gap: 0.35rem;
-        flex: 1 1 auto;
-        min-width: 0;
-    }
-    .geser-tab {
-        display: none;
-        flex: 0 0 auto;
-        width: 1.9rem;
-        height: 1.9rem;
-        align-items: center;
-        justify-content: center;
-        padding: 0;
-        border: 1px solid #eaecf0;
-        border-radius: 999px;
-        background: #ffffff;
-        color: #344054;
-        box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06);
-        font-size: 0.8rem;
-        line-height: 1;
-    }
-    .toolbar-transaksi__geser.bisa-geser .geser-tab {
-        display: inline-flex;
-    }
-    .geser-tab:disabled {
-        opacity: 0.35;
-        box-shadow: none;
-    }
-    .toolbar-transaksi__aksi {
-        display: flex;
-        align-items: center;
-        gap: 0.35rem;
-        flex: 0 1 auto;
-        margin-left: auto;
-    }
-    .toolbar-transaksi .btn {
-        padding: 0.42rem 0.62rem;
-        gap: 0.3rem;
-        white-space: nowrap;
-    }
-    .toolbar-transaksi .badge {
-        padding: 0.2rem 0.45rem !important;
-    }
-
     /* Kartu ringkasan status: satu kartu per status yang sekaligus jadi tombol
        penyaring. Kartunya disusun rata tepi dan sejajar tinggi (h-100 lewat
        kelas Bootstrap di markup), jadi label di atas dan angka di bawah duduk
        rapi apa pun panjang teksnya. Nama status yang kepanjangan dipotong dengan
-       elipsis, bukan melebarkan kartunya. Kartu aktif ikut menggelap seperti pil
-       navigasi di atasnya supaya jelas status mana yang sedang dibuka. */
+       elipsis, bukan melebarkan kartunya. Kartu aktif menggelap supaya jelas
+       status mana yang sedang dibuka. */
     .cod-kartu {
         display: flex;
         flex-direction: column;
@@ -538,30 +480,6 @@ $kotak_pilihan = static function (string $nama, string $id, array $daftar, strin
     .cod-kartu.aktif .cod-kartu__angka {
         color: #ffffff;
     }
-
-    @media (max-width: 767.98px) {
-        /* yang turun ke baris penuh adalah pembungkusnya, bukan strip pilnya:
-           strip tetap berbagi baris dengan kedua tombol panah */
-        .toolbar-transaksi__geser {
-            flex: 1 1 100%;
-            min-width: 0;
-        }
-        .toolbar-transaksi__tab {
-            padding-bottom: 0.15rem;
-        }
-        .toolbar-transaksi__tab .btn {
-            flex: 0 0 auto;
-        }
-        .toolbar-transaksi__aksi {
-            flex: 1 1 100%;
-            margin-left: 0;
-        }
-        /* tombolnya ikut melebar ke tepi kartu; dulu ia menggantung seukuran
-           tulisannya saja sehingga baris di bawah strip pil terlihat kosong */
-        .toolbar-transaksi__aksi > .btn {
-            width: 100%;
-        }
-    }
 </style>
 <?= $this->endSection() ?>
 
@@ -572,52 +490,28 @@ $kotak_pilihan = static function (string $nama, string $id, array $daftar, strin
 
     <h1 class="h3 mt-5">Pencatatan COD</h1>
 
-    <div class="toolbar-transaksi mb-4">
-        <div class="toolbar-transaksi__geser">
-            <button type="button" class="geser-tab" data-geser="-1" aria-label="Geser daftar status ke kiri" title="Geser daftar status ke kiri"><i class="fal fa-chevron-left"></i></button>
-
-            <div class="toolbar-transaksi__tab">
-            <?php
-            $kueri_lain = array_filter([
-                'cari'      => $f['cari'] ?: null,
-                'cs'        => $f['cs'] ?: null,
-                'keperluan' => $f['keperluan'] ?: null,
-                'dari'      => $f['dari'] ?: null,
-                'sampai'    => $f['sampai'] ?: null,
-                'periode'   => $f['periode'] ?: null,
-            ]);
-            $link_semua = site_url('admin/cod') . ($kueri_lain !== [] ? '?' . http_build_query($kueri_lain) : '');
-            ?>
-            <a href="<?= $link_semua ?>" class="btn rounded-pill <?= empty($f['status']) ? 'btn-primary' : 'btn-outline-secondary' ?>" title="Semua catatan">
-                Semua
-            </a>
-            <?php foreach ($pilihan['status'] as $s) : ?>
-                <?php
-                $aktif = (int) $f['status'] === (int) $s['id'];
-                $link_tab = site_url('admin/cod') . '?' . http_build_query(array_merge($kueri_lain, ['status' => $s['id']]));
-                ?>
-                <a href="<?= $link_tab ?>" class="btn rounded-pill <?= $aktif ? 'btn-primary' : 'btn-outline-secondary' ?>" title="Status <?= esc($s['label']) ?>">
-                    <?= esc($s['label']) ?>
-                </a>
-            <?php endforeach; ?>
-            </div>
-
-            <button type="button" class="geser-tab" data-geser="1" aria-label="Geser daftar status ke kanan" title="Geser daftar status ke kanan"><i class="fal fa-chevron-right"></i></button>
-        </div>
-
-        <div class="toolbar-transaksi__aksi">
-            <button type="button" class="btn rounded-pill border-0 bg-brand-500 font-semibold text-white hover:bg-brand-600" data-bs-toggle="modal" data-bs-target="#modalTambahCod" title="Tambah pencatatan COD baru">
-                <i class="fal fa-plus"></i> Tambah Pencatatan COD
-            </button>
-        </div>
-    </div>
+    <?php
+    // $kueri_lain & $link_semua: filter lain (cari, cs, keperluan, tanggal) ikut
+    // terbawa saat kartu status ditekan, jadi berpindah status tidak melempar
+    // pengguna ke daftar tanpa filter.
+    $kueri_lain = array_filter([
+        'cari'      => $f['cari'] ?: null,
+        'cs'        => $f['cs'] ?: null,
+        'keperluan' => $f['keperluan'] ?: null,
+        'dari'      => $f['dari'] ?: null,
+        'sampai'    => $f['sampai'] ?: null,
+        'periode'   => $f['periode'] ?: null,
+    ]);
+    $link_semua = site_url('admin/cod') . ($kueri_lain !== [] ? '?' . http_build_query($kueri_lain) : '');
+    ?>
 
     <!-- Kartu ringkasan status: satu kartu per status, sekaligus tombol penyaring.
-         Angkanya pindah ke sini, jadi bar pil di atas tetap jadi navigasi tanpa
-         jumlah. Menekan kartu memfilter daftar ke status itu; "Semua" membuka
-         kembali seluruh catatan. $kueri_lain & $link_semua sudah dihitung di bar
-         pil di atas, jadi filter lain (cari, cs, keperluan, tanggal) ikut terbawa. -->
-    <div class="row g-2 g-md-3 mb-4 cod-status-kartu">
+         Bar pil status yang dulu mengulang daftar ini di atas kartunya sudah
+         dihapus, jadi kartu adalah satu-satunya pemilih status. Menekan kartu
+         memfilter daftar ke status itu; "Semua" membuka kembali seluruh catatan. -->
+    <!-- mt-4: tanpa bar toolbar di atasnya, kartu akan nempel ke judul (margin
+         bawaan h1 cuma 0,5rem); marginnya melebur dengan margin itu jadi 1,5rem. -->
+    <div class="row g-2 g-md-3 mt-4 mb-4 cod-status-kartu">
         <div class="col-6 col-md-4 col-lg-2">
             <a href="<?= $link_semua ?>" class="cod-kartu <?= empty($f['status']) ? 'aktif' : '' ?>" title="Semua catatan">
                 <span class="cod-kartu__label">Semua</span>
@@ -638,8 +532,8 @@ $kotak_pilihan = static function (string $nama, string $id, array $daftar, strin
         <?php endforeach; ?>
     </div>
 
-    <!-- Filter dicari langsung di bawah pil status, bukan di dalam popus lagi.
-         Status tidak diulang di sini: pil persis di atasnya sudah jadi tombol
+    <!-- Filter dicari langsung di bawah kartu status, bukan di dalam popus lagi.
+         Status tidak diulang di sini: kartunya persis di atas sudah jadi tombol
          filter status. Kolom carinya satu kotak saja — ikon pencariannya
          duduk di dalam field dan sekaligus jadi tombol kirim (.cari-merged). -->
     <?= form_open('admin/cod', ['method' => 'get', 'class' => 'row g-2 align-items-center mb-4 cod-saring']) ?>
@@ -677,7 +571,7 @@ $kotak_pilihan = static function (string $nama, string $id, array $daftar, strin
             </select>
         </div>
 
-        <div class="col-12 col-lg">
+        <div class="col-6 col-lg">
             <select class="form-select form-select-sm" name="periode" id="filter_periode" aria-label="Periode tanggal">
                 <option value="" <?= $f['periode'] === '' && $f['dari'] === '' ? 'selected' : '' ?>>Semua Tanggal</option>
                 <option value="hari_ini" <?= $f['periode'] === 'hari_ini' ? 'selected' : '' ?>>Hari Ini</option>
@@ -697,6 +591,22 @@ $kotak_pilihan = static function (string $nama, string $id, array $daftar, strin
         <div class="col-6 col-lg cod-tanggal-kustom <?= $tanggal_kustom ? '' : 'd-none' ?>">
             <input type="date" class="form-control form-control-sm" name="sampai" id="filter_sampai"
                 value="<?= esc($f['sampai']) ?>" max="<?= $hari_ini ?>" aria-label="Sampai tanggal">
+        </div>
+
+        <!-- aksi utama duduk paling kanan di baris filter, sejajar dengan control
+             lainnya: col-6 sama seperti periode di sebelahnya (dan seperti CS &
+             Keperluan di baris atas), btn-sm sama seperti control -sm lainnya
+             (31px), dan melebar penuh mengisi kolom lewat .cod-aksi-tambah supaya
+             ukurannya benar-benar sama, bukan cuma kolomnya. Labelnya dua versi —
+             pendek di mobile, penuh di layar besar.
+             Kotak tanggal diletakkan sebelum tombol ini supaya periode tetap
+             berdekatan dengan kedua tanggalnya; keduanya disembunyikan lewat
+             d-none saat periode cepat yang dipakai, jadi tombolnya tetap naik
+             ke baris periode dan lebar keduanya tetap sama rata -->
+        <div class="col-6 col-lg-auto ms-lg-auto cod-aksi-tambah">
+            <button type="button" class="btn btn-sm rounded-pill border-0 bg-brand-500 font-semibold text-white hover:bg-brand-600" data-bs-toggle="modal" data-bs-target="#modalTambahCod" title="Tambah pencatatan COD baru">
+                <i class="fal fa-plus"></i> <span class="d-none d-lg-inline">Tambah Pencatatan COD</span><span class="d-lg-none">Tambah COD</span>
+            </button>
         </div>
     <?= form_close() ?>
 
@@ -1680,93 +1590,6 @@ $js = <<< JS
                 this.form.submit();
             });
         });
-
-        // ---- Tombol geser strip pil status, pola yang sama dengan strip tab di
-        //      halaman semua transaksi juragan: panahnya hanya tampil kalau pilnya
-        //      memang lebih lebar dari wadahnya (class .bisa-geser dipasang di
-        //      sini) dan ikut mati begitu mentok di ujung.
-        var wadahPil = document.querySelector('.toolbar-transaksi__geser');
-
-        if (wadahPil) {
-            var jalurPil  = wadahPil.querySelector('.toolbar-transaksi__tab');
-            var pilKiri   = wadahPil.querySelector('[data-geser="-1"]');
-            var pilKanan  = wadahPil.querySelector('[data-geser="1"]');
-            var kunciPos  = 'cod_pil_status_pos';
-
-            function ukurPil() {
-                wadahPil.classList.toggle('bisa-geser', jalurPil.scrollWidth - jalurPil.clientWidth > 2);
-                pilKiri.disabled = jalurPil.scrollLeft <= 2;
-                pilKanan.disabled = jalurPil.scrollLeft + jalurPil.clientWidth >= jalurPil.scrollWidth - 2;
-            }
-
-            function geserPil(arah) {
-                var langkah = Math.max(120, Math.round(jalurPil.clientWidth * 0.75));
-
-                jalurPil.scrollBy({ left: langkah * arah, behavior: 'smooth' });
-            }
-
-            // Klik pil memuat halaman ulang dan strip yang sedang digeser jatuh
-            // kembali ke nol, sehingga pil yang baru aktif terlihat melompat.
-            // Posisi strip disimpan tepat sebelum berpindah lalu dipasang lagi di
-            // halaman berikutnya, jadi strip tinggal di tempatnya.
-            jalurPil.addEventListener('click', function (event) {
-                if (event.target.closest('a.btn')) {
-                    try { window.sessionStorage.setItem(kunciPos, String(jalurPil.scrollLeft)); } catch (err) {}
-                }
-            });
-
-            function pulihkanPil() {
-                var simpanan = null;
-
-                try {
-                    simpanan = window.sessionStorage.getItem(kunciPos);
-                    window.sessionStorage.removeItem(kunciPos);
-                } catch (err) {}
-
-                if (simpanan === null || isNaN(parseFloat(simpanan))) {
-                    return;
-                }
-
-                jalurPil.scrollLeft = parseFloat(simpanan);
-            }
-
-            // hanya digeser kalau pil yang sedang aktif benar-benar tidak terlihat;
-            // halaman yang dimuat ulang tidak pernah menggeser strip yang masih pas
-            function tampilkanPilAktif() {
-                var aktif = jalurPil.querySelector('.btn-primary');
-
-                if (! aktif) {
-                    return;
-                }
-
-                var wadah = jalurPil.getBoundingClientRect();
-                var pil   = aktif.getBoundingClientRect();
-
-                if (pil.left >= wadah.left + 8 && pil.right <= wadah.right - 8) {
-                    return;
-                }
-
-                var tengah = (pil.left - wadah.left) + jalurPil.scrollLeft + pil.width / 2;
-                var maks   = jalurPil.scrollWidth - jalurPil.clientWidth;
-
-                jalurPil.scrollLeft = Math.max(0, Math.min(tengah - jalurPil.clientWidth / 2, maks));
-            }
-
-            pilKiri.addEventListener('click', function () { geserPil(-1); });
-            pilKanan.addEventListener('click', function () { geserPil(1); });
-            jalurPil.addEventListener('scroll', ukurPil, { passive: true });
-            window.addEventListener('resize', ukurPil);
-            window.addEventListener('load', ukurPil);
-
-            // urutannya penting: ukurPil() dulu supaya kedua panah ikut tampil dan
-            // memakan tempatnya sendiri, baru posisi disimpan dipasang. Kalau tidak,
-            // strip masih terhitung selebar penuh sehingga scrollLeft yang dipulihkan
-            // ikut dipotong ke batas yang salah (180 -> 150 di layar 390px).
-            ukurPil();
-            pulihkanPil();
-            tampilkanPilAktif();
-            ukurPil();
-        }
 
         if (bukaTambah) {
             bootstrap.Modal.getOrCreateInstance(modalTambah).show();

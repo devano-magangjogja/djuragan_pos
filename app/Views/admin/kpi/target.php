@@ -63,6 +63,54 @@ $poin_tampil = static function (float $n): string {
 ?>
 <?= $this->extend('template/main') ?>
 
+<?= $this->section('css') ?>
+<style>
+    /* Dua tabel di halaman ini (target + poin) aslinya lima kolom berdampingan.
+       Di layar sempit keterangan 200px memakan tempat, kolom "Arah" melipat satu
+       kata per baris ("makin / besar / makin / baik") dan kotak angkanya tinggal
+       separuh. Yang dipakai di sini mode kartu yang sama dengan daftar CRM:
+       kepala kolom dibuang, tiap sel membawa labelnya sendiri, dan yang pendek
+       (Arah|Aktif, Bawaan|Poin berlaku) tetap berpasangan dua kolom. */
+    @media (max-width: 767.98px) {
+        .kpi-tabel thead { display: none; }
+        .kpi-tabel, .kpi-tabel tbody, .kpi-tabel td { display: block; width: 100%; }
+        .kpi-tabel tr {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            column-gap: .9rem;
+            border: 1px solid #eaecf0; border-radius: 10px;
+            margin-bottom: .6rem; padding: .55rem .7rem;
+        }
+        /* style.css mematok padding sel .8rem 1rem dengan !important, jadi di
+           dalam kartu harus dilawan atau tiap baris dapat ruang kosong sendiri */
+        .kpi-tabel td {
+            padding: .3rem 0 !important;
+            border-bottom: 0 !important;
+            text-align: left !important;
+            white-space: normal !important;
+            overflow-wrap: anywhere;
+        }
+        .kpi-tabel td::before {
+            content: attr(data-label);
+            display: block;
+            margin-bottom: .15rem;
+            font-size: .7rem; font-weight: 600; color: #98a2b3;
+            letter-spacing: .04em; text-transform: uppercase;
+        }
+        .kpi-tabel td.kpi-penuh { grid-column: 1 / -1; }
+        /* di DOM kolom Aktif duduk SETELAH Target, jadi auto-placement grid
+           memisahkan Arah dari Aktif (dua baris janda). Urutan visual dibalik:
+           Arah|Aktif sebaris, kotak angkanya baru satu baris penuh sendiri */
+        .kpi-tabel td[data-label="Arah"] { order: 3; }
+        .kpi-tabel td[data-label="Aktif"] { order: 4; }
+        .kpi-tabel td[data-label="Target"] { order: 5; }
+        .kpi-tabel .text-end { text-align: left !important; }
+        /* tidak ada lagi area geser: isinya sudah memanjang penuh */
+        .kpi-tabel-wrap { overflow: hidden !important; }
+    }
+</style>
+<?= $this->endSection() ?>
+
 <?= $this->section('content') ?>
 <?= $this->include('admin/navbar') ?>
 
@@ -81,8 +129,8 @@ $poin_tampil = static function (float $n): string {
     <div class="card mb-4">
         <div class="card-body pb-0">
             <?= form_open('admin/kpi/target') ?>
-            <div class="table-responsive">
-                <table class="table align-middle mb-0">
+            <div class="table-responsive kpi-tabel-wrap">
+                <table class="table align-middle mb-0 kpi-tabel">
                     <thead class="table-light">
                         <tr>
                             <th scope="col">Indikator</th>
@@ -99,7 +147,7 @@ $poin_tampil = static function (float $n): string {
                     <tbody>
                         <?php foreach ($target as $t) { ?>
                             <tr>
-                                <td>
+                                <td class="kpi-penuh" data-label="Indikator">
                                     <div class="fw-semibold"><?= esc($t['nama']) ?></div>
                                     <div class="small text-muted">
                                         role <?= esc($t['peran'] === 'cs' ? 'CS' : ucfirst($t['peran'])) ?>
@@ -111,15 +159,15 @@ $poin_tampil = static function (float $n): string {
                                         <?php } ?>
                                     </div>
                                 </td>
-                                <td class="small" title="<?= esc(trim($t['definisi'] . ' ' . $t['aturan'])) ?>">
+                                <td class="small kpi-penuh" title="<?= esc(trim($t['definisi'] . ' ' . $t['aturan'])) ?>" data-label="Keterangan">
                                     <?= esc($sederhana[$t['indikator']] ?? $t['definisi']) ?>
                                 </td>
-                                <td class="text-center small">
+                                <td class="text-center small<?= $boleh ? '' : ' kpi-penuh' ?>" data-label="Arah">
                                     <?= $t['arah'] === 'lebih_rendah' ? 'makin kecil makin baik' : 'makin besar makin baik' ?>
                                     <div class="text-muted">satuan: <?= esc($t['satuan']) ?></div>
                                 </td>
                                 <?php if ($boleh) { ?>
-                                    <td>
+                                    <td class="kpi-penuh" data-label="Target">
                                         <?php if ($t['indikator'] === 'gmv_cs') : ?>
                                             <div class="small text-muted mb-1">Per CS (<?= esc($t['satuan']) ?>)</div>
                                         <?php endif; ?>
@@ -147,7 +195,7 @@ $poin_tampil = static function (float $n): string {
                                             ]) ?>
                                         <?php endif; ?>
                                     </td>
-                                    <td class="text-center">
+                                    <td class="text-center" data-label="Aktif">
                                         <?= form_checkbox([
                                             'name'    => 'aktif[' . $t['indikator'] . ']',
                                             'value'   => '1',
@@ -156,7 +204,7 @@ $poin_tampil = static function (float $n): string {
                                         ]) ?>
                                     </td>
                                 <?php } else { ?>
-                                    <td class="text-end">
+                                    <td class="text-end kpi-penuh" data-label="Target">
                                         <?= $isi($t['target'], $t['satuan']) ?>
                                         <?php if ($t['indikator'] === 'gmv_cs') : ?>
                                             <div class="small text-muted">
@@ -194,8 +242,8 @@ $poin_tampil = static function (float $n): string {
                 sama persis dengan poin bawaan, untuk kembali ke angka kode.
             </p>
             <?= form_open('admin/kpi/poin') ?>
-            <div class="table-responsive">
-                <table class="table align-middle mb-0">
+            <div class="table-responsive kpi-tabel-wrap">
+                <table class="table align-middle mb-0 kpi-tabel">
                     <thead class="table-light">
                         <tr>
                             <th scope="col">Aktivitas</th>
@@ -211,16 +259,16 @@ $poin_tampil = static function (float $n): string {
                             $kini = (float) $a['poin'];
                             ?>
                             <tr>
-                                <td>
+                                <td class="kpi-penuh" data-label="Aktivitas">
                                     <div class="fw-semibold"><?= esc($a['nama']) ?></div>
                                     <div class="small text-muted">satuan: <?= esc($a['satuan']) ?></div>
                                     <?php if (isset($a['catatan'])) { ?>
                                         <div class="small text-muted"><?= esc($a['catatan']) ?></div>
                                     <?php } ?>
                                 </td>
-                                <td class="small text-muted"><code><?= esc($a['sumber']) ?></code></td>
-                                <td class="text-center"><?= $poin_tampil($baku) ?></td>
-                                <td>
+                                <td class="small text-muted kpi-penuh" data-label="Sumber data"><code><?= esc($a['sumber']) ?></code></td>
+                                <td class="text-center" data-label="Bawaan"><?= $poin_tampil($baku) ?></td>
+                                <td data-label="Poin berlaku">
                                     <?php if ($boleh) { ?>
                                         <?= form_input([
                                             'class'       => 'form-control form-control-sm',

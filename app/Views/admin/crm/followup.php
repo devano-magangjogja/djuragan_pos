@@ -106,24 +106,77 @@ $tanya = static function (array $ubah): string {
 }
 /* saringan duduk di kepala kartu tabel: formnya membentang seukuran kartu,
    dan hanya kolom cari yang memanjang mengisi sisa ruang — tanggal, label,
-   dan tombol Ulangi cukup seperlunya (flex 0) supaya proporsional */
+   dan dua tombol ikon (cari & kosongkan) cukup seperlunya (flex 0) supaya
+   proporsional */
 .fup-saring {
     width: 100%;
 }
-.fup-saring .fup-cari {
-    flex: 1 1 240px;
-    min-width: 0;
-}
 .fup-saring > div,
-.fup-saring > a {
+.fup-saring > a,
+.fup-saring > button {
     flex: 0 0 auto;
 }
 .fup-saring > div.d-flex {
     flex: 0 1 auto;
 }
+/* Trio cari: isian lebih dulu (menempel di kanan kelompok tanggal), lalu ikon
+   cari, baru ikon kosongkan. Wadusnya SELALU satu baris flex yang tidak boleh
+   melipat (nowrap) — di desktop maupun di HP — supaya isian yang menyusut, bukan
+   tombolnya yang terlempar ke baris berikutnya. Tanpa pembungkus ini, flex-wrap
+   form memecah trio pada lebar tengah (768px) dan ikon menyusul sendiri. */
+.fup-cari-baris {
+    display: flex;
+    flex: 1 1 auto;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    gap: 0.5rem;
+    min-width: 0;
+}
+/* selector ganda: .fup-saring > div (flex 0 0 auto) punya spesifikitas lebih
+   tinggi daripada .fup-cari-baris seorang, jadi tanpa ini wadusnya tidak
+   mau memanjang mengisi sisa ruang baris filter */
+.fup-saring > .fup-cari-baris {
+    flex: 1 1 auto;
+}
+/* width 240px: form tab Customer lebarnya mengikuti isi (bukan .fup-saring yang
+   membentang), jadi tanpa patokan itu flex-basis diabaikan dan isian menyusut ke
+   lebar bawaan input (~192px). */
+.fup-cari-baris > .fup-cari {
+    flex: 1 1 240px;
+    width: 240px;
+    min-width: 0;
+}
+/* Di bawah lebar desktop patokan itu jadi bumerang: min-content trio ikut
+   330px, sehingga baris Tagihan melipat ikon kosongkan ke baris kedua (768px)
+   dan halaman bisa digeser miring di 320-360px. Cukup flex-basis yang boleh
+   menyusut di sini. */
+@media (max-width: 991.98px) {
+    .fup-cari-baris > .fup-cari {
+        width: auto;
+    }
+}
+.fup-cari-baris > .btn {
+    flex: 0 0 auto;
+}
 @media (max-width: 575.98px) {
     .fup-tanggal {
         width: 126px;
+    }
+    /* Baris tanggal dibuat selebar baris cari di bawahnya: wadusnya diminta
+       mengambil satu baris penuh dan kedua isian berbagi sisanya sama rata
+       ("s.d." tetap di tengah) — jadi atas-bawah rata, tidak menggantung
+       setengah layar seperti saat isian dipatok 126px. */
+    .fup-saring > div.d-flex {
+        flex: 1 1 100%;
+        /* min-width:0 wajib: tanpa ini ukuran minimal otomatis wadusnya tetap
+           seukuran min-content (~288px), sehingga di layar 320px baris tanggal
+           tidak bisa menyusut, meluber dari form dan halaman bisa digeser */
+        min-width: 0;
+    }
+    .fup-saring .fup-tanggal {
+        flex: 1 1 0;
+        width: auto;
+        min-width: 0;
     }
     /* kartu saringan dua per baris di HP; kartu terakhir bisa menggantung setengah
        baris (mis. Terkirim), jadi ia melebar memenuhi ruang tersisa */
@@ -286,14 +339,12 @@ $tanya = static function (array $ubah): string {
         padding-left: 0.5rem !important;
         padding-right: 0.5rem !important;
     }
-    /* Kotak cari ikut melebar penuh seperti tab di atasnya. width:100% saja
-       tidak cukup: form-nya adalah flex item yang lebarnya mengikuti isi, jadi
-       form-nya juga yang diminta mengambil satu baris penuh. */
+    /* Form saringan diminta mengambil satu baris penuh: dia sendiri flex item
+       yang lebarnya mengikuti isi, jadi tanpa ini baris filter menggantung
+       setengah layar. Trio cari tidak perlu aturan lagi: wadusnya sudah nowrap
+       di semua lebar (lihat .fup-cari-baris). */
     .fup-halaman form.d-flex {
         flex: 1 1 100%;
-    }
-    .fup-halaman .cari-merged {
-        width: 100% !important;
     }
     /* Catatan follow-up memakai pre-wrap supaya barisnya terjaga, tapi token
        panjang (nomor WA / kode nota) tetap boleh dipotong agar tidak meluber. */
@@ -323,8 +374,10 @@ $tanya = static function (array $ubah): string {
     margin-left: 0 !important;
     border-radius: 0.375rem !important;
 }
-/* Kelas .cari-merged (kotak cari satu kolom) sekarang ada di style.css karena
-   dipakai juga oleh halaman Pengiriman. */
+/* Kelas .cari-merged (ikon cari numpang di dalam field) masih ada di style.css
+   untuk halaman Pengiriman, tapi halaman ini sudah tidak memakainya lagi: di
+   kedua tab urutannya isian cari, tombol cari berdiri sendiri, lalu ikon
+   kosongkan saringan. */
 </style>
 <?= $this->endSection() ?>
 
@@ -376,9 +429,17 @@ $tanya = static function (array $ubah): string {
                     <form action="<?= site_url('admin/crm/followup') ?>" method="get" class="d-flex gap-2">
                         <input type="hidden" name="tab" value="customer">
                         <input type="hidden" name="status" value="<?= esc($status) ?>">
-                        <div class="cari-merged" style="width: 250px; max-width: 100%;">
-                            <button type="submit" class="cari-kirim" title="Cari"><i class="fal fa-search"></i></button>
-                            <input type="text" name="cari" class="form-control form-control-sm" placeholder="Cari nama atau judul..." value="<?= esc($cari) ?>">
+                        <!-- sama seperti tab Tagihan: field cari duduk rapat di
+                             samping isian tanggal, lalu ikon cari, baru ikon
+                             kosongkan; di HP ketiganya dipaksa satu baris lewat
+                             .fup-cari-baris -->
+                        <div class="fup-cari-baris">
+                            <input type="text" name="cari" class="form-control form-control-sm fup-cari" placeholder="Cari nama atau judul..." value="<?= esc($cari) ?>">
+                            <button type="submit" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center" title="Cari" aria-label="Cari"><i class="fal fa-search"></i></button>
+                            <?php /* reset di tab ini hanya menghapus kata yang dicari; tab dan
+                               status yang sedang dibuka ikut dibawa, sama seperti tautan
+                               kartu status di atas */ ?>
+                            <a class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center" href="<?= esc(site_url('admin/crm/followup?tab=customer&status=' . $status)) ?>" title="Kosongkan semua saringan" aria-label="Kosongkan semua saringan"><i class="fal fa-sync"></i></a>
                         </div>
                     </form>
                 </div>
@@ -520,13 +581,21 @@ $tanya = static function (array $ubah): string {
                             <input type="date" id="fup-akhir" name="akhir" class="form-control form-control-sm fup-tanggal"
                                 value="<?= esc($akhir) ?>" min="<?= esc($awal) ?>" title="Sampai tanggal pesan">
                         </div>
-                        <div class="cari-merged fup-cari">
-                            <button type="submit" class="cari-kirim" title="Cari"><i class="fal fa-search"></i></button>
-                            <input type="text" name="cari" class="form-control form-control-sm" placeholder="Cari invoice / pelanggan..." value="<?= esc($cari) ?>">
+                        <!-- trio cari: field menempel di kanan kelompok tanggal,
+                             lalu ikon cari, baru ikon kosongkan; wadusnya selalu
+                             satu baris utuh, di desktop maupun HP (.fup-cari-baris) -->
+                        <div class="fup-cari-baris">
+                            <input type="text" name="cari" class="form-control form-control-sm fup-cari" placeholder="Cari invoice / pelanggan..." value="<?= esc($cari) ?>">
+                            <button type="submit" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center" title="Cari" aria-label="Cari"><i class="fal fa-search"></i></button>
+                            <?php /* ikon reset tidak lagi disembunyikan oleh kondisi: di halaman
+                               daftar lain (Cek Email, Reminder WhatsApp, Cek Toko) dia selalu
+                               tampil, jadi di sini juga begitu — kalau tidak, baris filter ini
+                               terlihat kehilangan tombolnya setiap kali saringan sedang kosong.
+                               Sama seperti halaman daftar lain: pembanding saringan cukup ikon
+                               putar saja, tulisannya dihapus supaya baris filter tetap pendek;
+                               label pindah ke aria-label karena tidak ada teks yang bisa dibaca */ ?>
+                            <a class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center" href="<?= esc(site_url('admin/crm/followup')) ?>" title="Kosongkan semua saringan" aria-label="Kosongkan semua saringan"><i class="fal fa-sync"></i></a>
                         </div>
-                        <?php if ($cari !== '' || $statusBarang !== '' || $awal !== '' || $akhir !== '') : ?>
-                            <a class="btn btn-sm btn-outline-secondary text-nowrap" href="<?= esc(site_url('admin/crm/followup')) ?>" title="Kosongkan semua saringan">Ulangi</a>
-                        <?php endif; ?>
                     </form>
                 </div>
 

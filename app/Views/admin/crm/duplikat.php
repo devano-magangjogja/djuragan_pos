@@ -48,6 +48,36 @@
             margin-bottom: 0;
             white-space: nowrap;
         }
+
+        /* Baris badge + tombol "Gabungkan" di kepala kartu. Tanpa izin menyusut,
+           min-content barisnya (badge nowrap + tombol ~112px) lebih lebar dari
+           ruang isi kartu di layar sempit, sehingga tombolnya mepet — bahkan
+           melewati tepi kanan kartu (di 320px kelebihan ~32px dan terpotong oleh
+           overflow-x: clip). Barisnya boleh menyusut dan melipat, badge boleh
+           turun baris; tulisannya sendiri dipendekkan di markup. */
+        .card-header > .d-flex:last-child {
+            min-width: 0;
+            flex-wrap: wrap;
+            /* direntang seukuran isi kartu supaya tepi kanan tombol sejajar
+               dengan kepala tabel di bawahnya, sama seperti di desktop */
+            flex: 1 1 100%;
+            justify-content: space-between;
+        }
+
+        /* badge dan tombol dibagi RATA: flex-basis 0 membuat keduanya sama
+           lebarnya (sisa ruang setelah gap dibagi dua), jadi tepi kanan tombol
+           tetap sejajar dengan kepala tabel sementara badge tidak menggantung
+           pendek di kiri. Isi keduanya sama-sama rata tengah. */
+        .card-header > .d-flex:last-child > .badge,
+        .card-header > .d-flex:last-child > .btn {
+            flex: 1 1 0;
+            min-width: 0;
+            justify-content: center;
+        }
+
+        .card-header .badge.jumlah-grup {
+            white-space: normal;
+        }
     }
 </style>
 <?= $this->endSection() ?>
@@ -76,7 +106,10 @@
                 </button>
             </div>
             <div class="d-flex align-items-center gap-2">
-                <span class="badge bg-light text-dark border jumlah-grup"><?= $totalDuplikat ?> Grup Duplikat Terdeteksi</span>
+                <?php /* di layar sempit badge hanya membawa angkanya: teks panjang
+                   "Grup Duplikat Terdeteksi" (±188px) yang membuat tombol
+                   Gabungkan terdesak ke tepi kanan kartu */ ?>
+                <span class="badge bg-light text-dark border jumlah-grup"><?= $totalDuplikat ?> <span class="d-none d-md-inline">Grup Duplikat Terdeteksi</span><span class="d-md-none">grup</span></span>
                 <button class="btn btn-primary btn-sm fw-semibold" data-bs-toggle="modal" data-bs-target="#modalManualMerge">
                     <i class="fal fa-code-merge me-1"></i> Gabungkan
                 </button>
