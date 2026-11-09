@@ -52,24 +52,20 @@ $detail_batas = 12;
     }
     .poin-saring .form-label { letter-spacing: 0.01em; }
 
-    /* Baris rekap pegawai sekaligus tombol pembuka detailnya. Chevron dan
-       perputarannya sudah ditanggung aturan global [data-bs-toggle="collapse"]
-       [aria-expanded] .fa-chevron-down di style.css, jadi di sini hanya ukuran
-       dan warnanya yang dirapikan. */
+    /* Baris rekap pegawai sekaligus pemicu jendela rincian. Detailnya sudah pindah
+       ke modal, jadi tidak ada lagi chevron yang berputar — ikon di depan nama
+       hanya menandai baris itu bisa ditekan. */
     .poin-user-baris { cursor: pointer; }
-    .poin-user-baris .poin-user-kupon { color: var(--color-ink-400); font-size: 0.75rem; }
+    .poin-user-baris .poin-user-ikon { color: var(--color-ink-400); font-size: 0.75rem; }
     .poin-user-baris:focus-visible {
         outline: 2px solid var(--color-brand-500);
         outline-offset: -2px;
     }
-    .poin-user-isi {
-        background: var(--color-ink-50);
-        border-top: 1px solid var(--color-ink-100);
-        border-bottom: 1px solid var(--color-ink-100);
-        padding: 0.65rem 0.75rem 0.85rem;
-    }
-    .poin-user-isi table { font-size: 0.82rem; }
-    .poin-user-isi thead th {
+
+    /* Isi jendela rincian: modal sudah memberi batas dan padding sendiri, jadi
+       tabelnya polos tanpa pembungkus berlatar seperti dulu. */
+    .poin-user-rinci table { font-size: 0.82rem; }
+    .poin-user-rinci thead th {
         color: var(--color-ink-500);
         font-size: 0.72rem;
         letter-spacing: 0.04em;
@@ -153,7 +149,7 @@ $detail_batas = 12;
     <p class="text-muted small mb-4">
         Rekap poin yang terkumpul dari penjualan produk yang sudah <strong>Lunas</strong>. Poin diberikan
         kepada pembuat nota; angka di sini dipakai sebagai dasar perhitungan gaji.
-        Klik baris pegawai untuk membuka rincian produk di baliknya.
+        Klik baris pegawai untuk membuka rinciannya dalam jendela pop-up.
     </p>
 
     <div class="row gx-2 gy-3 mb-4">
@@ -301,85 +297,83 @@ $detail_batas = 12;
                                         $sisa_poin = array_sum(array_map(static fn (array $d): int => (int) $d['poin'], $sisa));
                                         $poin     = (int) $a['poin'];
                                         ?>
-                                        <tr class="poin-user-baris" data-bs-toggle="collapse" data-bs-target="#poin-user-<?= $id_pedia ?>" role="button" tabindex="0" aria-expanded="false" aria-controls="poin-user-<?= $id_pedia ?>">
+                                        <tr class="poin-user-baris" data-bs-toggle="modal" data-bs-target="#poinUserModal"
+                                            data-poin-user="<?= $id_pedia ?>" data-nama="<?= esc($a['nama'], 'attr') ?>"
+                                            role="button" tabindex="0" aria-haspopup="dialog">
                                             <td>
-                                                <i class="fal fa-chevron-down poin-user-kupon me-2"></i><?= esc($a['nama']) ?>
+                                                <i class="fal fa-list-ul poin-user-ikon me-2"></i><?= esc($a['nama']) ?>
                                             </td>
                                             <td class="text-end"><?= (int) $a['nota'] ?></td>
                                             <td class="text-end"><?= $rupiah((int) $a['unit']) ?></td>
                                             <td class="text-end fw-bold"><?= $rupiah($poin) ?></td>
                                         </tr>
-                                        <tr>
-                                            <td colspan="4" class="p-0 border-0">
-                                                <div class="collapse" id="poin-user-<?= $id_pedia ?>">
-                                                    <div class="poin-user-isi">
-                                                        <?php if ($detail === []) { ?>
-                                                            <div class="text-muted small">Belum ada rincian produk untuk pegawai ini.</div>
-                                                        <?php } else { ?>
-                                                            <div class="small text-muted mb-2">
-                                                                <i class="fal fa-boxes-stacked me-1"></i>
-                                                                Barang yang dijual <?= esc($a['nama']) ?> — <?= count($detail) ?> produk, <?= $rupiah((int) $a['unit']) ?> unit
-                                                            </div>
-
-                                                            <div class="table-responsive">
-                                                                <table class="table table-sm align-middle mb-0">
-                                                                    <thead>
-                                                                        <tr>
-                                                                            <th>Produk</th>
-                                                                            <th class="text-end">Nota</th>
-                                                                            <th class="text-end">Unit</th>
-                                                                            <th class="text-end">Poin/satuan</th>
-                                                                            <th class="text-end">Perhitungan</th>
-                                                                            <th class="text-end">Poin</th>
-                                                                        </tr>
-                                                                    </thead>
-                                                                    <tbody>
-                                                                        <?php foreach ($tampil as $d) {
-                                                                            $ukuran = trim((string) ($d['ukuran'] ?? ''));
-                                                                            $unit   = (int) $d['unit'];
-                                                                            $satuan = (int) $d['poin_satuan'];
-                                                                            ?>
-                                                                            <tr>
-                                                                                <td>
-                                                                                    <span class="fw-semibold"><?= esc($d['kode']) ?></span>
-                                                                                    <?php if ($ukuran !== '') { ?><span class="text-muted">/ <?= esc($ukuran) ?></span><?php } ?>
-                                                                                </td>
-                                                                                <td class="text-end"><?= (int) $d['nota'] ?></td>
-                                                                                <td class="text-end"><?= $rupiah($unit) ?></td>
-                                                                                <td class="text-end"><?= $rupiah($satuan) ?></td>
-                                                                                <td class="text-end poin-user-rumus"><?= $rupiah($unit) . ' × ' . $rupiah($satuan) ?></td>
-                                                                                <td class="text-end"><?= $rupiah((int) $d['poin']) ?></td>
-                                                                            </tr>
-                                                                        <?php } ?>
-
-                                                                        <?php if ($sisa !== []) { ?>
-                                                                            <tr>
-                                                                                <td class="text-muted" colspan="5">
-                                                                                    &hellip; dan <?= count($sisa) ?> produk/nilai lainnya
-                                                                                </td>
-                                                                                <td class="text-end text-muted"><?= $rupiah($sisa_poin) ?></td>
-                                                                            </tr>
-                                                                        <?php } ?>
-
-                                                                        <tr class="poin-user-jumlah">
-                                                                            <td colspan="5">Total poin pegawai ini pada periode/filter ini</td>
-                                                                            <td class="text-end"><?= $rupiah($poin) ?></td>
-                                                                        </tr>
-                                                                    </tbody>
-                                                                </table>
-                                                            </div>
-
-                                                            <div class="small text-muted mt-2">
-                                                                <i class="fal fa-circle-info me-1"></i>
-                                                                Nilai per satuan dipotret saat nota dilunasi, jadi produk yang sama bisa muncul dua kali
-                                                                kalau poin produknya pernah diubah. Barang dari stok terhitung sejak notasinya lunas;
-                                                                barang tulisan tangan baru terhitung setelah notasinya masuk Selesai.
-                                                            </div>
-                                                        <?php } ?>
-                                                    </div>
+                                        <?php /* rincian pegawai disimpan di sini, bukan di baris tabel:
+                                           jendela pop-up mengambil isinya saat baris ini ditekan */ ?>
+                                        <template id="poin-user-<?= $id_pedia ?>">
+                                            <?php if ($detail === []) { ?>
+                                                <div class="text-muted small">Belum ada rincian produk untuk pegawai ini.</div>
+                                            <?php } else { ?>
+                                                <div class="small text-muted mb-2">
+                                                    <i class="fal fa-boxes-stacked me-1"></i>
+                                                    <?= count($detail) ?> produk &middot; <?= $rupiah((int) $a['unit']) ?> unit &middot; <?= (int) $a['nota'] ?> nota lunas
                                                 </div>
-                                            </td>
-                                        </tr>
+
+                                                <div class="table-responsive">
+                                                    <table class="table table-sm align-middle mb-0">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Produk</th>
+                                                                <th class="text-end">Nota</th>
+                                                                <th class="text-end">Unit</th>
+                                                                <th class="text-end">Poin/satuan</th>
+                                                                <th class="text-end">Perhitungan</th>
+                                                                <th class="text-end">Poin</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <?php foreach ($tampil as $d) {
+                                                                $ukuran = trim((string) ($d['ukuran'] ?? ''));
+                                                                $unit   = (int) $d['unit'];
+                                                                $satuan = (int) $d['poin_satuan'];
+                                                                ?>
+                                                                <tr>
+                                                                    <td>
+                                                                        <span class="fw-semibold"><?= esc($d['kode']) ?></span>
+                                                                        <?php if ($ukuran !== '') { ?><span class="text-muted">/ <?= esc($ukuran) ?></span><?php } ?>
+                                                                    </td>
+                                                                    <td class="text-end"><?= (int) $d['nota'] ?></td>
+                                                                    <td class="text-end"><?= $rupiah($unit) ?></td>
+                                                                    <td class="text-end"><?= $rupiah($satuan) ?></td>
+                                                                    <td class="text-end poin-user-rumus"><?= $rupiah($unit) . ' × ' . $rupiah($satuan) ?></td>
+                                                                    <td class="text-end"><?= $rupiah((int) $d['poin']) ?></td>
+                                                                </tr>
+                                                            <?php } ?>
+
+                                                            <?php if ($sisa !== []) { ?>
+                                                                <tr>
+                                                                    <td class="text-muted" colspan="5">
+                                                                        &hellip; dan <?= count($sisa) ?> produk/nilai lainnya
+                                                                    </td>
+                                                                    <td class="text-end text-muted"><?= $rupiah($sisa_poin) ?></td>
+                                                                </tr>
+                                                            <?php } ?>
+
+                                                            <tr class="poin-user-jumlah">
+                                                                <td colspan="5">Total poin pegawai ini pada periode/filter ini</td>
+                                                                <td class="text-end"><?= $rupiah($poin) ?></td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+
+                                                <div class="small text-muted mt-2">
+                                                    <i class="fal fa-circle-info me-1"></i>
+                                                    Nilai per satuan dipotret saat nota dilunasi, jadi produk yang sama bisa muncul dua kali
+                                                    kalau poin produknya pernah diubah. Barang dari stok terhitung sejak notasinya lunas;
+                                                    barang tulisan tangan baru terhitung setelah notasinya masuk Selesai.
+                                                </div>
+                                            <?php } ?>
+                                        </template>
                                     <?php } ?>
                                 </tbody>
                             </table>
@@ -440,6 +434,25 @@ $detail_batas = 12;
             </div>
         </div>
     </div>
+    </div>
+</div>
+
+<?php /* Satu jendela rincian untuk semua baris pegawai — isinya diisi dari
+   <template> milik baris yang diklik, sama seperti modal di Reminder Bintang 5.
+   Duduknya di luar wadah hasil supaya isi tab boleh ditukar kapan saja tanpa
+   ikut merobohkan modal yang sedang terbuka. */ ?>
+<div class="modal fade" id="poinUserModal" tabindex="-1" aria-labelledby="poinUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="poinUserModalLabel">Rincian poin pegawai</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+            </div>
+            <div class="modal-body poin-user-rinci"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-sm btn-link text-decoration-none" data-bs-dismiss="modal">Tutup</button>
+            </div>
+        </div>
     </div>
 </div>
 <?= $this->endSection() ?>
@@ -512,11 +525,38 @@ document.addEventListener('DOMContentLoaded', function () {
         new bootstrap.Tab(btnRincian).show();
     }
     <?php } ?>
-    // Baris rekap adalah <tr> yang bisa diklik; Bootstrap 5.2 hanya memasang
-    // penangan klik untuk pemicu collapse, jadi Enter/Space ditangani sendiri
-    // supaya baris dengan role="button" ini tidak sekadar terlihat bisa ditekan.
-    // Didelegasikan di document karena isi tab ditukar lewat AJAX saat saringan
-    // dipakai, jadi penangan yang menempel per baris akan hilang setelah tukar.
+    // Satu jendela rincian dipakai bersama semua baris pegawai: judulnya dan
+    // tabel isinya diambil dari <template> milik baris yang diklik, jadi tidak
+    // ada satu modal per pegawai. Dipasang di event modal (bukan per baris)
+    // karena isi tab ditukar lewat AJAX saat saringan dipakai.
+    var jendela = document.getElementById('poinUserModal');
+
+    if (jendela) {
+        jendela.addEventListener('show.bs.modal', function (peristiwa) {
+            var pemicu = peristiwa.relatedTarget;
+
+            if (! pemicu || ! pemicu.dataset) {
+                return;
+            }
+
+            var sumber = document.getElementById('poin-user-' + (pemicu.dataset.poinUser || '0'));
+            var wadah  = jendela.querySelector('.modal-body');
+
+            wadah.textContent = '';
+
+            if (sumber) {
+                wadah.appendChild(sumber.content.cloneNode(true));
+            } else {
+                wadah.textContent = 'Rincian tidak tersedia.';
+            }
+
+            jendela.querySelector('.modal-title').textContent = 'Rincian poin' + (pemicu.dataset.nama ? ' — ' + pemicu.dataset.nama : '');
+        });
+    }
+
+    // Baris rekap adalah <tr> yang bisa diklik; data API modal Bootstrap 5.2 hanya
+    // mendengarkan klik, jadi Enter/Space ditangani sendiri supaya baris dengan
+    // role="button" ini tidak sekadar terlihat bisa ditekan.
     document.addEventListener('keydown', function (e) {
         var baris = e.target && e.target.closest ? e.target.closest('#tab-rekap tr.poin-user-baris') : null;
 

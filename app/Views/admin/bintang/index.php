@@ -25,7 +25,6 @@
  * @var array<int, string>         $toko
  * @var array<int, list<string>>   $platform juragan_id => platform aktif toko itu
  * @var int    $milik      id akun yang sedang login
- * @var bool   $kelola     akun ini admin/superadmin
  * @var string $kabar      pesan sukses flash (string kosong kalau tidak ada)
  * @var string $galat      pesan gagal flash (string kosong kalau tidak ada)
  */
@@ -63,6 +62,11 @@ $tanya = static function (array $ubah): string {
 <?= $this->section('css') ?>
 <style>
     .b5-halaman { max-width: 1180px; }
+    /* 1180px pas untuk laptop biasa; di monitor lebih lebar ruang itu dipakai
+       tabel, bukan dibiarkan kosong di kiri-kanan (container-xxl sendiri mentok
+       di 1320px, jadi langkah keduanya perlu nilai sendiri) */
+    @media (min-width: 1400px) { .b5-halaman { max-width: 1320px; } }
+    @media (min-width: 1700px) { .b5-halaman { max-width: 1480px; } }
     .b5-head { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; margin-bottom: 1rem; }
     .b5-head p { margin: .3rem 0 0; font-size: .9rem; color: #64748b; }
 
@@ -84,12 +88,15 @@ $tanya = static function (array $ubah): string {
        membuat tombol lebih pendek dari tombol bertuliskan di sebelahnya */
     .b5-saring .b5-aksi { align-items: stretch; }
 
-    /* Yang boleh tergulir cuma isi tabel. Deretan tab + saringan menempel di atas
-       (.b5-lekat) dan kepala kolom ikut menempel di dalam wadah gulirnya
-       (.b5-gulir), jadi baris yang jalan tidak pernah menutupi pilihan tab.
+    /* Yang boleh tergulir cuma isi tabel: di desktop seluruh halaman dipatok
+       setinggi layar, jadi judul, tab, dan saringan diam di tempat dan tidak ada
+       gulir halaman sama sekali — yang bergerak hanya baris nota di dalam
+       .b5-gulir. Kepala kolom ikut menempel di dalam wadah gulirnya, dan pager
+       duduk di bawahnya (di luar kotak gulir) supaya selalu terlihat.
+       Tingginya dipatok oleh JavaScript dari posisi nyata halaman (lihat
+       aturTinggi di bagian js); tanpa JS halaman kembali menggulir seperti dulu.
        Di bawah 992px dibiarkan seperti dulu: halaman yang digulir, sebab di layar
-       kecil blok saringan sudah makan separuh tinggi layar kalau ikut menempel. */
-    .b5-halaman { --b5-atas: 260px; }
+       kecil blok saringan sudah makan separuh tinggi layar. */
     .b5-lekat { background: #f9fafb; }
     .b5-gulir .table { border-collapse: separate; border-spacing: 0; }
     /* separate di atas bukan hiasan: dengan border-collapse: collapse, garis kepala
@@ -100,20 +107,37 @@ $tanya = static function (array $ubah): string {
     .b5-gulir::-webkit-scrollbar { width: 7px; }
 
     @media (min-width: 992px) {
+        .b5-halaman {
+            display: flex; flex-direction: column;
+            /* tanpa JavaScript tinggi halaman tetap apa adanya (halaman yang
+               menggulir, seperti dulu) — patokan layar penuh dipasang aturTinggi */
+            height: var(--b5-tinggi, auto);
+        }
+        /* semua blok di atas kartu (judul, kabar/galat, tab, saringan) ukurannya
+           apa adanya; kartu mengambil seluruh sisa layar dan membaginya dengan
+           pager-nya sendiri */
+        .b5-halaman > * { flex: 0 0 auto; }
+        .b5-kartu {
+            flex: 1 1 auto; min-height: 0;
+            display: flex; flex-direction: column;
+        }
+        /* 220px lantai baris tabel: kalau jendela dipakai benar-benar pendek,
+           lebih baik halaman tergelincir sedikit daripada isinya diperas sampai
+           tidak ada baris yang kelihatan */
+        .b5-kartu > .b5-gulir { flex: 1 1 auto; min-height: 220px; overflow: auto; }
+        .b5-kartu > .b5-pager { flex: 0 0 auto; }
+        /* tab kosong: kartunya tetap memenuhi layar, jadi pesannya ditengahkan
+           di dalamnya alih-alih menggantung di atas dengan ruang kosong di bawah */
+        .b5-kartu > .b5-kosong {
+            flex: 1 1 auto; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+        }
         .b5-lekat {
             position: sticky; top: 0; z-index: 1025;
             padding-top: .3rem; margin-top: -.3rem;
         }
-        .b5-gulir {
-            /* 260px = judul + tab + saringan + pager; kalau perkiraan meleset,
-               tab dan saringan masih menempel, hanya sisanya yang ikut tergulir */
-            max-height: calc(100vh - var(--b5-atas));
-            max-height: calc(100dvh - var(--b5-atas));
-            min-height: 180px;
-            overflow: auto;
-            /* mentok gulir di tabel tidak boleh membuat halaman di belakangnya ikut bergerak */
-            overscroll-behavior: contain;
-        }
+        /* mentok gulir di tabel tidak boleh membuat halaman di belakangnya ikut bergerak */
+        .b5-gulir { overscroll-behavior: contain; }
     }
 
     /* resep responsif rumah: ikon judul dibuang, tombol kepala & pil tab menutup
@@ -256,11 +280,6 @@ $tanya = static function (array $ubah): string {
             <h1 class="h3 mt-5"><i class="fal fa-star me-1 text-warning"></i> <?= esc($title) ?></h1>
             <p>Nota yang dananya sudah masuk &mdash; DP, sedang dicicil, atau lunas &mdash; boleh diminta ulasannya secara netral: bintang lima di Google Maps. Siapa cepat dia ambil &mdash; setiap perpindahan tangan tercatat.</p>
         </div>
-        <?php if ($kelola) : ?>
-            <a class="btn btn-sm btn-outline-secondary rounded-pill" href="<?= esc(site_url('admin/tugas/pengaturan')) ?>">
-                <i class="fal fa-sliders-h me-1"></i> Aturan Reminder
-            </a>
-        <?php endif; ?>
     </div>
 
     <?php if ($kabar !== '') : ?><div class="alert alert-success py-2" data-flash><?= esc($kabar) ?></div><?php endif; ?>
@@ -650,6 +669,48 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+
+    // Halaman ini dipatok setinggi layar di desktop, jadi yang menggulir hanya isi
+    // tabel. Patokannya diukur dari posisi nyata kartu di dokumen: kalau dihitung
+    // dari perkiraan, baris terakhir dan pager selalu terdorong ke bawah layar dan
+    // terlihat terpotong. Kalau sisanya terlalu sempit untuk menampung tabel
+    // (jendela sangat pendek), patokan dilepas dan halaman menggulir seperti biasa.
+    var meja = window.matchMedia('(min-width: 992px)');
+
+    var aturTinggi = function () {
+        var halaman = document.querySelector('.b5-halaman');
+
+        if (! halaman) {
+            return;
+        }
+
+        if (! meja.matches) {
+            halaman.style.removeProperty('--b5-tinggi');
+
+            return;
+        }
+
+        var viewport = window.innerHeight || document.documentElement.clientHeight;
+        var kartu    = halaman.querySelector('.b5-kartu');
+        var pager    = kartu ? kartu.querySelector('.b5-pager') : null;
+        var atas     = kartu ? kartu.getBoundingClientRect().top + window.pageYOffset : viewport;
+        var ruang    = viewport - atas - (pager ? pager.getBoundingClientRect().height : 0);
+
+        if (ruang < 220) {
+            halaman.style.removeProperty('--b5-tinggi');
+
+            return;
+        }
+
+        halaman.style.setProperty('--b5-tinggi',
+            Math.floor(viewport - (halaman.getBoundingClientRect().top + window.pageYOffset)) + 'px');
+    };
+
+    window.addEventListener('resize', aturTinggi);
+    window.addEventListener('load', aturTinggi);
+    meja.addEventListener('change', aturTinggi);
+    document.addEventListener('saring:segar', aturTinggi);
+    aturTinggi();
 });
 </script>
 <?= $this->endSection() ?>

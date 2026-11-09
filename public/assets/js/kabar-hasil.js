@@ -33,6 +33,40 @@
     return String(v === null || v === undefined ? "" : v).trim();
   }
 
+  /*
+   * window juga menampung error dari skrip yang bukan bagian aplikasi:
+   * ekstensi browser menyuntik skripnya ke dalam halaman (penerjemah,
+   * pemeriksa tata bahasa, perekam) dan CDN lintas asal hanya mengirim
+   * "Script error." tanpa isi. Pesan seperti
+   * "Cannot read properties of undefined (reading 'M_ID')" datang dari situ —
+   * aplikasi kita sehat, tapi pengguna melihat modal "Halaman menemukan error"
+   * dan mengira POS-nya rusak. Jadi hanya skrip yang berasal dari asal
+   * halaman sendiri yang boleh menampilkan modal.
+   */
+  var asal = window.location.origin || "";
+
+  function punyaAplikasi(sumber) {
+    var teksSumber = teks(sumber);
+
+    if (teksSumber === "") {
+      return false; // "Script error." lintas asal: isinya tidak terbaca
+    }
+
+    if (/^(?:chrome|moz|ms|edge|safari|opera|brave)-extension:/i.test(teksSumber)) {
+      return false; // disuntik ekstensi browser
+    }
+
+    try {
+      return new URL(teksSumber, asal).origin === asal;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function dariEkstensi(v) {
+    return /(?:chrome|moz|ms|edge|safari|opera|brave)-extension:/i.test(teks(v));
+  }
+
   function buang() {
     if (!tampilSekarang) {
       return;
@@ -368,6 +402,17 @@
         return;
       }
 
+      // "Script error." telanjang: browser sengaja menyembunyikan isinya untuk
+      // skrip lintas asal, jadi tidak ada yang bisa dilaporkan ke pengguna
+      if (/^script error\.?$/i.test(teks(e.message))) {
+        return;
+      }
+
+      // error dari skrip ekstensi/luar bukan kesalahan halaman ini
+      if (!punyaAplikasi(e.filename)) {
+        return;
+      }
+
       sekali("js|" + e.message, {
         judul: "Halaman menemukan error",
         pesan: e.message,
@@ -379,6 +424,11 @@
       var alasan = e && e.reason ? e.reason.message || e.reason : "";
 
       if (teks(alasan) === "") {
+        return;
+      }
+
+      // promise yang ditolak skrip suntikan ekstensi ikut dibuang
+      if (dariEkstensi(e && e.reason && e.reason.stack)) {
         return;
       }
 

@@ -1272,57 +1272,15 @@ class TugasModel extends Model
     }
 
     /**
-     * Aturan reminder ulasan: kunci di crm_setting, label di layar, dan nilai
-     * bawaan yang dipakai kalau kunci itu belum pernah diisi. Kunci lama
-     * reminder_dp_* dan reminder_pelunasan_* tidak lagi dibaca di sini.
+     * Aturan reminder ulasan dipatok, tidak lagi disimpan di crm_setting: begitu
+     * nota punya pembayaran sah (DP, dicicil, atau lunas) CS boleh langsung
+     * menanyakan pengalamannya — tanpa jeda tunggu dan tanpa sakelar. Dulu kedua
+     * angka itu bisa diubah lewat layar aturan; layarnya sudah dihapus, jadi
+     * aturannya cuma punya satu versi.
      */
-    public const ATURAN_REMINDER = [
-        'reminder_ulasan_aktif'    => ['label' => 'Nyalakan permintaan ulasan', 'bawaan' => 1, 'satuan' => 'nyala'],
-        'reminder_ulasan_hari'     => ['label' => 'Hari sejak dananya masuk (DP/cicilan/lunas) sebelum meminta ulasan', 'bawaan' => 0, 'satuan' => 'hari'],
-    ];
 
     /** Jendela mundur generator: nota yang tidak disentuh selama ini dilewati. */
     public const JENDELA_REMINDER = 30;
-
-    /**
-     * @return array<string, int>
-     */
-    public function aturanReminder(): array
-    {
-        $kunci  = array_keys(self::ATURAN_REMINDER);
-        $isi    = (new PengaturanModel())->banyak($kunci);
-        $aturan = [];
-
-        foreach (self::ATURAN_REMINDER as $kunci_aturan => $meta) {
-            $nilai         = $isi[$kunci_aturan] ?? null;
-            $aturan[$kunci_aturan] = $nilai === null || $nilai === '' ? (int) $meta['bawaan'] : (int) $nilai;
-        }
-
-        // angka negatif tidak pernah berarti apa pun di aturan ini
-        foreach (['reminder_ulasan_hari'] as $k) {
-            $aturan[$k] = max(0, min(90, $aturan[$k]));
-        }
-
-        return $aturan;
-    }
-
-    /** @param array<string, mixed> $kirim */
-    public function simpanAturanReminder(array $kirim): void
-    {
-        $setelan = new PengaturanModel();
-
-        foreach (self::ATURAN_REMINDER as $kunci => $meta) {
-            if (! array_key_exists($kunci, $kirim)) {
-                continue;
-            }
-
-            $nilai = $meta['satuan'] === 'nyala'
-                ? (in_array((string) $kirim[$kunci], ['1', 'on', 'ya'], true) ? 1 : 0)
-                : max(0, min(90, (int) $kirim[$kunci]));
-
-            $setelan->tulis($kunci, (string) $nilai);
-        }
-    }
 
     /**
      * Sinkronkan satu nota dengan antrean tugas: membuat reminder yang jatuh tempo
@@ -1337,7 +1295,6 @@ class TugasModel extends Model
     public function sinkronReminder(int $invoice_id, ?int $sekarang = null): array
     {
         $sekarang = $sekarang ?? time();
-        $aturan   = $this->aturanReminder();
         $nota     = $this->db->table('invoice')->where('id_invoice', $invoice_id)->get(1)->getRowArray();
 
         if ($nota === null) {
@@ -1357,7 +1314,7 @@ class TugasModel extends Model
         // lahir pada detik yang sama saat uangnya dicatat. Menagih sisa bayar bukan
         // pekerjaan layar ini — itu CRM Follow-Up.
         return [
-            'dibuat'  => $this->ulasanReminder($nota, $sekarang, $sekarang - self::JENDELA_REMINDER * 86400, $aturan),
+            'dibuat'  => $this->ulasanReminder($nota, $sekarang, $sekarang - self::JENDELA_REMINDER * 86400),
             'ditutup' => 0,
         ];
     }
@@ -1390,16 +1347,11 @@ class TugasModel extends Model
      *                                        status_pembayaran, update_at
      * @param int                  $umur_maks update_at paling tua yang boleh
      *                                        diproses; 0 = tanpa batas
-     * @param array<string, int>   $aturan    aturan reminder yang sudah dibaca
      *
      * @return int 1 kalau tugas baru lahir, selain itu 0
      */
-    private function ulasanReminder(array $nota, int $sekarang, int $umur_maks, array $aturan): int
+    private function ulasanReminder(array $nota, int $sekarang, int $umur_maks): int
     {
-        if ($aturan['reminder_ulasan_aktif'] !== 1) {
-            return 0;
-        }
-
         if (! in_array((string) ($nota['status_pembayaran'] ?? ''), InvoiceModel::DANA_MASUK, true)) {
             return 0;
         }
@@ -1407,8 +1359,7 @@ class TugasModel extends Model
         $id     = (int) ($nota['id_invoice'] ?? 0);
         $update = (int) ($nota['update_at'] ?? 0);
 
-        // jeda tunggu belum lewat: belum waktunya menanyakan pengalaman pelanggan
-        if ($id === 0 || $update > $sekarang - $aturan['reminder_ulasan_hari'] * 86400) {
+        if ($id === 0) {
             return 0;
         }
 
@@ -1438,8 +1389,7 @@ class TugasModel extends Model
 
     /**
      * Backfill permintaan ulasan untuk nota LAMA. Aturannya identik dengan sapuan
-     * rutin — dananya sudah masuk dan jeda reminder_ulasan_hari lewat — yang
-     * dilepas hanya batas umurnya.
+     * rutin — dananya sudah masuk — yang dilepas hanya batas umurnya.
      *
      * Berdiri sendiri dan dipanggil dari CLI (php spark crm:ulasan-lama): kalau
      * diboncengkan ke sapuan halaman, satu klik bisa melahirkan ratusan tugas dan
@@ -1453,7 +1403,6 @@ class TugasModel extends Model
     public function backfillUlasan(?array $juragan_ids = null, int $maks = 500): array
     {
         $sekarang = time();
-        $aturan   = $this->aturanReminder();
 
         $b = $this->db->table('invoice')
             ->select('id_invoice, seri, pemesan_id, juragan_id, status_pembayaran, update_at')
@@ -1471,8 +1420,8 @@ class TugasModel extends Model
         foreach ($b->get(max(1, $maks))->getResultArray() as $nota) {
             $hasil['nota']++;
 
-            // dilewati = tugasnya sudah ada, atau jeda tunggunya belum lewat
-            if ($this->ulasanReminder($nota, $sekarang, 0, $aturan) === 1) {
+            // dilewati = tugasnya sudah ada, atau notanya tidak memenuhi syarat
+            if ($this->ulasanReminder($nota, $sekarang, 0) === 1) {
                 $hasil['dibuat']++;
             } else {
                 $hasil['dilewati']++;
@@ -1518,28 +1467,6 @@ class TugasModel extends Model
         ]);
 
         return true;
-    }
-
-    /**
-     * Berapa nota yang sedang masuk ke tiap aturan reminder. Dipakai layar aturan
-     * supaya Admin melihat akibat angkanya sebelum menyimpan.
-     *
-     * @return array{ulasan: int}
-     */
-    public function generateHitung(): array
-    {
-        $aturan = $this->aturanReminder();
-        $potong = time() - self::JENDELA_REMINDER * 86400;
-
-        $ulasan = $this->db->table('invoice')->where('deleted_at', null)
-            ->where('status_pesanan <>', "'3'")
-            ->whereIn('status_pembayaran', InvoiceModel::DANA_MASUK)
-            ->where('update_at >=', $potong)
-            ->where('update_at <=', time() - $aturan['reminder_ulasan_hari'] * 86400);
-
-        return [
-            'ulasan' => $aturan['reminder_ulasan_aktif'] ? (int) $ulasan->countAllResults() : 0,
-        ];
     }
 
     /**

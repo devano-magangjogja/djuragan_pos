@@ -77,7 +77,6 @@ class Bintang extends BaseController
             'toko'     => $this->tokoPeta(),
             'platform' => $this->platformPeta(),
             'milik'    => (int) session()->get('id'),
-            'kelola'   => $this->bolehKelola(),
             'kabar'    => (string) session()->getFlashdata('sukses'),
             'galat'    => (string) session()->getFlashdata('galat'),
         ]);

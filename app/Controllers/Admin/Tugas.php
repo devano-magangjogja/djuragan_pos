@@ -401,46 +401,6 @@ class Tugas extends BaseController
             ->with('sukses', $jumlah . ' tugas dikembalikan ke antrean karena shift-nya sudah berakhir.');
     }
 
-    /**
-     * Aturan reminder transaksi (Admin & Superadmin).
-     *
-     * Angka di layar ini yang menentukan kapan sistem dianggap "boleh" membuat
-     * tugas dari nota; notanya sendiri tidak pernah diubah di sini.
-     */
-    public function pengaturan()
-    {
-        helper('fungsi');
-
-        $model = new TugasModel();
-
-        return view('admin/tugas/pengaturan', [
-            'title'   => 'Aturan Reminder Transaksi',
-            'aturan'  => $model->aturanReminder(),
-            'meta'    => TugasModel::ATURAN_REMINDER,
-            'hitung'  => $model->generateHitung(),
-            'kabar'   => (string) session()->getFlashdata('sukses'),
-            'galat'   => (string) session()->getFlashdata('galat'),
-        ]);
-    }
-
-    public function simpanPengaturan()
-    {
-        $model = new TugasModel();
-        $kirim = [];
-
-        foreach (array_keys(TugasModel::ATURAN_REMINDER) as $kunci) {
-            $nilai = $this->request->getPost($kunci);
-
-            if ($nilai !== null) {
-                $kirim[$kunci] = $nilai;
-            }
-        }
-
-        $model->simpanAturanReminder($kirim);
-
-        return redirect()->to(site_url('admin/tugas/pengaturan'))->with('sukses', 'Aturan reminder disimpan.');
-    }
-
     /** Daftar templat + satu editor. Butir yang judulnya kosong diabaikan model. */
     public function template()
     {
@@ -549,20 +509,6 @@ class Tugas extends BaseController
 
         return redirect()->to(site_url('admin/tugas/template'))->with('sukses', 'Status templat diperbarui.');
     }
-
-    /**
-     * Jalankan generator reminder sekarang (Admin & Superadmin), biasanya untuk
-     * memastikan angka layar sama dengan hasil cron.
-     */
-    public function sinkron()
-    {
-        $hasil = (new TugasModel())->generateReminder($this->tokoBoleh());
-
-        return redirect()->to(site_url('admin/tugas/pengaturan'))
-            ->with('sukses', $hasil['nota'] . ' nota diperiksa, ' . $hasil['dibuat'] . ' reminder baru, '
-                . $hasil['ditutup'] . ' reminder ditutup.');
-    }
-
 
     /**
      * Layar Catatan Percakapan: CS menyimpan hasil obrolan WhatsApp yang tadi

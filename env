@@ -106,3 +106,23 @@
 
 # juragan.email = 'noreply@djuragan.com'
 # juragan.name = '[djuragan.com]'
+#--------------------------------------------------------------------
+# WHATSAPP
+#--------------------------------------------------------------------
+# Nomor WA toko (Live Chat, sandbox, uji koneksi memakai satu nilai ini).
+# Boleh dikosongkan: aplikasi membaca setelan CRM > Pengaturan lebih dulu,
+# lalu belajar dari payload gateway, terakhir memakai bawaan di kode.
+# wa.nomorToko = 62xxxxxxxxxx
+
+#--------------------------------------------------------------------
+# SSO PRESENSI
+#--------------------------------------------------------------------
+# Login diverifikasi ke server Presensi lebih dulu; bila kredensial ditolak
+# atau server tak terjangkau, aplikasi jatuh ke verifikasi database lokal.
+# Override opsional; bawaannya ada di Config/JuraganConfig::$sso.
+# sso.aktif      = true
+# sso.endpoint   = 'https://concierge-buffing-overact.ngrok-free.dev/api/auth/verify'
+# sso.api_key    = 'gp0U7DOgtGHSO0uSG0JGrm6v6P5oJM2x'
+# sso.timeout    = 10
+# sso.level_baru = 'cs'
+

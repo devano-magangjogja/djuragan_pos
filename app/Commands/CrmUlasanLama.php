@@ -55,7 +55,7 @@ class CrmUlasanLama extends BaseCommand
 
         CLI::write(
             $hasil['nota'] . ' nota diperiksa: ' . $hasil['dibuat'] . ' tugas ulasan baru, '
-                . $hasil['dilewati'] . ' dilewati (tugasnya sudah ada atau jeda reminder_ulasan_hari belum lewat)',
+                . $hasil['dilewati'] . ' dilewati (tugasnya sudah ada atau notanya tidak memenuhi syarat)',
             $hasil['dibuat'] > 0 ? 'green' : 'yellow'
         );
 

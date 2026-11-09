@@ -279,15 +279,12 @@ $routes->group('admin', static function ($routes) {
         $routes->post('operan/(:num)', 'Admin\Tugas::operan/$1');
 
         $routes->group('', ['filter' => 'auth:admin,superadmin'], static function ($routes) {
-            $routes->get('pengaturan', 'Admin\Tugas::pengaturan');
-            $routes->post('pengaturan', 'Admin\Tugas::simpanPengaturan');
             $routes->get('template', 'Admin\Tugas::template');
             $routes->post('template', 'Admin\Tugas::simpanTemplate');
             $routes->post('template-pakai', 'Admin\Tugas::pakaiTemplate');
             $routes->post('template-aktif', 'Admin\Tugas::matikanTemplate');
             $routes->get('laporan', 'Admin\Tugas::laporan');
             $routes->get('laporan/csv', 'Admin\Tugas::eksporLaporan');
-            $routes->post('sinkron', 'Admin\Tugas::sinkron');
             $routes->get('shift', 'Admin\Tugas::shift');
             $routes->post('shift', 'Admin\Tugas::simpanShift');
             $routes->post('sapu', 'Admin\Tugas::sapu');
