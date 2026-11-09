@@ -38,12 +38,14 @@ class JuraganConfig extends BaseConfig
 
     public $size       = [
         'atasan' => [
+            'xs'   => 'XS',
             's'    => 'S',
             'm'    => 'M',
             'l'    => 'L',
             'xl'   => 'XL',
             'xxl'  => 'XXL',
             'xxxl' => 'XXXL',
+            '5xl'  => '5XL',
         ],
         'bawahan' => [
             '28' => '28',
@@ -53,6 +55,11 @@ class JuraganConfig extends BaseConfig
             '32' => '32',
             '33' => '33',
             '34' => '34',
+            '35' => '35',
+            '36' => '36',
+            '37' => '37',
+            '38' => '38',
+            '39' => '39',
         ],
         // custom
     ];

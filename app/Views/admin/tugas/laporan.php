@@ -235,9 +235,9 @@ $dibaca = static function ($detik): string {
         <?php endif; ?>
 
         <?php if ($total > $batas) : ?>
-            <div class="lp-pager d-flex flex-wrap align-items-center gap-2">
+            <div class="lp-pager d-flex flex-wrap align-items-center justify-content-end gap-2">
                 <span class="small text-muted">halaman <?= (int) $page ?></span>
-                <div class="ms-auto">
+                <div>
                     <?= \Config\Services::pager()->makeLinks($page, $batas, $total, 'front_full') ?>
                 </div>
             </div>

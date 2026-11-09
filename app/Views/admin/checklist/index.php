@@ -573,9 +573,9 @@ $tanya = static function (array $ubah): string {
         <?php endif; ?>
 
         <?php if ($total > $batas) : ?>
-            <div class="ckl-pager d-flex flex-wrap align-items-center gap-2">
+            <div class="ckl-pager d-flex flex-wrap align-items-center justify-content-end gap-2">
                 <span class="small text-muted"><?= (int) $total ?> catatan &middot; halaman <?= (int) $page ?></span>
-                <div class="ms-auto">
+                <div>
                     <?= \Config\Services::pager()->makeLinks($page, $batas, $total, 'front_full') ?>
                 </div>
             </div>
