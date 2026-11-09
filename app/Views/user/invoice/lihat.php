@@ -2139,7 +2139,7 @@ $js = <<< JS
     	});
 
     	// riwayat pembayaran: kartu yang sama seperti di layar Admin, hanya tanpa
-    	// tombol nilai -- menilai dana masuk adalah hak Superadmin
+    	// tombol nilai -- menilai dana masuk adalah hak admin & superadmin
     	$('.pesanBayar').on('click', function() {
     		let id   = $(this).data('invoice'),
     			seri = $(this).data('seri') || '';

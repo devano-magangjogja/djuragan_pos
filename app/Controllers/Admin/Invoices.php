@@ -806,19 +806,19 @@ class Invoices extends BaseController
     /**
      * Nilai satu pembayaran: "dana ada" atau "dana tidak ada".
      *
-     * Khusus Superadmin. Memastikan uang benar-benar masuk adalah keputusan
-     * pemilik toko, dan sekali dinilai statusnya tidak bisa dikembalikan lagi —
-     * jadi admin, CS bersertifikat sunting, dan akun lain hanya melihat riwayat
+     * Khusus admin & superadmin. Memastikan uang benar-benar masuk adalah keputusan
+     * pengelola toko, dan sekali dinilai statusnya tidak bisa dikembalikan lagi —
+     * jadi CS bersertifikat sunting dan akun lain hanya melihat riwayat
      * pembayarannya saja. Tombolnya memang tidak dirender untuk mereka; ini pagar
      * keduanya, supaya panggilan langsung ke alamat ini juga ditolak.
      */
     public function update_bayar()
     {
-        // hanya Superadmin yang boleh mengecek pembayaran
-        if ((string) session()->get('level') !== 'superadmin') {
+        // hanya admin & superadmin yang boleh mengecek pembayaran
+        if (! in_array((string) session()->get('level'), ['admin', 'superadmin'], true)) {
             $this->response->setStatusCode(403);
 
-            return $this->response->setJSON(['status' => 'Hanya Superadmin yang boleh mengecek pembayaran.']);
+            return $this->response->setJSON(['status' => 'Hanya Admin atau Superadmin yang boleh mengecek pembayaran.']);
         }
 
         $validation = \Config\Services::validation();

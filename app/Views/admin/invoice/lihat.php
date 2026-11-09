@@ -27,10 +27,11 @@ $pager    = \Config\Services::pager();
 $sekarang = new Time('now');
 $session  = \Config\Services::session();
 
-// Menilai apakah dana yang masuk benar-benar ada adalah keputusan pemilik toko,
-// jadi hanya Superadmin yang boleh mengecek pembayaran. Tombol "Cek Pembayaran"
-// sendiri tetap ada untuk semua orang: yang dibatasi cuma aksi penilaiannya.
-$cekBayar = ((string) $session->get('level')) === 'superadmin';
+// Menilai apakah dana yang masuk benar-benar ada adalah keputusan pengelola
+// toko, jadi admin & superadmin boleh mengecek pembayaran. Tombol "Cek
+// Pembayaran" sendiri tetap ada untuk semua orang: yang dibatasi cuma aksi
+// penilaiannya.
+$cekBayar = in_array((string) $session->get('level'), ['admin', 'superadmin'], true);
 
 // Lembar cetak daftar transaksi adalah alat kerja pengelola toko, jadi centang
 // nota dan tombol Cetaknya hanya muncul untuk admin & superadmin. CS melihat
@@ -2577,7 +2578,7 @@ $js = <<< JS
     		});
     	});
 
-    	// wewenang cek pembayaran: Superadmin saja. Tanpa ini riwayat pembayaran
+    	// wewenang cek pembayaran: admin & superadmin. Tanpa ini riwayat pembayaran
     	// tetap tampil lengkap, hanya tanpa tombol nilai
     	var boleh_cek_bayar = {$boleh_cek_js};
 
